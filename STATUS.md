@@ -1,13 +1,10 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:11:13 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:16:15 UTC
 
-- Local time: 2026-11-12 18:11:13 GMT
+- Local time: 2026-11-12 18:16:15 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 165 of 180 complete                                           Load avg: 10.0, 14.9, 15.1
->>> Jobs: 165 of 180 complete, 1 running                                Load avg: 10.0, 14.9, 15.1
->>> Emerging (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
 >>> Jobs: 165 of 180 complete, 1 running                                Load avg: 10.0, 14.9, 15.1
 >>> Jobs: 165 of 180 complete                                           Load avg: 10.6, 15.0, 15.1
 >>> Installing (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
@@ -45,6 +42,9 @@
 >>> Jobs: 169 of 180 complete, 1 running                                Load avg: 18.2, 18.9, 17.2
 >>> Emerging (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
 >>> Jobs: 169 of 180 complete, 1 running                                Load avg: 18.2, 18.9, 17.2
+>>> Jobs: 169 of 180 complete                                           Load avg: 20.1, 20.2, 18.7
+>>> Installing (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
+>>> Jobs: 169 of 180 complete, 1 merge wait                             Load avg: 20.1, 20.2, 18.7
 ```
 - Result: rc=1
 
