@@ -1,19 +1,10 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:06:10 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:11:13 UTC
 
-- Local time: 2026-11-12 18:06:10 GMT
+- Local time: 2026-11-12 18:11:13 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 164 of 180 complete                                           Load avg: 10.4, 15.2, 15.2
->>> Jobs: 164 of 180 complete, 1 running                                Load avg: 10.4, 15.2, 15.2
->>> Emerging (165 of 180) gnome-extra/nm-applet-1.36.0::gentoo
->>> Jobs: 164 of 180 complete, 1 running                                Load avg: 10.4, 15.2, 15.2
->>> Jobs: 164 of 180 complete                                           Load avg: 10.6, 15.1, 15.1
->>> Installing (165 of 180) gnome-extra/nm-applet-1.36.0::gentoo
->>> Jobs: 164 of 180 complete, 1 merge wait                             Load avg: 10.6, 15.1, 15.1
->>> Completed (165 of 180) gnome-extra/nm-applet-1.36.0::gentoo
->>> Jobs: 164 of 180 complete                                           Load avg: 10.0, 14.9, 15.1
 >>> Jobs: 165 of 180 complete                                           Load avg: 10.0, 14.9, 15.1
 >>> Jobs: 165 of 180 complete, 1 running                                Load avg: 10.0, 14.9, 15.1
 >>> Emerging (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
@@ -45,6 +36,15 @@
 >>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
 >>> Emerging (169 of 180) kde-plasma/kwin-6.8.3::gentoo
 >>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
+>>> Jobs: 168 of 180 complete                                           Load avg: 21.0, 19.4, 17.4
+>>> Installing (169 of 180) kde-plasma/kwin-6.8.3::gentoo
+>>> Jobs: 168 of 180 complete, 1 merge wait                             Load avg: 21.0, 19.4, 17.4
+>>> Completed (169 of 180) kde-plasma/kwin-6.8.3::gentoo
+>>> Jobs: 168 of 180 complete                                           Load avg: 18.2, 18.9, 17.2
+>>> Jobs: 169 of 180 complete                                           Load avg: 18.2, 18.9, 17.2
+>>> Jobs: 169 of 180 complete, 1 running                                Load avg: 18.2, 18.9, 17.2
+>>> Emerging (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
+>>> Jobs: 169 of 180 complete, 1 running                                Load avg: 18.2, 18.9, 17.2
 ```
 - Result: rc=1
 
