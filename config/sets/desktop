@@ -10,12 +10,6 @@ sys-apps/xdg-desktop-portal-gtk
 gui-libs/xdg-desktop-portal-wlr
 gui-libs/wlroots
 
-# --- KDE Plasma (the installer's Plasma profile installs this instead of the
-#     Hyprland rice; the two are alternative desktops, not companions) ---------
-kde-plasma/plasma-meta
-kde-plasma/plasma-workspace
-kde-plasma/plasma-desktop
-
 # Panels / launchers / notifications
 gui-apps/waybar
 gui-apps/wofi
