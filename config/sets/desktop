@@ -10,6 +10,11 @@ sys-apps/xdg-desktop-portal-gtk
 gui-libs/xdg-desktop-portal-wlr
 gui-libs/wlroots
 
+# KDE Plasma (alternative desktop profile; same image, different session)
+kde-plasma/plasma-meta
+kde-plasma/plasma-workspace
+kde-plasma/plasma-desktop
+
 # Panels / launchers / notifications
 gui-apps/waybar
 gui-apps/wofi
