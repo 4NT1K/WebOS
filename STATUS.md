@@ -1,6 +1,6 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:51:26 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:56:31 UTC
 
-- Local time: 2026-11-12 18:51:26 GMT
+- Local time: 2026-11-12 18:56:31 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
@@ -81,7 +81,13 @@ rc=0
 ## iso-build
 ```
 ==> iso: building live medium
-fail missing host tool: grub-mkrescue
+  -> copying kernel 6.12.0-sanusos
+==> iso: building live initramfs (dracut, dmsquash-live)
+==> iso: compressing live filesystem
+  -> squashfs: 12G -> /sanusos/build/iso-staging/live/sanus.squashfs
+mksquashfs: Compressor "zstd" is not supported!
+mksquashfs: Compressors available:
+	gzip (default)
 rc=1
 ```
 - Result: rc=1
