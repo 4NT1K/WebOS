@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 3 min) — 2026-11-12 16:57:37 UTC
+# Build status (auto-updated ~every 3 min) — 2026-11-12 17:00:38 UTC
 
-- Local time: 2026-11-12 16:57:37 GMT
+- Local time: 2026-11-12 17:00:38 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 68 of 180 complete                                            Load avg: 9.4, 12.2, 11.2
->>> Jobs: 68 of 180 complete, 1 running                                 Load avg: 9.4, 12.2, 11.2
->>> Emerging (69 of 180) kde-frameworks/kfilemetadata-6.31.0::gentoo
->>> Jobs: 68 of 180 complete, 1 running                                 Load avg: 9.4, 12.2, 11.2
->>> Jobs: 68 of 180 complete                                            Load avg: 10.7, 12.3, 11.3
->>> Installing (69 of 180) kde-frameworks/kfilemetadata-6.31.0::gentoo
->>> Jobs: 68 of 180 complete, 1 merge wait                              Load avg: 10.7, 12.3, 11.3
->>> Completed (69 of 180) kde-frameworks/kfilemetadata-6.31.0::gentoo
->>> Jobs: 68 of 180 complete                                            Load avg: 10.7, 12.3, 11.3
->>> Jobs: 69 of 180 complete                                            Load avg: 10.7, 12.3, 11.3
->>> Jobs: 69 of 180 complete, 1 running                                 Load avg: 10.7, 12.3, 11.3
->>> Emerging (70 of 180) media-libs/pcaudiolib-1.2-r2::gentoo
->>> Jobs: 69 of 180 complete, 1 running                                 Load avg: 10.7, 12.3, 11.3
->>> Jobs: 69 of 180 complete                                            Load avg: 9.3, 12.0, 11.2
->>> Installing (70 of 180) media-libs/pcaudiolib-1.2-r2::gentoo
->>> Jobs: 69 of 180 complete, 1 merge wait                              Load avg: 9.3, 12.0, 11.2
->>> Completed (70 of 180) media-libs/pcaudiolib-1.2-r2::gentoo
->>> Jobs: 69 of 180 complete                                            Load avg: 9.3, 12.0, 11.2
->>> Jobs: 70 of 180 complete                                            Load avg: 9.3, 12.0, 11.2
->>> Jobs: 70 of 180 complete, 1 running                                 Load avg: 9.3, 12.0, 11.2
->>> Emerging (71 of 180) media-sound/sox-14.7.0.9::gentoo
->>> Jobs: 70 of 180 complete, 1 running                                 Load avg: 9.3, 12.0, 11.2
->>> Jobs: 70 of 180 complete                                            Load avg: 10.0, 12.0, 11.2
->>> Installing (71 of 180) media-sound/sox-14.7.0.9::gentoo
->>> Jobs: 70 of 180 complete, 1 merge wait                              Load avg: 10.0, 12.0, 11.2
->>> Completed (71 of 180) media-sound/sox-14.7.0.9::gentoo
->>> Jobs: 70 of 180 complete                                            Load avg: 10.0, 12.0, 11.2
->>> Jobs: 71 of 180 complete                                            Load avg: 10.0, 12.0, 11.2
->>> Jobs: 71 of 180 complete, 1 running                                 Load avg: 10.0, 12.0, 11.2
->>> Emerging (72 of 180) media-libs/pulseaudio-qt-1.9.0::gentoo
->>> Jobs: 71 of 180 complete, 1 running                                 Load avg: 10.0, 12.0, 11.2
->>> Jobs: 71 of 180 complete                                            Load avg: 10.4, 12.0, 11.2
->>> Installing (72 of 180) media-libs/pulseaudio-qt-1.9.0::gentoo
->>> Jobs: 71 of 180 complete, 1 merge wait                              Load avg: 10.4, 12.0, 11.2
->>> Completed (72 of 180) media-libs/pulseaudio-qt-1.9.0::gentoo
->>> Jobs: 71 of 180 complete                                            Load avg: 9.6, 11.8, 11.1
->>> Jobs: 72 of 180 complete                                            Load avg: 9.6, 11.8, 11.1
->>> Jobs: 72 of 180 complete, 1 running                                 Load avg: 9.6, 11.8, 11.1
->>> Emerging (73 of 180) media-libs/libheif-1.23.7::gentoo
->>> Jobs: 72 of 180 complete, 1 running                                 Load avg: 9.6, 11.8, 11.1
+>>> Jobs: 78 of 180 complete                                            Load avg: 9.5, 11.7, 11.2
+>>> Jobs: 79 of 180 complete                                            Load avg: 9.5, 11.7, 11.2
+>>> Jobs: 79 of 180 complete, 1 running                                 Load avg: 9.5, 11.7, 11.2
+>>> Emerging (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
+>>> Jobs: 79 of 180 complete, 1 running                                 Load avg: 9.5, 11.7, 11.2
+>>> Jobs: 79 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
+>>> Installing (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
+>>> Jobs: 79 of 180 complete, 1 merge wait                              Load avg: 10.2, 11.8, 11.2
+>>> Completed (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
+>>> Jobs: 79 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
+>>> Jobs: 80 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
+>>> Jobs: 80 of 180 complete, 1 running                                 Load avg: 10.2, 11.8, 11.2
+>>> Emerging (81 of 180) kde-plasma/kwrited-6.8.3::gentoo
+>>> Jobs: 80 of 180 complete, 1 running                                 Load avg: 10.2, 11.8, 11.2
+>>> Jobs: 80 of 180 complete                                            Load avg: 9.2, 11.5, 11.2
+>>> Installing (81 of 180) kde-plasma/kwrited-6.8.3::gentoo
+>>> Jobs: 80 of 180 complete, 1 merge wait                              Load avg: 9.2, 11.5, 11.2
+>>> Completed (81 of 180) kde-plasma/kwrited-6.8.3::gentoo
+>>> Jobs: 80 of 180 complete                                            Load avg: 9.2, 11.5, 11.2
+>>> Jobs: 81 of 180 complete                                            Load avg: 9.2, 11.5, 11.2
+>>> Jobs: 81 of 180 complete, 1 running                                 Load avg: 9.2, 11.5, 11.2
+>>> Emerging (82 of 180) app-accessibility/speech-dispatcher-0.12.1::gentoo
+>>> Jobs: 81 of 180 complete, 1 running                                 Load avg: 9.2, 11.5, 11.2
+>>> Jobs: 81 of 180 complete                                            Load avg: 7.9, 11.1, 11.0
+>>> Installing (82 of 180) app-accessibility/speech-dispatcher-0.12.1::gentoo
+>>> Jobs: 81 of 180 complete, 1 merge wait                              Load avg: 7.9, 11.1, 11.0
+>>> Completed (82 of 180) app-accessibility/speech-dispatcher-0.12.1::gentoo
+>>> Jobs: 81 of 180 complete                                            Load avg: 7.9, 11.1, 11.0
+>>> Jobs: 82 of 180 complete                                            Load avg: 7.9, 11.1, 11.0
+>>> Jobs: 82 of 180 complete, 1 running                                 Load avg: 7.9, 11.1, 11.0
+>>> Emerging (83 of 180) dev-qt/qtspeech-6.11.3::gentoo
+>>> Jobs: 82 of 180 complete, 1 running                                 Load avg: 7.9, 11.1, 11.0
+>>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 7.4, 10.9, 11.0
+>>> Emerging (84 of 180) kde-frameworks/kauth-6.31.0::gentoo
+>>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 7.4, 10.9, 11.0
+>>> Jobs: 82 of 180 complete, 3 running                                 Load avg: 7.2, 10.8, 11.0
+>>> Emerging (85 of 180) kde-plasma/kpipewire-6.8.3::gentoo
+>>> Jobs: 82 of 180 complete, 3 running                                 Load avg: 7.2, 10.8, 11.0
+>>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 8.2, 11.0, 11.0
+>>> Jobs: 82 of 180 complete, 1 running, 1 merge wait                   Load avg: 9.5, 11.2, 11.1
 ```
 - Result: rc=1
 
