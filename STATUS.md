@@ -1,37 +1,10 @@
-# Build status (auto-updated ~every 3 min) — 2026-11-12 16:51:33 UTC
+# Build status (auto-updated ~every 3 min) — 2026-11-12 16:54:35 UTC
 
-- Local time: 2026-11-12 16:51:33 GMT
+- Local time: 2026-11-12 16:54:35 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
->>> Jobs: 56 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
->>> Emerging (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
->>> Jobs: 56 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
->>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
->>> Installing (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
->>> Jobs: 56 of 180 complete, 1 merge wait                              Load avg: 9.2, 10.2, 9.7
->>> Completed (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
->>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
->>> Jobs: 57 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
->>> Jobs: 57 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
->>> Emerging (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
->>> Jobs: 57 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
->>> Jobs: 57 of 180 complete                                            Load avg: 11.7, 10.7, 9.9
->>> Installing (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
->>> Jobs: 57 of 180 complete, 1 merge wait                              Load avg: 11.7, 10.7, 9.9
->>> Completed (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
->>> Jobs: 57 of 180 complete                                            Load avg: 11.7, 10.7, 9.9
->>> Jobs: 58 of 180 complete                                            Load avg: 11.7, 10.7, 9.9
->>> Jobs: 58 of 180 complete, 1 running                                 Load avg: 11.7, 10.7, 9.9
->>> Emerging (59 of 180) kde-plasma/qqc2-breeze-style-6.8.3::gentoo
->>> Jobs: 58 of 180 complete, 1 running                                 Load avg: 11.7, 10.7, 9.9
->>> Jobs: 58 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
->>> Installing (59 of 180) kde-plasma/qqc2-breeze-style-6.8.3::gentoo
->>> Jobs: 58 of 180 complete, 1 merge wait                              Load avg: 14.1, 11.5, 10.2
->>> Completed (59 of 180) kde-plasma/qqc2-breeze-style-6.8.3::gentoo
->>> Jobs: 58 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
 >>> Jobs: 59 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
 >>> Jobs: 59 of 180 complete, 1 running                                 Load avg: 14.1, 11.5, 10.2
 >>> Emerging (60 of 180) kde-plasma/union-6.8.3::gentoo
@@ -45,6 +18,33 @@
 >>> Jobs: 60 of 180 complete, 1 running                                 Load avg: 16.2, 12.9, 10.9
 >>> Emerging (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
 >>> Jobs: 60 of 180 complete, 1 running                                 Load avg: 16.2, 12.9, 10.9
+>>> Jobs: 60 of 180 complete                                            Load avg: 14.1, 12.6, 10.8
+>>> Installing (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
+>>> Jobs: 60 of 180 complete, 1 merge wait                              Load avg: 14.1, 12.6, 10.8
+>>> Completed (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
+>>> Jobs: 60 of 180 complete                                            Load avg: 14.1, 12.6, 10.8
+>>> Jobs: 61 of 180 complete                                            Load avg: 14.1, 12.6, 10.8
+>>> Jobs: 61 of 180 complete, 1 running                                 Load avg: 14.1, 12.6, 10.8
+>>> Emerging (62 of 180) media-video/ffmpeg-9.0.2::gentoo
+>>> Jobs: 61 of 180 complete, 1 running                                 Load avg: 14.1, 12.6, 10.8
+>>> Jobs: 61 of 180 complete                                            Load avg: 15.7, 13.6, 11.3
+>>> Installing (62 of 180) media-video/ffmpeg-9.0.2::gentoo
+>>> Jobs: 61 of 180 complete, 1 merge wait                              Load avg: 15.7, 13.6, 11.3
+>>> Completed (62 of 180) media-video/ffmpeg-9.0.2::gentoo
+>>> Jobs: 61 of 180 complete                                            Load avg: 14.6, 13.4, 11.3
+>>> Jobs: 62 of 180 complete                                            Load avg: 14.6, 13.4, 11.3
+>>> Jobs: 62 of 180 complete, 1 running                                 Load avg: 14.6, 13.4, 11.3
+>>> Emerging (63 of 180) media-libs/libcanberra-0.30-r8::gentoo
+>>> Jobs: 62 of 180 complete, 1 running                                 Load avg: 14.6, 13.4, 11.3
+>>> Jobs: 62 of 180 complete                                            Load avg: 12.5, 13.0, 11.2
+>>> Installing (63 of 180) media-libs/libcanberra-0.30-r8::gentoo
+>>> Jobs: 62 of 180 complete, 1 merge wait                              Load avg: 12.5, 13.0, 11.2
+>>> Completed (63 of 180) media-libs/libcanberra-0.30-r8::gentoo
+>>> Jobs: 62 of 180 complete                                            Load avg: 12.5, 13.0, 11.2
+>>> Jobs: 63 of 180 complete                                            Load avg: 12.5, 13.0, 11.2
+>>> Jobs: 63 of 180 complete, 1 running                                 Load avg: 12.5, 13.0, 11.2
+>>> Emerging (64 of 180) media-video/pipewire-1.6.11::gentoo
+>>> Jobs: 63 of 180 complete, 1 running                                 Load avg: 12.5, 13.0, 11.2
 ```
 - Result: rc=1
 
