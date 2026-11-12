@@ -51,7 +51,7 @@ x11-themes/adwaita-icon-theme
 x11-themes/papirus-icon-theme
 x11-themes/arc-theme
 x11-themes/kvantum
-gui-apps/qt6ct
+# gui-apps/qt6ct conflicts with kde-plasma/plasma-meta; Plasma provides its own Qt theming.
 x11-libs/gtk+:3
 gui-libs/gtk:4
 media-fonts/inter
