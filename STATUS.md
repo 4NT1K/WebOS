@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 17:25:52 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 17:30:53 UTC
 
-- Local time: 2026-11-12 17:25:52 GMT
+- Local time: 2026-11-12 17:30:53 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 116 of 180 complete, 1 running                                Load avg: 15.1, 15.1, 14.3
->>> Jobs: 116 of 180 complete                                           Load avg: 13.1, 14.6, 14.1
->>> Installing (117 of 180) kde-misc/kio-fuse-5.1.1::gentoo
->>> Jobs: 116 of 180 complete, 1 merge wait                             Load avg: 13.1, 14.6, 14.1
->>> Completed (117 of 180) kde-misc/kio-fuse-5.1.1::gentoo
->>> Jobs: 116 of 180 complete                                           Load avg: 13.1, 14.6, 14.1
->>> Jobs: 117 of 180 complete                                           Load avg: 13.1, 14.6, 14.1
->>> Jobs: 117 of 180 complete, 1 running                                Load avg: 13.1, 14.6, 14.1
->>> Emerging (118 of 180) kde-frameworks/purpose-6.31.0::gentoo
->>> Jobs: 117 of 180 complete, 1 running                                Load avg: 13.1, 14.6, 14.1
->>> Jobs: 117 of 180 complete                                           Load avg: 12.8, 14.4, 14.1
->>> Installing (118 of 180) kde-frameworks/purpose-6.31.0::gentoo
->>> Jobs: 117 of 180 complete, 1 merge wait                             Load avg: 12.8, 14.4, 14.1
->>> Completed (118 of 180) kde-frameworks/purpose-6.31.0::gentoo
->>> Jobs: 117 of 180 complete                                           Load avg: 11.9, 14.2, 14.0
->>> Jobs: 118 of 180 complete                                           Load avg: 11.9, 14.2, 14.0
->>> Jobs: 118 of 180 complete, 1 running                                Load avg: 11.9, 14.2, 14.0
->>> Emerging (119 of 180) kde-frameworks/knotifyconfig-6.31.0::gentoo
->>> Jobs: 118 of 180 complete, 1 running                                Load avg: 11.9, 14.2, 14.0
->>> Jobs: 118 of 180 complete                                           Load avg: 11.5, 14.1, 14.0
->>> Installing (119 of 180) kde-frameworks/knotifyconfig-6.31.0::gentoo
->>> Jobs: 118 of 180 complete, 1 merge wait                             Load avg: 11.5, 14.1, 14.0
->>> Completed (119 of 180) kde-frameworks/knotifyconfig-6.31.0::gentoo
->>> Jobs: 118 of 180 complete                                           Load avg: 10.8, 13.9, 13.9
->>> Jobs: 119 of 180 complete                                           Load avg: 10.8, 13.9, 13.9
->>> Jobs: 119 of 180 complete, 1 running                                Load avg: 10.8, 13.9, 13.9
->>> Emerging (120 of 180) gui-apps/xwaylandvideobridge-0.5.3::gentoo
->>> Jobs: 119 of 180 complete, 1 running                                Load avg: 10.8, 13.9, 13.9
->>> Jobs: 119 of 180 complete                                           Load avg: 9.8, 13.6, 13.8
->>> Installing (120 of 180) gui-apps/xwaylandvideobridge-0.5.3::gentoo
->>> Jobs: 119 of 180 complete, 1 merge wait                             Load avg: 9.8, 13.6, 13.8
->>> Completed (120 of 180) gui-apps/xwaylandvideobridge-0.5.3::gentoo
->>> Jobs: 119 of 180 complete                                           Load avg: 9.2, 13.4, 13.7
->>> Jobs: 120 of 180 complete                                           Load avg: 9.2, 13.4, 13.7
->>> Jobs: 120 of 180 complete, 1 running                                Load avg: 9.2, 13.4, 13.7
->>> Emerging (121 of 180) kde-plasma/ksshaskpass-6.8.3::gentoo
->>> Jobs: 120 of 180 complete, 1 running                                Load avg: 9.2, 13.4, 13.7
->>> Jobs: 120 of 180 complete                                           Load avg: 8.7, 13.2, 13.7
->>> Installing (121 of 180) kde-plasma/ksshaskpass-6.8.3::gentoo
->>> Jobs: 120 of 180 complete, 1 merge wait                             Load avg: 8.7, 13.2, 13.7
+>>> Jobs: 124 of 180 complete                                           Load avg: 7.6, 12.4, 13.4
+>>> Jobs: 124 of 180 complete, 1 running                                Load avg: 7.6, 12.4, 13.4
+>>> Emerging (125 of 180) kde-plasma/kup-6.8.3::gentoo
+>>> Jobs: 124 of 180 complete, 1 running                                Load avg: 7.6, 12.4, 13.4
+>>> Jobs: 124 of 180 complete, 2 running                                Load avg: 7.3, 12.3, 13.3
+>>> Emerging (126 of 180) kde-plasma/bluedevil-6.8.3::gentoo
+>>> Jobs: 124 of 180 complete, 2 running                                Load avg: 7.3, 12.3, 13.3
+>>> Jobs: 124 of 180 complete, 1 running                                Load avg: 22.2, 15.7, 14.4
+>>> Jobs: 124 of 180 complete, 1 merge wait                             Load avg: 21.1, 15.5, 14.4
+>>> Installing (126 of 180) kde-plasma/bluedevil-6.8.3::gentoo
+>>> Jobs: 124 of 180 complete, 2 merge wait                             Load avg: 21.1, 15.5, 14.4
+>>> Installing (125 of 180) kde-plasma/kup-6.8.3::gentoo
+>>> Jobs: 124 of 180 complete, 2 merge wait                             Load avg: 21.1, 15.5, 14.4
+>>> Completed (126 of 180) kde-plasma/bluedevil-6.8.3::gentoo
+>>> Jobs: 124 of 180 complete                                           Load avg: 21.1, 15.5, 14.4
+>>> Jobs: 125 of 180 complete                                           Load avg: 21.1, 15.5, 14.4
+>>> Completed (125 of 180) kde-plasma/kup-6.8.3::gentoo
+>>> Jobs: 125 of 180 complete                                           Load avg: 19.5, 15.3, 14.3
+>>> Jobs: 126 of 180 complete                                           Load avg: 19.5, 15.3, 14.3
+>>> Jobs: 126 of 180 complete, 1 running                                Load avg: 19.5, 15.3, 14.3
+>>> Emerging (127 of 180) kde-plasma/drkonqi-legacy-6.3.80_p20250417::gentoo
+>>> Jobs: 126 of 180 complete, 1 running                                Load avg: 19.5, 15.3, 14.3
+>>> Jobs: 126 of 180 complete                                           Load avg: 15.8, 14.9, 14.2
+>>> Installing (127 of 180) kde-plasma/drkonqi-legacy-6.3.80_p20250417::gentoo
+>>> Jobs: 126 of 180 complete, 1 merge wait                             Load avg: 15.8, 14.9, 14.2
+>>> Completed (127 of 180) kde-plasma/drkonqi-legacy-6.3.80_p20250417::gentoo
+>>> Jobs: 126 of 180 complete                                           Load avg: 15.8, 14.9, 14.2
+>>> Jobs: 127 of 180 complete                                           Load avg: 15.8, 14.9, 14.2
+>>> Jobs: 127 of 180 complete, 1 running                                Load avg: 15.8, 14.9, 14.2
+>>> Emerging (128 of 180) kde-plasma/spectacle-6.8.3::gentoo
+>>> Jobs: 127 of 180 complete, 1 running                                Load avg: 15.8, 14.9, 14.2
+>>> Jobs: 127 of 180 complete                                           Load avg: 16.5, 15.2, 14.4
+>>> Installing (128 of 180) kde-plasma/spectacle-6.8.3::gentoo
+>>> Jobs: 127 of 180 complete, 1 merge wait                             Load avg: 16.5, 15.2, 14.4
+>>> Completed (128 of 180) kde-plasma/spectacle-6.8.3::gentoo
+>>> Jobs: 127 of 180 complete                                           Load avg: 15.3, 15.0, 14.3
+>>> Jobs: 128 of 180 complete                                           Load avg: 15.3, 15.0, 14.3
+>>> Jobs: 128 of 180 complete, 1 running                                Load avg: 15.3, 15.0, 14.3
+>>> Emerging (129 of 180) app-misc/nwg-look-1.0.6::guru
+>>> Jobs: 128 of 180 complete, 1 running                                Load avg: 15.3, 15.0, 14.3
 ```
 - Result: rc=1
 
