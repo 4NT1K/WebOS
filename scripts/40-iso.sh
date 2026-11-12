@@ -61,33 +61,38 @@ done
 
 # ----------------------------------------------------------- squashfs --------
 step "iso: compressing live filesystem"
-# The live overlay: strip anything the live session must generate itself.
-LIVE_ROOT="${BUILD_DIR}/live-root"
-rm -rf "${LIVE_ROOT}"
-cp -a "${ROOTFS_DIR}" "${LIVE_ROOT}"
-rm -rf "${LIVE_ROOT}/etc/machine-id" "${LIVE_ROOT}/var/lib/systemd" 2>/dev/null || true
-: > "${LIVE_ROOT}/etc/machine-id"
-rm -f "${LIVE_ROOT}/etc/ssh/ssh_host_"* 2>/dev/null || true
-# live-specific files
-cp -a "${SANUS_ROOT}/livecd/." "${LIVE_ROOT}/" 2>/dev/null || true
-chmod +x "${LIVE_ROOT}/usr/local/bin/sanus-live-session" 2>/dev/null || true
+if [[ -n "${SANUS_REUSE_SQUASHFS:-}" && -f "${SANUS_REUSE_SQUASHFS}" ]]; then
+	info "reusing existing squashfs: ${SANUS_REUSE_SQUASHFS}"
+	cp -f "${SANUS_REUSE_SQUASHFS}" "${ISO_STAGING}/live/sanus.squashfs"
+else
+	# The live overlay: strip anything the live session must generate itself.
+	LIVE_ROOT="${BUILD_DIR}/live-root"
+	rm -rf "${LIVE_ROOT}"
+	cp -a "${ROOTFS_DIR}" "${LIVE_ROOT}"
+	rm -rf "${LIVE_ROOT}/etc/machine-id" "${LIVE_ROOT}/var/lib/systemd" 2>/dev/null || true
+	: > "${LIVE_ROOT}/etc/machine-id"
+	rm -f "${LIVE_ROOT}/etc/ssh/ssh_host_"* 2>/dev/null || true
+	# live-specific files
+	cp -a "${SANUS_ROOT}/livecd/." "${LIVE_ROOT}/" 2>/dev/null || true
+	chmod +x "${LIVE_ROOT}/usr/local/bin/sanus-live-session" 2>/dev/null || true
 
-# --- live-only autologin -----------------------------------------------------
-# tty1 logs in as root and runs the live session. Two mechanisms, because a
-# stage3 may use either: OpenRC's agetty services (livecd/etc/conf.d) and
-# sysvinit's /etc/inittab. The inittab is patched here, with a backup the
-# installer restores so the target system boots to a normal login.
-if [[ -f "${LIVE_ROOT}/etc/inittab" ]]; then
-	cp -a "${LIVE_ROOT}/etc/inittab" "${LIVE_ROOT}/etc/inittab.sanus-orig"
-	sed -i -E '/tty1/ s|(/sbin/agetty)([[:space:]])|\1 --autologin root\2|' \
-		"${LIVE_ROOT}/etc/inittab"
-elif [[ -f "${LIVE_ROOT}/etc/init.d/agetty.tty1" ]]; then
-	# OpenRC-only stage3: enable the agetty service in the default runlevel.
-	mkdir -p "${LIVE_ROOT}/etc/runlevels/default"
-	ln -sfn /etc/init.d/agetty.tty1 "${LIVE_ROOT}/etc/runlevels/default/agetty.tty1"
+	# --- live-only autologin -----------------------------------------------------
+	# tty1 logs in as root and runs the live session. Two mechanisms, because a
+	# stage3 may use either: OpenRC's agetty services (livecd/etc/conf.d) and
+	# sysvinit's /etc/inittab. The inittab is patched here, with a backup the
+	# installer restores so the target system boots to a normal login.
+	if [[ -f "${LIVE_ROOT}/etc/inittab" ]]; then
+		cp -a "${LIVE_ROOT}/etc/inittab" "${LIVE_ROOT}/etc/inittab.sanus-orig"
+		sed -i -E '/tty1/ s|(/sbin/agetty)([[:space:]])|\1 --autologin root\2|' \
+			"${LIVE_ROOT}/etc/inittab"
+	elif [[ -f "${LIVE_ROOT}/etc/init.d/agetty.tty1" ]]; then
+		# OpenRC-only stage3: enable the agetty service in the default runlevel.
+		mkdir -p "${LIVE_ROOT}/etc/runlevels/default"
+		ln -sfn /etc/init.d/agetty.tty1 "${LIVE_ROOT}/etc/runlevels/default/agetty.tty1"
+	fi
+
+	mksquashfs_root "${LIVE_ROOT}" "${ISO_STAGING}/live/sanus.squashfs" sanus
 fi
-
-mksquashfs_root "${LIVE_ROOT}" "${ISO_STAGING}/live/sanus.squashfs" sanus
 
 # ------------------------------------------------------------- branding ------
 {
@@ -120,11 +125,6 @@ grub-mkrescue \
 	--publisher="WebOS Project" \
 	--preparer="WebOS build system" \
 	--appid="WebOS Live/Install" \
-	-- \
-	-iso-level 3 \
-	-full-iso9660-filenames \
-	-rock \
-	-joliet \
 	"${ISO_STAGING}" \
 	|| die "grub-mkrescue failed"
 
