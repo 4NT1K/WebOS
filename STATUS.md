@@ -1,52 +1,52 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:21:17 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:26:18 UTC
 
-- Local time: 2026-11-12 18:21:17 GMT
+- Local time: 2026-11-12 18:26:18 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
->>> Jobs: 168 of 180 complete                                           Load avg: 21.0, 19.4, 17.4
->>> Installing (169 of 180) kde-plasma/kwin-6.8.3::gentoo
->>> Jobs: 168 of 180 complete, 1 merge wait                             Load avg: 21.0, 19.4, 17.4
->>> Completed (169 of 180) kde-plasma/kwin-6.8.3::gentoo
->>> Jobs: 168 of 180 complete                                           Load avg: 18.2, 18.9, 17.2
->>> Jobs: 169 of 180 complete                                           Load avg: 18.2, 18.9, 17.2
->>> Jobs: 169 of 180 complete, 1 running                                Load avg: 18.2, 18.9, 17.2
->>> Emerging (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
->>> Jobs: 169 of 180 complete, 1 running                                Load avg: 18.2, 18.9, 17.2
->>> Jobs: 169 of 180 complete                                           Load avg: 20.1, 20.2, 18.7
->>> Installing (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
->>> Jobs: 169 of 180 complete, 1 merge wait                             Load avg: 20.1, 20.2, 18.7
->>> Completed (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
->>> Jobs: 169 of 180 complete                                           Load avg: 17.3, 19.6, 18.5
->>> Jobs: 170 of 180 complete                                           Load avg: 17.3, 19.6, 18.5
->>> Jobs: 170 of 180 complete, 1 running                                Load avg: 17.3, 19.6, 18.5
->>> Emerging (171 of 180) kde-plasma/plasma-desktop-6.8.3::gentoo
->>> Jobs: 170 of 180 complete, 1 running                                Load avg: 17.3, 19.6, 18.5
->>> Jobs: 170 of 180 complete                                           Load avg: 20.7, 20.6, 19.2
->>> Installing (171 of 180) kde-plasma/plasma-desktop-6.8.3::gentoo
->>> Jobs: 170 of 180 complete, 1 merge wait                             Load avg: 20.7, 20.6, 19.2
->>> Completed (171 of 180) kde-plasma/plasma-desktop-6.8.3::gentoo
->>> Jobs: 170 of 180 complete                                           Load avg: 19.2, 20.3, 19.1
->>> Jobs: 171 of 180 complete                                           Load avg: 19.2, 20.3, 19.1
->>> Jobs: 171 of 180 complete, 1 running                                Load avg: 19.2, 20.3, 19.1
->>> Emerging (172 of 180) kde-plasma/powerdevil-6.8.3::gentoo
->>> Jobs: 171 of 180 complete, 1 running                                Load avg: 19.2, 20.3, 19.1
->>> Jobs: 171 of 180 complete                                           Load avg: 18.3, 19.8, 19.0
->>> Installing (172 of 180) kde-plasma/powerdevil-6.8.3::gentoo
->>> Jobs: 171 of 180 complete, 1 merge wait                             Load avg: 18.3, 19.8, 19.0
->>> Completed (172 of 180) kde-plasma/powerdevil-6.8.3::gentoo
->>> Jobs: 171 of 180 complete                                           Load avg: 18.3, 19.8, 19.0
->>> Jobs: 172 of 180 complete                                           Load avg: 18.3, 19.8, 19.0
->>> Jobs: 172 of 180 complete, 1 running                                Load avg: 18.3, 19.8, 19.0
->>> Emerging (173 of 180) kde-plasma/plasma-browser-integration-6.8.3::gentoo
->>> Jobs: 172 of 180 complete, 1 running                                Load avg: 18.3, 19.8, 19.0
->>> Jobs: 172 of 180 complete                                           Load avg: 16.9, 19.4, 18.9
->>> Installing (173 of 180) kde-plasma/plasma-browser-integration-6.8.3::gentoo
->>> Jobs: 172 of 180 complete, 1 merge wait                             Load avg: 16.9, 19.4, 18.9
+>>> Installing (177 of 180) x11-themes/murrine-themes-0.98.11-r1::gentoo
+>>> Jobs: 176 of 180 complete, 1 merge wait                             Load avg: 9.6, 16.6, 18.0
+>>> Completed (177 of 180) x11-themes/murrine-themes-0.98.11-r1::gentoo
+>>> Jobs: 176 of 180 complete                                           Load avg: 8.9, 16.3, 17.9
+>>> Jobs: 177 of 180 complete                                           Load avg: 8.9, 16.3, 17.9
+>>> Jobs: 177 of 180 complete, 1 running                                Load avg: 8.9, 16.3, 17.9
+>>> Emerging (178 of 180) x11-themes/arc-theme-20221218-r1::gentoo
+>>> Jobs: 177 of 180 complete, 1 running                                Load avg: 8.9, 16.3, 17.9
+>>> Jobs: 177 of 180 complete                                           Load avg: 8.3, 16.1, 17.8
+>>> Installing (178 of 180) x11-themes/arc-theme-20221218-r1::gentoo
+>>> Jobs: 177 of 180 complete, 1 merge wait                             Load avg: 8.3, 16.1, 17.8
+>>> Completed (178 of 180) x11-themes/arc-theme-20221218-r1::gentoo
+>>> Jobs: 177 of 180 complete                                           Load avg: 8.3, 16.1, 17.8
+>>> Jobs: 178 of 180 complete                                           Load avg: 8.3, 16.1, 17.8
+>>> Jobs: 178 of 180 complete, 1 running                                Load avg: 8.3, 16.1, 17.8
+>>> Emerging (179 of 180) virtual/jack-2::gentoo
+>>> Jobs: 178 of 180 complete, 1 running                                Load avg: 8.3, 16.1, 17.8
+>>> Jobs: 178 of 180 complete                                           Load avg: 8.3, 16.1, 17.8
+>>> Installing (179 of 180) virtual/jack-2::gentoo
+>>> Jobs: 178 of 180 complete, 1 merge wait                             Load avg: 8.3, 16.1, 17.8
+>>> Completed (179 of 180) virtual/jack-2::gentoo
+>>> Jobs: 178 of 180 complete                                           Load avg: 7.8, 15.9, 17.7
+>>> Jobs: 179 of 180 complete                                           Load avg: 7.8, 15.9, 17.7
+>>> Jobs: 179 of 180 complete, 1 running                                Load avg: 7.8, 15.9, 17.7
+>>> Emerging (180 of 180) media-sound/jack-example-tools-4::gentoo
+>>> Jobs: 179 of 180 complete, 1 running                                Load avg: 7.8, 15.9, 17.7
+>>> Jobs: 179 of 180 complete                                           Load avg: 7.8, 15.9, 17.7
+>>> Installing (180 of 180) media-sound/jack-example-tools-4::gentoo
+>>> Jobs: 179 of 180 complete, 1 merge wait                             Load avg: 7.8, 15.9, 17.7
+>>> Completed (180 of 180) media-sound/jack-example-tools-4::gentoo
+>>> Jobs: 179 of 180 complete                                           Load avg: 7.5, 15.7, 17.6
+>>> Jobs: 180 of 180 complete                                           Load avg: 7.5, 15.7, 17.6
+ * Regenerating GNU info directory index...
+ * Processed 134 info files.
+ * IMPORTANT: config file '/etc/gtk-3.0/settings.ini' needs updating.
+ * See the CONFIGURATION FILES and CONFIGURATION FILES UPDATE TOOLS
+ * sections of the emerge man page to learn how to update config files.
+ * IMPORTANT: 4 news items need reading for repository 'gentoo'.
+ * Use eselect news read to view new items.
+rc=0
 ```
-- Result: rc=1
+- Result: rc=0
 
 ## rootfs-build
 ```
