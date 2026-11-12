@@ -15,7 +15,9 @@ IUSE=""
 # nothing to fetch from a mirror.
 RESTRICT="mirror"
 
-BDEPEND="virtual/rust"
+# Gentoo no longer carries virtual/rust; depend on either implementation.
+# Prefer rust-bin so a normal install does not build the compiler from source.
+BDEPEND="|| ( dev-lang/rust-bin dev-lang/rust )"
 
 # The tarball contains Cargo.toml, Cargo.lock, src/, README.md, and the
 # vendored crate sources under vendor/ plus .cargo/config.toml. That is what

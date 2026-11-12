@@ -293,3 +293,21 @@ Other fixes from the same pass:
   `installer/vendor/glow/` (not part of the Rust build).
 
 Retry order remains: `./build.sh kernel`, then `rootfs`, then `iso`.
+
+### Phase 7 fix — installer BDEPEND
+
+`emerge app-admin/sanus-installer` failed with
+`there are no ebuilds to satisfy "virtual/rust"`.  The current Gentoo tree no
+longer carries `virtual/rust` (confirmed: no such package in the chroot tree
+and no ebuild in `::gentoo` references it).
+
+Changed `overlay/app-admin/sanus-installer/sanus-installer-1.0.0.ebuild`:
+
+```ebuild
+BDEPEND="|| ( dev-lang/rust-bin dev-lang/rust )"
+```
+
+`rust-bin` is preferred so a normal install does not compile the Rust compiler
+from source; `dev-lang/rust` remains the fallback.  The chroot already has
+`dev-lang/rust-bin-1.99.0` with `/usr/bin/cargo`, satisfying the dependency.
+Manifest regenerated.
