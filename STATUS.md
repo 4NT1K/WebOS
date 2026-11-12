@@ -1,50 +1,50 @@
-# Build status — 2026-11-12 16:35:16 UTC
+# Build status (auto-updated ~every 3 min) — 2026-11-12 16:42:29 UTC
 
-- Local time: 2026-11-12 16:35:16 GMT
+- Local time: 2026-11-12 16:42:29 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 17 of 180 complete                                            Load avg: 9.0, 11.0, 7.6
->>> Jobs: 17 of 180 complete, 1 running                                 Load avg: 9.0, 11.0, 7.6
->>> Emerging (18 of 180) kde-plasma/layer-shell-qt-6.8.3::gentoo
->>> Jobs: 17 of 180 complete, 1 running                                 Load avg: 9.0, 11.0, 7.6
->>> Jobs: 17 of 180 complete                                            Load avg: 7.9, 10.7, 7.5
->>> Installing (18 of 180) kde-plasma/layer-shell-qt-6.8.3::gentoo
->>> Jobs: 17 of 180 complete, 1 merge wait                              Load avg: 7.9, 10.7, 7.5
->>> Completed (18 of 180) kde-plasma/layer-shell-qt-6.8.3::gentoo
->>> Jobs: 17 of 180 complete                                            Load avg: 7.9, 10.7, 7.5
->>> Jobs: 18 of 180 complete                                            Load avg: 7.9, 10.7, 7.5
->>> Jobs: 18 of 180 complete, 1 running                                 Load avg: 7.9, 10.7, 7.5
->>> Emerging (19 of 180) kde-frameworks/kholidays-6.31.0::gentoo
->>> Jobs: 18 of 180 complete, 1 running                                 Load avg: 7.9, 10.7, 7.5
->>> Jobs: 18 of 180 complete, 2 running                                 Load avg: 7.4, 10.5, 7.5
->>> Emerging (20 of 180) kde-frameworks/networkmanager-qt-6.31.0::gentoo
->>> Jobs: 18 of 180 complete, 2 running                                 Load avg: 7.4, 10.5, 7.5
->>> Jobs: 18 of 180 complete, 1 running                                 Load avg: 10.1, 11.0, 7.7
->>> Jobs: 18 of 180 complete, 1 merge wait                              Load avg: 17.0, 13.6, 9.1
->>> Installing (19 of 180) kde-frameworks/kholidays-6.31.0::gentoo
->>> Jobs: 18 of 180 complete, 2 merge wait                              Load avg: 17.0, 13.6, 9.1
->>> Installing (20 of 180) kde-frameworks/networkmanager-qt-6.31.0::gentoo
->>> Jobs: 18 of 180 complete, 2 merge wait                              Load avg: 17.0, 13.6, 9.1
->>> Completed (19 of 180) kde-frameworks/kholidays-6.31.0::gentoo
->>> Jobs: 18 of 180 complete                                            Load avg: 17.0, 13.6, 9.1
->>> Jobs: 19 of 180 complete                                            Load avg: 17.0, 13.6, 9.1
->>> Completed (20 of 180) kde-frameworks/networkmanager-qt-6.31.0::gentoo
->>> Jobs: 19 of 180 complete                                            Load avg: 17.0, 13.6, 9.1
->>> Jobs: 20 of 180 complete                                            Load avg: 17.0, 13.6, 9.1
->>> Jobs: 20 of 180 complete, 1 running                                 Load avg: 17.0, 13.6, 9.1
->>> Emerging (21 of 180) dev-qt/qtpositioning-6.11.3::gentoo
->>> Jobs: 20 of 180 complete, 1 running                                 Load avg: 17.0, 13.6, 9.1
->>> Jobs: 20 of 180 complete                                            Load avg: 10.3, 12.3, 8.9
->>> Installing (21 of 180) dev-qt/qtpositioning-6.11.3::gentoo
->>> Jobs: 20 of 180 complete, 1 merge wait                              Load avg: 10.3, 12.3, 8.9
->>> Completed (21 of 180) dev-qt/qtpositioning-6.11.3::gentoo
->>> Jobs: 20 of 180 complete                                            Load avg: 10.3, 12.3, 8.9
->>> Jobs: 21 of 180 complete                                            Load avg: 10.3, 12.3, 8.9
->>> Jobs: 21 of 180 complete, 1 running                                 Load avg: 10.3, 12.3, 8.9
->>> Emerging (22 of 180) kde-frameworks/kquickcharts-6.31.0::gentoo
->>> Jobs: 21 of 180 complete, 1 running                                 Load avg: 10.3, 12.3, 8.9
+>>> Jobs: 36 of 180 complete                                            Load avg: 10.8, 11.3, 9.5
+>>> Jobs: 36 of 180 complete, 1 running                                 Load avg: 10.8, 11.3, 9.5
+>>> Emerging (37 of 180) kde-plasma/kde-cli-tools-common-6.8.3::gentoo
+>>> Jobs: 36 of 180 complete, 1 running                                 Load avg: 10.8, 11.3, 9.5
+>>> Jobs: 36 of 180 complete                                            Load avg: 10.0, 11.1, 9.4
+>>> Installing (37 of 180) kde-plasma/kde-cli-tools-common-6.8.3::gentoo
+>>> Jobs: 36 of 180 complete, 1 merge wait                              Load avg: 10.0, 11.1, 9.4
+>>> Completed (37 of 180) kde-plasma/kde-cli-tools-common-6.8.3::gentoo
+>>> Jobs: 36 of 180 complete                                            Load avg: 10.0, 11.1, 9.4
+>>> Jobs: 37 of 180 complete                                            Load avg: 10.0, 11.1, 9.4
+>>> Jobs: 37 of 180 complete, 1 running                                 Load avg: 10.0, 11.1, 9.4
+>>> Emerging (38 of 180) kde-plasma/kdecoration-6.8.3::gentoo
+>>> Jobs: 37 of 180 complete, 1 running                                 Load avg: 10.0, 11.1, 9.4
+>>> Jobs: 37 of 180 complete                                            Load avg: 8.9, 10.9, 9.4
+>>> Installing (38 of 180) kde-plasma/kdecoration-6.8.3::gentoo
+>>> Jobs: 37 of 180 complete, 1 merge wait                              Load avg: 8.9, 10.9, 9.4
+>>> Completed (38 of 180) kde-plasma/kdecoration-6.8.3::gentoo
+>>> Jobs: 37 of 180 complete                                            Load avg: 8.9, 10.9, 9.4
+>>> Jobs: 38 of 180 complete                                            Load avg: 8.9, 10.9, 9.4
+>>> Jobs: 38 of 180 complete, 1 running                                 Load avg: 8.9, 10.9, 9.4
+>>> Emerging (39 of 180) kde-plasma/knighttime-6.8.3::gentoo
+>>> Jobs: 38 of 180 complete, 1 running                                 Load avg: 8.9, 10.9, 9.4
+>>> Jobs: 38 of 180 complete                                            Load avg: 9.0, 10.8, 9.4
+>>> Installing (39 of 180) kde-plasma/knighttime-6.8.3::gentoo
+>>> Jobs: 38 of 180 complete, 1 merge wait                              Load avg: 9.0, 10.8, 9.4
+>>> Completed (39 of 180) kde-plasma/knighttime-6.8.3::gentoo
+>>> Jobs: 38 of 180 complete                                            Load avg: 8.5, 10.7, 9.3
+>>> Jobs: 39 of 180 complete                                            Load avg: 8.5, 10.7, 9.3
+>>> Jobs: 39 of 180 complete, 1 running                                 Load avg: 8.5, 10.7, 9.3
+>>> Emerging (40 of 180) kde-frameworks/kpty-6.31.0::gentoo
+>>> Jobs: 39 of 180 complete, 1 running                                 Load avg: 8.5, 10.7, 9.3
+>>> Jobs: 39 of 180 complete                                            Load avg: 8.2, 10.6, 9.3
+>>> Installing (40 of 180) kde-frameworks/kpty-6.31.0::gentoo
+>>> Jobs: 39 of 180 complete, 1 merge wait                              Load avg: 8.2, 10.6, 9.3
+>>> Completed (40 of 180) kde-frameworks/kpty-6.31.0::gentoo
+>>> Jobs: 39 of 180 complete                                            Load avg: 8.2, 10.6, 9.3
+>>> Jobs: 40 of 180 complete                                            Load avg: 8.2, 10.6, 9.3
+>>> Jobs: 40 of 180 complete, 1 running                                 Load avg: 8.2, 10.6, 9.3
+>>> Emerging (41 of 180) dev-qt/qtquick3d-6.11.3::gentoo
+>>> Jobs: 40 of 180 complete, 1 running                                 Load avg: 8.2, 10.6, 9.3
 ```
 - Result: rc=1
 
