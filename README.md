@@ -1,4 +1,4 @@
-# SanusOS
+# WebOS
 
 A lightweight, source-built gaming operating system based on **Gentoo**, with its own
 kernel, its own installer, and a clean black / transparent desktop.
@@ -24,7 +24,7 @@ kernel, its own installer, and a clean black / transparent desktop.
 | **Bootloader** | GRUB2 (BIOS + UEFI), systemd-boot optional |
 | **Target** | x86_64, ~2 GB RAM idle-friendly, tuned for Steam/Proton/gamescope |
 
-SanusOS is not a fork of Arch or of CachyOS. It targets the same *experience* CachyOS
+WebOS is not a fork of Arch or of CachyOS. It targets the same *experience* CachyOS
 does — a fast, gaming-first desktop with performance patches and sane defaults — but it is
 built the Gentoo way: your binaries come from source, the toolchain is yours, and the
 kernel is tuned for your machine.
@@ -67,12 +67,12 @@ sanusos/
 │   ├── package.license/
 │   ├── package.mask/
 │   ├── repos.conf/           # gentoo, sanus, third-party overlays, arch
-│   └── world                 # the SanusOS package world file
+│   └── world                 # the WebOS package world file
 ├── kernel/
 │   ├── sanus-fragment.config # merge_config fragment applied over defconfig
 │   ├── patchset.conf         # upstream patch sources (BORE, fsync, BBRv3, ...)
 │   └── fetch-patches.sh      # resolves + verifies the patch series
-├── overlay/                  # the SanusOS Gentoo overlay ("sanus")
+├── overlay/                  # the WebOS Gentoo overlay ("sanus")
 │   ├── metadata/layout.conf
 │   ├── profiles/sanus/
 │   ├── sys-kernel/sanus-kernel/
@@ -100,7 +100,7 @@ sanusos/
 
 ## Building
 
-SanusOS builds **on Gentoo** (or any host with `bubblewrap`/`chroot` + the Gentoo
+WebOS builds **on Gentoo** (or any host with `bubblewrap`/`chroot` + the Gentoo
 tools). It needs root, ~40 GB free disk, and a few hours for a cold `@world`.
 
 ```bash
@@ -122,7 +122,7 @@ re-run `./build.sh fetch`.
 
 ### Ebuild repositories
 
-SanusOS builds against five repositories, wired up in `config/repos.conf/`:
+WebOS builds against five repositories, wired up in `config/repos.conf/`:
 
 | Repo | Priority | Source | Provides |
 |---|---|---|---|

@@ -1,8 +1,8 @@
-# SanusOS live medium: turn the root TTY login into the live session.
+# WebOS live medium: turn the root TTY login into the live session.
 #
 # Present only on the live squashfs. The installer removes this file, the
 # /etc/sanus-live marker, the getty override and the inittab backup from the
-# target system, so an installed SanusOS boots to a normal login.
+# target system, so an installed WebOS boots to a normal login.
 #
 # Only fires for a root login shell on tty1, and only once (SANUS_LIVE_SESSION
 # guards against the session itself sourcing this file again).

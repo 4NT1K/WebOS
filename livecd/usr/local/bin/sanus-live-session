@@ -1,5 +1,5 @@
 #!/bin/bash
-# SanusOS live session — what you see once the live medium has booted.
+# WebOS live session — what you see once the live medium has booted.
 #
 # Started automatically on tty1 (see /etc/profile.d/99-sanus-live.sh). It is a
 # thin menu in front of the installer: there is nothing else to do on a live
@@ -19,13 +19,27 @@ cd /root 2>/dev/null || cd /
 banner() {
 	clear 2>/dev/null || true
 	cat <<'EOF'
-   ┌────────────────────────────────────────────────────┐
-   │  SanusOS 1.0 (Ashen) — live medium                 │
-   │  Gentoo, tuned for games. No data is touched until │
-   │  you confirm the summary in the installer.         │
-   └────────────────────────────────────────────────────┘
 
-   1) Install SanusOS to a disk
+⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤
+⣿⡿⢯⡉⠱⢾⣇⣶⠋⣀⠾⢁⡰⠞⠁⢰⠋⠉⠀⣀⠾⠉⢀⡰⠞⠁
+⣿⢧⡈⢱⣶⡎⠉⣿⠶⠿⢶⣸⡇⠀⢀⡼⠄⠀⣀⠿⠀⢰⡎⠁⠀⠀
+⣿⠚⢳⡎⠉⢱⣶⠉⠀⠀⣴⠛⠓⢲⣾⡇⡄⠀⣿⠀⠀⢸⡇⠀⠀⠀
+⣿⣀⣸⣇⡰⠎⠉⠶⣀⣶⠉⢀⡰⠎⠉⠉⠉⣶⣿⣀⣀⣸⡇⠀⠀⠀
+⣿⠉⢉⣹⡇⠀⣀⠶⠿⠿⣀⢸⡇⠀⠀⢀⠶⠉⠉⠉⣹⠿⠷⠆⠀⠀
+⣿⠒⠚⠙⢳⣶⡃⠀⠀⠀⣼⣾⡇⠀⠀⢸⠀⠀⠀⣤⠓⠀⠀⠀⠀⠀
+⣿⢠⣤⣤⣤⣼⡅⠀⣤⠛⠀⠀⠘⢣⡄⢸⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀
+⣿⠓⠀⠀⠀⠘⢻⣿⠀⠀⠀⣰⠤⠤⠼⠿⣀⠀⠀⣿⠀⠀⠀⠀⠀⠀
+⣿⡰⠶⠶⠶⠶⣏⣿⠀⣀⠶⠁⠀⠀⠀⠀⠉⠶⣀⣿⠀⠀⠀⠀⠀⠀
+⣿⠉⠀⠀⠀⠀⠈⠿⣶⠉⠀⠀⠀⠀⢀⣠⣤⣀⣍⣿⣀⠀⠀⠀⠀⠀
+⣿⠀⢀⣀⣀⣀⡀⠀⠿⣀⠀⢀⡸⠿⠟⠀⠀⠀⠀⠀⠸⠄⠀⠀⠀⠀
+⣿⡰⠾⠉⠉⠉⠳⠶⣀⣿⣀⡎⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣿⠉⠀⠀⠀⠀⠀⠀⠉⠉⣿⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+
+   WebOS 1.0 (Ashen) — live medium
+   No data is touched until you confirm the summary in the installer.
+
+   1) Install WebOS to a disk
    2) Open a root shell
    3) Show what the installer can see  (sanus-installer --check)
 

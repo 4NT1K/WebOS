@@ -95,7 +95,8 @@ cp -f "${SANUS_ROOT}/branding/logo.svg" "${ISO_STAGING}/sanus/logo.svg" 2>/dev/n
 
 # -------------------------------------------------------------- grub ---------
 step "iso: writing the GRUB configuration"
-sed -e "s|@VOLID@|SANUS_${SANUS_VERSION}|g" \
+VOLID="WEBOS_${SANUS_VERSION}"
+sed -e "s|@VOLID@|${VOLID}|g" \
     -e "s|@VERSION_FULL@|${SANUS_VERSION_FULL}|g" \
     "${SANUS_ROOT}/livecd/boot/grub/grub.cfg" \
     > "${ISO_STAGING}/boot/grub/grub.cfg"
@@ -107,12 +108,12 @@ sed -e "s|@VOLID@|SANUS_${SANUS_VERSION}|g" \
 step "iso: building the hybrid image (grub-mkrescue)"
 grub-mkrescue \
 	--output="${ISO_OUT}" \
-	--volid="SANUS_${SANUS_VERSION}" \
-	--product-name="SanusOS" \
+	--volid="${VOLID}" \
+	--product-name="WebOS" \
 	--product-version="${SANUS_VERSION_FULL}" \
-	--publisher="SanusOS Project" \
-	--preparer="SanusOS build system" \
-	--appid="SanusOS Live/Install" \
+	--publisher="WebOS Project" \
+	--preparer="WebOS build system" \
+	--appid="WebOS Live/Install" \
 	-- \
 	-iso-level 3 \
 	-full-iso9660-filenames \

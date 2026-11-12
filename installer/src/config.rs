@@ -107,7 +107,7 @@ pub enum Profile {
     /// Hyprland, greetd, the full rice, the gaming stack.
     Full,
     /// KDE Plasma instead of Hyprland: same greetd login, same gaming stack,
-    /// but the desktop session is Plasma rather than the SanusOS rice.
+    /// but the desktop session is Plasma rather than the WebOS rice.
     Plasma,
     /// No graphical session: a TTY login and the base system.
     Minimal,

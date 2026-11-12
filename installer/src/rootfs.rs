@@ -1,11 +1,11 @@
 //! Where does the system we are about to install actually live?
 //!
-//! On a SanusOS live medium the answer is a squashfs mounted by dracut's
+//! On a WebOS live medium the answer is a squashfs mounted by dracut's
 //! `dmsquash-live` module. In CI, and for `--check`, it can also be a
 //! directory or a tarball that someone pointed us at with SANUS_ROOTFS.
 //!
 //! The installer never assumes: it looks in a fixed list of places, verifies
-//! that what it found is really a SanusOS root, and says so out loud.
+//! that what it found is really a WebOS root, and says so out loud.
 
 use std::path::{Path, PathBuf};
 
@@ -86,11 +86,11 @@ pub fn locate() -> Result<Source> {
         }
     }
 
-    bail!("could not find a SanusOS root filesystem to install from")
+    bail!("could not find a WebOS root filesystem to install from")
 }
 
-/// Is this directory plausibly a SanusOS root?
-pub fn is_sanus_root(path: &Path) -> bool {
+/// Is this directory plausibly a WebOS/SanusOS root?
+pub fn is_sanus_root(path: &Path) -> bool { // keep name for compatibility
     if !path.is_dir() {
         return false;
     }
@@ -98,14 +98,14 @@ pub fn is_sanus_root(path: &Path) -> bool {
     if !path.join("etc").is_dir() || !path.join("usr").is_dir() {
         return false;
     }
-    // And, on SanusOS, this one.
-    if path.join("etc/sanus-release").is_file() {
+    // And, on WebOS/SanusOS, this one.
+    if path.join("etc/webos-release").is_file() || path.join("etc/sanus-release").is_file() {
         return true;
     }
     // Fall back to any os-release that mentions us.
     let os_release = path.join("etc/os-release");
     if let Ok(text) = std::fs::read_to_string(&os_release) {
-        if text.contains("ID=sanus") || text.contains("SanusOS") {
+        if text.contains("ID=webos") || text.contains("ID=sanus") || text.contains("WebOS") || text.contains("SanusOS") {
             return true;
         }
     }

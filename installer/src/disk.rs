@@ -154,7 +154,7 @@ pub fn verify_target(disk: &Disk) -> Result<()> {
     }
     if disk.size_bytes < 8 * 1024 * 1024 * 1024 {
         bail!(
-            "{} is only {}; SanusOS needs at least 8 GiB",
+            "{} is only {}; WebOS needs at least 8 GiB",
             disk.path,
             disk.human_size()
         );

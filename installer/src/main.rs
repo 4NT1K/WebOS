@@ -1,7 +1,7 @@
-//! SanusOS installer.
+//! WebOS installer.
 //!
 //! A single static binary, a keyboard, and no dependencies beyond a live
-//! SanusOS medium. It partitions a disk, unwraps the live filesystem onto it,
+//! WebOS medium. It partitions a disk, unwraps the live filesystem onto it,
 //! and configures the result.
 //!
 //! Design rules:
@@ -10,7 +10,7 @@
 //!     copied to the new system as /var/log/sanus-install.log.
 //!   * The installer never guesses a disk. It must be chosen explicitly.
 //!   * `--config file.toml --yes` performs an unattended install from a
-//!     recorded configuration, which is how SanusOS CI tests installs.
+//!     recorded configuration, which is how WebOS CI tests installs.
 
 mod app;
 mod bootloader;
@@ -46,7 +46,7 @@ use config::InstallConfig;
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const USAGE: &str = "\
-SanusOS installer
+WebOS installer
 
 USAGE:
     sanus-installer [OPTIONS]

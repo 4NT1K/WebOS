@@ -6,7 +6,7 @@
 use ratatui::style::{Color, Modifier, Style};
 
 /// Deep black background. Terminals that support it will also blur behind the
-/// window, because SanusOS runs the installer inside foot/kitty. Icons and the
+/// window, because WebOS runs the installer inside foot/kitty. Icons and the
 /// cursor are white on top of that deep black.
 pub const BASE: Color = Color::Rgb(5, 5, 8);   // deep black
 pub const BASE_SOFT: Color = Color::Rgb(8, 8, 11);
