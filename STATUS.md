@@ -1,6 +1,6 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:36:21 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:41:23 UTC
 
-- Local time: 2026-11-12 18:36:21 GMT
+- Local time: 2026-11-12 18:41:23 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
@@ -81,7 +81,7 @@ rc=0
 ## iso-build
 ```
 ==> iso: building live medium
-fail missing host tool: mksquashfs
+fail missing host tool: grub-mkrescue
 rc=1
 ```
 - Result: rc=1
