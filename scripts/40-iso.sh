@@ -125,7 +125,6 @@ grub-mkrescue \
 	--preparer="WebOS build system" \
 	--appid="WebOS Live/Install" \
 	"${ISO_STAGING}" \
-	-- -V "${VOLID}" \
 	|| die "grub-mkrescue failed"
 
 # ------------------------------------------------------------ checksums ------
