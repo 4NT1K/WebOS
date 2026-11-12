@@ -1,0 +1,2 @@
+# USE flags that must stay masked on SanusOS.
+systemd

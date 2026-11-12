@@ -1,0 +1,32 @@
+[package]
+name = "sanus-installer"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.75"
+description = "SanusOS installer — a black, mouse- and keyboard-driven install wizard"
+license = "MIT"
+authors = ["The SanusOS Project <dev@sanusos.org>"]
+repository = "https://github.com/sanusos/sanusos"
+readme = "README.md"
+
+[[bin]]
+name = "sanus-installer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+crossterm = { version = "0.28", default-features = false, features = ["events"] }
+libc = "0.2"
+ratatui = { version = "0.29", default-features = false, features = ["crossterm", "underline-color"] }
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+toml = "0.8"
+egui = "0.31"
+eframe = "0.31"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

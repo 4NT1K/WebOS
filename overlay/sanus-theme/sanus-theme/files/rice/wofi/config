@@ -1,0 +1,23 @@
+# SanusOS wofi — a black glass launcher.
+# wofi reads this from ~/.config/wofi/config
+
+show=drun
+prompt=
+width=560
+height=420
+location=center
+anchor=center
+halign=fill
+line_wrap=ellipsize
+insensitive=true
+allow_images=true
+image_size=28
+gtk_dark=true
+term=kitty
+run_always_allow_images=true
+matching=fuzzy
+sort_order=default
+hide_scroll=true
+no_actions=true
+orientation=vertical
+dynamic_lines=true

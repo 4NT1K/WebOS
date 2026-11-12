@@ -1,0 +1,51 @@
+/* SanusOS GTK4 overrides — Ashen palette on top of Adwaita-dark.
+ * GTK4 renamed most of the CSS; keep this to colours and radii only. */
+
+@define-color accent_color        #7dd3fc;
+@define-color accent_bg_color     #7dd3fc;
+@define-color accent_fg_color     #050508;
+@define-color window_bg_color     #050508;
+@define-color window_fg_color     #f0f0f5;
+@define-color view_bg_color       #0a0a0c;
+@define-color view_fg_color       #f0f0f5;
+@define-color headerbar_bg_color  #08080a;
+@define-color headerbar_fg_color  #f0f0f5;
+@define-color sidebar_bg_color    #0a0a0c;
+@define-color card_bg_color       #101014;
+@define-color popover_bg_color    #0c0c10;
+@define-color dialog_bg_color     #0a0a0c;
+@define-color borders             rgba(255, 255, 255, 0.08);
+@define-color warning_color       #fbbf24;
+@define-color error_color         #f87171;
+@define-color success_color       #86efac;
+
+window, .background { background-color: @window_bg_color; color: @window_fg_color; }
+
+headerbar {
+    background-color: @headerbar_bg_color;
+    box-shadow: none;
+    border-bottom: 1px solid @borders;
+}
+
+button {
+    border-radius: 9px;
+    box-shadow: none;
+    background-image: none;
+    border: 1px solid @borders;
+    transition: all 140ms ease;
+}
+button:hover { background-color: rgba(255, 255, 255, 0.08); }
+button:checked, button:active {
+    background-color: rgba(125, 211, 252, 0.18);
+    border-color: rgba(125, 211, 252, 0.45);
+}
+button.suggested-action { background-color: @accent_bg_color; color: @accent_fg_color; }
+
+entry, textview { border-radius: 9px; border: 1px solid @borders; caret-color: @accent_color; }
+entry:focus, textview:focus { border-color: rgba(125, 211, 252, 0.5); }
+
+selection { background-color: rgba(125, 211, 252, 0.25); color: #eaf7ff; }
+popover, popover > contents { border-radius: 12px; border: 1px solid @borders; }
+tooltip { border-radius: 8px; }
+switch:checked > slider { background-color: @accent_fg_color; }
+switch:checked { background-color: @accent_bg_color; }

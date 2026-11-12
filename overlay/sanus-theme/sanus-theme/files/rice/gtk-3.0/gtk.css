@@ -1,0 +1,102 @@
+/* SanusOS GTK3 overrides — Ashen palette on top of Adwaita-dark.
+ * Loaded from ~/.config/gtk-3.0/gtk.css.
+ * Keep it small: Adwaita-dark does the work, we only re-tint it. */
+
+@define-color accent_color        #7dd3fc;
+@define-color accent_bg_color     #7dd3fc;
+@define-color accent_fg_color     #050508;
+@define-color window_bg_color     #050508;
+@define-color window_fg_color     #f0f0f5;
+@define-color view_bg_color       #0a0a0c;
+@define-color view_fg_color       #f0f0f5;
+@define-color headerbar_bg_color  #08080a;
+@define-color headerbar_fg_color  #f0f0f5;
+@define-color sidebar_bg_color    #0a0a0c;
+@define-color card_bg_color       #101014;
+@define-color popover_bg_color    #0c0c10;
+@define-color dialog_bg_color     #0a0a0c;
+@define-color borders             rgba(255, 255, 255, 0.08);
+@define-color warning_color       #fbbf24;
+@define-color error_color         #f87171;
+@define-color success_color       #86efac;
+
+window, .background {
+    background-color: @window_bg_color;
+    color: @window_fg_color;
+}
+
+headerbar {
+    background-color: @headerbar_bg_color;
+    border-bottom: 1px solid @borders;
+    box-shadow: none;
+    min-height: 38px;
+}
+
+headerbar entry, headerbar button {
+    border-radius: 8px;
+}
+
+button {
+    border-radius: 9px;
+    border: 1px solid @borders;
+    background-image: none;
+    background-color: rgba(255, 255, 255, 0.04);
+    color: @window_fg_color;
+    transition: all 140ms ease;
+}
+button:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+button:active, button:checked {
+    background-color: rgba(125, 211, 252, 0.18);
+    border-color: rgba(125, 211, 252, 0.45);
+}
+button.suggested-action {
+    background-color: @accent_bg_color;
+    color: @accent_fg_color;
+    border-color: transparent;
+}
+
+entry, spinbutton, textview {
+    background-color: rgba(255, 255, 255, 0.04);
+    border: 1px solid @borders;
+    border-radius: 9px;
+    color: @window_fg_color;
+    caret-color: @accent_color;
+}
+entry:focus, textview:focus {
+    border-color: rgba(125, 211, 252, 0.5);
+}
+
+*:selected, *:selected:focus {
+    background-color: rgba(125, 211, 252, 0.22);
+    color: #eaf7ff;
+}
+
+scrollbar slider {
+    background-color: rgba(255, 255, 255, 0.14);
+    border-radius: 6px;
+    min-width: 6px;
+    min-height: 24px;
+}
+scrollbar slider:hover { background-color: rgba(125, 211, 252, 0.5); }
+
+popover, menu, .context-menu {
+    background-color: @popover_bg_color;
+    border: 1px solid @borders;
+    border-radius: 12px;
+}
+
+tooltip {
+    background-color: rgba(8, 8, 10, 0.95);
+    border: 1px solid @borders;
+    border-radius: 8px;
+    color: @window_fg_color;
+}
+
+switch:checked { background-color: @accent_bg_color; }
+progressbar progress { background-color: @accent_color; }
+levelbar block.high { background-color: @accent_color; }
+
+/* Round the corners of everything that pretends to be a panel. */
+.card, .osd { border-radius: 12px; }

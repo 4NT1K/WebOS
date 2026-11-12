@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>dev@sanusos.org</email>
+		<name>SanusOS Kernel Team</name>
+	</maintainer>
+	<longdescription lang="en">
+		Patched Linux kernel sources for SanusOS. Installs the upstream LTS tree
+		with the SanusOS patch series applied and the SanusOS config fragment
+		alongside it, for users who want to configure and build by hand.
+	</longdescription>
+	<upstream>
+		<remote-id type="cpe">cpe:/o:linux:linux_kernel</remote-id>
+	</upstream>
+</pkgmetadata>

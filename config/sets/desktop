@@ -1,0 +1,87 @@
+# SanusOS desktop set — Hyprland/Wayland, black-transparent rice.
+# Compositor (Hyprland stack comes from ::hyproverlay)
+gui-wm/hyprland
+gui-apps/hyprpaper
+gui-apps/hypridle
+gui-apps/hyprlock
+gui-apps/hyprsunset
+gui-libs/xdg-desktop-portal-hyprland
+sys-apps/xdg-desktop-portal-gtk
+gui-libs/xdg-desktop-portal-wlr
+gui-libs/wlroots
+
+# --- KDE Plasma (the installer's Plasma profile installs this instead of the
+#     Hyprland rice; the two are alternative desktops, not companions) ---------
+kde-plasma/plasma-meta
+kde-plasma/plasma-workspace
+kde-plasma/plasma-desktop
+
+# Panels / launchers / notifications
+gui-apps/waybar
+gui-apps/wofi
+gui-apps/mako
+gui-apps/wlogout
+gui-apps/grim
+gui-apps/slurp
+gui-apps/wl-clipboard
+app-misc/cliphist
+gui-apps/swaybg
+gui-apps/kanshi
+gui-apps/wlr-randr
+app-misc/nwg-look
+
+# Terminals + shell UX
+x11-terms/kitty
+gui-apps/foot
+x11-terms/wezterm
+x11-terms/alacritty
+app-misc/zellij
+app-misc/tmux
+app-editors/neovim
+sys-process/btop
+app-misc/fastfetch
+
+# File management
+x11-misc/pcmanfm
+x11-misc/xdg-user-dirs
+gnome-base/gvfs
+app-misc/ranger
+
+# Theming
+x11-themes/adwaita-icon-theme
+x11-themes/papirus-icon-theme
+x11-themes/arc-theme
+x11-themes/kvantum
+gui-apps/qt6ct
+x11-libs/gtk+:3
+x11-libs/gtk+:4
+media-fonts/inter
+media-fonts/jetbrains-mono
+media-fonts/noto
+media-fonts/noto-emoji
+media-fonts/nerdfonts
+media-fonts/fontawesome
+
+# Multimedia
+media-video/pipewire
+media-video/wireplumber
+media-sound/pavucontrol
+media-sound/pulsemixer
+media-sound/cava
+media-video/mpv
+media-video/ffmpeg
+media-sound/playerctl
+media-gfx/imv
+media-gfx/swayimg
+
+# Network / bluetooth UI
+net-misc/networkmanager
+net-wireless/bluez
+net-wireless/blueman
+gnome-extra/nm-applet
+
+# Authentication agent — Hyprland ships none, and lxqt's is the light one.
+lxqt-base/lxqt-policykit
+
+# Browsers (lightweight default; user can add more)
+www-client/firefox

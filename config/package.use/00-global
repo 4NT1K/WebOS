@@ -1,0 +1,66 @@
+# SanusOS global per-package USE tuning.
+
+# --- init / session ---------------------------------------------------------
+sys-auth/elogind pam policykit -acl
+sys-auth/pambase elogind
+sys-apps/dbus elogind
+sys-apps/systemd-utils udev kmod
+sys-apps/openrc netifrc
+net-misc/networkmanager elogind modemmanager wext
+net-vpn/networkmanager-openvpn gtk
+
+# --- audio ------------------------------------------------------------------
+media-video/pipewire sound-server dbus extra bluetooth ffmpeg jack-client
+media-video/wireplumber elogind
+media-libs/libsndfile minimal
+media-sound/mpg123 -pulseaudio
+
+# --- graphics ---------------------------------------------------------------
+media-libs/mesa vulkan wayland X vaapi video_cards_amdgpu video_cards_radeonsi video_cards_intel
+media-libs/vulkan-loader wayland X
+media-video/ffmpeg nvenc vaapi vdpau vulkan opus x264 x265
+media-libs/libva wayland X
+media-libs/libglvnd X
+
+# --- fonts / input ----------------------------------------------------------
+media-fonts/nerdfonts jetbrainsmono
+media-libs/harfbuzz icu truetype
+
+# --- system -----------------------------------------------------------------
+sys-apps/util-linux -systemd
+sys-fs/e2fsprogs -static-libs
+sys-fs/btrfs-progs zstd
+sys-boot/grub device-mapper
+sys-kernel/dracut -systemd
+sys-apps/gptfdisk -static
+sys-fs/cryptsetup -static
+sys-process/procps elogind
+sys-fs/udisks elogind
+sys-auth/polkit elogind
+app-admin/sudo -sendmail -gcrypt
+dev-libs/glib dbus
+sys-apps/less pcre
+net-misc/curl http2 ssl
+
+# --- desktop ----------------------------------------------------------------
+gui-wm/hyprland X
+x11-terms/kitty X wayland
+x11-terms/wezterm wayland
+www-client/firefox wayland system-av1 hwaccel system-pipewire
+media-video/mpv vaapi vdpau lua vulkan wayland
+gui-apps/waybar pulseaudio network upower
+media-gfx/swayimg gif webp
+
+# --- misc -------------------------------------------------------------------
+app-arch/7zip rar
+net-misc/openssh -ldns
+
+# Resolve REQUIRED_USE conflicts
+sys-fs/cryptsetup openssl -gcrypt -nettle -kernel
+
+# Break circular dependencies
+media-libs/tiff -webp
+dev-lang/python -bluetooth
+dev-python/pillow -truetype
+# Avoid extra GUI/toolkit pulls during bootstrap cycles
+sys-apps/systemd-utils -boot -ukify

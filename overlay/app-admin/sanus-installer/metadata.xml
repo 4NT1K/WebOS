@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>dev@sanusos.org</email>
+		<name>SanusOS</name>
+	</maintainer>
+	<longdescription lang="en">
+		The SanusOS installer: a single-binary TUI that partitions a disk,
+		unpacks the live system onto it, configures it, and installs GRUB.
+		Built from source with a vendored, offline cargo build.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">sanusos/sanusos</remote-id>
+	</upstream>
+</pkgmetadata>

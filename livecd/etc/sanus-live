@@ -1,0 +1,6 @@
+# SanusOS live medium marker.
+#
+# This file exists only inside the live squashfs. The installer deletes it (and
+# the rest of the live-only autologin glue) from the target system, so an
+# installed SanusOS never autologins and never runs the live session.
+live

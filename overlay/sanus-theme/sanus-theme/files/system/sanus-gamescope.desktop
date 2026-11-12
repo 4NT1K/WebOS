@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=SanusOS Gamescope
+Comment=A console-style gamescope session with Steam, like a handheld
+Exec=/usr/bin/sanus-session --gamescope
+TryExec=/usr/bin/sanus-gaming
+Type=Application
+DesktopNames=gamescope

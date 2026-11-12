@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=SanusOS
+Comment=SanusOS desktop (Hyprland, Wayland)
+Exec=/usr/bin/sanus-session
+TryExec=/usr/bin/sanus-session
+Type=Application
+DesktopNames=Hyprland

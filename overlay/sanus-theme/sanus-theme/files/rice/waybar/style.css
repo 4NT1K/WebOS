@@ -1,0 +1,173 @@
+/* ──────────────────────────────────────────────────────────────────────────
+ *  SanusOS waybar — black glass.
+ *  The bar itself is translucent; Hyprland blurs what is behind it via the
+ *  `layerrule = blur, waybar` rule. Keep the alpha in one place: --surface.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+@define-color base      #050508;   /* deep black */
+@define-color surface   rgba(10, 10, 12, 0.55);
+@define-color surface2  rgba(20, 20, 24, 0.55);
+@define-color text      #f0f0f5;   /* white */
+@define-color text-dim  #9aa3ad;
+@define-color text-faint #5b6470;
+@define-color accent    #f0f0f5;   /* white */
+@define-color accent-lo rgba(125, 211, 252, 0.18);
+@define-color urgent    #f87171;
+@define-color border    rgba(255, 255, 255, 0.08);
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "Inter", "JetBrainsMono Nerd Font", "Font Awesome 6 Free", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @text;
+}
+
+/* The capsule: one rounded, blurred, translucent bar. */
+window#waybar > box {
+    background: @surface;
+    border: 1px solid @border;
+    border-radius: 16px;
+    padding: 0 6px;
+    margin: 0;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+tooltip {
+    background: rgba(8, 8, 10, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    border-radius: 12px;
+    padding: 6px 2px;
+}
+tooltip label {
+    color: @text;
+    padding: 4px 10px;
+}
+
+/* ── shared pill behaviour ───────────────────────────────────────────────── */
+#workspaces,
+#window,
+#clock,
+#cpu,
+#memory,
+#temperature,
+#pulseaudio,
+#network,
+#bluetooth,
+#battery,
+#tray,
+#custom-logo,
+#custom-gamemode,
+#custom-power {
+    background: transparent;
+    color: @text;
+    padding: 4px 10px;
+    margin: 5px 2px;
+    border-radius: 10px;
+    transition: background 180ms ease, color 180ms ease;
+}
+
+#custom-logo {
+    color: @accent;
+    font-size: 15px;
+    padding: 4px 12px 4px 10px;
+}
+#custom-logo:hover { background: @accent-lo; }
+
+#custom-power {
+    color: @text-dim;
+    padding-right: 12px;
+}
+#custom-power:hover { background: rgba(248, 113, 113, 0.16); color: @urgent; }
+
+/* ── workspaces ──────────────────────────────────────────────────────────── */
+#workspaces {
+    padding: 0 4px;
+    margin-left: 4px;
+}
+#workspaces button {
+    all: initial;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 12px;
+    color: @text-faint;
+    background: transparent;
+    border-radius: 8px;
+    padding: 4px 9px;
+    margin: 4px 1px;
+    min-width: 14px;
+    transition: all 160ms ease;
+}
+#workspaces button:hover {
+    color: @text;
+    background: rgba(255, 255, 255, 0.06);
+}
+#workspaces button.active {
+    color: @base;
+    background: @accent;
+    box-shadow: 0 0 12px rgba(125, 211, 252, 0.35);
+}
+#workspaces button.urgent {
+    color: @base;
+    background: @urgent;
+}
+#workspaces button.empty { color: rgba(91, 100, 112, 0.55); }
+
+/* ── window title ────────────────────────────────────────────────────────── */
+#window {
+    color: @text-dim;
+    font-weight: 400;
+    font-size: 12.5px;
+}
+window#waybar.empty #window { background: transparent; }
+
+/* ── clock ───────────────────────────────────────────────────────────────── */
+#clock {
+    color: @text;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+}
+
+/* ── system modules ──────────────────────────────────────────────────────── */
+#cpu       { color: @text-dim; }
+#memory    { color: @text-dim; }
+#temperature { color: @text-dim; }
+#temperature.critical { color: @urgent; }
+#pulseaudio { color: @text-dim; }
+#pulseaudio.muted { color: @text-faint; }
+#network   { color: @text-dim; }
+#network.disconnected { color: @urgent; }
+#bluetooth { color: @text-dim; }
+#bluetooth.connected { color: @accent; }
+#battery   { color: @text-dim; }
+#battery.warning  { color: #fbbf24; }
+#battery.critical { color: @urgent; animation: pulse 1.4s infinite; }
+#battery.charging { color: #86efac; }
+
+#cpu:hover, #memory:hover, #temperature:hover, #pulseaudio:hover,
+#network:hover, #bluetooth:hover, #battery:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: @text;
+}
+
+/* ── gamemode indicator ──────────────────────────────────────────────────── */
+#custom-gamemode { color: @accent; }
+#custom-gamemode.off { color: transparent; padding: 0; margin: 0; }
+
+/* ── tray ────────────────────────────────────────────────────────────────── */
+#tray { padding: 4px 8px; }
+#tray > .passive { -gtk-icon-effect: dim; }
+#tray > .needs-attention { -gtk-icon-effect: highlight; background: @accent-lo; }
+
+@keyframes pulse {
+    0%   { opacity: 1.0; }
+    50%  { opacity: 0.45; }
+    100% { opacity: 1.0; }
+}

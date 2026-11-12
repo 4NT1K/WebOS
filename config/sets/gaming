@@ -1,0 +1,44 @@
+# SanusOS gaming set — the reason this distro exists.
+# --- Steam / Proton ---------------------------------------------------------
+games-util/steam-launcher
+gui-wm/gamescope
+games-util/gamemode
+games-util/mangohud
+media-gfx/vkBasalt
+games-util/goverlay
+app-emulation/wine-staging
+app-emulation/winetricks
+app-emulation/protontricks
+games-util/lutris
+games-util/heroic-bin
+games-emulation/dosbox-staging
+games-engines/scummvm
+app-arch/cabextract
+app-arch/innoextract
+app-arch/unrar
+
+# --- Performance ------------------------------------------------------------
+sys-apps/lact
+app-misc/corectrl
+app-admin/ananicy-cpp
+sys-apps/earlyoom
+sys-apps/preload
+sys-apps/irqbalance
+sys-power/cpupower
+sys-power/thermald
+sys-power/RyzenAdj
+sys-apps/msr-tools
+sys-kernel/scx
+virtual/libudev
+games-util/game-device-udev-rules
+
+# --- Graphics stack ---------------------------------------------------------
+media-libs/mesa
+media-libs/vulkan-loader
+media-libs/vulkan-layers
+app-emulation/vkd3d-proton
+dev-util/vulkan-tools
+media-libs/libglvnd
+media-libs/libva
+media-libs/nv-codec-headers
+x11-drivers/nvidia-drivers

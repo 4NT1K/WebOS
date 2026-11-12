@@ -1,0 +1,162 @@
+// ────────────────────────────────────────────────────────────────────────────
+//  SanusOS waybar — a single floating black capsule.
+//  Left: workspaces + focused window.  Center: clock.  Right: system.
+// ────────────────────────────────────────────────────────────────────────────
+{
+    "layer": "top",
+    "position": "top",
+    "height": 34,
+    "margin-top": 8,
+    "margin-left": 14,
+    "margin-right": 14,
+    "spacing": 6,
+    "fixed-center": true,
+    "passthrough": false,
+    "mode": "dock",
+    "exclusive": true,
+    "gtk-layer-shell": true,
+    "ipc": true,
+
+    "modules-left": ["custom/logo", "hyprland/workspaces", "hyprland/window"],
+    "modules-center": ["clock"],
+    "modules-right": [
+        "custom/gamemode", "cpu", "memory", "temperature",
+        "pulseaudio", "network", "bluetooth", "battery", "tray", "custom/power"
+    ],
+
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "on-click": "activate",
+        "all-outputs": true,
+        "format-icons": {
+            "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
+            "6": "6", "7": "7", "8": "8", "9": "9", "10": "0",
+            "urgent": "!",
+            "active": "●",
+            "default": "○"
+        },
+        "persistent-workspaces": { "*": 5 }
+    },
+
+    "hyprland/window": {
+        "format": "{title}",
+        "max-length": 64,
+        "separate-outputs": true,
+        "rewrite": {
+            "(.*) — Mozilla Firefox": " $1",
+            "(.*) - Chromium": " $1",
+            "(.*) — kitty": " $1",
+            "(.*) - Steam": " $1"
+        }
+    },
+
+    "custom/logo": {
+        "format": "",
+        "tooltip": false,
+        "on-click": "wofi --show drun",
+        "on-click-right": "wlogout"
+    },
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "format-alt": "{:%a %d %b  %H:%M}",
+        "tooltip-format": "<span font='JetBrainsMono Nerd Font 11'>{:%B %Y}</span>\n<span size='9pt'>{calendar}</span>",
+        "calendar": {
+            "mode": "month",
+            "format": {
+                "today": "<span color='#7dd3fc'><b>{}</b></span>",
+                "days": "<span color='#f0f0f5'>{}</span>",
+                "weeks": "<span color='#9aa3ad'><b>{}</b></span>"
+            }
+        }
+    },
+
+    "cpu": {
+        "interval": 3,
+        "format": " {usage}%",
+        "format-alt": " {avg_frequency}GHz",
+        "tooltip": true,
+        "on-click": "kitty -e btop"
+    },
+
+    "memory": {
+        "interval": 5,
+        "format": " {percentage}%",
+        "format-alt": " {used:0.1f}G",
+        "tooltip-format": "RAM {used:0.1f}/{total:0.1f} GiB\nSwap {swapUsed:0.1f}/{swapTotal:0.1f} GiB",
+        "on-click": "kitty -e btop"
+    },
+
+    "temperature": {
+        "critical-threshold": 85,
+        "interval": 3,
+        "format": "{icon} {temperatureC}°C",
+        "format-icons": ["", "", "", ""],
+        "tooltip-format": "CPU {temperatureC}°C",
+        "on-click": "kitty -e lact"
+    },
+
+    "pulseaudio": {
+        "scroll-step": 5,
+        "format": "{icon} {volume}%",
+        "format-muted": " muted",
+        "format-icons": {
+            "headphone": "",
+            "headset": "",
+            "default": ["", "", ""]
+        },
+        "on-click": "pavucontrol",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "tooltip-format": "{desc}"
+    },
+
+    "network": {
+        "interval": 3,
+        "format-wifi": " {essid} {signalStrength}%",
+        "format-ethernet": " {ipaddr}",
+        "format-linked": " {ifname}",
+        "format-disconnected": " offline",
+        "format-alt": "{ifname}: {ipaddr}/{cidr}",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}\n{frequency} GHz",
+        "on-click": "nm-connection-editor"
+    },
+
+    "bluetooth": {
+        "format": " {status}",
+        "format-disabled": " ",
+        "format-connected": " {device_alias}",
+        "tooltip-format": "{controller_alias}\t{controller_address}",
+        "on-click": "blueman-manager"
+    },
+
+    "battery": {
+        "interval": 30,
+        "states": { "warning": 25, "critical": 12 },
+        "format": "{icon} {capacity}%",
+        "format-charging": " {capacity}%",
+        "format-plugged": " {capacity}%",
+        "format-icons": ["", "", "", "", ""],
+        "tooltip-format": "{timeTo} — {capacity}% ({power:.1f} W)"
+    },
+
+    "tray": {
+        "icon-size": 15,
+        "spacing": 8,
+        "show-passive-items": true
+    },
+
+    // Lights up only while a game is running under gamemode.
+    "custom/gamemode": {
+        "exec": "~/.config/waybar/scripts/gamemode.sh",
+        "interval": 5,
+        "format": " {}",
+        "tooltip": true,
+        "on-click": "kitty -e mangohud --help"
+    },
+
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": false,
+        "on-click": "wlogout"
+    }
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>dev@sanusos.org</email>
+		<name>SanusOS Design</name>
+	</maintainer>
+	<longdescription lang="en">
+		The SanusOS look: a black, translucent Hyprland desktop with real
+		compositor blur. Ships Hyprland, waybar, wofi, hyprlock, mako, foot,
+		kitty, GTK/Kvantum/Qt theming, greetd configuration, a generated SVG
+		wallpaper, and the sanus-rice tool that applies it all idempotently.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">sanusos/sanusos</remote-id>
+	</upstream>
+</pkgmetadata>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SanusOS wallpaper — "Ashen".
+  2560x1440, pure black with one ice-blue glow. No text: nothing to break on a
+  machine that has not installed the fonts yet. Generated at install time to PNG
+  by /usr/bin/sanus-wallpaper.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="2560" height="1440" viewBox="0 0 2560 1440">
+  <defs>
+    <radialGradient id="vignette" cx="50%" cy="46%" r="72%">
+      <stop offset="0%"   stop-color="#0b0d10"/>
+      <stop offset="55%"  stop-color="#050607"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%"   stop-color="#7dd3fc" stop-opacity="0.20"/>
+      <stop offset="55%"  stop-color="#7dd3fc" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="hair" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#7dd3fc" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#7dd3fc" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#7dd3fc" stop-opacity="0"/>
+    </linearGradient>
+
+    <linearGradient id="hair2" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="50%"  stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <filter id="soft" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+
+    <filter id="grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.035"/>
+      </feComponentTransfer>
+    </filter>
+  </defs>
+
+  <!-- base -->
+  <rect width="2560" height="1440" fill="url(#vignette)"/>
+
+  <!-- one soft glow, low and to the left -->
+  <ellipse cx="620" cy="1120" rx="900" ry="520" fill="url(#glow)" filter="url(#soft)"/>
+
+  <!-- hairline horizon -->
+  <rect x="0" y="1020" width="2560" height="1.5" fill="url(#hair)" opacity="0.9"/>
+  <rect x="0" y="1021.5" width="2560" height="120" fill="url(#hair2)" opacity="0.5"/>
+
+  <!-- geometry: two concentric rings, barely there -->
+  <circle cx="1280" cy="560" r="300" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/>
+  <circle cx="1280" cy="560" r="420" fill="none" stroke="#ffffff" stroke-opacity="0.022" stroke-width="1"/>
+
+  <!-- the mark: a thin diagonal, the only accent on the whole image -->
+  <line x1="1120" y1="700" x2="1440" y2="420" stroke="#7dd3fc" stroke-opacity="0.30" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="1280" cy="560" r="5" fill="#7dd3fc" fill-opacity="0.55"/>
+
+  <!-- corner ticks -->
+  <path d="M 96 96 h 56 M 96 96 v 56"  stroke="#ffffff" stroke-opacity="0.10" stroke-width="1.5" fill="none"/>
+  <path d="M 2464 1344 h -56 M 2464 1344 v -56" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1.5" fill="none"/>
+
+  <!-- film grain: keeps large black areas from banding on cheap panels -->
+  <rect width="2560" height="1440" filter="url(#grain)" opacity="0.5"/>
+</svg>

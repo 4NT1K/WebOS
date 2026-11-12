@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>dev@sanusos.org</email>
+		<name>SanusOS</name>
+	</maintainer>
+	<longdescription lang="en">
+		Meta-package for gaming on SanusOS: Steam, Wine/Proton, gamescope,
+		MangoHud, vkBasalt, and the performance-tuning stack.
+	</longdescription>
+	<use>
+		<flag name="amd">Enable the AMD/RADV graphics stack.</flag>
+		<flag name="nvidia">Enable the NVIDIA proprietary stack.</flag>
+		<flag name="steam">Install Steam, Lutris, Heroic and gamescope.</flag>
+		<flag name="tuning">Install lact, corectrl, scx, ananicy-cpp and friends.</flag>
+	</use>
+</pkgmetadata>

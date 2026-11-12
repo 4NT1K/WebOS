@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <maintainer>
+    <email>sanusos@example.com</email>
+  </maintainer>
+  <upstream>
+    <name>Arch Linux</name>
+    <url>https://archlinux.org/</url>
+    <bugtracker>https://bugs.archlinux.org/</bugtracker>
+  </upstream>
+  <description>
+    pacman is the package manager used to install applications on a SanusOS
+    system. Arch Linux packages are consumed through the ::arch ebuild
+    repository, which exposes Arch packages as Gentoo ebuilds.
+  </description>
+  <use>
+  </use>
+</metadata>

@@ -1,0 +1,141 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────────
+#  sanus-wallpaper — render the SanusOS wallpaper to PNG and apply it.
+#
+#    sanus-wallpaper              render + apply
+#    sanus-wallpaper --dark       render the lock-screen variant
+#    sanus-wallpaper --next       cycle to a different accent hue
+#    sanus-wallpaper --daemon     render (if needed) then keep hyprpaper/swaybg fed
+#    sanus-wallpaper --quiet      no chatter
+# ─────────────────────────────────────────────────────────────────────────────
+set -Eeuo pipefail
+
+readonly SRC_SVG="/usr/share/sanus/rice/wallpapers/sanus-wallpaper.svg"
+readonly OUT_DIR="/usr/share/sanus/wallpaper"
+readonly PNG="${OUT_DIR}/sanus-wallpaper.png"
+readonly PNG_DARK="${OUT_DIR}/sanus-wallpaper-dark.png"
+
+QUIET=0
+ACTION="render"
+
+for arg in "$@"; do
+	case "$arg" in
+		--dark)   ACTION="dark" ;;
+		--next)   ACTION="next" ;;
+		--daemon) ACTION="daemon" ;;
+		--quiet|-q) QUIET=1 ;;
+		--help|-h) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+	esac
+done
+
+say() { (( QUIET )) || printf '%s\n' "$*"; }
+die() { printf 'sanus-wallpaper: %s\n' "$*" >&2; exit 1; }
+
+# ── pick a renderer ─────────────────────────────────────────────────────────
+renderer() {
+	if command -v rsvg-convert >/dev/null 2>&1; then echo rsvg; return; fi
+	if command -v magick       >/dev/null 2>&1; then echo magick; return; fi
+	if command -v convert      >/dev/null 2>&1; then echo convert; return; fi
+	echo none
+}
+
+render() {
+	# $1 = input svg, $2 = output png, $3 = size
+	local svg="$1" png="$2" size="$3" r
+	r="$(renderer)"
+	case "$r" in
+		rsvg)
+			rsvg-convert --width "${size%x*}" --height "${size#*x}" \
+				--keep-aspect-ratio --background-color=none \
+				--output "$png" "$svg"
+			;;
+		magick)
+			magick -background none -density 144 "$svg" -resize "$size" "$png"
+			;;
+		convert)
+			convert -background none -density 144 "$svg" -resize "$size" "$png"
+			;;
+		none)
+			die "no SVG renderer found. Install gnome-base/librsvg (rsvg-convert) or media-gfx/imagemagick."
+			;;
+	esac
+	[[ -s "$png" ]] || die "renderer produced an empty file: $png"
+}
+
+# ── accent cycling ──────────────────────────────────────────────────────────
+ACCENTS=("#7dd3fc" "#a5b4fc" "#c4b5fd" "#86efac" "#fbbf24" "#f0abfc" "#5eead4")
+next_accent() {
+	local idx_file="/var/lib/sanus/.accent-index" idx=0
+	mkdir -p "$(dirname "$idx_file")" 2>/dev/null || idx_file="/tmp/.sanus-accent-index"
+	[[ -f "$idx_file" ]] && idx="$(cat "$idx_file" 2>/dev/null || echo 0)"
+	idx=$(( (idx + 1) % ${#ACCENTS[@]} ))
+	printf '%s\n' "$idx" > "$idx_file" 2>/dev/null || true
+	printf '%s' "${ACCENTS[$idx]}"
+}
+
+# ── apply ───────────────────────────────────────────────────────────────────
+apply() {
+	# Wayland compositor running? Feed the wallpaper to whatever is listening.
+	if [[ -n ${WAYLAND_DISPLAY:-} ]] || pgrep -x Hyprland >/dev/null 2>&1; then
+		if command -v hyprctl >/dev/null 2>&1 && hyprctl hyprpaper listloaded >/dev/null 2>&1; then
+			hyprctl hyprpaper unload all >/dev/null 2>&1 || true
+			hyprctl hyprpaper preload "$PNG" >/dev/null 2>&1 || true
+			hyprctl hyprpaper wallpaper ",${PNG}" >/dev/null 2>&1 || true
+			say "applied via hyprpaper"
+		elif command -v swaybg >/dev/null 2>&1; then
+			pkill -x swaybg >/dev/null 2>&1 || true
+			swaybg -i "$PNG" -m fill >/dev/null 2>&1 &
+			say "applied via swaybg"
+		fi
+	fi
+}
+
+daemon() {
+	# Ensure both variants exist, then idle. Used by `exec-once` so that a
+	# monitor hotplug or a compositor restart always finds a wallpaper.
+	[[ -s "$PNG" ]]      || render "$SRC_SVG" "$PNG" "2560x1440"
+	[[ -s "$PNG_DARK" ]] || render_dark
+	apply
+	while sleep 3600; do apply; done
+}
+
+render_dark() {
+	# The lock screen wants a dimmer, lower-contrast version.
+	local tmp
+	tmp="$(mktemp -d)"
+	cp "$SRC_SVG" "$tmp/dark.svg"
+	sed -i \
+		-e 's/stop-color="#7dd3fc" stop-opacity="0.20"/stop-color="#7dd3fc" stop-opacity="0.10"/' \
+		-e 's/stop-opacity="0.55" stop-opacity="0.30"/stop-opacity="0.55" stop-opacity="0.16"/' \
+		"$tmp/dark.svg"
+	render "$tmp/dark.svg" "$PNG_DARK" "2560x1440"
+	rm -rf "$tmp"
+}
+
+# ── main ────────────────────────────────────────────────────────────────────
+mkdir -p "$OUT_DIR" 2>/dev/null || true
+[[ -w "$OUT_DIR" ]] || die "$OUT_DIR is not writable (run as root)"
+
+case "$ACTION" in
+	render)
+		[[ -f "$SRC_SVG" ]] || die "missing $SRC_SVG"
+		render "$SRC_SVG" "$PNG" "2560x1440"
+		render_dark
+		say "rendered $PNG"
+		apply
+		;;
+	dark)
+		render_dark
+		say "rendered $PNG_DARK"
+		;;
+	next)
+		accent="$(next_accent)"
+		tmp="$(mktemp -d)"
+		sed "s/#7dd3fc/${accent}/g" "$SRC_SVG" > "$tmp/accent.svg"
+		render "$tmp/accent.svg" "$PNG" "2560x1440"
+		rm -rf "$tmp"
+		say "accent is now ${accent}"
+		apply
+		;;
+	daemon) daemon ;;
+esac

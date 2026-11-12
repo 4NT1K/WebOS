@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>dev@sanusos.org</email>
+		<name>SanusOS Kernel Team</name>
+	</maintainer>
+	<longdescription lang="en">
+		The SanusOS Linux kernel: upstream LTS plus a deliberately small
+		performance patch series (BORE scheduler, Wine fsync/ntsync, TCP BBRv3,
+		AMD P-State preferred cores) configured for a gaming desktop with
+		CONFIG_HZ=1000, full preemption and zstd zram.
+	</longdescription>
+	<use>
+		<flag name="initramfs">Build and install a dracut initramfs after compiling.</flag>
+		<flag name="zstd">Compress the initramfs with zstd instead of gzip.</flag>
+		<flag name="savedconfig">Reserved for future use.</flag>
+		<flag name="debug">Keep un-stripped modules and enable debug info.</flag>
+	</use>
+	<upstream>
+		<remote-id type="github">firelzrd/bore-scheduler</remote-id>
+		<remote-id type="cpe">cpe:/o:linux:linux_kernel</remote-id>
+	</upstream>
+</pkgmetadata>

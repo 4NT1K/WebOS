@@ -1,0 +1,36 @@
+[General]
+# SanusOS Qt theming.
+#
+# We do not ship a hand-drawn Kvantum SVG: a half-correct one looks worse than
+# a good existing theme. Instead we take KvArcDark (shipped by
+# x11-themes/kvantum) and re-tint it to the Ashen palette below.
+#
+# To build a real custom theme: run `kvantummanager`, pick "Create a new theme",
+# and start from KvArcDark. Put the result in ~/.config/Kvantum/<name>/ and
+# change `theme` here.
+theme=KvArcDark
+disabled_opacity=0.55
+reduce_window_opacity=8
+reduce_menu_opacity=0
+blur_radius=0
+dialog_button_layout=0
+menubar_mouse_tracking=true
+toolbutton_style=1
+double_click=false
+translucent_windows=true
+popup_shadow=true
+composite=true
+transparent_docks=true
+x11drag=0
+compositing_active=true
+animate_states=false
+
+[KvArcDark]
+# Ashen overrides on top of the base theme.
+active_tab_highlight=7dd3fc
+inactive_tab_highlight=5b6470
+tooltip_delay=0
+click_behavior=0
+scroll_width=10
+scroll_arrow_hlength=10
+scroll_arrow_vlength=10

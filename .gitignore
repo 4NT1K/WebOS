@@ -1,0 +1,20 @@
+# SanusOS — build artifacts that must never be committed.
+
+# The whole build scratch tree (stage3, portage snapshot, chroot, rootfs, ISO).
+/build/
+*.iso
+*.iso.sha256
+
+# The Rust installer.
+installer/target/
+installer/vendor/
+installer/.cargo/
+
+# Kernel patch series are fetched and pinned by kernel/fetch-patches.sh.
+kernel/patches/
+kernel/cache/
+
+# Editor / OS noise.
+*.swp
+*~
+.DS_Store

@@ -1,0 +1,16 @@
+{
+    "$schema": "https://github.com/fastfetch/fastfetch/raw/dev/docs/Spec.md",
+    "logo": {
+        "type": "none"
+    },
+    "modules": [
+        "display",
+        "uptime",
+        "terminal",
+        "cpu",
+        "gpu",
+        "memory",
+        "disk",
+        "packages"
+    ]
+}

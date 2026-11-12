@@ -1,0 +1,32 @@
+# SanusOS mako — quiet, black, translucent notifications, bottom-right.
+# ~/.config/mako/config
+
+font=Inter 11
+background-color=#0a0a0cdd
+text-color=#f0f0f5
+border-color=#ffffff14
+border-size=1
+border-radius=14
+progress-color=over #7dd3fc
+padding=14
+margin=12
+width=340
+height=120
+max-visible=4
+anchor=bottom-right
+default-timeout=6000
+group-by=app-name
+icons=1
+max-icon-size=40
+icon-border-radius=8
+layer=overlay
+ignore-timeout=0
+
+[urgency=low]
+border-color=#ffffff10
+default-timeout=4000
+
+[urgency=critical]
+border-color=#f87171
+default-timeout=0
+background-color=#1a0b0bdd

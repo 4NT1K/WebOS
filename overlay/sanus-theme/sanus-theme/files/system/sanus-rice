@@ -1,0 +1,378 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────────
+#  sanus-rice — apply the SanusOS look to a home directory.
+#
+#    sanus-rice --user            apply to $HOME
+#    sanus-rice --system          apply to /etc/skel, /root and every /home/*
+#    sanus-rice --check           dry run: report what would change
+#    sanus-rice --force           overwrite files you have modified
+#    sanus-rice --doctor          verify the running environment
+#    sanus-rice --toggle-panel    show/hide waybar
+#    sanus-rice --list            list the managed trees
+#    sanus-rice --wallpaper <img>  set the Hyprland wallpaper
+#
+#  It never clobbers a file it did not write. Every file it installs is
+#  recorded with its hash in $XDG_STATE_HOME/sanus/rice.manifest; if the hash on
+#  disk no longer matches, the file is considered yours and is left alone.
+# ─────────────────────────────────────────────────────────────────────────────
+set -Eeuo pipefail
+
+readonly RICE_SRC="/usr/share/sanus/rice"
+readonly WALL_DIR="/usr/share/sanus/wallpaper"
+readonly VERSION="1.0"
+
+MODE="user"
+FORCE=0
+QUIET=0
+WALLPAPER=""
+WALLPAPER_DIR="/usr/share/sanus/wallpaper"
+
+# ── output ──────────────────────────────────────────────────────────────────
+if [[ -t 1 ]]; then
+	C_R=$'\033[0m'; C_D=$'\033[2m'; C_G=$'\033[32m'; C_Y=$'\033[33m'; C_B=$'\033[34m'; C_E=$'\033[31m'
+else
+	C_R=; C_D=; C_G=; C_Y=; C_B=; C_E=
+fi
+say()  { (( QUIET )) || printf '%s\n' "$*"; }
+note() { (( QUIET )) || printf '%s  ->%s %s\n' "$C_B" "$C_R" "$*"; }
+skip() { (( QUIET )) || printf '%swarn%s %s\n' "$C_Y" "$C_R" "$*"; }
+done_() { (( QUIET )) || printf '%s  ok%s %s\n' "$C_G" "$C_R" "$*"; }
+die()  { printf '%sfail%s %s\n' "$C_E" "$C_R" "$*" >&2; exit 1; }
+
+usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; }
+
+# ── what we manage ──────────────────────────────────────────────────────────
+# rice subdirectory  ->  path under $HOME
+declare -A TREES=(
+	[hypr]=".config/hypr"
+	[waybar]=".config/waybar"
+	[wofi]=".config/wofi"
+	[mako]=".config/mako"
+	[foot]=".config/foot"
+	[kitty]=".config/kitty"
+	[wlogout]=".config/wlogout"
+	[gtk-3.0]=".config/gtk-3.0"
+	[gtk-4.0]=".config/gtk-4.0"
+	[fastfetch]=".config/fastfetch"
+	[qt5ct]=".config/qt5ct"
+	[qt6ct]=".config/qt6ct"
+	[kvantum]=".config/Kvantum"
+)
+
+sha() { sha256sum "$1" | cut -d' ' -f1; }
+
+state_dir()  { printf '%s/.local/state/sanus' "$1"; }
+manifest_of(){ printf '%s/rice.manifest' "$(state_dir "$1")"; }
+
+recorded_hash() {
+	# $1 = manifest file, $2 = absolute path
+	[[ -f "$1" ]] || return 1
+	awk -v p="$2" '$2 == p { print $1; found=1 } END { exit(found?0:1) }' "$1"
+}
+
+record() {
+	# $1 = manifest file, $2 = absolute path, $3 = hash
+	local mf="$1" path="$2" hash="$3" tmp
+	mkdir -p "$(dirname "$mf")"
+	tmp="$(mktemp)"
+	if [[ -f "$mf" ]]; then
+		awk -v p="$path" '$2 != p' "$mf" > "$tmp"
+	fi
+	printf '%s %s\n' "$hash" "$path" >> "$tmp"
+	mv -f "$tmp" "$mf"
+}
+
+backup_once() {
+	local f="$1"
+	[[ -f "$f" ]] || return 0
+	[[ -f "$f.sanus-orig" ]] && return 0
+	cp -a "$f" "$f.sanus-orig"
+	note "backed up $f -> $f.sanus-orig"
+}
+
+install_file() {
+	# $1 = source, $2 = destination, $3 = manifest, $4 = force
+	local src="$1" dst="$2" mf="$3" force="$4"
+	local new old rec mode
+
+	new="$(sha "$src")"
+	mkdir -p "$(dirname "$dst")"
+
+	if [[ ! -e "$dst" ]]; then
+		mode="$(stat -c '%a' "$src")"
+		install -m "$mode" "$src" "$dst"
+		record "$mf" "$dst" "$new"
+		return 0
+	fi
+
+	old="$(sha "$dst")"
+	if [[ "$old" == "$new" ]]; then
+		record "$mf" "$dst" "$new"
+		return 0
+	fi
+
+	if rec="$(recorded_hash "$mf" "$dst")" && [[ "$old" == "$rec" ]]; then
+		# Ours, untouched by the user: update it.
+		mode="$(stat -c '%a' "$src")"
+		install -m "$mode" "$src" "$dst"
+		record "$mf" "$dst" "$new"
+		return 0
+	fi
+
+	if (( force )); then
+		backup_once "$dst"
+		mode="$(stat -c '%a' "$src")"
+		install -m "$mode" "$src" "$dst"
+		record "$mf" "$dst" "$new"
+		return 0
+	fi
+
+	skip "kept your version: ${dst/#$HOME/~}"
+	return 0
+}
+
+apply_tree() {
+	# $1 = home, $2 = force
+	local home="$1" force="$2" mf sub src dst f rel
+	mf="$(manifest_of "$home")"
+	for sub in "${!TREES[@]}"; do
+		src="${RICE_SRC}/${sub}"
+		[[ -d "$src" ]] || continue
+		dst="${home}/${TREES[$sub]}"
+		while IFS= read -r -d '' f; do
+			rel="${f#"$src"/}"
+			install_file "$f" "${dst}/${rel}" "$mf" "$force"
+		done < <(find "$src" -type f -print0)
+	done
+}
+
+apply_home() {
+	local home="$1" force="$2"
+	[[ -d "$home" ]] || return 0
+	note "applying rice to ${home}"
+	apply_tree "$home" "$force"
+	# gtk settings + bookmarks live one level up from the rice
+	install_gtk_user "$home" "$force"
+	done_ "rice applied to ${home}"
+}
+
+install_gtk_user() {
+	local home="$1" force="$2" mf
+	mf="$(manifest_of "$home")"
+	install_file "${RICE_SRC}/gtk-3.0/settings.ini" "${home}/.config/gtk-3.0/settings.ini" "$mf" "$force"
+	install_file "${RICE_SRC}/gtk-4.0/settings.ini" "${home}/.config/gtk-4.0/settings.ini" "$mf" "$force"
+	install_file "${RICE_SRC}/fastfetch/fastfetch.json" "${home}/.config/fastfetch/fastfetch.json" "$mf" "$force"
+}
+
+# ── system-wide bits (run as root) ──────────────────────────────────────────
+system_gtk() {
+	local f
+	for f in settings.ini gtk.css; do
+		backup_once "/etc/gtk-3.0/$f"
+		install -Dm0644 "${RICE_SRC}/gtk-3.0/$f" "/etc/gtk-3.0/$f"
+		backup_once "/etc/gtk-4.0/$f"
+		install -Dm0644 "${RICE_SRC}/gtk-4.0/$f" "/etc/gtk-4.0/$f"
+	done
+	done_ "system GTK theme written to /etc/gtk-3.0 and /etc/gtk-4.0"
+}
+
+system_greetd() {
+	[[ -d /etc/greetd ]] || { skip "greetd is not installed; skipping login setup"; return 0; }
+
+	backup_once /etc/greetd/config.toml
+	cat > /etc/greetd/config.toml <<'EOF'
+# SanusOS — greetd configuration. Written by `sanus-rice --system`.
+# A backup of the original is kept at config.toml.sanus-orig.
+
+[terminal]
+# The VT greetd runs on.
+vt = 1
+
+[default_session]
+# tuigreet: a black TUI greeter. No GTK, no WebKit, ~2 MB of RAM.
+# The `--cmd` is what runs after a successful login.
+command = "tuigreet \
+    --cmd sanus-session \
+    --time --time-format '%H:%M' \
+    --greeting '  SanusOS  ' \
+    --asterisks --remember --remember-session --user-menu \
+    --width 46 --height 16 --window-padding 2 --container-padding 6 \
+    --theme 'text=#e6e8eb;time=#7dd3fc;container=#000000;input=#e6e8eb;action=#9aa3ad;border=#ffffff14;title=#7dd3fc;greet=#9aa3ad;prompt=#7dd3fc;button=#e6e8eb'"
+
+user = "greeter"
+EOF
+
+	backup_once /etc/greetd/environments.toml
+	cat > /etc/greetd/environments.toml <<'EOF'
+# SanusOS sessions offered by the greeter.
+hyprland
+sanus-session --gamescope
+EOF
+
+	# greetd must run as the `greeter` user; make sure it exists.
+	if ! id greeter >/dev/null 2>&1; then
+		useradd --system --create-home --home-dir /var/lib/greetd \
+			--shell /sbin/nologin greeter 2>/dev/null || true
+	fi
+
+	# OpenRC: put greetd in the default runlevel, once.
+	if [[ -x /sbin/rc-update ]] && [[ -f /etc/init.d/greetd ]]; then
+		if ! rc-update show default 2>/dev/null | grep -qw greetd; then
+			rc-update add greetd default >/dev/null 2>&1 || true
+			note "greetd added to the default runlevel"
+		fi
+		# Do not fight greetd for the console.
+		if [[ -f /etc/init.d/agetty.tty1 ]]; then
+			rc-update del agetty.tty1 default >/dev/null 2>&1 || true
+		fi
+		# A Gentoo OpenRC stage3 keeps its console getty in /etc/inittab, so
+		# comment out the tty1 line as well; greetd takes over the VT.
+		if [[ -f /etc/inittab ]]; then
+			backup_once /etc/inittab
+			sed -i -E '/^[^#].*tty1/ s/^/#/' /etc/inittab
+			note "disabled the tty1 getty in /etc/inittab (greetd owns tty1)"
+		fi
+	fi
+
+	done_ "greetd configured (backups kept as *.sanus-orig)"
+}
+
+system_wallpaper() {
+	if [[ -x /usr/bin/sanus-wallpaper ]]; then
+		/usr/bin/sanus-wallpaper --quiet || skip "wallpaper generation failed"
+	fi
+}
+
+system_all() {
+	local force="$1" u
+	[[ ${EUID} -eq 0 ]] || die "--system must run as root"
+
+	system_gtk
+	system_greetd
+	system_wallpaper
+
+	# /etc/skel gets the rice so new accounts are themed on creation.
+	mkdir -p /etc/skel
+	apply_home /etc/skel "$force"
+	apply_home /root "$force"
+
+	# Existing accounts.
+	local d
+	for d in /home/*; do
+		[[ -d "$d" ]] || continue
+		u="$(basename "$d")"
+		id "$u" >/dev/null 2>&1 || continue
+		apply_home "$d" "$force"
+		chown -R "${u}:${u}" "$d/.config" "$d/.local/state/sanus" 2>/dev/null || true
+	done
+
+	done_ "system rice applied"
+}
+
+# ── doctor ──────────────────────────────────────────────────────────────────
+doctor() {
+	local ok=0 bad=0
+	chk() {
+		if eval "$2" >/dev/null 2>&1; then
+			printf '%s  ok%s   %s\n' "$C_G" "$C_R" "$1"; ok=$((ok+1))
+		else
+			printf '%s FAIL%s  %s  %s\n' "$C_E" "$C_R" "$1" "${3:-}"; bad=$((bad+1))
+		fi
+	}
+	say "SanusOS rice doctor"
+	say ""
+	chk "rice installed"           "[[ -d ${RICE_SRC} ]]"
+	chk "Hyprland present"         "command -v Hyprland"
+	chk "hyprland.conf present"    "[[ -f \$HOME/.config/hypr/hyprland.conf ]]"
+	chk "waybar present"           "command -v waybar"
+	chk "waybar config present"    "[[ -f \$HOME/.config/waybar/config.jsonc && -f \$HOME/.config/waybar/style.css ]]"
+	chk "wofi present"             "command -v wofi"
+	chk "a terminal present"       "command -v kitty || command -v foot"
+	chk "screenshot tools"         "command -v grim && command -v slurp"
+	chk "wallpaper rendered"       "[[ -f ${WALL_DIR}/sanus-wallpaper.png ]]"
+	chk "fastfetch modules"          "[[ -f ${home}/.config/fastfetch/fastfetch.json ]]"
+	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"
+	chk "font: Inter"              "fc-list | grep -qi Inter"
+	chk "font: JetBrains Mono NF"  "fc-list | grep -qi 'JetBrainsMono Nerd Font'"
+	chk "greetd configured"        "[[ -f /etc/greetd/config.toml ]]"
+	chk "session entry"            "[[ -f /usr/share/wayland-sessions/sanus.desktop ]]"
+	say ""
+	say "${ok} ok, ${bad} failed"
+	(( bad == 0 )) || return 1
+}
+
+toggle_panel() {
+	if pgrep -x waybar >/dev/null 2>&1; then
+		pkill -x waybar
+		note "waybar hidden"
+	else
+		( waybar >/dev/null 2>&1 & )
+		note "waybar shown"
+	fi
+}
+
+list_trees() {
+	local sub
+	for sub in "${!TREES[@]}"; do
+		printf '%-12s -> ~/%s\n' "$sub" "${TREES[$sub]}"
+	done
+}
+
+# ── main ────────────────────────────────────────────────────────────────────
+main() {
+	while [[ $# -gt 0 ]]; do
+		case "$1" in
+			--user)         MODE="user"; shift ;;
+			--system)       MODE="system"; shift ;;
+			--check|--dry-run) MODE="check"; shift ;;
+			--force)        FORCE=1; shift ;;
+			--quiet|-q)     QUIET=1; shift ;;
+			--doctor)       doctor; exit $? ;;
+			--toggle-panel) toggle_panel; exit 0 ;;
+			--list)         list_trees; exit 0 ;;
+			--wallpaper)    shift; MODE="wallpaper"; WALLPAPER="${1:-}"; shift ;;
+			--wallpaper-menu) shift; MODE="wallpaper-menu"; WALLPAPER_DIR="${1:-/usr/share/sanus/wallpaper}"; shift ;;
+			--version)      printf 'sanus-rice %s\n' "$VERSION"; exit 0 ;;
+			-h|--help)      usage; exit 0 ;;
+			*)              die "unknown option: $1" ;;
+		esac
+	done
+
+	[[ -d "$RICE_SRC" ]] || die "rice not installed (${RICE_SRC} missing) — emerge sanus-theme/sanus-theme"
+
+	case "$MODE" in
+		wallpaper)
+			set_wallpaper "$WALLPAPER"
+			;;
+		wallpaper-menu)
+			wallpaper_menu "$WALLPAPER_DIR"
+			;;
+		user)
+			apply_home "$HOME" "$FORCE"
+			note "restart the compositor or run: hyprctl reload"
+			;;
+		system) system_all "$FORCE" ;;
+		check)
+			FORCE=0
+			say "dry run: no files will be written"
+			apply_home "$HOME" 0
+			;;
+	esac
+}
+
+set_wallpaper() {
+	local img="${1:-}"
+	[[ -n "$img" ]] || die "usage: sanus-rice --wallpaper <image>"
+	hyprctl keyword wallpaper "wallpaper:${img}" || skip "hyprctl could not set the wallpaper"
+	note "wallpaper -> ${img}"
+}
+
+wallpaper_menu() {
+	local dir="${WALLPAPER_DIR:-/usr/share/sanus/wallpaper}"
+	local img
+	img=$(find "$dir" -maxdepth 1 -type f 		\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.bmp' \) 		-print0 | sort -z | xargs -0 -r -n1 printf '%s\n' | fzf --prompt 'wallpaper> ' --height 40%) || return 0
+	[[ -n "$img" ]] || return 0
+	set_wallpaper "$img"
+}
+
+main "$@"

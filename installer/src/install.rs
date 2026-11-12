@@ -1,0 +1,756 @@
+//! The part that actually touches the disk.
+//!
+//! Everything here is driven by [`InstallConfig`] and reports through
+//! [`Runner`]. It is deliberately linear and readable: if an install goes
+//! wrong, the log should read like a recipe, not like a state machine.
+
+use std::path::Path;
+
+use anyhow::{bail, Context, Result};
+
+use crate::bootloader;
+use crate::config::{Encryption, Filesystem, InstallConfig, Profile, SwapChoice};
+use crate::disk;
+use crate::exec::Runner;
+use crate::rootfs::{self, Source};
+
+/// Where the new system is assembled before it is configured.
+pub const TARGET: &str = "/mnt/sanus";
+
+/// The name the LUKS container is opened as.
+pub(crate) const CRYPT_NAME: &str = "sanus_crypt";
+
+#[derive(Debug, Default, Clone)]
+pub struct Partitions {
+    pub esp: Option<String>,
+    pub bios_boot: Option<String>,
+    pub swap: Option<String>,
+    pub root_raw: String,
+    /// Where root actually lives: the LUKS mapper if encrypted, else root_raw.
+    pub root: String,
+}
+
+fn strs(v: &[String]) -> Vec<&str> {
+    v.iter().map(String::as_str).collect()
+}
+
+/// The whole install. Returns Ok only if the target is bootable.
+pub fn run(cfg: &InstallConfig, r: &Runner) -> Result<()> {
+    r.phase("Preparing");
+    let src = match rootfs::locate() {
+        Ok(src) => src,
+        Err(_) => {
+            // The live squashfs may not have been auto-mounted; mount it and
+            // look again before giving up.
+            rootfs::ensure_mounted("/run/sanus/rootfs")
+                .context("locating the install source")?;
+            rootfs::locate().context("locating the install source")?
+        }
+    };
+    r.info(format!("install source: {src}"));
+
+    let disks = disk::enumerate();
+    let target = disks
+        .iter()
+        .find(|d| d.path == cfg.disk)
+        .with_context(|| format!("{} is no longer present", cfg.disk))?;
+    disk::verify_target(target)?;
+    r.info(format!(
+        "target: {} — {} {} ({})",
+        target.path,
+        target.model,
+        target.human_size(),
+        target.kind()
+    ));
+
+    let missing = crate::exec::missing_tools(&[
+        "sgdisk", "mkswap", "mount", "blkid", "rsync", "tar", "chroot", "grub-install",
+    ]);
+    if !missing.is_empty() {
+        bail!("missing required tools: {}", missing.join(", "));
+    }
+
+    teardown_target(r);
+
+    // ── 1. partition ─────────────────────────────────────────────────────
+    let parts = partition(r, cfg)?;
+    r.progress(0.08);
+
+    // ── 2. encrypt ───────────────────────────────────────────────────────
+    let parts = encrypt(r, cfg, parts)?;
+    r.progress(0.15);
+
+    // ── 3. filesystems ───────────────────────────────────────────────────
+    make_filesystems(r, cfg, &parts)?;
+    mount_target(r, cfg, &parts)?;
+    r.progress(0.24);
+
+    // ── 4. copy the system ───────────────────────────────────────────────
+    copy_rootfs(r, &src)?;
+    r.progress(0.62);
+
+    // ── 5. fstab, crypttab ───────────────────────────────────────────────
+    write_fstab(r, cfg, &parts)?;
+    r.progress(0.66);
+
+    // ── 6. configure the new system ──────────────────────────────────────
+    enter_chroot(r)?;
+    let result = configure_in_chroot(r, cfg, &parts);
+    let _ = leave_chroot(r);
+    result?;
+    r.progress(0.88);
+
+    // ── 7. initramfs + bootloader ────────────────────────────────────────
+    build_initramfs(r, cfg, &parts)?;
+    bootloader::install(r, cfg, &parts)?;
+    r.progress(0.97);
+
+    // ── 8. record what we did, in the new system ─────────────────────────
+    record_install(r, cfg, &parts)?;
+
+    r.phase("Unmounting");
+    teardown_target(r);
+    r.progress(1.0);
+    Ok(())
+}
+
+// ────────────────────────────────────────────────────────────── partitioning ─
+
+fn partition(r: &Runner, cfg: &InstallConfig) -> Result<Partitions> {
+    r.phase("Partitioning");
+    r.info(format!("wiping the partition table on {}", cfg.disk));
+    r.run("sgdisk", &["--zap-all", &cfg.disk])?;
+
+    let mut p = Partitions::default();
+    let mut idx: u32 = 1;
+
+    match cfg.firmware {
+        crate::config::Firmware::Uefi => {
+            let dev = disk::partition_path(&cfg.disk, idx);
+            let a = vec![
+                "-n".into(),
+                format!("{idx}:0:+{}M", cfg.esp_size_mib),
+                "-t".into(),
+                format!("{idx}:ef00"),
+                "-c".into(),
+                format!("{idx}:SANUS_ESP"),
+                cfg.disk.clone(),
+            ];
+            r.run("sgdisk", &strs(&a))?;
+            p.esp = Some(dev);
+            idx += 1;
+        }
+        crate::config::Firmware::Bios => {
+            let dev = disk::partition_path(&cfg.disk, idx);
+            let a = vec![
+                "-n".into(),
+                format!("{idx}:0:+2M"),
+                "-t".into(),
+                format!("{idx}:ef02"),
+                "-c".into(),
+                format!("{idx}:SANUS_BIOS"),
+                cfg.disk.clone(),
+            ];
+            r.run("sgdisk", &strs(&a))?;
+            p.bios_boot = Some(dev);
+            idx += 1;
+        }
+    }
+
+    if cfg.swap == SwapChoice::Partition {
+        let dev = disk::partition_path(&cfg.disk, idx);
+        let a = vec![
+            "-n".into(),
+            format!("{idx}:0:+{}M", cfg.swap_size_mib),
+            "-t".into(),
+            format!("{idx}:8200"),
+            "-c".into(),
+            format!("{idx}:SANUS_SWAP"),
+            cfg.disk.clone(),
+        ];
+        r.run("sgdisk", &strs(&a))?;
+        p.swap = Some(dev);
+        idx += 1;
+    }
+
+    let root = disk::partition_path(&cfg.disk, idx);
+    let a = vec![
+        "-n".into(),
+        format!("{idx}:0:0"),
+        "-t".into(),
+        format!("{idx}:8300"),
+        "-c".into(),
+        format!("{idx}:SANUS_ROOT"),
+        cfg.disk.clone(),
+    ];
+    r.run("sgdisk", &strs(&a))?;
+    p.root_raw = root;
+
+    r.run("sgdisk", &["--print", &cfg.disk])?;
+    disk::settle();
+
+    if !Path::new(&p.root_raw).exists() {
+        bail!(
+            "{} did not appear after partitioning — the kernel may not have \
+             re-read the table",
+            p.root_raw
+        );
+    }
+    Ok(p)
+}
+
+// ──────────────────────────────────────────────────────────────── encryption ─
+
+fn encrypt(r: &Runner, cfg: &InstallConfig, mut p: Partitions) -> Result<Partitions> {
+    if cfg.encryption != Encryption::Luks {
+        p.root = p.root_raw.clone();
+        return Ok(p);
+    }
+
+    r.phase("Encrypting");
+    r.info("formatting the LUKS2 container (argon2id)");
+
+    let a = vec![
+        "--batch-mode".to_string(),
+        "--type".into(),
+        "luks2".into(),
+        "--pbkdf".into(),
+        "argon2id".into(),
+        "--cipher".into(),
+        "aes-xts-plain64".into(),
+        "--key-size".into(),
+        "512".into(),
+        "--label".into(),
+        "SANUS_CRYPT".into(),
+        p.root_raw.clone(),
+    ];
+    r.run_stdin("cryptsetup", &strs(&a), &cfg.luks_passphrase)?;
+
+    r.run("cryptsetup", &["open", &p.root_raw, CRYPT_NAME])?;
+    p.root = format!("/dev/mapper/{CRYPT_NAME}");
+
+    if !Path::new(&p.root).exists() {
+        bail!("{} did not appear after cryptsetup open", p.root);
+    }
+    Ok(p)
+}
+
+// ────────────────────────────────────────────────────────────── filesystems ─
+
+fn make_filesystems(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
+    r.phase("Creating filesystems");
+
+    if let Some(esp) = &p.esp {
+        r.run("mkfs.vfat", &["-F", "32", "-n", "SANUS_ESP", esp])?;
+    }
+
+    if let Some(swap) = &p.swap {
+        r.run("mkswap", &["-L", "SANUS_SWAP", swap])?;
+    }
+
+    match cfg.filesystem {
+        Filesystem::Btrfs => {
+            r.run("mkfs.btrfs", &["-f", "-L", "SANUSOS", &p.root])?;
+        }
+        Filesystem::Ext4 => {
+            r.run("mkfs.ext4", &["-F", "-L", "SANUSOS", "-m", "1", &p.root])?;
+        }
+        Filesystem::Xfs => {
+            r.run("mkfs.xfs", &["-f", "-L", "SANUSOS", &p.root])?;
+        }
+    }
+    Ok(())
+}
+
+fn mount_target(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
+    r.phase("Mounting");
+    std::fs::create_dir_all(TARGET).context("creating the target mountpoint")?;
+
+    if cfg.filesystem == Filesystem::Btrfs {
+        // Create the subvolume layout on a scratch mount, then remount by
+        // subvolume. This is the same shape a fresh CachyOS/Arch btrfs install
+        // uses, so snapper and timeshift work out of the box.
+        let opts = "compress=zstd:1,noatime,ssd,space_cache=v2,discard=async";
+        r.run("mount", &["-o", opts, &p.root, TARGET])?;
+
+        for sv in ["@", "@home", "@snapshots", "@cache", "@log", "@tmp"] {
+            let path = format!("{TARGET}/{sv}");
+            r.run("btrfs", &["subvolume", "create", &path])?;
+        }
+        r.run("umount", &[TARGET])?;
+
+        let root_opts = format!("{opts},subvol=@");
+        r.run("mount", &["-o", &root_opts, &p.root, TARGET])?;
+
+        for (sv, sub) in [
+            ("@home", "home"),
+            ("@snapshots", ".snapshots"),
+            ("@cache", "var/cache"),
+            ("@log", "var/log"),
+            ("@tmp", "var/tmp"),
+        ] {
+            let dir = format!("{TARGET}/{sub}");
+            std::fs::create_dir_all(&dir).with_context(|| format!("creating {dir}"))?;
+            let opts = format!("{opts},subvol={sv}");
+            r.run("mount", &["-o", &opts, &p.root, &dir])?;
+        }
+    } else {
+        r.run("mount", &["-o", "noatime", &p.root, TARGET])?;
+    }
+
+    // ESP goes on last so the copy step cannot fill it.
+    if let Some(esp) = &p.esp {
+        let dir = format!("{TARGET}/boot/efi");
+        std::fs::create_dir_all(&dir).with_context(|| format!("creating {dir}"))?;
+        r.run("mount", &["-o", "umask=0077", esp, &dir])?;
+    }
+
+    if let Some(swap) = &p.swap {
+        let _ = r.try_run("swapon", &[swap.as_str()]);
+    }
+    Ok(())
+}
+
+// ───────────────────────────────────────────────────────────────── copying ──
+
+fn copy_rootfs(r: &Runner, src: &Source) -> Result<()> {
+    r.phase("Copying the system");
+
+    match src {
+        Source::Dir(dir) => {
+            let from = format!("{}/", dir.display());
+            let to = format!("{TARGET}/");
+            r.info("this is the slow part; the progress bar is honest about it");
+            r.run(
+                "rsync",
+                &[
+                    "-aHAX",
+                    "--numeric-ids",
+                    "--one-file-system",
+                    "--info=progress2",
+                    "--no-inc-recursive",
+                    "--exclude=/proc/**",
+                    "--exclude=/sys/**",
+                    "--exclude=/dev/**",
+                    "--exclude=/run/**",
+                    "--exclude=/tmp/**",
+                    "--exclude=/var/tmp/**",
+                    "--exclude=/mnt/**",
+                    "--exclude=/media/**",
+                    "--exclude=/lost+found",
+                    "--exclude=/etc/machine-id",
+                    "--exclude=/etc/ssh/ssh_host_*",
+                    &from,
+                    &to,
+                ],
+            )?;
+        }
+        Source::Tarball(path) => {
+            let a = vec![
+                "--xattrs".to_string(),
+                "--acls".into(),
+                "--numeric-owner".into(),
+                "-xpf".into(),
+                path.display().to_string(),
+                "-C".into(),
+                TARGET.to_string(),
+            ];
+            r.run("tar", &strs(&a))?;
+        }
+    }
+
+    // A machine-id is generated on first boot; an empty file is the marker
+    // that tells systemd/OpenRC to do so.
+    r.write_target(Path::new(TARGET), "/etc/machine-id", "")?;
+    let _ = std::fs::remove_file(format!("{TARGET}/etc/ssh/ssh_host_rsa_key"));
+    Ok(())
+}
+
+// ───────────────────────────────────────────────────────────────── fstab ────
+
+fn uuid_of(r: &Runner, dev: &str) -> String {
+    r.capture("blkid", &["-s", "UUID", "-o", "value", dev])
+        .unwrap_or_default()
+}
+
+fn write_fstab(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
+    r.phase("Writing /etc/fstab");
+    let target = Path::new(TARGET);
+    let root_uuid = uuid_of(r, &p.root_raw);
+    let btrfs = cfg.filesystem == Filesystem::Btrfs;
+    let opts = if btrfs {
+        "compress=zstd:1,noatime,ssd,space_cache=v2,discard=async"
+    } else {
+        "noatime"
+    };
+
+    let mut fstab = String::from(
+        "# /etc/fstab — generated by the SanusOS installer.\n\
+         # <device>  <mountpoint>  <type>  <options>  <dump>  <pass>\n\n",
+    );
+
+    if btrfs {
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /           btrfs  {opts},subvol=@           0 0\n"
+        ));
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /home       btrfs  {opts},subvol=@home       0 0\n"
+        ));
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /.snapshots btrfs  {opts},subvol=@snapshots  0 0\n"
+        ));
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /var/cache  btrfs  {opts},subvol=@cache      0 0\n"
+        ));
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /var/log    btrfs  {opts},subvol=@log        0 0\n"
+        ));
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /var/tmp    btrfs  {opts},subvol=@tmp        0 0\n"
+        ));
+    } else {
+        fstab.push_str(&format!(
+            "UUID={root_uuid}  /  {}  {}  0 1\n",
+            cfg.filesystem.label(),
+            opts
+        ));
+    }
+
+    if let Some(esp) = &p.esp {
+        let esp_uuid = uuid_of(r, esp);
+        fstab.push_str(&format!(
+            "\n# UEFI system partition\nUUID={esp_uuid}  /boot/efi  vfat  umask=0077,shortname=winnt  0 2\n"
+        ));
+    }
+
+    if let Some(swap) = &p.swap {
+        let swap_uuid = uuid_of(r, swap);
+        fstab.push_str(&format!("\n# swap\nUUID={swap_uuid}  none  swap  sw  0 0\n"));
+    }
+
+    if cfg.swap == SwapChoice::Zram {
+        fstab.push_str(
+            "\n# Swap is provided by zram (see /etc/local.d/sanus.start).\n\
+             # No on-disk swap: it costs a partition and buys nothing on an SSD.\n",
+        );
+    }
+
+    fstab.push_str("\n# tmpfs, so the browser cache never touches the SSD.\n");
+    fstab.push_str("tmpfs  /tmp  tmpfs  rw,nosuid,nodev,noatime,mode=1777,size=50%  0 0\n");
+
+    r.write_target(target, "/etc/fstab", &fstab)?;
+
+    // crypttab, if we encrypted.
+    if cfg.encryption == Encryption::Luks {
+        let crypttab = format!(
+            "# /etc/crypttab — generated by the SanusOS installer.\n\
+             # <name>  <device>  <keyfile>  <options>\n\
+             {CRYPT_NAME}  UUID={root_uuid}  none  luks,discard\n"
+        );
+        r.write_target(target, "/etc/crypttab", &crypttab)?;
+    }
+
+    Ok(())
+}
+
+// ──────────────────────────────────────────────────────────────── chroot ─────
+
+fn enter_chroot(r: &Runner) -> Result<()> {
+    for (src, dst) in [
+        ("/dev", "/dev"),
+        ("/proc", "/proc"),
+        ("/sys", "/sys"),
+        ("/run", "/run"),
+    ] {
+        let target = format!("{TARGET}{dst}");
+        std::fs::create_dir_all(&target).ok();
+        r.run("mount", &["--rbind", src, &target])?;
+    }
+    // /sys must not be shared, or grub-install can misbehave on EFI.
+    let _ = r.try_run("mount", &["--make-rslave", &format!("{TARGET}/sys")]);
+    Ok(())
+}
+
+fn leave_chroot(r: &Runner) -> Result<()> {
+    for dst in ["/run", "/sys", "/proc", "/dev"] {
+        let target = format!("{TARGET}{dst}");
+        let _ = r.try_run("umount", &["-R", &target]);
+        let _ = r.try_run("umount", &["-l", &target]);
+    }
+    Ok(())
+}
+
+pub(crate) fn in_chroot(r: &Runner, script: &str) -> Result<()> {
+    let path = format!("{TARGET}/tmp/sanus-chroot.sh");
+    if !r.dry_run() {
+        std::fs::create_dir_all(format!("{TARGET}/tmp")).ok();
+        std::fs::write(&path, script).with_context(|| format!("writing {path}"))?;
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).ok();
+        }
+    }
+    r.run("chroot", &[TARGET, "/bin/bash", "/tmp/sanus-chroot.sh"])?;
+    let _ = std::fs::remove_file(&path);
+    Ok(())
+}
+
+fn configure_in_chroot(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
+    r.phase("Configuring the system");
+
+    let mut s = String::new();
+    s.push_str("#!/bin/bash\n");
+    s.push_str("set -euo pipefail\n");
+    s.push_str("export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n");
+    s.push_str("export SANUS_OS=1\n\n");
+
+    // ── hostname ─────────────────────────────────────────────────────────
+    s.push_str(&format!("echo '{}' > /etc/hostname\n", cfg.hostname));
+    s.push_str(&format!(
+        "cat > /etc/hosts <<'EOF'\n\
+         # SanusOS\n\
+         127.0.0.1   localhost\n\
+         ::1         localhost\n\
+         127.0.1.1   {h}.localdomain {h}\n\
+         EOF\n\n",
+        h = cfg.hostname
+    ));
+
+    // ── locale ───────────────────────────────────────────────────────────
+    s.push_str(&format!(
+        "cat > /etc/locale.gen <<'EOF'\n{}\nEOF\n",
+        cfg.locale
+    ));
+    s.push_str("locale-gen || true\n");
+    s.push_str(&format!(
+        "cat > /etc/env.d/02locale <<'EOF'\nLANG=\"{l}\"\nLC_ALL=\"{l}\"\nEOF\n",
+        l = cfg.locale
+    ));
+    s.push_str("env-update || true\n\n");
+
+    // ── timezone, clock ──────────────────────────────────────────────────
+    s.push_str(&format!(
+        "ln -sf /usr/share/zoneinfo/{tz} /etc/localtime\n",
+        tz = cfg.timezone
+    ));
+    s.push_str(&format!("echo '{}' > /etc/timezone\n", cfg.timezone));
+    s.push_str("hwclock --systohc --utc || true\n\n");
+
+    // ── console keymap (OpenRC) ──────────────────────────────────────────
+    s.push_str(&format!(
+        "cat > /etc/conf.d/keymaps <<'EOF'\nkeymap=\"{k}\"\nwindowkeys=\"yes\"\nEOF\n\n",
+        k = cfg.keymap
+    ));
+
+    // ── users ────────────────────────────────────────────────────────────
+    s.push_str(&format!(
+        "useradd --create-home --shell /bin/bash --groups wheel,audio,video,render,input,plugdev,gamemode,usb,kvm '{u}' || \
+         useradd --create-home --shell /bin/bash '{u}'\n",
+        u = cfg.username
+    ));
+    s.push_str(&format!(
+        "echo '{u}:{p}' | chpasswd\n",
+        u = cfg.username,
+        p = cfg.user_password.replace('\'', "'\\''")
+    ));
+    if !cfg.root_password.is_empty() {
+        s.push_str(&format!(
+            "echo 'root:{p}' | chpasswd\n",
+            p = cfg.root_password.replace('\'', "'\\''")
+        ));
+    } else {
+        s.push_str("passwd -l root || true\n");
+    }
+    s.push_str("cat > /etc/sudoers.d/10-sanus <<'EOF'\n");
+    s.push_str("%wheel ALL=(ALL:ALL) ALL\n");
+    s.push_str("%wheel ALL=(ALL:ALL) NOPASSWD: /usr/bin/sanus-gaming, /usr/bin/sanus-rice\n");
+    s.push_str("EOF\nchmod 0440 /etc/sudoers.d/10-sanus\n\n");
+
+    // ── remove the live-medium glue ──────────────────────────────────────
+    // The target must not autologin root and must not offer the live menu.
+    // 40-iso.sh patched /etc/inittab for the live boot and left a backup;
+    // the live medium may also have enabled the OpenRC agetty.tty1 service.
+    // Restore / undo both BEFORE configuring services or applying the rice,
+    // so the result is a normal login (Minimal) or greetd on tty1 (Full).
+    s.push_str("# remove the live-medium glue (restore a normal login)\n");
+    s.push_str("if [[ -f /etc/inittab.sanus-orig ]]; then mv -f /etc/inittab.sanus-orig /etc/inittab; fi\n");
+    s.push_str("rm -f /etc/sanus-live /etc/conf.d/agetty.tty1 \\\n");
+    s.push_str("      /etc/profile.d/99-sanus-live.sh /usr/local/bin/sanus-live-session\n");
+    // If sysvinit's inittab already spawns a getty on tty1, the OpenRC agetty
+    // service is redundant there; drop it so the two cannot fight over the VT.
+    s.push_str("if [[ -f /etc/inittab ]] && \\\n");
+    s.push_str("   grep -qE '^[[:space:]]*[^#][^:]*:[^:]*:[^:]*.*tty1' /etc/inittab; then\n");
+    s.push_str("  rc-update del agetty.tty1 default >/dev/null 2>&1 || true\n");
+    s.push_str("fi\n\n");
+
+    // ── services (OpenRC) ────────────────────────────────────────────────
+    let mut services = vec![
+        "dbus",
+        "elogind",
+        "NetworkManager",
+        "syslog-ng",
+        "acpid",
+        "sanus",
+        "ananicy-cpp",
+        "irqbalance",
+    ];
+    if cfg.enable_bluetooth {
+        services.push("bluetooth");
+    }
+    if cfg.enable_sshd {
+        services.push("sshd");
+    }
+    if cfg.enable_firewall {
+        services.push("nftables");
+    }
+    if cfg.profile == Profile::Full || cfg.profile == Profile::Plasma {
+        services.push("greetd");
+    }
+    s.push_str("for svc in ");
+    s.push_str(&services.join(" "));
+    s.push_str("; do\n  if [[ -x /etc/init.d/$svc ]]; then rc-update add \"$svc\" default >/dev/null 2>&1 || true; fi\ndone\n");
+    // greetd owns tty1 on a full install; a partial install keeps the getty.
+    if cfg.profile == Profile::Minimal {
+        s.push_str("rc-update del greetd default >/dev/null 2>&1 || true\n");
+    }
+    s.push('\n');
+
+    // ── apply the rice ───────────────────────────────────────────────────
+    if cfg.profile == Profile::Full && Path::new(&format!("{TARGET}/usr/bin/sanus-rice")).exists() {
+        s.push_str("sanus-rice --system --force || true\n");
+        s.push_str(&format!(
+            "chown -R {u}:{u} /home/{u}/.config /home/{u}/.local 2>/dev/null || true\n",
+            u = cfg.username
+        ));
+    }
+    if cfg.profile == Profile::Plasma && Path::new(&format!("{TARGET}/usr/bin/sanus-rice")).exists() {
+        // KDE Plasma instead of the Hyprland rice: keep the greetd login, but
+        // hand it a Plasma session rather than the Hyprland desktop.
+        s.push_str("cat > /etc/greetd/environments.toml <<'EOF'\nplasma\nEOF\n");
+    }
+
+    // ── profile-specific defaults ────────────────────────────────────────
+    if cfg.profile == Profile::Minimal {
+        s.push_str("cat > /etc/portage/package.mask/20-no-desktop <<'EOF'\n");
+        s.push_str("sanus-desktop/sanus-desktop\nsanus-theme/sanus-theme\nEOF\n");
+    }
+
+    // ── GPU selection ────────────────────────────────────────────────────
+    if cfg.nvidia {
+        s.push_str("if [[ -x /usr/bin/eselect ]]; then eselect opengl set nvidia 2>/dev/null || true; fi\n");
+    } else {
+        s.push_str("if [[ -x /usr/bin/eselect ]]; then eselect opengl set xorg 2>/dev/null || true; fi\n");
+    }
+    s.push('\n');
+
+    // ── record the install choices ───────────────────────────────────────
+    s.push_str("mkdir -p /etc/sanus\n");
+    s.push_str("cat > /etc/sanus/install.toml <<'EOF'\n");
+    s.push_str(&format!(
+        "# Written by the SanusOS installer on {}.\n\
+         # Re-running `sanus-installer --config /etc/sanus/install.toml`\n\
+         # reproduces this install exactly.\n\n{}",
+        chrono_now(),
+        toml::to_string_pretty(cfg).unwrap_or_default()
+    ));
+    s.push_str("EOF\n");
+    s.push_str(&format!(
+        "chmod 0600 /etc/sanus/install.toml\n\
+         printf 'SanusOS %s\\n' '{}' > /etc/sanus-release\n\n",
+        "1.0 (Ashen)"
+    ));
+
+    // ── purge anything machine-specific from the live medium ─────────────
+    s.push_str("rm -f /etc/machine-id; : > /etc/machine-id\n");
+    s.push_str("rm -f /etc/ssh/ssh_host_* || true\n");
+    s.push_str("rm -rf /root/.cache/* /home/*/.cache/* 2>/dev/null || true\n");
+    s.push_str("rm -rf /tmp/* /var/tmp/* 2>/dev/null || true\n");
+
+    let _ = p;
+    in_chroot(r, &s)
+}
+
+// ────────────────────────────────────────────────────────────── initramfs ────
+
+fn build_initramfs(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
+    r.phase("Building the initramfs");
+
+    let kver = r
+        .capture("chroot", &[TARGET, "/bin/bash", "-lc", "ls /lib/modules | sort -V | tail -n1"])
+        .unwrap_or_default();
+    if kver.is_empty() {
+        bail!("no kernel modules found in the new system — did the copy succeed?");
+    }
+    r.info(format!("kernel {kver}"));
+
+    let mut extra = String::new();
+    if cfg.encryption == Encryption::Luks {
+        extra.push_str(" --add crypt --add dm ");
+    }
+    if cfg.filesystem == Filesystem::Btrfs {
+        extra.push_str(" --add btrfs ");
+    }
+
+    let script = format!(
+        "#!/bin/bash\nset -euo pipefail\n\
+         export PATH=/usr/sbin:/usr/bin:/sbin:/bin\n\
+         mkdir -p /etc/dracut.conf.d\n\
+         cat > /etc/dracut.conf.d/10-sanus.conf <<'EOF'\n\
+         force_drivers+=\" overlay squashfs loop isofs sr_mod sd_mod ahci nvme usb-storage xhci_pci virtio_blk virtio_pci btrfs dm_crypt \"\n\
+         compress=\"zstd\"\n\
+         hostonly=\"yes\"\n\
+         early_microcode=\"yes\"\n\
+         EOF\n\
+         dracut --force --kver {kver}{extra} /boot/initramfs-{kver}.img\n",
+        kver = kver,
+        extra = extra
+    );
+    let _ = p;
+    in_chroot(r, &script)
+}
+
+// ──────────────────────────────────────────────────────────────── record ─────
+
+fn record_install(r: &Runner, cfg: &InstallConfig, _p: &Partitions) -> Result<()> {
+    r.phase("Recording the install");
+    // Copy our own log into the new system so the user can see what happened.
+    if !r.dry_run() {
+        let dst_dir = format!("{TARGET}/var/log");
+        std::fs::create_dir_all(&dst_dir).ok();
+        let dst = format!("{dst_dir}/sanus-install.log");
+        let _ = std::fs::copy(r.log_path(), &dst);
+    }
+    let _ = cfg;
+    Ok(())
+}
+
+fn teardown_target(r: &Runner) {
+    // Best effort, deepest first.
+    let candidates = [
+        format!("{TARGET}/var/tmp"),
+        format!("{TARGET}/var/log"),
+        format!("{TARGET}/var/cache"),
+        format!("{TARGET}/.snapshots"),
+        format!("{TARGET}/home"),
+        format!("{TARGET}/boot/efi"),
+        TARGET.to_string(),
+    ];
+    for c in candidates {
+        let _ = r.try_run("umount", &["-R", c.as_str()]);
+        let _ = r.try_run("umount", &["-l", c.as_str()]);
+    }
+    let _ = r.try_run("cryptsetup", &["close", CRYPT_NAME]);
+}
+
+fn chrono_now() -> String {
+    // No chrono dependency for one timestamp: ask date(1).
+    std::process::Command::new("date")
+        .arg("-u")
+        .arg("+%Y-%m-%dT%H:%M:%SZ")
+        .output()
+        .ok()
+        .and_then(|o| String::from_utf8(o.stdout).ok())
+        .map(|s| s.trim().to_string())
+        .unwrap_or_else(|| "unknown".into())
+}

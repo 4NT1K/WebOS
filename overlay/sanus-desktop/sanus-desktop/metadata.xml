@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>dev@sanusos.org</email>
+		<name>SanusOS</name>
+	</maintainer>
+	<longdescription lang="en">
+		Meta-package for the SanusOS desktop: Hyprland on Wayland, waybar, wofi,
+		greetd, the SanusOS rice, and the Wayland toolset.
+	</longdescription>
+	<use>
+		<flag name="bluetooth">Install the BlueZ stack and blueman.</flag>
+		<flag name="browser">Install Firefox as the default browser.</flag>
+	</use>
+</pkgmetadata>

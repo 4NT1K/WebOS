@@ -1,0 +1,26 @@
+SanusOS kernel sources
+======================
+
+This is the upstream Linux LTS tree with the SanusOS patch series applied.
+The series is not stored in the repository; it is resolved and hashed by
+`kernel/fetch-patches.sh` at build time.  See `kernel/patchset.conf` for the
+list and `kernel/README.md` for the rationale.
+
+The SanusOS config fragment is installed next to this file as
+`sanus-fragment.config`.  It is a *fragment*, not a full config: it is applied
+on top of upstream `defconfig`.
+
+Building by hand
+----------------
+
+    cd /usr/src/linux-6.12.0
+    make defconfig
+    scripts/kconfig/merge_config.sh -m .config sanus-fragment.config
+    make olddefconfig
+    make -j"$(nproc)" bzImage modules
+    make modules_install
+    cp arch/x86/boot/bzImage /boot/vmlinuz-$(make -s kernelrelease)
+    dracut --force --kver $(make -s kernelrelease)
+
+Installing the `sys-kernel/sanus-kernel` package does all of the above for you,
+and is the supported path.

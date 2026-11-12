@@ -1,0 +1,16 @@
+# Packages masked on SanusOS.
+# We do not ship systemd as PID 1; mask anything that hard-requires it.
+# NOTE: sys-apps/systemd-utils is *kept* — it is our udev provider on OpenRC.
+sys-apps/systemd
+# Keep our own kernel; do not let anything pull a vanilla dist-kernel.
+sys-kernel/gentoo-kernel
+sys-kernel/gentoo-kernel-bin
+sys-kernel/vanilla-kernel
+# Desktop environments we do not ship by default (keep the image light).
+# KDE Plasma is provided as an alternative profile via @desktop; unmask meta/apps.
+gnome-base/gnome
+gnome-base/gnome-shell
+xfce-base/xfce4-meta
+lxde-base/lxde-meta
+# Package managers from other distros.
+sys-apps/flatpak
