@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 cd /home/brah/sanusos
-INTERVAL=${STATUS_INTERVAL:-1800}
+INTERVAL=${STATUS_INTERVAL:-180}
 LOG=/tmp/sanus-status-updater.log
 
 snapshot() {
   local now_utc now_local
   now_utc=$(date -u +'%Y-%m-%d %H:%M:%S UTC')
   now_local=$(date +'%Y-%m-%d %H:%M:%S %Z')
-  echo "# Build status — ${now_utc}"
+  echo "# Build status (auto-updated ~every 3 min) — ${now_utc}"
   echo
   echo "- Local time: ${now_local}"
   echo "- Host: $(hostname 2>/dev/null || echo unknown)"
