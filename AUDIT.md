@@ -346,3 +346,20 @@ the tarball's digest.  Two separate defects caused this:
 
 With these fixes the installer tarball verifies, unpacks, and compiles inside
 the chroot.
+
+### Phase 7 — rootfs complete, corrective desktop emerge in progress
+
+- `./build.sh rootfs` finished with `rc=0` and exported
+  `build/rootfs` (~7.4 GB). `sanus-installer 1.0.0` is installed in the image.
+- The initial `@desktop` set emerge failed because `kde-plasma/plasma-meta` was
+  masked and the set mixed Hyprland/KDE atoms (`x11-libs/gtk+:4`, `qt6ct` block);
+  as a result Hyprland/Plasma/greetd are **missing** from the exported rootfs.
+- Corrected config (committed/pushed): unmask Plasma in `package.mask`, restore
+  Plasma to `@desktop` alongside Hyprland, fix `gui-libs/gtk:4`, drop `qt6ct`
+  (conflicts with `plasma-meta`), add Plasma USE/`lua_single_target` hints, sync
+  chroot config.
+- Corrective action running in container (logged to `build/desktop-fix.log`):
+  `emerge --keep-going --autounmask* --exclude www-client/firefox @desktop`
+  (~533 packages). On success: re-export rootfs and run `./build.sh iso`.
+- Risks: Plasma/OpenRC + global `-kde` may require further USE/dep fixes;
+  `www-client/firefox` excluded from this corrective pass to unblock resolution.
