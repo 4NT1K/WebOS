@@ -4,12 +4,21 @@ A lightweight, source-built gaming operating system based on **Gentoo**, with it
 kernel, its own installer, and a clean black / transparent desktop.
 
 ```
-      .------.
-     /        \
-    |  VELO   |
-    |  SNUS   |
-     \        /
-      '------'
+⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤
+⣿⡿⢯⡉⠱⢾⣇⣶⠋⣀⠾⢁⡰⠞⠁⢰⠋⠉⠀⣀⠾⠉⢀⡰⠞⠁
+⣿⢧⡈⢱⣶⡎⠉⣿⠶⠿⢶⣸⡇⠀⢀⡼⠄⠀⣀⠿⠀⢰⡎⠁⠀⠀
+⣿⠚⢳⡎⠉⢱⣶⠉⠀⠀⣴⠛⠓⢲⣾⡇⡄⠀⣿⠀⠀⢸⡇⠀⠀⠀
+⣿⣀⣸⣇⡰⠎⠉⠶⣀⣶⠉⢀⡰⠎⠉⠉⠉⣶⣿⣀⣀⣸⡇⠀⠀⠀
+⣿⠉⢉⣹⡇⠀⣀⠶⠿⠿⣀⢸⡇⠀⠀⢀⠶⠉⠉⠉⣹⠿⠷⠆⠀⠀
+⣿⠒⠚⠙⢳⣶⡃⠀⠀⠀⣼⣾⡇⠀⠀⢸⠀⠀⠀⣤⠓⠀⠀⠀⠀⠀
+⣿⢠⣤⣤⣤⣼⡅⠀⣤⠛⠀⠀⠘⢣⡄⢸⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀
+⣿⠓⠀⠀⠀⠘⢻⣿⠀⠀⠀⣰⠤⠤⠼⠿⣀⠀⠀⣿⠀⠀⠀⠀⠀⠀
+⣿⡰⠶⠶⠶⠶⣏⣿⠀⣀⠶⠁⠀⠀⠀⠀⠉⠶⣀⣿⠀⠀⠀⠀⠀⠀
+⣿⠉⠀⠀⠀⠀⠈⠿⣶⠉⠀⠀⠀⠀⢀⣠⣤⣀⣍⣿⣀⠀⠀⠀⠀⠀
+⣿⠀⢀⣀⣀⣀⡀⠀⠿⣀⠀⢀⡸⠿⠟⠀⠀⠀⠀⠀⠸⠄⠀⠀⠀⠀
+⣿⡰⠾⠉⠉⠉⠳⠶⣀⣿⣀⡎⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣿⠉⠀⠀⠀⠀⠀⠀⠉⠉⣿⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ```
 
 | | |
@@ -24,7 +33,7 @@ kernel, its own installer, and a clean black / transparent desktop.
 | **Bootloader** | GRUB2 (BIOS + UEFI), systemd-boot optional |
 | **Target** | x86_64, ~2 GB RAM idle-friendly, tuned for Steam/Proton/gamescope |
 
-WebOS is not a fork of Arch or of CachyOS. It targets the same *experience* CachyOS
+WebOS targets the same *experience* CachyOS
 does — a fast, gaming-first desktop with performance patches and sane defaults — but it is
 built the Gentoo way: your binaries come from source, the toolchain is yours, and the
 kernel is tuned for your machine.
@@ -66,7 +75,7 @@ sanusos/
 │   ├── package.accept_keywords/
 │   ├── package.license/
 │   ├── package.mask/
-│   ├── repos.conf/           # gentoo, sanus, third-party overlays, arch
+│   ├── repos.conf/           # gentoo, sanus, third-party overlays
 │   └── world                 # the WebOS package world file
 ├── kernel/
 │   ├── sanus-fragment.config # merge_config fragment applied over defconfig
@@ -140,9 +149,6 @@ them on first use on an installed system (they are not shipped in the rootfs).
 
 ### Installing applications
 
-`sys-apps/pacman` — pulled from the `arch` ebuild repository — is the
-application package manager. Once installed, applications come from the Arch
-repositories that `/etc/pacman.conf` points at (`core`, `extra`, `multilib`):
 
 ```bash
 sudo pacman -S firefox steam
@@ -150,7 +156,6 @@ sudo pacman -S steam   # Steam, from multilib/extra as applicable
 ```
 
 The Arch repositories themselves are declared in
-`overlay/sys-apps/pacman/files/pacman.conf`; the `::arch` ebuild repository
 carries pacman and the Arch-sourced packages.
 
 Output: `build/sanus-1.0-Ashen-amd64.iso` (~1.6 GB).

@@ -58,7 +58,6 @@ release: `1.0.x` all ship as Ashen.
       priority.
 - [ ] Every atom resolved from `guru` / `hyproverlay` / `steam-overlay` still
       exists in that overlay at the pinned commit you build against.
-- [ ] The Arch application repository (`::arch`) is wired in `config/repos.conf/`
       and `sys-apps/pacman` is in the world and in `sanus-base`'s RDEPEND.
 - [ ] `docs/` reflects reality (BUILD.md, ARCHITECTURE.md, this file).
 - [ ] `README.md` reflects reality (tree layout, build commands).
@@ -232,7 +231,6 @@ What is not, and why:
 * the third-party overlays (`guru`, `hyproverlay`, `steam-overlay`) are
   shallow-cloned at their moving HEAD, so the exact ebuild that satisfies an
   overlay atom can change between builds;
-* the Arch application repository (`arch`) is a shallow clone of the Arch
   packages overlay at moving HEAD, and pacman consumes Arch's moving repos.
 * `make.conf` targets `-march=x86-64-v3`, but a native rebuild differs;
 * `grub-mkrescue`, `mksquashfs` and `dracut` embed timestamps.

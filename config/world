@@ -29,7 +29,6 @@ sys-apps/ethtool
 sys-apps/gptfdisk
 sys-apps/iproute2
 sys-apps/lshw
-# sys-apps/pacman  # disabled temporarily (external arch overlay unavailable)
 sys-apps/pciutils
 sys-apps/ripgrep
 sys-apps/sdparm

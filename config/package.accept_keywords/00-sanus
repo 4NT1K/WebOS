@@ -15,7 +15,6 @@ sys-kernel/scx ~amd64
 */*::guru ~amd64
 */*::hyproverlay ~amd64
 */*::steam-overlay ~amd64
-*/*::arch ~amd64
 
 # SanusOS's own overlay.
 app-admin/sanus-installer ~amd64

@@ -31,7 +31,7 @@ sanusos/
 ├── config/                  Portage configuration injected into the chroot
 │   ├── make.conf            CFLAGS/USE/FEATURES for the whole distro
 │   ├── world                the base world file
-│   ├── repos.conf/          gentoo, sanus, guru, hyproverlay, steam-overlay, arch
+│   ├── repos.conf/          gentoo, sanus, guru, hyproverlay, steam-overlay
 │   ├── sets/{base,desktop,gaming,sanus-installer}
 │   └── package.{use,accept_keywords,license,mask}/
 ├── kernel/                  kernel metadata (not the sources)
@@ -83,13 +83,11 @@ SanusOS is four things stacked:
 * **Ebuild repositories** — `::gentoo` plus our `::sanus` overlay and three
   third-party overlays (`::guru`, `::hyproverlay`, `::steam-overlay`) that
   carry the Hyprland stack, the Steam launcher and the misc gaming tools, plus
-  the Arch Linux application repository (`::arch`) that provides pacman and
   the Arch application packages.
   Priority is `sanus (100) > gentoo (-1000) > third-party (-2000) >
-  arch (-3000)`, so the overlays are only consulted for packages `::gentoo` or
   the base stack do not carry. See [`BUILD.md`](BUILD.md#10-ebuild-repositories).
 * **Package manager** — the base system and the SanusOS meta sets are installed
-  with Portage (the Gentoo package manager). pacman — installed from the `::arch`
+  with Portage (the Gentoo package manager).
   repository as `sys-apps/pacman` — is the **application package manager**: once
   it is installed, applications come from the Arch repositories configured in
   `/etc/pacman.conf` (`core`, `extra`, `multilib`) via `pacman -S`. This gives a

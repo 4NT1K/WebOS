@@ -260,7 +260,7 @@ stage is killed hard, run `./build.sh distclean` (it umounts first) or
 | --- | --- |
 | `build/downloads/` | stage3, portage snapshot, `.sha256` sidecars. |
 | `build/cache/kernel-patches/` | resolved patch series, `series`, `INDEX`, `.lock`. |
-| `build/cache/repos/` | shallow clones of `::guru`, `::hyproverlay`, `::steam-overlay`, `::arch`. |
+| `build/cache/repos/` | shallow clones of `::guru`, `::hyproverlay`, `::steam-overlay`. |
 | `build/chroot/` | the build root (stage3 + portage tree + everything emerged). |
 | `build/rootfs/` | the exported, ready-to-install system. |
 | `build/live-root/` | `rootfs` + `livecd/` before squashfs. |
@@ -284,11 +284,10 @@ SanusOS builds against five repositories. Their `repos.conf` files live in
 | `guru` | `/var/db/repos/guru` | <https://github.com/gentoo-mirror/guru.git> | `-2000` | `mangohud`, `goverlay`, `cliphist`, `nwg-look`, `corectrl`, `lact`, `nerdfonts`, `swayimg`, … |
 | `hyproverlay` | `/var/db/repos/hyproverlay` | <https://codeberg.org/hyproverlay/hyproverlay.git> | `-2000` | `hyprland` and the `hypr*` tooling |
 | `steam-overlay` | `/var/db/repos/steam-overlay` | <https://github.com/anyc/steam-overlay.git> | `-2000` | `steam-launcher` |
-| `arch` | `/var/db/repos/arch` | <https://github.com/sgallagher/archlinux-portage.git> | `-3000` | pacman and the Arch application packages |
 
 **Priority** is "higher wins". `sanus` overrides everything; `gentoo` wins over
 the third-party overlays, so those are only ever consulted for packages
-`::gentoo` does not carry; `arch` is consulted only for applications the base
+`::gentoo` does not carry.
 system does not carry itself.
 
 The third-party overlays are cloned into `build/cache/repos/` by `fetch` and

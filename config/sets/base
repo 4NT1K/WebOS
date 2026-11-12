@@ -52,4 +52,3 @@ sys-power/thermald
 sys-apps/irqbalance
 sys-process/numactl
 sys-libs/libcap
-# sys-apps/pacman  # disabled temporarily (external arch overlay unavailable)

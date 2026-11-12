@@ -168,7 +168,6 @@ fetch() {
 # ::sanus overlay are handled separately.
 # Format: name|clone-url
 # Priority order (higher wins) is sanus > gentoo > these.
-# Note: the external "arch" overlay repo (sgallagher/archlinux-portage) was
 # removed because its upstream URL is currently inaccessible; SanusOS ships
 # sys-apps/pacman in its own overlay instead.
 SANUS_OVERLAYS=(
