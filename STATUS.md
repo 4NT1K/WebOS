@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 3 min) — 2026-11-12 16:54:35 UTC
+# Build status (auto-updated ~every 3 min) — 2026-11-12 16:57:37 UTC
 
-- Local time: 2026-11-12 16:54:35 GMT
+- Local time: 2026-11-12 16:57:37 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 59 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
->>> Jobs: 59 of 180 complete, 1 running                                 Load avg: 14.1, 11.5, 10.2
->>> Emerging (60 of 180) kde-plasma/union-6.8.3::gentoo
->>> Jobs: 59 of 180 complete, 1 running                                 Load avg: 14.1, 11.5, 10.2
->>> Jobs: 59 of 180 complete                                            Load avg: 16.2, 12.9, 10.9
->>> Installing (60 of 180) kde-plasma/union-6.8.3::gentoo
->>> Jobs: 59 of 180 complete, 1 merge wait                              Load avg: 16.2, 12.9, 10.9
->>> Completed (60 of 180) kde-plasma/union-6.8.3::gentoo
->>> Jobs: 59 of 180 complete                                            Load avg: 16.2, 12.9, 10.9
->>> Jobs: 60 of 180 complete                                            Load avg: 16.2, 12.9, 10.9
->>> Jobs: 60 of 180 complete, 1 running                                 Load avg: 16.2, 12.9, 10.9
->>> Emerging (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
->>> Jobs: 60 of 180 complete, 1 running                                 Load avg: 16.2, 12.9, 10.9
->>> Jobs: 60 of 180 complete                                            Load avg: 14.1, 12.6, 10.8
->>> Installing (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
->>> Jobs: 60 of 180 complete, 1 merge wait                              Load avg: 14.1, 12.6, 10.8
->>> Completed (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
->>> Jobs: 60 of 180 complete                                            Load avg: 14.1, 12.6, 10.8
->>> Jobs: 61 of 180 complete                                            Load avg: 14.1, 12.6, 10.8
->>> Jobs: 61 of 180 complete, 1 running                                 Load avg: 14.1, 12.6, 10.8
->>> Emerging (62 of 180) media-video/ffmpeg-9.0.2::gentoo
->>> Jobs: 61 of 180 complete, 1 running                                 Load avg: 14.1, 12.6, 10.8
->>> Jobs: 61 of 180 complete                                            Load avg: 15.7, 13.6, 11.3
->>> Installing (62 of 180) media-video/ffmpeg-9.0.2::gentoo
->>> Jobs: 61 of 180 complete, 1 merge wait                              Load avg: 15.7, 13.6, 11.3
->>> Completed (62 of 180) media-video/ffmpeg-9.0.2::gentoo
->>> Jobs: 61 of 180 complete                                            Load avg: 14.6, 13.4, 11.3
->>> Jobs: 62 of 180 complete                                            Load avg: 14.6, 13.4, 11.3
->>> Jobs: 62 of 180 complete, 1 running                                 Load avg: 14.6, 13.4, 11.3
->>> Emerging (63 of 180) media-libs/libcanberra-0.30-r8::gentoo
->>> Jobs: 62 of 180 complete, 1 running                                 Load avg: 14.6, 13.4, 11.3
->>> Jobs: 62 of 180 complete                                            Load avg: 12.5, 13.0, 11.2
->>> Installing (63 of 180) media-libs/libcanberra-0.30-r8::gentoo
->>> Jobs: 62 of 180 complete, 1 merge wait                              Load avg: 12.5, 13.0, 11.2
->>> Completed (63 of 180) media-libs/libcanberra-0.30-r8::gentoo
->>> Jobs: 62 of 180 complete                                            Load avg: 12.5, 13.0, 11.2
->>> Jobs: 63 of 180 complete                                            Load avg: 12.5, 13.0, 11.2
->>> Jobs: 63 of 180 complete, 1 running                                 Load avg: 12.5, 13.0, 11.2
->>> Emerging (64 of 180) media-video/pipewire-1.6.11::gentoo
->>> Jobs: 63 of 180 complete, 1 running                                 Load avg: 12.5, 13.0, 11.2
+>>> Jobs: 68 of 180 complete                                            Load avg: 9.4, 12.2, 11.2
+>>> Jobs: 68 of 180 complete, 1 running                                 Load avg: 9.4, 12.2, 11.2
+>>> Emerging (69 of 180) kde-frameworks/kfilemetadata-6.31.0::gentoo
+>>> Jobs: 68 of 180 complete, 1 running                                 Load avg: 9.4, 12.2, 11.2
+>>> Jobs: 68 of 180 complete                                            Load avg: 10.7, 12.3, 11.3
+>>> Installing (69 of 180) kde-frameworks/kfilemetadata-6.31.0::gentoo
+>>> Jobs: 68 of 180 complete, 1 merge wait                              Load avg: 10.7, 12.3, 11.3
+>>> Completed (69 of 180) kde-frameworks/kfilemetadata-6.31.0::gentoo
+>>> Jobs: 68 of 180 complete                                            Load avg: 10.7, 12.3, 11.3
+>>> Jobs: 69 of 180 complete                                            Load avg: 10.7, 12.3, 11.3
+>>> Jobs: 69 of 180 complete, 1 running                                 Load avg: 10.7, 12.3, 11.3
+>>> Emerging (70 of 180) media-libs/pcaudiolib-1.2-r2::gentoo
+>>> Jobs: 69 of 180 complete, 1 running                                 Load avg: 10.7, 12.3, 11.3
+>>> Jobs: 69 of 180 complete                                            Load avg: 9.3, 12.0, 11.2
+>>> Installing (70 of 180) media-libs/pcaudiolib-1.2-r2::gentoo
+>>> Jobs: 69 of 180 complete, 1 merge wait                              Load avg: 9.3, 12.0, 11.2
+>>> Completed (70 of 180) media-libs/pcaudiolib-1.2-r2::gentoo
+>>> Jobs: 69 of 180 complete                                            Load avg: 9.3, 12.0, 11.2
+>>> Jobs: 70 of 180 complete                                            Load avg: 9.3, 12.0, 11.2
+>>> Jobs: 70 of 180 complete, 1 running                                 Load avg: 9.3, 12.0, 11.2
+>>> Emerging (71 of 180) media-sound/sox-14.7.0.9::gentoo
+>>> Jobs: 70 of 180 complete, 1 running                                 Load avg: 9.3, 12.0, 11.2
+>>> Jobs: 70 of 180 complete                                            Load avg: 10.0, 12.0, 11.2
+>>> Installing (71 of 180) media-sound/sox-14.7.0.9::gentoo
+>>> Jobs: 70 of 180 complete, 1 merge wait                              Load avg: 10.0, 12.0, 11.2
+>>> Completed (71 of 180) media-sound/sox-14.7.0.9::gentoo
+>>> Jobs: 70 of 180 complete                                            Load avg: 10.0, 12.0, 11.2
+>>> Jobs: 71 of 180 complete                                            Load avg: 10.0, 12.0, 11.2
+>>> Jobs: 71 of 180 complete, 1 running                                 Load avg: 10.0, 12.0, 11.2
+>>> Emerging (72 of 180) media-libs/pulseaudio-qt-1.9.0::gentoo
+>>> Jobs: 71 of 180 complete, 1 running                                 Load avg: 10.0, 12.0, 11.2
+>>> Jobs: 71 of 180 complete                                            Load avg: 10.4, 12.0, 11.2
+>>> Installing (72 of 180) media-libs/pulseaudio-qt-1.9.0::gentoo
+>>> Jobs: 71 of 180 complete, 1 merge wait                              Load avg: 10.4, 12.0, 11.2
+>>> Completed (72 of 180) media-libs/pulseaudio-qt-1.9.0::gentoo
+>>> Jobs: 71 of 180 complete                                            Load avg: 9.6, 11.8, 11.1
+>>> Jobs: 72 of 180 complete                                            Load avg: 9.6, 11.8, 11.1
+>>> Jobs: 72 of 180 complete, 1 running                                 Load avg: 9.6, 11.8, 11.1
+>>> Emerging (73 of 180) media-libs/libheif-1.23.7::gentoo
+>>> Jobs: 72 of 180 complete, 1 running                                 Load avg: 9.6, 11.8, 11.1
 ```
 - Result: rc=1
 
