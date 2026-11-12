@@ -1,17 +1,10 @@
-# Build status (auto-updated ~every 3 min) — 2026-11-12 17:00:38 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 17:00:42 UTC
 
-- Local time: 2026-11-12 17:00:38 GMT
+- Local time: 2026-11-12 17:00:42 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 78 of 180 complete                                            Load avg: 9.5, 11.7, 11.2
->>> Jobs: 79 of 180 complete                                            Load avg: 9.5, 11.7, 11.2
->>> Jobs: 79 of 180 complete, 1 running                                 Load avg: 9.5, 11.7, 11.2
->>> Emerging (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
->>> Jobs: 79 of 180 complete, 1 running                                 Load avg: 9.5, 11.7, 11.2
->>> Jobs: 79 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
->>> Installing (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
 >>> Jobs: 79 of 180 complete, 1 merge wait                              Load avg: 10.2, 11.8, 11.2
 >>> Completed (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
 >>> Jobs: 79 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
@@ -45,6 +38,13 @@
 >>> Jobs: 82 of 180 complete, 3 running                                 Load avg: 7.2, 10.8, 11.0
 >>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 8.2, 11.0, 11.0
 >>> Jobs: 82 of 180 complete, 1 running, 1 merge wait                   Load avg: 9.5, 11.2, 11.1
+>>> Jobs: 82 of 180 complete, 2 merge wait                              Load avg: 9.7, 11.1, 11.1
+>>> Installing (83 of 180) dev-qt/qtspeech-6.11.3::gentoo
+>>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
+>>> Installing (84 of 180) kde-frameworks/kauth-6.31.0::gentoo
+>>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
+>>> Installing (85 of 180) kde-plasma/kpipewire-6.8.3::gentoo
+>>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
 ```
 - Result: rc=1
 
