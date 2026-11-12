@@ -121,9 +121,6 @@ grub-mkrescue \
 	--output="${ISO_OUT}" \
 	--product-name="WebOS" \
 	--product-version="${SANUS_VERSION_FULL}" \
-	--publisher="WebOS Project" \
-	--preparer="WebOS build system" \
-	--appid="WebOS Live/Install" \
 	"${ISO_STAGING}" \
 	|| die "grub-mkrescue failed"
 
