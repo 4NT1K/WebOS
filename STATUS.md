@@ -1,6 +1,6 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:26:18 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:31:20 UTC
 
-- Local time: 2026-11-12 18:26:18 GMT
+- Local time: 2026-11-12 18:31:20 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
@@ -78,10 +78,18 @@ rc=0
 ```
 - Result: rc=0
 
+## iso-build
+```
+==> iso: building live medium
+fail missing host tool: mksquashfs
+rc=1
+```
+- Result: rc=1
+
 ## Artifacts
 ```
 total 20K
--rwxr-xr-x 1 root root 6.4M Nov 12 02:18 build/chroot/usr/bin/sanus-installer
+-rwxr-xr-x 1 root root 6.4M Nov 12 18:30 build/chroot/usr/bin/sanus-installer
 iso: (none)
 checksums: (none)
 ```
