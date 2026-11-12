@@ -1,37 +1,10 @@
-# Build status (auto-updated ~every 3 min) — 2026-11-12 16:48:31 UTC
+# Build status (auto-updated ~every 3 min) — 2026-11-12 16:51:33 UTC
 
-- Local time: 2026-11-12 16:48:31 GMT
+- Local time: 2026-11-12 16:51:33 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 53 of 180 complete                                            Load avg: 8.5, 10.3, 9.7
->>> Jobs: 53 of 180 complete, 1 running                                 Load avg: 8.5, 10.3, 9.7
->>> Emerging (54 of 180) kde-frameworks/kdesu-6.31.0::gentoo
->>> Jobs: 53 of 180 complete, 1 running                                 Load avg: 8.5, 10.3, 9.7
->>> Jobs: 53 of 180 complete                                            Load avg: 8.2, 10.2, 9.7
->>> Installing (54 of 180) kde-frameworks/kdesu-6.31.0::gentoo
->>> Jobs: 53 of 180 complete, 1 merge wait                              Load avg: 8.2, 10.2, 9.7
->>> Completed (54 of 180) kde-frameworks/kdesu-6.31.0::gentoo
->>> Jobs: 53 of 180 complete                                            Load avg: 8.2, 10.2, 9.7
->>> Jobs: 54 of 180 complete                                            Load avg: 8.2, 10.2, 9.7
->>> Jobs: 54 of 180 complete, 1 running                                 Load avg: 8.2, 10.2, 9.7
->>> Emerging (55 of 180) lxqt-base/lxqt-policykit-2.5.0::gentoo
->>> Jobs: 54 of 180 complete, 1 running                                 Load avg: 8.2, 10.2, 9.7
->>> Jobs: 54 of 180 complete                                            Load avg: 7.6, 10.0, 9.6
->>> Installing (55 of 180) lxqt-base/lxqt-policykit-2.5.0::gentoo
->>> Jobs: 54 of 180 complete, 1 merge wait                              Load avg: 7.6, 10.0, 9.6
->>> Completed (55 of 180) lxqt-base/lxqt-policykit-2.5.0::gentoo
->>> Jobs: 54 of 180 complete                                            Load avg: 7.27, 9.93, 9.60
->>> Jobs: 55 of 180 complete                                            Load avg: 7.27, 9.93, 9.60
->>> Jobs: 55 of 180 complete, 1 running                                 Load avg: 7.27, 9.93, 9.60
->>> Emerging (56 of 180) kde-frameworks/kxmlgui-6.31.0::gentoo
->>> Jobs: 55 of 180 complete, 1 running                                 Load avg: 7.27, 9.93, 9.60
->>> Jobs: 55 of 180 complete                                            Load avg: 10.0, 10.4, 9.8
->>> Installing (56 of 180) kde-frameworks/kxmlgui-6.31.0::gentoo
->>> Jobs: 55 of 180 complete, 1 merge wait                              Load avg: 10.0, 10.4, 9.8
->>> Completed (56 of 180) kde-frameworks/kxmlgui-6.31.0::gentoo
->>> Jobs: 55 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
 >>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
 >>> Jobs: 56 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
 >>> Emerging (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
@@ -45,6 +18,33 @@
 >>> Jobs: 57 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
 >>> Emerging (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
 >>> Jobs: 57 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
+>>> Jobs: 57 of 180 complete                                            Load avg: 11.7, 10.7, 9.9
+>>> Installing (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
+>>> Jobs: 57 of 180 complete, 1 merge wait                              Load avg: 11.7, 10.7, 9.9
+>>> Completed (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
+>>> Jobs: 57 of 180 complete                                            Load avg: 11.7, 10.7, 9.9
+>>> Jobs: 58 of 180 complete                                            Load avg: 11.7, 10.7, 9.9
+>>> Jobs: 58 of 180 complete, 1 running                                 Load avg: 11.7, 10.7, 9.9
+>>> Emerging (59 of 180) kde-plasma/qqc2-breeze-style-6.8.3::gentoo
+>>> Jobs: 58 of 180 complete, 1 running                                 Load avg: 11.7, 10.7, 9.9
+>>> Jobs: 58 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
+>>> Installing (59 of 180) kde-plasma/qqc2-breeze-style-6.8.3::gentoo
+>>> Jobs: 58 of 180 complete, 1 merge wait                              Load avg: 14.1, 11.5, 10.2
+>>> Completed (59 of 180) kde-plasma/qqc2-breeze-style-6.8.3::gentoo
+>>> Jobs: 58 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
+>>> Jobs: 59 of 180 complete                                            Load avg: 14.1, 11.5, 10.2
+>>> Jobs: 59 of 180 complete, 1 running                                 Load avg: 14.1, 11.5, 10.2
+>>> Emerging (60 of 180) kde-plasma/union-6.8.3::gentoo
+>>> Jobs: 59 of 180 complete, 1 running                                 Load avg: 14.1, 11.5, 10.2
+>>> Jobs: 59 of 180 complete                                            Load avg: 16.2, 12.9, 10.9
+>>> Installing (60 of 180) kde-plasma/union-6.8.3::gentoo
+>>> Jobs: 59 of 180 complete, 1 merge wait                              Load avg: 16.2, 12.9, 10.9
+>>> Completed (60 of 180) kde-plasma/union-6.8.3::gentoo
+>>> Jobs: 59 of 180 complete                                            Load avg: 16.2, 12.9, 10.9
+>>> Jobs: 60 of 180 complete                                            Load avg: 16.2, 12.9, 10.9
+>>> Jobs: 60 of 180 complete, 1 running                                 Load avg: 16.2, 12.9, 10.9
+>>> Emerging (61 of 180) kde-plasma/kdesu-gui-6.8.3::gentoo
+>>> Jobs: 60 of 180 complete, 1 running                                 Load avg: 16.2, 12.9, 10.9
 ```
 - Result: rc=1
 
