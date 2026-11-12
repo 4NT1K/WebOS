@@ -1,37 +1,10 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 18:16:15 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:21:17 UTC
 
-- Local time: 2026-11-12 18:16:15 GMT
+- Local time: 2026-11-12 18:21:17 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 165 of 180 complete, 1 running                                Load avg: 10.0, 14.9, 15.1
->>> Jobs: 165 of 180 complete                                           Load avg: 10.6, 15.0, 15.1
->>> Installing (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
->>> Jobs: 165 of 180 complete, 1 merge wait                             Load avg: 10.6, 15.0, 15.1
->>> Completed (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
->>> Jobs: 165 of 180 complete                                           Load avg: 9.9, 14.8, 15.0
->>> Jobs: 166 of 180 complete                                           Load avg: 9.9, 14.8, 15.0
->>> Jobs: 166 of 180 complete, 1 running                                Load avg: 9.9, 14.8, 15.0
->>> Emerging (167 of 180) x11-misc/pcmanfm-1.3.2-r2::gentoo
->>> Jobs: 166 of 180 complete, 1 running                                Load avg: 9.9, 14.8, 15.0
->>> Jobs: 166 of 180 complete                                           Load avg: 9.3, 14.6, 14.9
->>> Installing (167 of 180) x11-misc/pcmanfm-1.3.2-r2::gentoo
->>> Jobs: 166 of 180 complete, 1 merge wait                             Load avg: 9.3, 14.6, 14.9
->>> Completed (167 of 180) x11-misc/pcmanfm-1.3.2-r2::gentoo
->>> Jobs: 166 of 180 complete                                           Load avg: 9.3, 14.6, 14.9
->>> Jobs: 167 of 180 complete                                           Load avg: 9.3, 14.6, 14.9
->>> Jobs: 167 of 180 complete, 1 running                                Load avg: 9.3, 14.6, 14.9
->>> Emerging (168 of 180) kde-plasma/kscreenlocker-6.8.3::gentoo
->>> Jobs: 167 of 180 complete, 1 running                                Load avg: 9.3, 14.6, 14.9
->>> Jobs: 167 of 180 complete                                           Load avg: 10.7, 14.4, 14.9
->>> Installing (168 of 180) kde-plasma/kscreenlocker-6.8.3::gentoo
->>> Jobs: 167 of 180 complete, 1 merge wait                             Load avg: 10.7, 14.4, 14.9
->>> Completed (168 of 180) kde-plasma/kscreenlocker-6.8.3::gentoo
->>> Jobs: 167 of 180 complete                                           Load avg: 10.7, 14.4, 14.9
->>> Jobs: 168 of 180 complete                                           Load avg: 10.7, 14.4, 14.9
->>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
->>> Emerging (169 of 180) kde-plasma/kwin-6.8.3::gentoo
 >>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
 >>> Jobs: 168 of 180 complete                                           Load avg: 21.0, 19.4, 17.4
 >>> Installing (169 of 180) kde-plasma/kwin-6.8.3::gentoo
@@ -45,6 +18,33 @@
 >>> Jobs: 169 of 180 complete                                           Load avg: 20.1, 20.2, 18.7
 >>> Installing (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
 >>> Jobs: 169 of 180 complete, 1 merge wait                             Load avg: 20.1, 20.2, 18.7
+>>> Completed (170 of 180) kde-plasma/plasma-workspace-6.8.3::gentoo
+>>> Jobs: 169 of 180 complete                                           Load avg: 17.3, 19.6, 18.5
+>>> Jobs: 170 of 180 complete                                           Load avg: 17.3, 19.6, 18.5
+>>> Jobs: 170 of 180 complete, 1 running                                Load avg: 17.3, 19.6, 18.5
+>>> Emerging (171 of 180) kde-plasma/plasma-desktop-6.8.3::gentoo
+>>> Jobs: 170 of 180 complete, 1 running                                Load avg: 17.3, 19.6, 18.5
+>>> Jobs: 170 of 180 complete                                           Load avg: 20.7, 20.6, 19.2
+>>> Installing (171 of 180) kde-plasma/plasma-desktop-6.8.3::gentoo
+>>> Jobs: 170 of 180 complete, 1 merge wait                             Load avg: 20.7, 20.6, 19.2
+>>> Completed (171 of 180) kde-plasma/plasma-desktop-6.8.3::gentoo
+>>> Jobs: 170 of 180 complete                                           Load avg: 19.2, 20.3, 19.1
+>>> Jobs: 171 of 180 complete                                           Load avg: 19.2, 20.3, 19.1
+>>> Jobs: 171 of 180 complete, 1 running                                Load avg: 19.2, 20.3, 19.1
+>>> Emerging (172 of 180) kde-plasma/powerdevil-6.8.3::gentoo
+>>> Jobs: 171 of 180 complete, 1 running                                Load avg: 19.2, 20.3, 19.1
+>>> Jobs: 171 of 180 complete                                           Load avg: 18.3, 19.8, 19.0
+>>> Installing (172 of 180) kde-plasma/powerdevil-6.8.3::gentoo
+>>> Jobs: 171 of 180 complete, 1 merge wait                             Load avg: 18.3, 19.8, 19.0
+>>> Completed (172 of 180) kde-plasma/powerdevil-6.8.3::gentoo
+>>> Jobs: 171 of 180 complete                                           Load avg: 18.3, 19.8, 19.0
+>>> Jobs: 172 of 180 complete                                           Load avg: 18.3, 19.8, 19.0
+>>> Jobs: 172 of 180 complete, 1 running                                Load avg: 18.3, 19.8, 19.0
+>>> Emerging (173 of 180) kde-plasma/plasma-browser-integration-6.8.3::gentoo
+>>> Jobs: 172 of 180 complete, 1 running                                Load avg: 18.3, 19.8, 19.0
+>>> Jobs: 172 of 180 complete                                           Load avg: 16.9, 19.4, 18.9
+>>> Installing (173 of 180) kde-plasma/plasma-browser-integration-6.8.3::gentoo
+>>> Jobs: 172 of 180 complete, 1 merge wait                             Load avg: 16.9, 19.4, 18.9
 ```
 - Result: rc=1
 
