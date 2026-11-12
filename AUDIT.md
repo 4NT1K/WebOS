@@ -363,3 +363,7 @@ the chroot.
   (~533 packages). On success: re-export rootfs and run `./build.sh iso`.
 - Risks: Plasma/OpenRC + global `-kde` may require further USE/dep fixes;
   `www-client/firefox` excluded from this corrective pass to unblock resolution.
+
+## Final build
+- ISO built and verified: 2026-11-12 20:01 UTC
+- See build/verify.log and build/iso-build.log
