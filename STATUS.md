@@ -1,43 +1,10 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 17:56:06 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 18:01:08 UTC
 
-- Local time: 2026-11-12 17:56:06 GMT
+- Local time: 2026-11-12 18:01:08 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 160 of 180 complete, 1 running                                Load avg: 18.6, 17.1, 15.7
->>> Jobs: 160 of 180 complete                                           Load avg: 19.2, 17.3, 15.8
->>> Installing (161 of 180) net-libs/libnma-1.10.6-r2::gentoo
->>> Jobs: 160 of 180 complete, 1 merge wait                             Load avg: 19.2, 17.3, 15.8
->>> Completed (161 of 180) net-libs/libnma-1.10.6-r2::gentoo
->>> Jobs: 160 of 180 complete                                           Load avg: 17.9, 17.1, 15.7
->>> Jobs: 161 of 180 complete                                           Load avg: 17.9, 17.1, 15.7
->>> Jobs: 161 of 180 complete, 1 running                                Load avg: 17.9, 17.1, 15.7
->>> Emerging (162 of 180) x11-themes/adwaita-icon-theme-50.0-r1::gentoo
->>> Jobs: 161 of 180 complete, 1 running                                Load avg: 17.9, 17.1, 15.7
->>> Jobs: 161 of 180 complete                                           Load avg: 17.9, 17.1, 15.7
->>> Installing (162 of 180) x11-themes/adwaita-icon-theme-50.0-r1::gentoo
->>> Jobs: 161 of 180 complete, 1 merge wait                             Load avg: 17.9, 17.1, 15.7
->>> Completed (162 of 180) x11-themes/adwaita-icon-theme-50.0-r1::gentoo
->>> Jobs: 161 of 180 complete                                           Load avg: 15.5, 16.6, 15.6
->>> Jobs: 162 of 180 complete                                           Load avg: 15.5, 16.6, 15.6
->>> Jobs: 162 of 180 complete, 1 running                                Load avg: 15.5, 16.6, 15.6
->>> Emerging (163 of 180) virtual/freedesktop-icon-theme-0-r4::gentoo
->>> Jobs: 162 of 180 complete, 1 running                                Load avg: 15.5, 16.6, 15.6
->>> Jobs: 162 of 180 complete                                           Load avg: 15.5, 16.6, 15.6
->>> Installing (163 of 180) virtual/freedesktop-icon-theme-0-r4::gentoo
->>> Jobs: 162 of 180 complete, 1 merge wait                             Load avg: 15.5, 16.6, 15.6
->>> Completed (163 of 180) virtual/freedesktop-icon-theme-0-r4::gentoo
->>> Jobs: 162 of 180 complete                                           Load avg: 14.6, 16.4, 15.5
->>> Jobs: 163 of 180 complete                                           Load avg: 14.6, 16.4, 15.5
->>> Jobs: 163 of 180 complete, 1 running                                Load avg: 14.6, 16.4, 15.5
->>> Emerging (164 of 180) net-wireless/blueman-2.4.6::gentoo
->>> Jobs: 163 of 180 complete, 1 running                                Load avg: 14.6, 16.4, 15.5
->>> Jobs: 163 of 180 complete                                           Load avg: 11.1, 15.5, 15.2
->>> Installing (164 of 180) net-wireless/blueman-2.4.6::gentoo
->>> Jobs: 163 of 180 complete, 1 merge wait                             Load avg: 11.1, 15.5, 15.2
->>> Completed (164 of 180) net-wireless/blueman-2.4.6::gentoo
->>> Jobs: 163 of 180 complete                                           Load avg: 10.4, 15.2, 15.2
 >>> Jobs: 164 of 180 complete                                           Load avg: 10.4, 15.2, 15.2
 >>> Jobs: 164 of 180 complete, 1 running                                Load avg: 10.4, 15.2, 15.2
 >>> Emerging (165 of 180) gnome-extra/nm-applet-1.36.0::gentoo
@@ -45,6 +12,39 @@
 >>> Jobs: 164 of 180 complete                                           Load avg: 10.6, 15.1, 15.1
 >>> Installing (165 of 180) gnome-extra/nm-applet-1.36.0::gentoo
 >>> Jobs: 164 of 180 complete, 1 merge wait                             Load avg: 10.6, 15.1, 15.1
+>>> Completed (165 of 180) gnome-extra/nm-applet-1.36.0::gentoo
+>>> Jobs: 164 of 180 complete                                           Load avg: 10.0, 14.9, 15.1
+>>> Jobs: 165 of 180 complete                                           Load avg: 10.0, 14.9, 15.1
+>>> Jobs: 165 of 180 complete, 1 running                                Load avg: 10.0, 14.9, 15.1
+>>> Emerging (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
+>>> Jobs: 165 of 180 complete, 1 running                                Load avg: 10.0, 14.9, 15.1
+>>> Jobs: 165 of 180 complete                                           Load avg: 10.6, 15.0, 15.1
+>>> Installing (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
+>>> Jobs: 165 of 180 complete, 1 merge wait                             Load avg: 10.6, 15.0, 15.1
+>>> Completed (166 of 180) media-sound/pavucontrol-6.1-r1::gentoo
+>>> Jobs: 165 of 180 complete                                           Load avg: 9.9, 14.8, 15.0
+>>> Jobs: 166 of 180 complete                                           Load avg: 9.9, 14.8, 15.0
+>>> Jobs: 166 of 180 complete, 1 running                                Load avg: 9.9, 14.8, 15.0
+>>> Emerging (167 of 180) x11-misc/pcmanfm-1.3.2-r2::gentoo
+>>> Jobs: 166 of 180 complete, 1 running                                Load avg: 9.9, 14.8, 15.0
+>>> Jobs: 166 of 180 complete                                           Load avg: 9.3, 14.6, 14.9
+>>> Installing (167 of 180) x11-misc/pcmanfm-1.3.2-r2::gentoo
+>>> Jobs: 166 of 180 complete, 1 merge wait                             Load avg: 9.3, 14.6, 14.9
+>>> Completed (167 of 180) x11-misc/pcmanfm-1.3.2-r2::gentoo
+>>> Jobs: 166 of 180 complete                                           Load avg: 9.3, 14.6, 14.9
+>>> Jobs: 167 of 180 complete                                           Load avg: 9.3, 14.6, 14.9
+>>> Jobs: 167 of 180 complete, 1 running                                Load avg: 9.3, 14.6, 14.9
+>>> Emerging (168 of 180) kde-plasma/kscreenlocker-6.8.3::gentoo
+>>> Jobs: 167 of 180 complete, 1 running                                Load avg: 9.3, 14.6, 14.9
+>>> Jobs: 167 of 180 complete                                           Load avg: 10.7, 14.4, 14.9
+>>> Installing (168 of 180) kde-plasma/kscreenlocker-6.8.3::gentoo
+>>> Jobs: 167 of 180 complete, 1 merge wait                             Load avg: 10.7, 14.4, 14.9
+>>> Completed (168 of 180) kde-plasma/kscreenlocker-6.8.3::gentoo
+>>> Jobs: 167 of 180 complete                                           Load avg: 10.7, 14.4, 14.9
+>>> Jobs: 168 of 180 complete                                           Load avg: 10.7, 14.4, 14.9
+>>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
+>>> Emerging (169 of 180) kde-plasma/kwin-6.8.3::gentoo
+>>> Jobs: 168 of 180 complete, 1 running                                Load avg: 10.7, 14.4, 14.9
 ```
 - Result: rc=1
 
