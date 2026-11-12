@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 17:00:42 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 17:05:43 UTC
 
-- Local time: 2026-11-12 17:00:42 GMT
+- Local time: 2026-11-12 17:05:43 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 79 of 180 complete, 1 merge wait                              Load avg: 10.2, 11.8, 11.2
->>> Completed (80 of 180) app-accessibility/espeak-ng-1.52.0::gentoo
->>> Jobs: 79 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
->>> Jobs: 80 of 180 complete                                            Load avg: 10.2, 11.8, 11.2
->>> Jobs: 80 of 180 complete, 1 running                                 Load avg: 10.2, 11.8, 11.2
->>> Emerging (81 of 180) kde-plasma/kwrited-6.8.3::gentoo
->>> Jobs: 80 of 180 complete, 1 running                                 Load avg: 10.2, 11.8, 11.2
->>> Jobs: 80 of 180 complete                                            Load avg: 9.2, 11.5, 11.2
->>> Installing (81 of 180) kde-plasma/kwrited-6.8.3::gentoo
->>> Jobs: 80 of 180 complete, 1 merge wait                              Load avg: 9.2, 11.5, 11.2
->>> Completed (81 of 180) kde-plasma/kwrited-6.8.3::gentoo
->>> Jobs: 80 of 180 complete                                            Load avg: 9.2, 11.5, 11.2
->>> Jobs: 81 of 180 complete                                            Load avg: 9.2, 11.5, 11.2
->>> Jobs: 81 of 180 complete, 1 running                                 Load avg: 9.2, 11.5, 11.2
->>> Emerging (82 of 180) app-accessibility/speech-dispatcher-0.12.1::gentoo
->>> Jobs: 81 of 180 complete, 1 running                                 Load avg: 9.2, 11.5, 11.2
->>> Jobs: 81 of 180 complete                                            Load avg: 7.9, 11.1, 11.0
->>> Installing (82 of 180) app-accessibility/speech-dispatcher-0.12.1::gentoo
->>> Jobs: 81 of 180 complete, 1 merge wait                              Load avg: 7.9, 11.1, 11.0
->>> Completed (82 of 180) app-accessibility/speech-dispatcher-0.12.1::gentoo
->>> Jobs: 81 of 180 complete                                            Load avg: 7.9, 11.1, 11.0
->>> Jobs: 82 of 180 complete                                            Load avg: 7.9, 11.1, 11.0
->>> Jobs: 82 of 180 complete, 1 running                                 Load avg: 7.9, 11.1, 11.0
->>> Emerging (83 of 180) dev-qt/qtspeech-6.11.3::gentoo
->>> Jobs: 82 of 180 complete, 1 running                                 Load avg: 7.9, 11.1, 11.0
->>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 7.4, 10.9, 11.0
->>> Emerging (84 of 180) kde-frameworks/kauth-6.31.0::gentoo
->>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 7.4, 10.9, 11.0
->>> Jobs: 82 of 180 complete, 3 running                                 Load avg: 7.2, 10.8, 11.0
->>> Emerging (85 of 180) kde-plasma/kpipewire-6.8.3::gentoo
->>> Jobs: 82 of 180 complete, 3 running                                 Load avg: 7.2, 10.8, 11.0
->>> Jobs: 82 of 180 complete, 2 running                                 Load avg: 8.2, 11.0, 11.0
->>> Jobs: 82 of 180 complete, 1 running, 1 merge wait                   Load avg: 9.5, 11.2, 11.1
->>> Jobs: 82 of 180 complete, 2 merge wait                              Load avg: 9.7, 11.1, 11.1
->>> Installing (83 of 180) dev-qt/qtspeech-6.11.3::gentoo
 >>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
->>> Installing (84 of 180) kde-frameworks/kauth-6.31.0::gentoo
->>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
->>> Installing (85 of 180) kde-plasma/kpipewire-6.8.3::gentoo
->>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
+>>> Completed (83 of 180) dev-qt/qtspeech-6.11.3::gentoo
+>>> Jobs: 82 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
+>>> Jobs: 83 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
+>>> Completed (84 of 180) kde-frameworks/kauth-6.31.0::gentoo
+>>> Jobs: 83 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
+>>> Jobs: 84 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
+>>> Completed (85 of 180) kde-plasma/kpipewire-6.8.3::gentoo
+>>> Jobs: 84 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
+>>> Jobs: 85 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
+>>> Jobs: 85 of 180 complete, 1 running                                 Load avg: 9.1, 11.0, 11.0
+>>> Emerging (86 of 180) x11-base/xwayland-24.1.15::gentoo
+>>> Jobs: 85 of 180 complete, 1 running                                 Load avg: 9.1, 11.0, 11.0
+>>> Jobs: 85 of 180 complete                                            Load avg: 11.4, 11.4, 11.1
+>>> Installing (86 of 180) x11-base/xwayland-24.1.15::gentoo
+>>> Jobs: 85 of 180 complete, 1 merge wait                              Load avg: 11.4, 11.4, 11.1
+>>> Completed (86 of 180) x11-base/xwayland-24.1.15::gentoo
+>>> Jobs: 85 of 180 complete                                            Load avg: 11.4, 11.4, 11.1
+>>> Jobs: 86 of 180 complete                                            Load avg: 11.4, 11.4, 11.1
+>>> Jobs: 86 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.1
+>>> Emerging (87 of 180) gui-libs/hyprtoolkit-0.6.0::hyproverlay
+>>> Jobs: 86 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.1
+>>> Jobs: 86 of 180 complete                                            Load avg: 13.0, 11.7, 11.3
+>>> Installing (87 of 180) gui-libs/hyprtoolkit-0.6.0::hyproverlay
+>>> Jobs: 86 of 180 complete, 1 merge wait                              Load avg: 13.0, 11.7, 11.3
+>>> Completed (87 of 180) gui-libs/hyprtoolkit-0.6.0::hyproverlay
+>>> Jobs: 86 of 180 complete                                            Load avg: 13.0, 11.7, 11.3
+>>> Jobs: 87 of 180 complete                                            Load avg: 13.0, 11.7, 11.3
+>>> Jobs: 87 of 180 complete, 1 running                                 Load avg: 13.0, 11.7, 11.3
+>>> Emerging (88 of 180) gui-libs/hyprland-guiutils-0.2.2::hyproverlay
+>>> Jobs: 87 of 180 complete, 1 running                                 Load avg: 13.0, 11.7, 11.3
+>>> Jobs: 87 of 180 complete                                            Load avg: 11.4, 11.4, 11.2
+>>> Installing (88 of 180) gui-libs/hyprland-guiutils-0.2.2::hyproverlay
+>>> Jobs: 87 of 180 complete, 1 merge wait                              Load avg: 11.4, 11.4, 11.2
+>>> Completed (88 of 180) gui-libs/hyprland-guiutils-0.2.2::hyproverlay
+>>> Jobs: 87 of 180 complete                                            Load avg: 11.4, 11.4, 11.2
+>>> Jobs: 88 of 180 complete                                            Load avg: 11.4, 11.4, 11.2
+>>> Jobs: 88 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.2
+>>> Emerging (89 of 180) gui-wm/hyprland-0.57.2::hyproverlay
+>>> Jobs: 88 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.2
 ```
 - Result: rc=1
 
