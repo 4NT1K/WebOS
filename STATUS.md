@@ -1,37 +1,10 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 17:35:55 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 17:40:58 UTC
 
-- Local time: 2026-11-12 17:35:55 GMT
+- Local time: 2026-11-12 17:40:58 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 137 of 180 complete                                           Load avg: 13.0, 13.5, 13.8
->>> Jobs: 137 of 180 complete, 1 running                                Load avg: 13.0, 13.5, 13.8
->>> Emerging (138 of 180) gui-libs/xdg-desktop-portal-wlr-0.8.5::gentoo
->>> Jobs: 137 of 180 complete, 1 running                                Load avg: 13.0, 13.5, 13.8
->>> Jobs: 137 of 180 complete                                           Load avg: 12.1, 13.3, 13.7
->>> Installing (138 of 180) gui-libs/xdg-desktop-portal-wlr-0.8.5::gentoo
->>> Jobs: 137 of 180 complete, 1 merge wait                             Load avg: 12.1, 13.3, 13.7
->>> Completed (138 of 180) gui-libs/xdg-desktop-portal-wlr-0.8.5::gentoo
->>> Jobs: 137 of 180 complete                                           Load avg: 12.1, 13.3, 13.7
->>> Jobs: 138 of 180 complete                                           Load avg: 12.1, 13.3, 13.7
->>> Jobs: 138 of 180 complete, 1 running                                Load avg: 12.1, 13.3, 13.7
->>> Emerging (139 of 180) media-video/mpv-0.42.0::gentoo
->>> Jobs: 138 of 180 complete, 1 running                                Load avg: 12.1, 13.3, 13.7
->>> Jobs: 138 of 180 complete                                           Load avg: 13.1, 13.4, 13.8
->>> Installing (139 of 180) media-video/mpv-0.42.0::gentoo
->>> Jobs: 138 of 180 complete, 1 merge wait                             Load avg: 13.1, 13.4, 13.8
->>> Completed (139 of 180) media-video/mpv-0.42.0::gentoo
->>> Jobs: 138 of 180 complete                                           Load avg: 11.4, 13.0, 13.7
->>> Jobs: 139 of 180 complete                                           Load avg: 11.4, 13.0, 13.7
->>> Jobs: 139 of 180 complete, 1 running                                Load avg: 11.4, 13.0, 13.7
->>> Emerging (140 of 180) sys-apps/xdg-desktop-portal-gtk-1.15.3::gentoo
->>> Jobs: 139 of 180 complete, 1 running                                Load avg: 11.4, 13.0, 13.7
->>> Jobs: 139 of 180 complete                                           Load avg: 10.7, 12.9, 13.6
->>> Installing (140 of 180) sys-apps/xdg-desktop-portal-gtk-1.15.3::gentoo
->>> Jobs: 139 of 180 complete, 1 merge wait                             Load avg: 10.7, 12.9, 13.6
->>> Completed (140 of 180) sys-apps/xdg-desktop-portal-gtk-1.15.3::gentoo
->>> Jobs: 139 of 180 complete                                           Load avg: 10.7, 12.9, 13.6
 >>> Jobs: 140 of 180 complete                                           Load avg: 10.7, 12.9, 13.6
 >>> Jobs: 140 of 180 complete, 1 running                                Load avg: 10.7, 12.9, 13.6
 >>> Emerging (141 of 180) x11-terms/alacritty-0.17.0::gentoo
@@ -45,6 +18,33 @@
 >>> Jobs: 141 of 180 complete, 1 running                                Load avg: 10.4, 12.6, 13.5
 >>> Emerging (142 of 180) x11-terms/wezterm-20260929.043349::gentoo
 >>> Jobs: 141 of 180 complete, 1 running                                Load avg: 10.4, 12.6, 13.5
+>>> Jobs: 141 of 180 complete                                           Load avg: 9.3, 12.7, 13.5
+>>> Installing (142 of 180) x11-terms/wezterm-20260929.043349::gentoo
+>>> Jobs: 141 of 180 complete, 1 merge wait                             Load avg: 9.3, 12.7, 13.5
+>>> Completed (142 of 180) x11-terms/wezterm-20260929.043349::gentoo
+>>> Jobs: 141 of 180 complete                                           Load avg: 8.7, 12.6, 13.4
+>>> Jobs: 142 of 180 complete                                           Load avg: 8.7, 12.6, 13.4
+>>> Jobs: 142 of 180 complete, 1 running                                Load avg: 8.7, 12.6, 13.4
+>>> Emerging (143 of 180) kde-plasma/libksysguard-6.8.3::gentoo
+>>> Jobs: 142 of 180 complete, 1 running                                Load avg: 8.7, 12.6, 13.4
+>>> Jobs: 142 of 180 complete                                           Load avg: 11.7, 12.8, 13.5
+>>> Installing (143 of 180) kde-plasma/libksysguard-6.8.3::gentoo
+>>> Jobs: 142 of 180 complete, 1 merge wait                             Load avg: 11.7, 12.8, 13.5
+>>> Completed (143 of 180) kde-plasma/libksysguard-6.8.3::gentoo
+>>> Jobs: 142 of 180 complete                                           Load avg: 11.7, 12.8, 13.5
+>>> Jobs: 143 of 180 complete                                           Load avg: 11.7, 12.8, 13.5
+>>> Jobs: 143 of 180 complete, 1 running                                Load avg: 11.7, 12.8, 13.5
+>>> Emerging (144 of 180) kde-plasma/xdg-desktop-portal-kde-6.8.3::gentoo
+>>> Jobs: 143 of 180 complete, 1 running                                Load avg: 11.7, 12.8, 13.5
+>>> Jobs: 143 of 180 complete                                           Load avg: 14.2, 13.5, 13.7
+>>> Installing (144 of 180) kde-plasma/xdg-desktop-portal-kde-6.8.3::gentoo
+>>> Jobs: 143 of 180 complete, 1 merge wait                             Load avg: 14.2, 13.5, 13.7
+>>> Completed (144 of 180) kde-plasma/xdg-desktop-portal-kde-6.8.3::gentoo
+>>> Jobs: 143 of 180 complete                                           Load avg: 14.2, 13.5, 13.7
+>>> Jobs: 144 of 180 complete                                           Load avg: 14.2, 13.5, 13.7
+>>> Jobs: 144 of 180 complete, 1 running                                Load avg: 14.2, 13.5, 13.7
+>>> Emerging (145 of 180) kde-plasma/aurorae-6.8.3::gentoo
+>>> Jobs: 144 of 180 complete, 1 running                                Load avg: 14.2, 13.5, 13.7
 ```
 - Result: rc=1
 
