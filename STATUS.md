@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 17:05:43 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 17:10:45 UTC
 
-- Local time: 2026-11-12 17:05:43 GMT
+- Local time: 2026-11-12 17:10:45 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 82 of 180 complete, 3 merge wait                              Load avg: 9.7, 11.1, 11.1
->>> Completed (83 of 180) dev-qt/qtspeech-6.11.3::gentoo
->>> Jobs: 82 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
->>> Jobs: 83 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
->>> Completed (84 of 180) kde-frameworks/kauth-6.31.0::gentoo
->>> Jobs: 83 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
->>> Jobs: 84 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
->>> Completed (85 of 180) kde-plasma/kpipewire-6.8.3::gentoo
->>> Jobs: 84 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
->>> Jobs: 85 of 180 complete                                            Load avg: 9.1, 11.0, 11.0
->>> Jobs: 85 of 180 complete, 1 running                                 Load avg: 9.1, 11.0, 11.0
->>> Emerging (86 of 180) x11-base/xwayland-24.1.15::gentoo
->>> Jobs: 85 of 180 complete, 1 running                                 Load avg: 9.1, 11.0, 11.0
->>> Jobs: 85 of 180 complete                                            Load avg: 11.4, 11.4, 11.1
->>> Installing (86 of 180) x11-base/xwayland-24.1.15::gentoo
->>> Jobs: 85 of 180 complete, 1 merge wait                              Load avg: 11.4, 11.4, 11.1
->>> Completed (86 of 180) x11-base/xwayland-24.1.15::gentoo
->>> Jobs: 85 of 180 complete                                            Load avg: 11.4, 11.4, 11.1
->>> Jobs: 86 of 180 complete                                            Load avg: 11.4, 11.4, 11.1
->>> Jobs: 86 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.1
->>> Emerging (87 of 180) gui-libs/hyprtoolkit-0.6.0::hyproverlay
->>> Jobs: 86 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.1
->>> Jobs: 86 of 180 complete                                            Load avg: 13.0, 11.7, 11.3
->>> Installing (87 of 180) gui-libs/hyprtoolkit-0.6.0::hyproverlay
->>> Jobs: 86 of 180 complete, 1 merge wait                              Load avg: 13.0, 11.7, 11.3
->>> Completed (87 of 180) gui-libs/hyprtoolkit-0.6.0::hyproverlay
->>> Jobs: 86 of 180 complete                                            Load avg: 13.0, 11.7, 11.3
->>> Jobs: 87 of 180 complete                                            Load avg: 13.0, 11.7, 11.3
->>> Jobs: 87 of 180 complete, 1 running                                 Load avg: 13.0, 11.7, 11.3
->>> Emerging (88 of 180) gui-libs/hyprland-guiutils-0.2.2::hyproverlay
->>> Jobs: 87 of 180 complete, 1 running                                 Load avg: 13.0, 11.7, 11.3
->>> Jobs: 87 of 180 complete                                            Load avg: 11.4, 11.4, 11.2
->>> Installing (88 of 180) gui-libs/hyprland-guiutils-0.2.2::hyproverlay
->>> Jobs: 87 of 180 complete, 1 merge wait                              Load avg: 11.4, 11.4, 11.2
->>> Completed (88 of 180) gui-libs/hyprland-guiutils-0.2.2::hyproverlay
->>> Jobs: 87 of 180 complete                                            Load avg: 11.4, 11.4, 11.2
->>> Jobs: 88 of 180 complete                                            Load avg: 11.4, 11.4, 11.2
->>> Jobs: 88 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.2
->>> Emerging (89 of 180) gui-wm/hyprland-0.57.2::hyproverlay
->>> Jobs: 88 of 180 complete, 1 running                                 Load avg: 11.4, 11.4, 11.2
+>>> Jobs: 91 of 180 complete                                            Load avg: 14.3, 15.3, 13.4
+>>> Jobs: 91 of 180 complete, 1 running                                 Load avg: 14.3, 15.3, 13.4
+>>> Emerging (92 of 180) gui-libs/gtk-layer-shell-0.10.1::gentoo
+>>> Jobs: 91 of 180 complete, 1 running                                 Load avg: 14.3, 15.3, 13.4
+>>> Jobs: 91 of 180 complete                                            Load avg: 13.3, 15.0, 13.3
+>>> Installing (92 of 180) gui-libs/gtk-layer-shell-0.10.1::gentoo
+>>> Jobs: 91 of 180 complete, 1 merge wait                              Load avg: 13.3, 15.0, 13.3
+>>> Completed (92 of 180) gui-libs/gtk-layer-shell-0.10.1::gentoo
+>>> Jobs: 91 of 180 complete                                            Load avg: 12.4, 14.8, 13.2
+>>> Jobs: 92 of 180 complete                                            Load avg: 12.4, 14.8, 13.2
+>>> Jobs: 92 of 180 complete, 1 running                                 Load avg: 12.4, 14.8, 13.2
+>>> Emerging (93 of 180) dev-cpp/gtkmm-3.24.11::gentoo
+>>> Jobs: 92 of 180 complete, 1 running                                 Load avg: 12.4, 14.8, 13.2
+>>> Jobs: 92 of 180 complete                                            Load avg: 15.2, 15.2, 13.5
+>>> Installing (93 of 180) dev-cpp/gtkmm-3.24.11::gentoo
+>>> Jobs: 92 of 180 complete, 1 merge wait                              Load avg: 15.2, 15.2, 13.5
+>>> Completed (93 of 180) dev-cpp/gtkmm-3.24.11::gentoo
+>>> Jobs: 92 of 180 complete                                            Load avg: 15.2, 15.2, 13.5
+>>> Jobs: 93 of 180 complete                                            Load avg: 15.2, 15.2, 13.5
+>>> Jobs: 93 of 180 complete, 1 running                                 Load avg: 15.2, 15.2, 13.5
+>>> Emerging (94 of 180) kde-frameworks/kwallet-6.31.0::gentoo
+>>> Jobs: 93 of 180 complete, 1 running                                 Load avg: 15.2, 15.2, 13.5
+>>> Jobs: 93 of 180 complete                                            Load avg: 13.3, 14.8, 13.4
+>>> Installing (94 of 180) kde-frameworks/kwallet-6.31.0::gentoo
+>>> Jobs: 93 of 180 complete, 1 merge wait                              Load avg: 13.3, 14.8, 13.4
+>>> Completed (94 of 180) kde-frameworks/kwallet-6.31.0::gentoo
+>>> Jobs: 93 of 180 complete                                            Load avg: 13.3, 14.8, 13.4
+>>> Jobs: 94 of 180 complete                                            Load avg: 13.3, 14.8, 13.4
+>>> Jobs: 94 of 180 complete, 1 running                                 Load avg: 13.3, 14.8, 13.4
+>>> Emerging (95 of 180) app-crypt/libsecret-0.21.8.2-r1::gentoo
+>>> Jobs: 94 of 180 complete, 1 running                                 Load avg: 13.3, 14.8, 13.4
+>>> Jobs: 94 of 180 complete                                            Load avg: 11.6, 14.4, 13.2
+>>> Installing (95 of 180) app-crypt/libsecret-0.21.8.2-r1::gentoo
+>>> Jobs: 94 of 180 complete, 1 merge wait                              Load avg: 11.6, 14.4, 13.2
+>>> Completed (95 of 180) app-crypt/libsecret-0.21.8.2-r1::gentoo
+>>> Jobs: 94 of 180 complete                                            Load avg: 11.6, 14.4, 13.2
+>>> Jobs: 95 of 180 complete                                            Load avg: 11.6, 14.4, 13.2
+>>> Jobs: 95 of 180 complete, 1 running                                 Load avg: 11.6, 14.4, 13.2
+>>> Emerging (96 of 180) kde-frameworks/kwallet-runtime-6.31.0::gentoo
+>>> Jobs: 95 of 180 complete, 1 running                                 Load avg: 11.6, 14.4, 13.2
 ```
 - Result: rc=1
 
