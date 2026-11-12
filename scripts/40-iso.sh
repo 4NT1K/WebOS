@@ -119,12 +119,12 @@ sed -e "s|@VOLID@|${VOLID}|g" \
 step "iso: building the hybrid image (grub-mkrescue)"
 grub-mkrescue \
 	--output="${ISO_OUT}" \
-	--volid="${VOLID}" \
 	--product-name="WebOS" \
 	--product-version="${SANUS_VERSION_FULL}" \
 	--publisher="WebOS Project" \
 	--preparer="WebOS build system" \
 	--appid="WebOS Live/Install" \
+	-- -volid "${VOLID}" \
 	"${ISO_STAGING}" \
 	|| die "grub-mkrescue failed"
 
