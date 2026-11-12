@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 3 min) — 2026-11-12 16:45:30 UTC
+# Build status (auto-updated ~every 3 min) — 2026-11-12 16:48:31 UTC
 
-- Local time: 2026-11-12 16:45:30 GMT
+- Local time: 2026-11-12 16:48:31 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 40 of 180 complete, 3 running                                 Load avg: 7.35, 10.00, 9.24
->>> Jobs: 40 of 180 complete, 2 running                                 Load avg: 16.0, 11.8, 9.8
->>> Jobs: 40 of 180 complete, 1 running, 1 merge wait                   Load avg: 16.8, 12.0, 9.9
->>> Jobs: 40 of 180 complete, 2 merge wait                              Load avg: 11.5, 11.3, 9.8
->>> Installing (42 of 180) kde-frameworks/kunitconversion-6.31.0::gentoo
->>> Jobs: 40 of 180 complete, 3 merge wait                              Load avg: 11.5, 11.3, 9.8
->>> Installing (43 of 180) lxqt-base/liblxqt-2.5.0::gentoo
->>> Jobs: 40 of 180 complete, 3 merge wait                              Load avg: 11.5, 11.3, 9.8
->>> Installing (41 of 180) dev-qt/qtquick3d-6.11.3::gentoo
->>> Jobs: 40 of 180 complete, 3 merge wait                              Load avg: 11.5, 11.3, 9.8
->>> Completed (42 of 180) kde-frameworks/kunitconversion-6.31.0::gentoo
->>> Jobs: 40 of 180 complete                                            Load avg: 11.5, 11.3, 9.8
->>> Jobs: 41 of 180 complete                                            Load avg: 11.5, 11.3, 9.8
->>> Completed (43 of 180) lxqt-base/liblxqt-2.5.0::gentoo
->>> Jobs: 41 of 180 complete                                            Load avg: 11.5, 11.3, 9.8
->>> Jobs: 42 of 180 complete                                            Load avg: 11.5, 11.3, 9.8
->>> Completed (41 of 180) dev-qt/qtquick3d-6.11.3::gentoo
->>> Jobs: 42 of 180 complete                                            Load avg: 11.5, 11.3, 9.8
->>> Jobs: 43 of 180 complete                                            Load avg: 11.5, 11.3, 9.8
->>> Jobs: 43 of 180 complete, 1 running                                 Load avg: 11.5, 11.3, 9.8
->>> Emerging (44 of 180) dev-qt/qtlocation-6.11.3::gentoo
->>> Jobs: 43 of 180 complete, 1 running                                 Load avg: 11.5, 11.3, 9.8
->>> Jobs: 43 of 180 complete                                            Load avg: 7.5, 10.3, 9.5
->>> Installing (44 of 180) dev-qt/qtlocation-6.11.3::gentoo
->>> Jobs: 43 of 180 complete, 1 merge wait                              Load avg: 7.5, 10.3, 9.5
->>> Completed (44 of 180) dev-qt/qtlocation-6.11.3::gentoo
->>> Jobs: 43 of 180 complete                                            Load avg: 7.1, 10.2, 9.5
->>> Jobs: 44 of 180 complete                                            Load avg: 7.1, 10.2, 9.5
->>> Jobs: 44 of 180 complete, 1 running                                 Load avg: 7.1, 10.2, 9.5
->>> Emerging (45 of 180) app-crypt/qca-2.3.12::gentoo
->>> Jobs: 44 of 180 complete, 1 running                                 Load avg: 7.1, 10.2, 9.5
->>> Jobs: 44 of 180 complete, 2 running                                 Load avg: 7.1, 10.2, 9.5
->>> Emerging (46 of 180) media-libs/kquickimageeditor-0.7.0.1::gentoo
->>> Jobs: 44 of 180 complete, 2 running                                 Load avg: 7.1, 10.2, 9.5
->>> Jobs: 44 of 180 complete, 1 running                                 Load avg: 14.8, 11.8, 10.1
->>> Jobs: 44 of 180 complete, 1 merge wait                              Load avg: 11.9, 11.3, 9.9
->>> Installing (45 of 180) app-crypt/qca-2.3.12::gentoo
->>> Jobs: 44 of 180 complete, 2 merge wait                              Load avg: 11.9, 11.3, 9.9
->>> Installing (46 of 180) media-libs/kquickimageeditor-0.7.0.1::gentoo
->>> Jobs: 44 of 180 complete, 2 merge wait                              Load avg: 11.9, 11.3, 9.9
+>>> Jobs: 53 of 180 complete                                            Load avg: 8.5, 10.3, 9.7
+>>> Jobs: 53 of 180 complete, 1 running                                 Load avg: 8.5, 10.3, 9.7
+>>> Emerging (54 of 180) kde-frameworks/kdesu-6.31.0::gentoo
+>>> Jobs: 53 of 180 complete, 1 running                                 Load avg: 8.5, 10.3, 9.7
+>>> Jobs: 53 of 180 complete                                            Load avg: 8.2, 10.2, 9.7
+>>> Installing (54 of 180) kde-frameworks/kdesu-6.31.0::gentoo
+>>> Jobs: 53 of 180 complete, 1 merge wait                              Load avg: 8.2, 10.2, 9.7
+>>> Completed (54 of 180) kde-frameworks/kdesu-6.31.0::gentoo
+>>> Jobs: 53 of 180 complete                                            Load avg: 8.2, 10.2, 9.7
+>>> Jobs: 54 of 180 complete                                            Load avg: 8.2, 10.2, 9.7
+>>> Jobs: 54 of 180 complete, 1 running                                 Load avg: 8.2, 10.2, 9.7
+>>> Emerging (55 of 180) lxqt-base/lxqt-policykit-2.5.0::gentoo
+>>> Jobs: 54 of 180 complete, 1 running                                 Load avg: 8.2, 10.2, 9.7
+>>> Jobs: 54 of 180 complete                                            Load avg: 7.6, 10.0, 9.6
+>>> Installing (55 of 180) lxqt-base/lxqt-policykit-2.5.0::gentoo
+>>> Jobs: 54 of 180 complete, 1 merge wait                              Load avg: 7.6, 10.0, 9.6
+>>> Completed (55 of 180) lxqt-base/lxqt-policykit-2.5.0::gentoo
+>>> Jobs: 54 of 180 complete                                            Load avg: 7.27, 9.93, 9.60
+>>> Jobs: 55 of 180 complete                                            Load avg: 7.27, 9.93, 9.60
+>>> Jobs: 55 of 180 complete, 1 running                                 Load avg: 7.27, 9.93, 9.60
+>>> Emerging (56 of 180) kde-frameworks/kxmlgui-6.31.0::gentoo
+>>> Jobs: 55 of 180 complete, 1 running                                 Load avg: 7.27, 9.93, 9.60
+>>> Jobs: 55 of 180 complete                                            Load avg: 10.0, 10.4, 9.8
+>>> Installing (56 of 180) kde-frameworks/kxmlgui-6.31.0::gentoo
+>>> Jobs: 55 of 180 complete, 1 merge wait                              Load avg: 10.0, 10.4, 9.8
+>>> Completed (56 of 180) kde-frameworks/kxmlgui-6.31.0::gentoo
+>>> Jobs: 55 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
+>>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
+>>> Jobs: 56 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
+>>> Emerging (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
+>>> Jobs: 56 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
+>>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
+>>> Installing (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
+>>> Jobs: 56 of 180 complete, 1 merge wait                              Load avg: 9.2, 10.2, 9.7
+>>> Completed (57 of 180) kde-frameworks/kbookmarks-6.31.0::gentoo
+>>> Jobs: 56 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
+>>> Jobs: 57 of 180 complete                                            Load avg: 9.2, 10.2, 9.7
+>>> Jobs: 57 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
+>>> Emerging (58 of 180) kde-frameworks/qqc2-desktop-style-6.31.0::gentoo
+>>> Jobs: 57 of 180 complete, 1 running                                 Load avg: 9.2, 10.2, 9.7
 ```
 - Result: rc=1
 
