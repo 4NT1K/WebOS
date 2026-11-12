@@ -1,50 +1,50 @@
-# Build status (auto-updated ~every 5 min) — 2026-11-12 17:46:01 UTC
+# Build status (auto-updated ~every 5 min) — 2026-11-12 17:51:03 UTC
 
-- Local time: 2026-11-12 17:46:01 GMT
+- Local time: 2026-11-12 17:51:03 GMT
 - Host: brah
 
 ## desktop-fix (corrective @desktop emerge)
 ```
->>> Jobs: 145 of 180 complete                                           Load avg: 13.4, 13.4, 13.6
->>> Jobs: 145 of 180 complete, 1 running                                Load avg: 13.4, 13.4, 13.6
->>> Emerging (146 of 180) kde-frameworks/frameworkintegration-6.31.0::gentoo
->>> Jobs: 145 of 180 complete, 1 running                                Load avg: 13.4, 13.4, 13.6
->>> Jobs: 145 of 180 complete                                           Load avg: 12.5, 13.2, 13.5
->>> Installing (146 of 180) kde-frameworks/frameworkintegration-6.31.0::gentoo
->>> Jobs: 145 of 180 complete, 1 merge wait                             Load avg: 12.5, 13.2, 13.5
->>> Completed (146 of 180) kde-frameworks/frameworkintegration-6.31.0::gentoo
->>> Jobs: 145 of 180 complete                                           Load avg: 11.7, 13.0, 13.5
->>> Jobs: 146 of 180 complete                                           Load avg: 11.7, 13.0, 13.5
->>> Jobs: 146 of 180 complete, 1 running                                Load avg: 11.7, 13.0, 13.5
->>> Emerging (147 of 180) kde-plasma/kinfocenter-6.8.3::gentoo
->>> Jobs: 146 of 180 complete, 1 running                                Load avg: 11.7, 13.0, 13.5
->>> Jobs: 146 of 180 complete                                           Load avg: 14.3, 13.6, 13.7
->>> Installing (147 of 180) kde-plasma/kinfocenter-6.8.3::gentoo
->>> Jobs: 146 of 180 complete, 1 merge wait                             Load avg: 14.3, 13.6, 13.7
->>> Completed (147 of 180) kde-plasma/kinfocenter-6.8.3::gentoo
->>> Jobs: 146 of 180 complete                                           Load avg: 13.4, 13.4, 13.6
->>> Jobs: 147 of 180 complete                                           Load avg: 13.4, 13.4, 13.6
->>> Jobs: 147 of 180 complete, 1 running                                Load avg: 13.4, 13.4, 13.6
->>> Emerging (148 of 180) kde-plasma/kdeplasma-addons-6.8.3::gentoo
->>> Jobs: 147 of 180 complete, 1 running                                Load avg: 13.4, 13.4, 13.6
->>> Jobs: 147 of 180 complete                                           Load avg: 18.6, 15.9, 14.5
->>> Installing (148 of 180) kde-plasma/kdeplasma-addons-6.8.3::gentoo
->>> Jobs: 147 of 180 complete, 1 merge wait                             Load avg: 18.6, 15.9, 14.5
->>> Completed (148 of 180) kde-plasma/kdeplasma-addons-6.8.3::gentoo
->>> Jobs: 147 of 180 complete                                           Load avg: 17.3, 15.6, 14.4
->>> Jobs: 148 of 180 complete                                           Load avg: 17.3, 15.6, 14.4
->>> Jobs: 148 of 180 complete, 1 running                                Load avg: 17.3, 15.6, 14.4
->>> Emerging (149 of 180) kde-plasma/kscreen-6.8.3::gentoo
->>> Jobs: 148 of 180 complete, 1 running                                Load avg: 17.3, 15.6, 14.4
->>> Jobs: 148 of 180 complete                                           Load avg: 17.2, 16.0, 14.6
->>> Installing (149 of 180) kde-plasma/kscreen-6.8.3::gentoo
->>> Jobs: 148 of 180 complete, 1 merge wait                             Load avg: 17.2, 16.0, 14.6
->>> Completed (149 of 180) kde-plasma/kscreen-6.8.3::gentoo
->>> Jobs: 148 of 180 complete                                           Load avg: 17.2, 16.0, 14.6
->>> Jobs: 149 of 180 complete                                           Load avg: 17.2, 16.0, 14.6
->>> Jobs: 149 of 180 complete, 1 running                                Load avg: 17.2, 16.0, 14.6
->>> Emerging (150 of 180) kde-plasma/plasma-welcome-6.8.3::gentoo
->>> Jobs: 149 of 180 complete, 1 running                                Load avg: 17.2, 16.0, 14.6
+>>> Jobs: 152 of 180 complete                                           Load avg: 18.1, 16.4, 15.0
+>>> Jobs: 152 of 180 complete, 1 running                                Load avg: 18.1, 16.4, 15.0
+>>> Emerging (153 of 180) kde-plasma/plasma-pa-6.8.3::gentoo
+>>> Jobs: 152 of 180 complete, 1 running                                Load avg: 18.1, 16.4, 15.0
+>>> Jobs: 152 of 180 complete                                           Load avg: 17.0, 16.3, 15.0
+>>> Installing (153 of 180) kde-plasma/plasma-pa-6.8.3::gentoo
+>>> Jobs: 152 of 180 complete, 1 merge wait                             Load avg: 17.0, 16.3, 15.0
+>>> Completed (153 of 180) kde-plasma/plasma-pa-6.8.3::gentoo
+>>> Jobs: 152 of 180 complete                                           Load avg: 15.8, 16.1, 14.9
+>>> Jobs: 153 of 180 complete                                           Load avg: 15.8, 16.1, 14.9
+>>> Jobs: 153 of 180 complete, 1 running                                Load avg: 15.8, 16.1, 14.9
+>>> Emerging (154 of 180) kde-plasma/plasma-integration-6.8.3::gentoo
+>>> Jobs: 153 of 180 complete, 1 running                                Load avg: 15.8, 16.1, 14.9
+>>> Jobs: 153 of 180 complete                                           Load avg: 17.8, 16.6, 15.2
+>>> Installing (154 of 180) kde-plasma/plasma-integration-6.8.3::gentoo
+>>> Jobs: 153 of 180 complete, 1 merge wait                             Load avg: 17.8, 16.6, 15.2
+>>> Completed (154 of 180) kde-plasma/plasma-integration-6.8.3::gentoo
+>>> Jobs: 153 of 180 complete                                           Load avg: 17.8, 16.6, 15.2
+>>> Jobs: 154 of 180 complete                                           Load avg: 17.8, 16.6, 15.2
+>>> Jobs: 154 of 180 complete, 1 running                                Load avg: 17.8, 16.6, 15.2
+>>> Emerging (155 of 180) kde-plasma/ksystemstats-6.8.3::gentoo
+>>> Jobs: 154 of 180 complete, 1 running                                Load avg: 17.8, 16.6, 15.2
+>>> Jobs: 154 of 180 complete                                           Load avg: 16.1, 16.3, 15.1
+>>> Installing (155 of 180) kde-plasma/ksystemstats-6.8.3::gentoo
+>>> Jobs: 154 of 180 complete, 1 merge wait                             Load avg: 16.1, 16.3, 15.1
+>>> Completed (155 of 180) kde-plasma/ksystemstats-6.8.3::gentoo
+>>> Jobs: 154 of 180 complete                                           Load avg: 16.1, 16.3, 15.1
+>>> Jobs: 155 of 180 complete                                           Load avg: 16.1, 16.3, 15.1
+>>> Jobs: 155 of 180 complete, 1 running                                Load avg: 16.1, 16.3, 15.1
+>>> Emerging (156 of 180) kde-plasma/breeze-6.8.3::gentoo
+>>> Jobs: 155 of 180 complete, 1 running                                Load avg: 16.1, 16.3, 15.1
+>>> Jobs: 155 of 180 complete                                           Load avg: 15.6, 16.3, 15.2
+>>> Installing (156 of 180) kde-plasma/breeze-6.8.3::gentoo
+>>> Jobs: 155 of 180 complete, 1 merge wait                             Load avg: 15.6, 16.3, 15.2
+>>> Completed (156 of 180) kde-plasma/breeze-6.8.3::gentoo
+>>> Jobs: 155 of 180 complete                                           Load avg: 14.7, 16.1, 15.1
+>>> Jobs: 156 of 180 complete                                           Load avg: 14.7, 16.1, 15.1
+>>> Jobs: 156 of 180 complete, 1 running                                Load avg: 14.7, 16.1, 15.1
+>>> Emerging (157 of 180) kde-plasma/plasma-vault-6.8.3::gentoo
+>>> Jobs: 156 of 180 complete, 1 running                                Load avg: 14.7, 16.1, 15.1
 ```
 - Result: rc=1
 
