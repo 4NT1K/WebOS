@@ -4,10 +4,10 @@
 #   mkmanifest <package-dir> [distfile ...]
 #
 # Writes <package-dir>/Manifest containing one line per ebuild and per
-# distfile, in the format Portage expects:
+# distfile, in the format Portage expects (all hashes hex-encoded):
 #
-#   EBUILD foo-1.0.ebuild 1234 BLAKE2B <base64> SHA512 <hex>
-#   DIST   foo-1.0.tar.gz 5678 BLAKE2B <base64> SHA512 <hex>
+#   EBUILD foo-1.0.ebuild 1234 BLAKE2B <hex> SHA512 <hex>
+#   DIST   foo-1.0.tar.gz 5678 BLAKE2B <hex> SHA512 <hex>
 #
 # This exists because the installer tarball is produced by the SanusOS build
 # system at build time and therefore cannot be listed in the committed
@@ -28,7 +28,7 @@ mkmanifest() {
 	# Prefer python3 (always present on a Gentoo build host).
 	if command -v python3 >/dev/null 2>&1; then
 		python3 - "$pkgdir" "${dists[@]}" <<-'PY'
-			import base64, hashlib, os, sys
+			import hashlib, os, sys, time
 
 			pkgdir, dists = sys.argv[1], sys.argv[2:]
 
@@ -39,19 +39,37 @@ mkmanifest() {
 			for d in dists:
 			    entries.append(("DIST", d, os.path.basename(d)))
 
-			lines = []
-			for kind, path, name in entries:
+			def digest(path):
 			    with open(path, "rb") as fh:
 			        data = fh.read()
-			    blake = base64.b64encode(
-			        hashlib.blake2b(data, digest_size=64).digest()
-			    ).decode()
-			    sha = hashlib.sha512(data).hexdigest()
-			    lines.append(f"{kind} {name} {len(data)} BLAKE2B {blake} SHA512 {sha}")
+			    # Gentoo Manifests store every digest, including BLAKE2B, as
+			    # hex; Portage compares against hexdigest().
+			    blake = hashlib.blake2b(data, digest_size=64).hexdigest()
+			    return len(data), blake, hashlib.sha512(data).hexdigest()
 
-			with open(os.path.join(pkgdir, "Manifest"), "w") as fh:
-			    fh.write("\n".join(lines) + "\n")
-			print(f"  manifest: {os.path.join(pkgdir, 'Manifest')} ({len(entries)} entries)")
+			# A distfile may still be settling (or another process may be
+			# rewriting it); hash, write, then re-hash to prove the Manifest
+			# matches what Portage will actually read.
+			for attempt in range(1, 6):
+			    records = [(kind, name, path, digest(path))
+			               for kind, path, name in entries]
+			    lines = [f"{kind} {name} {n} BLAKE2B {b} SHA512 {s}"
+			             for kind, name, _path, (n, b, s) in records]
+			    manifest = os.path.join(pkgdir, "Manifest")
+			    with open(manifest, "w") as fh:
+			        fh.write("\n".join(lines) + "\n")
+			    stable = all(digest(path) == rec
+			                 for _k, _n, path, rec in records)
+			    if stable:
+			        break
+			    print(f"  manifest: distfile changed while hashing "
+			          f"(attempt {attempt}); retrying", file=sys.stderr)
+			    time.sleep(0.5)
+			else:
+			    print("  manifest: distfile kept changing; refusing to write "
+			          "an inconsistent Manifest", file=sys.stderr)
+			    sys.exit(1)
+			print(f"  manifest: {manifest} ({len(entries)} entries)")
 		PY
 		return
 	fi

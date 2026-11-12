@@ -311,3 +311,38 @@ BDEPEND="|| ( dev-lang/rust-bin dev-lang/rust )"
 from source; `dev-lang/rust` remains the fallback.  The chroot already has
 `dev-lang/rust-bin-1.99.0` with `/usr/bin/cargo`, satisfying the dependency.
 Manifest regenerated.
+
+### Phase 7 fix — installer distfile Manifest
+
+`emerge app-admin/sanus-installer` kept failing at manifest verification with
+`Failed on BLAKE2B verification`, even though `b2sum` and `openssl` agreed on
+the tarball's digest.  Two separate defects caused this:
+
+1. **Wrong BLAKE2B encoding.** `scripts/lib/mkmanifest.sh` wrote BLAKE2B as
+   base64.  Gentoo Manifests store *every* digest as hex, and
+   `portage/checksum.py` compares against `checksum.hexdigest()`.  Confirmed
+   against `::gentoo/app-arch/tar/Manifest` and Portage's own
+   `ebuild ... digest`, which reproduces the hex form.  `mkmanifest` now uses
+   `hashlib.blake2b(...).hexdigest()` and re-hashes after writing to prove the
+   Manifest matches the file Portage will read.
+2. **`tar --exclude=target` matched too much.** GNU tar treats `--exclude=target`
+   as a pattern for *any* path component, so it also dropped
+   `vendor/cc/src/target/`, leaving the vendored `cc` crate without
+   `src/target/llvm.rs`.  Cargo then failed with
+   `failed to calculate checksum of: .../vendor/cc/src/target/llvm.rs`.
+   The exclusion is now anchored to the top-level build directory
+   (`--exclude='./target'`), so vendored sources are archived intact.
+
+`scripts/30-rootfs.sh` also now:
+
+- stages the deterministic installer tarball **before** the `@sanus-installer`
+  set emerge (the set contains `app-admin/sanus-installer`, so staging after it
+  validated a stale distfile against the new Manifest);
+- removes any leftover `sanus-installer-*.tar.gz` and Portage's
+  `._checksum_failure_*` copy before rebuilding, so an interrupted run cannot
+  poison the next one;
+- retries the installer emerge up to three times, rebuilding the tarball and
+  Manifest as a matched pair on each retry.
+
+With these fixes the installer tarball verifies, unpacks, and compiles inside
+the chroot.

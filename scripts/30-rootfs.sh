@@ -22,16 +22,11 @@ for s in "${SANUS_ROOT}"/config/sets/*; do
 done
 chroot_sh "egencache --repo=sanus --update --jobs=${SANUS_JOBS} >/dev/null 2>&1 || true"
 
-# ------------------------------------------------------------- sets ----------
-# Exclude packages known to hit merged-usr internal collisions in this build
-# environment (stage3 provides working versions). Keep going to tolerate
-# non-critical failures in the large desktop/gaming set.
-chroot_sh "emerge --quiet-build=y --jobs=${SANUS_JOBS} --load-average=$((SANUS_JOBS * 2)) \
-	--keep-going --exclude='app-alternatives/awk sys-apps/coreutils sys-apps/shadow sys-apps/systemd-utils' \
-	@base @desktop @gaming @sanus-installer" \
-	|| warn "SanusOS set emerge had failures (continuing; review if critical packages missing)"
-
 # --------------------------------------------------- installer sources -------
+# Stage the installer tarball and Manifest *before* any emerge that can pull
+# app-admin/sanus-installer (@sanus-installer includes it). Otherwise Portage
+# validates a distfile left over from a previous build against the freshly
+# generated Manifest and aborts on a checksum mismatch.
 step "rootfs: staging the installer sources"
 # shellcheck source=scripts/lib/mkmanifest.sh
 source "${SANUS_ROOT}/scripts/lib/mkmanifest.sh"
@@ -46,21 +41,54 @@ INST_PKGDIR="${CHROOT}/usr/local/portage/sanus/app-admin/sanus-installer"
 [[ -d "${SANUS_ROOT}/installer/vendor" ]] \
 	|| die "installer/vendor is missing — run ./build.sh fetch first"
 
-install -d "${INST_DISTDIR}"
-tar -C "${SANUS_ROOT}/installer" \
-	--transform "s,^,${INST_NAME}/," \
-	--exclude=target \
-	-czf "${INST_DISTDIR}/${INST_TARBALL}" \
-	Cargo.toml Cargo.lock README.md src .cargo vendor \
-	|| die "could not create the installer tarball"
-info "installer tarball: $(du -h "${INST_DISTDIR}/${INST_TARBALL}" | cut -f1)"
-mkmanifest "${INST_PKGDIR}" "${INST_DISTDIR}/${INST_TARBALL}" \
-	|| die "could not write the installer Manifest"
+# DISTDIR must be writable by the portage user.
+chroot_sh "install -d -m 0775 -o root -g portage /var/cache/distfiles" \
+	|| install -d "${INST_DISTDIR}"
+
+# (Re)build the deterministic tarball and Manifest as a matched pair. Any
+# leftover tarball (or Portage's `._checksum_failure_` copy) from an earlier
+# run is removed first, so its bytes can never be checked against this run's
+# Manifest. Fixed mtimes/owners and sorted entries make rebuilding the same
+# sources produce identical bytes; `gzip -n` suppresses gzip's own timestamp.
+stage_installer_tarball() {
+	rm -f "${INST_DISTDIR}/${INST_TARBALL}" \
+	      "${INST_DISTDIR}/${INST_TARBALL}"._checksum_failure_*
+	tar -C "${SANUS_ROOT}/installer" \
+		--sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+		--transform "s,^,${INST_NAME}/," \
+		--exclude='./target' \
+		-I 'gzip -n' -cf "${INST_DISTDIR}/${INST_TARBALL}" \
+		Cargo.toml Cargo.lock README.md src .cargo vendor \
+		|| die "could not create the installer tarball"
+	info "installer tarball: $(du -h "${INST_DISTDIR}/${INST_TARBALL}" | cut -f1)"
+	mkmanifest "${INST_PKGDIR}" "${INST_DISTDIR}/${INST_TARBALL}" \
+		|| die "could not write the installer Manifest"
+}
+stage_installer_tarball
+
+# ------------------------------------------------------------- sets ----------
+# Exclude packages known to hit merged-usr internal collisions in this build
+# environment (stage3 provides working versions). Keep going to tolerate
+# non-critical failures in the large desktop/gaming set.
+chroot_sh "emerge --quiet-build=y --jobs=${SANUS_JOBS} --load-average=$((SANUS_JOBS * 2)) \
+	--keep-going --exclude='app-alternatives/awk sys-apps/coreutils sys-apps/shadow sys-apps/systemd-utils' \
+	@base @desktop @gaming @sanus-installer" \
+	|| warn "SanusOS set emerge had failures (continuing; review if critical packages missing)"
 
 # --------------------------------------------------------- installer ---------
 step "rootfs: building the SanusOS installer"
-chroot_sh "emerge --quiet-build=y app-admin/sanus-installer" \
-	|| die "installer emerge failed"
+# If an interrupted earlier run left a mismatched distfile/Manifest pair,
+# rebuild the pair and retry rather than failing the whole stage.
+installed=0
+for attempt in 1 2 3; do
+	if chroot_sh "emerge --quiet-build=y app-admin/sanus-installer"; then
+		installed=1
+		break
+	fi
+	warn "installer emerge attempt ${attempt} failed; rebuilding the tarball + Manifest"
+	stage_installer_tarball
+done
+[[ ${installed} == 1 ]] || die "installer emerge failed"
 chroot_sh "test -x /usr/bin/sanus-installer" || die "installer binary missing"
 info "installer: $(chroot_sh 'sanus-installer --version' | tr -d '\r')"
 
