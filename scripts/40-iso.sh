@@ -76,6 +76,16 @@ else
 	cp -a "${SANUS_ROOT}/livecd/." "${LIVE_ROOT}/" 2>/dev/null || true
 	chmod +x "${LIVE_ROOT}/usr/local/bin/sanus-live-session" 2>/dev/null || true
 
+	# The live tree is the install source: the installer rsyncs it with
+	# --numeric-ids, so every owner here is copied to the target verbatim.
+	# A rootless/uid-mapped build flattens these to uid 1000, which produces a
+	# system whose /, /etc, /usr and /boot belong to the first user (breaks
+	# systemd-tmpfiles, setuid binaries and login). Force root ownership.
+	chown -R 0:0 "${LIVE_ROOT}"
+	[[ "$(stat -c %u "${LIVE_ROOT}")" == 0 ]] || die "live root is not owned by root"
+	[[ "$(stat -c %u "${LIVE_ROOT}/usr")" == 0 ]] || die "live /usr is not owned by root"
+	[[ "$(stat -c %u "${LIVE_ROOT}/etc")" == 0 ]] || die "live /etc is not owned by root"
+
 	# --- live-only autologin -----------------------------------------------------
 	# tty1 logs in as root and runs the live session. Two mechanisms, because a
 	# stage3 may use either: OpenRC's agetty services (livecd/etc/conf.d) and

@@ -110,6 +110,7 @@ fn run_inner(cfg: &InstallConfig, r: &Runner) -> Result<()> {
 
     // ── 4. copy the system ───────────────────────────────────────────────
     copy_rootfs(r, &src)?;
+    fix_root_ownership(r)?;
     r.progress(0.62);
 
     // ── 5. fstab, crypttab ───────────────────────────────────────────────
@@ -338,6 +339,25 @@ fn mount_target(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
 
 // ───────────────────────────────────────────────────────────────── copying ──
 
+fn fix_root_ownership(r: &Runner) -> Result<()> {
+    r.phase("Fixing filesystem ownership");
+    // Live/source images built under user namespaces can end up with uid 1000 on
+    // /, /etc, /usr, etc. The copy preserves numeric ids, so normalize critical
+    // system paths to root:root before chrooting/configuring.
+    let script = r#"
+set -euo pipefail
+T="${1}"
+chown 0:0 "$T"
+for d in bin boot etc lib lib64 opt root sbin srv usr var; do
+  [ -e "$T/$d" ] && chown -R 0:0 "$T/$d"
+done
+mkdir -p "$T"/{dev,proc,sys,run,tmp,home,mnt,media}
+chown 0:0 "$T/dev" "$T/proc" "$T/sys" "$T/run" "$T/home" "$T/mnt" "$T/media" 2>/dev/null || true
+chmod 1777 "$T/tmp"
+"#;
+    r.run("bash", &["-c", script, "--", TARGET])
+}
+
 fn copy_rootfs(r: &Runner, src: &Source) -> Result<()> {
     r.phase("Copying the system");
 
@@ -554,6 +574,24 @@ fn configure_in_chroot(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Resul
     ));
     s.push_str("env-update || true\n\n");
 
+    // ── machine-id ───────────────────────────────────────────────────────
+    // The live image ships an empty /etc/machine-id (it is excluded from the
+    // copy); dbus, sddm and systemd-tmpfiles all need a real 32-hex id.
+    s.push_str(
+        r#"mkdir -p /var/lib/dbus
+cur=$(tr -d '\n\r' < /etc/machine-id 2>/dev/null || true)
+if [[ ${#cur} -ne 32 ]]; then
+    MID=$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')
+    if [[ ${#MID} -ne 32 ]]; then MID=$(cat /proc/sys/kernel/random/uuid | tr -d '-'); fi
+    printf '%s\n' "$MID" > /etc/machine-id
+    printf '%s\n' "$MID" > /var/lib/dbus/machine-id
+    cur=$MID
+fi
+[[ ${#cur} -eq 32 ]] || { echo 'failed to generate machine-id' >&2; exit 1; }
+chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
+"#,
+    );
+
     // ── timezone, clock ──────────────────────────────────────────────────
     s.push_str(&format!(
         "ln -sf /usr/share/zoneinfo/{tz} /etc/localtime\n",
@@ -711,7 +749,6 @@ fn configure_in_chroot(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Resul
     ));
 
     // ── purge anything machine-specific from the live medium ─────────────
-    s.push_str("rm -f /etc/machine-id; : > /etc/machine-id\n");
     s.push_str("rm -f /etc/ssh/ssh_host_* || true\n");
     s.push_str("rm -rf /root/.cache/* /home/*/.cache/* 2>/dev/null || true\n");
     s.push_str("rm -rf /tmp/* /var/tmp/* 2>/dev/null || true\n");
