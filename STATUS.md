@@ -1,13 +1,13 @@
 # WebOS build status
 
-_Last update: 2026-11-13 07:45 UTC — auto-refreshed every 5 minutes_
+_Last update: 2026-11-13 07:50 UTC — auto-refreshed every 5 minutes_
 
 ## Current phase
 
-**E2E install test running (QEMU TCG, no KVM)**
+**Uploading release assets to GitHub**
 
-- Install finished: **INSTALL_RC=0 (success)** — bootloader installed, initramfs built, install recorded. Verifying installed system now.
-- QEMU elapsed: 0s. Post-install checks: ESP `EFI/WebOS/grubx64.efi`, sudoers.d, `DISPLAYMANAGER="sddm"`, runlevel `display-manager`, hostname `webos-test`, kernel `6.12.0-webos`.
+- Splitting + uploading ISO parts (2 GiB asset limit): /tmp/opencode/webos-release/webos-1.0-Ashen-amd64.iso.part-00 1.9G,/tmp/opencode/webos-release/webos-1.0-Ashen-amd64.iso.part-01 1.9G,.
+- Release: https://github.com/4NT1K/WebOS/releases/tag/v1.0
 
 ## ISO
 
