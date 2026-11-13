@@ -1,23 +1,38 @@
 # WebOS build status
 
-_Last update: 2026-11-13 08:00 UTC — auto-refreshed every 5 minutes_
+_Last update: 2026-11-13 16:10 UTC — final_
 
-## Current phase
+## Status: COMPLETE — verified and published
 
-**Uploading release assets to GitHub**
+End-to-end install test passed on the final ISO (`INSTALL_RC=0`).
 
-- Splitting + uploading ISO parts (2 GiB asset limit): /tmp/opencode/webos-release/webos-1.0-Ashen-amd64.iso.part-00 1.9G,/tmp/opencode/webos-release/webos-1.0-Ashen-amd64.iso.part-01 1.9G,.
-- Release: https://github.com/4NT1K/WebOS/releases/tag/v1.0
+## Verification
+
+- ISO sha256 matches `.sha256`: `af463b757793abfc…`
+- QEMU UEFI install on a blank 30 GiB disk: installer `INSTALL_RC=0`
+- ESP (label `WEBOS_ESP`) contains `EFI/WebOS/grubx64.efi` and `EFI/BOOT/BOOTX64.EFI`
+- `/boot`: `vmlinuz-6.12.0-webos` + `initramfs-6.12.0-webos.img`
+- `/etc/sudoers.d/10-sanus` written (sudoers.d abort fixed)
+- `/etc/conf.d/display-manager`: `DISPLAYMANAGER="sddm"`
+- Runlevel `default`: `display-manager` enabled (SDDM), plus NetworkManager, dbus, elogind, syslog-ng
+- Hostname `webos-test`, kernel `6.12.0-webos` in target
+- Bootloader + initramfs succeeded (chroot `/dev`, `/proc`, `/sys`, `/run` kept mounted — bug fixed)
+- Live ISO: squashfs full extract clean (577,159 files), `::gentoo` repo (161,101 entries),
+  WebOS os-release, tty1–6 root autologin, Hyprland (`sanus.desktop`) + Plasma sessions,
+  0 stale `sanusos` names
+
+## Release
+
+- GitHub: https://github.com/4NT1K/WebOS/releases/tag/v1.0
+- Assets: `webos-1.0-Ashen-amd64.iso.part-00` (1,992,294,400) +
+  `part-01` (1,957,306,368) = 3,949,600,768 bytes (matches ISO), plus `SHA256SUMS.txt`, `README.txt`
 
 ## ISO
 
 - Path: `build/webos-1.0-Ashen-amd64.iso`
 - Size: 3.7G
-- sha256: `af463b757793abfc…`
+- sha256: `af463b757793abfce184a0b2…`
 
-## Already verified
+## Next step for the user
 
-- Fixed installer rebuilt and copied into the shipped rootfs
-- ISO rebuilt with kernel 6.12.0-webos and the fixed installer
-- Live ISO verified earlier: squashfs extract clean (577,159 files), ::gentoo repo (161,101 entries), WebOS os-release, tty1–6 autologin, SDDM + Hyprland/Plasma sessions, 0 stale `sanusos` names
-- Source committed and pushed (`71c61cf`)
+Copy the ISO to the Ventoy USB stick (or `cat` the two release parts back together first).

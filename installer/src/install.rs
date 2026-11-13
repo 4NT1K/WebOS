@@ -116,20 +116,22 @@ fn run_inner(cfg: &InstallConfig, r: &Runner) -> Result<()> {
     write_fstab(r, cfg, &parts)?;
     r.progress(0.66);
 
-    // ── 6. configure the new system ──────────────────────────────────────
+    // ── 6-8. configure, initramfs, bootloader, record ────────────────────
+    // /dev, /proc, /sys and /run must stay mounted for every chroot step;
+    // grub-install and dracut both need them.
     enter_chroot(r)?;
-    let result = configure_in_chroot(r, cfg, &parts);
+    let result = (|| {
+        configure_in_chroot(r, cfg, &parts)?;
+        r.progress(0.88);
+
+        build_initramfs(r, cfg, &parts)?;
+        bootloader::install(r, cfg, &parts)?;
+        r.progress(0.97);
+
+        record_install(r, cfg, &parts)
+    })();
     let _ = leave_chroot(r);
     result?;
-    r.progress(0.88);
-
-    // ── 7. initramfs + bootloader ────────────────────────────────────────
-    build_initramfs(r, cfg, &parts)?;
-    bootloader::install(r, cfg, &parts)?;
-    r.progress(0.97);
-
-    // ── 8. record what we did, in the new system ─────────────────────────
-    record_install(r, cfg, &parts)?;
 
     r.phase("Unmounting");
     teardown_target(r);
