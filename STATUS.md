@@ -2,11 +2,10 @@
 
 ## Progress
 
-- **Overall:** 95% complete (estimated)
-- **Phase:** Rebuilding after install fixes (kernel + ISO)
-- **ETA:** ~45–60 min
-- **Detail:** Fixed two installer aborts (missing `/etc/sudoers.d`, Plasma writing to a
-  non-existent `/etc/greetd`) and replaced the non-existent `greetd` service with
-  SDDM via OpenRC's `display-manager`. Kernel is rebuilding with
-  `CONFIG_LOCALVERSION="-webos"`; a QEMU end-to-end install test is running
-  (no KVM, so TCG and slow).
+- **Overall:** 100% (ISO built, verified, published)
+- **Phase:** Released
+- **Detail:** ISO `build/webos-1.0-Ashen-amd64.iso` (3.7G), sha256 `145a1973450d8c83…`.
+  Kernel 6.12.0-webos, ::gentoo shipped, fixed installer (sudoers.d + SDDM),
+  live tty1–6 autologin, WebOS branding with zero stale `sanusos` names.
+  Release v1.0 updated with split ISO parts + SHA256SUMS.
+  QEMU install test still running.
