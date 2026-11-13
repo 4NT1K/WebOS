@@ -1,6 +1,6 @@
 # WebOS build status
 
-_Last update: 2026-11-13 16:10 UTC — final_
+_Last update: 2026-11-13 16:25 UTC — USB copy verified_
 
 ## Status: COMPLETE — verified and published
 
@@ -32,6 +32,11 @@ End-to-end install test passed on the final ISO (`INSTALL_RC=0`).
 - Path: `build/webos-1.0-Ashen-amd64.iso`
 - Size: 3.7G
 - sha256: `af463b757793abfce184a0b2…`
+
+## USB
+
+- Copied to Ventoy USB (`/dev/sdc1`) and sha256 verified against the ISO: `af463b757793abfc…`
+- USB unmounted cleanly; ready to boot
 
 ## Next step for the user
 
