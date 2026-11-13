@@ -13,8 +13,8 @@ detect_arch
 
 inherit sanus-kernel
 
-DESCRIPTION="SanusOS Linux kernel — gaming tuned build"
-HOMEPAGE="https://sanusos.org/ https://www.kernel.org/"
+DESCRIPTION="WebOS Linux kernel — gaming tuned build"
+HOMEPAGE="https://github.com/4NT1K/WebOS/ https://www.kernel.org/"
 SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz"
 
 LICENSE="GPL-2"
@@ -81,7 +81,7 @@ src_compile() {
 src_install() {
 	local release
 	release="$(sanus_kernel_release)"
-	[[ -n ${release} ]] || release="6.12-sanusos"
+	[[ -n ${release} ]] || release="6.12-webos"
 
 	local arch image
 	arch="$(tc-arch-kernel)"
@@ -116,5 +116,5 @@ pkg_postinst() {
 	if use initramfs && [[ -x /usr/bin/dracut && -n ${release} ]]; then
 		dracut --force --kver "${release}" "/boot/initramfs-${release}.img" || ewarn "dracut failed"
 	fi
-	elog "SanusOS kernel ${release} installed."
+	elog "WebOS kernel ${release} installed."
 }

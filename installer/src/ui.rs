@@ -51,7 +51,7 @@ fn draw_wizard(f: &mut Frame, app: &mut App) {
 
 fn draw_header(f: &mut Frame, area: Rect, app: &App, phase: Option<&str>) {
     let left = Line::from(vec![
-        Span::styled("SANUS", theme::accent_bold()),
+        Span::styled("WEBOS", theme::accent_bold()),
         Span::styled("OS", theme::title()),
         Span::styled("  installer", theme::dim()),
     ]);
@@ -142,7 +142,7 @@ fn page_welcome(f: &mut Frame, area: Rect, app: &mut App) {
     )));
     lines.push(Line::from(""));
     lines.push(Line::from(Span::styled(
-        "  This will erase the disk you choose and install SanusOS on it.",
+        "  This will erase the disk you choose and install WebOS on it.",
         theme::warn(),
     )));
     lines.push(Line::from(Span::styled(

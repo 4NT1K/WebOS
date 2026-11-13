@@ -1,11 +1,11 @@
 #!/sbin/openrc-run
-# SanusOS — one-shot first-boot and boot-time glue.
+# WebOS — one-shot first-boot and boot-time glue.
 # Installed by sanus-theme/sanus-theme as /etc/local.d/sanus.start.
 #
 # It is deliberately tiny: everything it does is idempotent, so it is safe to
 # leave enabled forever. Run `rc-update del sanus` to stop it entirely.
 
-description="SanusOS boot glue"
+description="WebOS boot glue"
 
 depend() {
 	after localmount
@@ -13,7 +13,7 @@ depend() {
 }
 
 start() {
-	ebegin "Applying SanusOS boot glue"
+	ebegin "Applying WebOS boot glue"
 
 	# 1. zram: a compressed swap device sized to RAM/2, capped at 8 GiB.
 	#    Cheaper than a swapfile on a desktop that mostly runs games.

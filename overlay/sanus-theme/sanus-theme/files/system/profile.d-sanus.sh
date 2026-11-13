@@ -1,4 +1,4 @@
-# SanusOS — shell environment. Sourced by login shells.
+# WebOS — shell environment. Sourced by login shells.
 # Managed by sanus-theme/sanus-theme. Machine-local changes go in
 # /etc/profile.d/local.sh or ~/.profile.
 
@@ -25,5 +25,5 @@ export _JAVA_AWT_WM_NONREPARENTING=1
 # Gaming niceties that only make sense when a session is present.
 export GAMEMODE_AUTO="${GAMEMODE_AUTO:-1}"
 
-# SanusOS marker.
+# WebOS marker.
 export SANUS_OS=1

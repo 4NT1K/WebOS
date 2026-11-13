@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  sanus-session — start a SanusOS Wayland session.
+#  sanus-session — start a WebOS Wayland session.
 #
 #    sanus-session              Hyprland (default)
 #    sanus-session --gamescope  a SteamOS-style gamescope session
@@ -47,7 +47,7 @@ if command -v dbus-update-activation-environment >/dev/null 2>&1; then
 		XDG_RUNTIME_DIR DISPLAY 2>/dev/null || true
 fi
 
-# GPU hints. SanusOS defaults to AMD; the rice's hyprland.conf sets the same
+# GPU hints. WebOS defaults to AMD; the rice's hyprland.conf sets the same
 # values for the compositor itself.
 if [[ -z ${LIBVA_DRIVER_NAME:-} ]]; then
 	if [[ -d /sys/module/nvidia || -e /dev/nvidia0 ]]; then

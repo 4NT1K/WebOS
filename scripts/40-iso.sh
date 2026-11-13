@@ -83,7 +83,10 @@ else
 	# installer restores so the target system boots to a normal login.
 	if [[ -f "${LIVE_ROOT}/etc/inittab" ]]; then
 		cp -a "${LIVE_ROOT}/etc/inittab" "${LIVE_ROOT}/etc/inittab.sanus-orig"
-		sed -i -E '/tty1/ s|(/sbin/agetty)([[:space:]])|\1 --autologin root\2|' \
+		# Autologin root on tty1..tty6: the live root password is locked, so a
+		# plain login prompt on tty2+ would be a dead end. The installer
+		# restores inittab.sanus-orig on the target, which undoes this.
+		sed -i -E '/tty[1-6]/ s|(/sbin/agetty)([[:space:]])|\1 --autologin root\2|' \
 			"${LIVE_ROOT}/etc/inittab"
 	elif [[ -f "${LIVE_ROOT}/etc/init.d/agetty.tty1" ]]; then
 		# OpenRC-only stage3: enable the agetty service in the default runlevel.

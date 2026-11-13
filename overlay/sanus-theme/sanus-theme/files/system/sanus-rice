@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  sanus-rice — apply the SanusOS look to a home directory.
+#  sanus-rice — apply the WebOS look to a home directory.
 #
 #    sanus-rice --user            apply to $HOME
 #    sanus-rice --system          apply to /etc/skel, /root and every /home/*
@@ -181,7 +181,7 @@ system_greetd() {
 
 	backup_once /etc/greetd/config.toml
 	cat > /etc/greetd/config.toml <<'EOF'
-# SanusOS — greetd configuration. Written by `sanus-rice --system`.
+# WebOS — greetd configuration. Written by `sanus-rice --system`.
 # A backup of the original is kept at config.toml.sanus-orig.
 
 [terminal]
@@ -194,7 +194,7 @@ vt = 1
 command = "tuigreet \
     --cmd sanus-session \
     --time --time-format '%H:%M' \
-    --greeting '  SanusOS  ' \
+    --greeting '  WebOS  ' \
     --asterisks --remember --remember-session --user-menu \
     --width 46 --height 16 --window-padding 2 --container-padding 6 \
     --theme 'text=#e6e8eb;time=#7dd3fc;container=#000000;input=#e6e8eb;action=#9aa3ad;border=#ffffff14;title=#7dd3fc;greet=#9aa3ad;prompt=#7dd3fc;button=#e6e8eb'"
@@ -204,7 +204,7 @@ EOF
 
 	backup_once /etc/greetd/environments.toml
 	cat > /etc/greetd/environments.toml <<'EOF'
-# SanusOS sessions offered by the greeter.
+# WebOS sessions offered by the greeter.
 hyprland
 sanus-session --gamescope
 EOF
@@ -279,7 +279,7 @@ doctor() {
 			printf '%s FAIL%s  %s  %s\n' "$C_E" "$C_R" "$1" "${3:-}"; bad=$((bad+1))
 		fi
 	}
-	say "SanusOS rice doctor"
+	say "WebOS rice doctor"
 	say ""
 	chk "rice installed"           "[[ -d ${RICE_SRC} ]]"
 	chk "Hyprland present"         "command -v Hyprland"

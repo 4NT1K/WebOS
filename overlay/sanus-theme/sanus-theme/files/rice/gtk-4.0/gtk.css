@@ -1,4 +1,4 @@
-/* SanusOS GTK4 overrides — Ashen palette on top of Adwaita-dark.
+/* WebOS GTK4 overrides — Ashen palette on top of Adwaita-dark.
  * GTK4 renamed most of the CSS; keep this to colours and radii only. */
 
 @define-color accent_color        #7dd3fc;

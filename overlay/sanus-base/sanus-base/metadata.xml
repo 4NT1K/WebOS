@@ -2,11 +2,11 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>dev@sanusos.org</email>
-		<name>SanusOS</name>
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS</name>
 	</maintainer>
 	<longdescription lang="en">
-		Meta-package pulling in the SanusOS base system: OpenRC, elogind,
+		Meta-package pulling in the WebOS base system: OpenRC, elogind,
 		NetworkManager, udev, storage tooling and diagnostics.
 	</longdescription>
 </pkgmetadata>

@@ -1,4 +1,4 @@
-# Building SanusOS in a Gentoo Container
+# Building WebOS in a Gentoo Container
 
 Since you're running CachyOS (not Gentoo), we'll use a Gentoo Docker container to build the ISO.
 
@@ -48,7 +48,7 @@ emerge-webrsync || echo "Portage sync may have failed, continuing..."
 echo "==> Installing build dependencies..."
 emerge --quiet sys-fs/squashfs-tools app-cdr/xorriso
 
-echo "==> Starting SanusOS build..."
+echo "==> Starting WebOS build..."
 cd /sanusos
 ./build.sh all
 
@@ -103,7 +103,7 @@ docker run -it --rm \
 ## What This Does
 
 1. **Pulls the Gentoo container** (~200 MB download)
-2. **Mounts your SanusOS source** at `/sanusos` inside the container
+2. **Mounts your WebOS source** at `/sanusos` inside the container
 3. **Syncs Portage** (Gentoo's package tree)
 4. **Installs build tools** (squashfs-tools, xorriso)
 5. **Runs `./build.sh all`** which:
@@ -169,7 +169,7 @@ sudo systemctl start docker
 
 The ISO will be at:
 ```
-/home/brah/sanusos/build/sanus-1.0-Ashen-amd64.iso
+/home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso
 ```
 
 You can then:
@@ -179,7 +179,7 @@ You can then:
 ls -lh /home/brah/sanusos/build/*.iso
 
 # Flash to USB (replace /dev/sdX with your USB device!)
-sudo dd if=/home/brah/sanusos/build/sanus-1.0-Ashen-amd64.iso \
+sudo dd if=/home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso \
         of=/dev/sdX \
         bs=4M \
         status=progress \
@@ -187,7 +187,7 @@ sudo dd if=/home/brah/sanusos/build/sanus-1.0-Ashen-amd64.iso \
 
 # Or test in QEMU first
 qemu-system-x86_64 -m 4096 -enable-kvm \
-  -cdrom /home/brah/sanusos/build/sanus-1.0-Ashen-amd64.iso \
+  -cdrom /home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso \
   -boot d
 ```
 

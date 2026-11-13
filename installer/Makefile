@@ -1,4 +1,4 @@
-# SanusOS installer — convenience targets.
+# WebOS installer — convenience targets.
 #
 #   make release    optimised binary in target/release/sanus-installer
 #   make debug      debug binary

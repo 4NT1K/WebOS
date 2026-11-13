@@ -89,7 +89,7 @@ pub fn locate() -> Result<Source> {
     bail!("could not find a WebOS root filesystem to install from")
 }
 
-/// Is this directory plausibly a WebOS/SanusOS root?
+/// Is this directory plausibly a WebOS/WebOS root?
 pub fn is_sanus_root(path: &Path) -> bool { // keep name for compatibility
     if !path.is_dir() {
         return false;
@@ -98,14 +98,14 @@ pub fn is_sanus_root(path: &Path) -> bool { // keep name for compatibility
     if !path.join("etc").is_dir() || !path.join("usr").is_dir() {
         return false;
     }
-    // And, on WebOS/SanusOS, this one.
+    // And, on WebOS/WebOS, this one.
     if path.join("etc/webos-release").is_file() || path.join("etc/sanus-release").is_file() {
         return true;
     }
     // Fall back to any os-release that mentions us.
     let os_release = path.join("etc/os-release");
     if let Ok(text) = std::fs::read_to_string(&os_release) {
-        if text.contains("ID=webos") || text.contains("ID=sanus") || text.contains("WebOS") || text.contains("SanusOS") {
+        if text.contains("ID=webos") || text.contains("ID=sanus") || text.contains("WebOS") || text.contains("WebOS") {
             return true;
         }
     }

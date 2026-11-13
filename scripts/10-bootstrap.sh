@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Stage 10 — unpack the stage3 into ${CHROOT}, install the SanusOS portage
+# Stage 10 — unpack the stage3 into ${CHROOT}, install the WebOS portage
 # configuration, add the sanus overlay, and emerge the base @world.
 set -Eeuo pipefail
 SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -39,7 +39,7 @@ if [[ ! -d "${CHROOT}/var/db/repos/gentoo/metadata" ]]; then
 fi
 
 # ------------------------------------------------- install our config --------
-step "bootstrap: installing SanusOS portage configuration"
+step "bootstrap: installing WebOS portage configuration"
 install -d "${CHROOT}/etc/portage/repos.conf" \
            "${CHROOT}/etc/portage/package.use" \
            "${CHROOT}/etc/portage/package.accept_keywords" \

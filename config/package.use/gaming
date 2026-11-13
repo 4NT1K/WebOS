@@ -1,4 +1,4 @@
-# SanusOS gaming per-package USE.
+# WebOS gaming per-package USE.
 
 # Steam and friends need multilib and a lot of 32-bit libs.
 games-util/steam-launcher steamruntime

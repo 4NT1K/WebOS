@@ -1,4 +1,4 @@
-# SanusOS arm64 profile defaults (experimental).
+# WebOS arm64 profile defaults (experimental).
 SANUS_OS="1"
 SANUS_VERSION="1.0"
 USE="elogind -systemd wayland X vulkan opengl gbm pipewire alsa udisks policykit dbus udev bluetooth networkmanager threads"

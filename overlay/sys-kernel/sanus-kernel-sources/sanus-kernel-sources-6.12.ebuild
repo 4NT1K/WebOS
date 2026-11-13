@@ -13,8 +13,8 @@ detect_arch
 
 inherit sanus-kernel
 
-DESCRIPTION="SanusOS Linux kernel sources (upstream LTS + the SanusOS patch series)"
-HOMEPAGE="https://sanusos.org/ https://www.kernel.org/"
+DESCRIPTION="WebOS Linux kernel sources (upstream LTS + the WebOS patch series)"
+HOMEPAGE="https://github.com/4NT1K/WebOS/ https://www.kernel.org/"
 SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz"
 
 LICENSE="GPL-2"

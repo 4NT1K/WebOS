@@ -21,7 +21,7 @@ mkdir -p "$STATE_DIR"
 
 # ── status ──────────────────────────────────────────────────────────────────
 status() {
-	printf 'SanusOS gaming status\n'
+	printf 'WebOS gaming status\n'
 	printf '%s\n' "─────────────────────"
 
 	printf '%-14s %s\n' "kernel" "$(uname -r)"

@@ -25,7 +25,7 @@ kernel, its own installer, and a clean black / transparent desktop.
 |---|---|
 | **Codename** | Ashen |
 | **Base** | Gentoo (OpenRC + elogind, `sanus` profile) |
-| **Kernel** | `sys-kernel/sanus-kernel` — vanilla LTS + gaming patchset, `-sanusos` localversion |
+| **Kernel** | `sys-kernel/sanus-kernel` — vanilla LTS + gaming patchset, `-webos` localversion |
 | **Init** | OpenRC (systemd variant documented, not default) |
 | **Desktop** | Hyprland (Wayland) with blur + true transparency |
 | **Installer** | `sanus-installer` — custom Rust TUI wizard |
@@ -66,7 +66,7 @@ kernel is tuned for your machine.
 ## Repository layout
 
 ```
-sanusos/
+WebOS/
 ├── build.sh                  # one entry point: ./build.sh all
 ├── Makefile                  # convenience wrappers
 ├── config/                   # portage config injected into the build chroot
@@ -113,7 +113,7 @@ WebOS builds **on Gentoo** (or any host with `bubblewrap`/`chroot` + the Gentoo
 tools). It needs root, ~40 GB free disk, and a few hours for a cold `@world`.
 
 ```bash
-git clone https://github.com/sanusos/sanusos && cd sanusos
+git clone https://github.com/4NT1K/WebOS && cd WebOS
 sudo ./build.sh fetch      # stage3 + portage snapshot + patchset + vendor the installer
 sudo ./build.sh bootstrap  # unpack stage3, apply config/, emerge base
 sudo ./build.sh kernel     # build sys-kernel/sanus-kernel

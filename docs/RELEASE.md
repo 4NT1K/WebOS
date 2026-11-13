@@ -1,6 +1,6 @@
-# Releasing SanusOS
+# Releasing WebOS
 
-This is the checklist for cutting a SanusOS release. A release is a signed,
+This is the checklist for cutting a WebOS release. A release is a signed,
 checksummed ISO built from a frozen tree, plus the notes that describe it.
 
 ---
@@ -10,12 +10,12 @@ checksummed ISO built from a frozen tree, plus the notes that describe it.
 The single source of truth is `branding/version`:
 
 ```sh
-SANUS_NAME="SanusOS"
+SANUS_NAME="WebOS"
 SANUS_CODENAME="Ashen"
 SANUS_VERSION="1.0"
 SANUS_VERSION_FULL="1.0-Ashen"
 SANUS_ID="sanus"
-SANUS_HOME="https://sanusos.org"
+SANUS_HOME="https://github.com/4NT1K/WebOS"
 SANUS_KERNEL_SERIES="6.12"
 ```
 
@@ -110,7 +110,7 @@ ISO path and its SHA-256 when it finishes.
 Confirm the kernel that went in:
 
 ```bash
-cat build/.kernel-release        # e.g. 6.12.0-sanusos
+cat build/.kernel-release        # e.g. 6.12.0-webos
 ```
 
 ---
@@ -123,9 +123,9 @@ Never publish an ISO you have not booted.
 qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/sanus-1.0-Ashen-amd64.iso -boot d
 ```
 
-- [ ] GRUB menu appears with the three SanusOS entries and the "first hard
+- [ ] GRUB menu appears with the three WebOS entries and the "first hard
       disk" entry.
-- [ ] The live medium boots to the SanusOS live menu on tty1.
+- [ ] The live medium boots to the WebOS live menu on tty1.
 - [ ] `sanus-installer --check` finds the firmware, the install source and the
       candidate disks.
 - [ ] A **BIOS** install completes and reboots into Hyprland.
@@ -134,7 +134,7 @@ qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/sanus-1.0-Ashen-amd64.iso -b
       reboots into Hyprland.
 - [ ] The installed system does **not** autologin and does **not** show the
       live menu (`/etc/sanus-live` is gone, `/etc/inittab` is restored).
-- [ ] `uname -r` reports `…-sanusos`.
+- [ ] `uname -r` reports `…-webos`.
 - [ ] `cat /etc/os-release` reports `ID=sanus`, `VERSION="1.0 (Ashen)"`.
 - [ ] `sanus-rice --doctor` is clean; the desktop is black/transparent.
 - [ ] A Steam game launches (gamescope/MangoHud as configured).
@@ -160,9 +160,9 @@ Write notes that say what changed, not what the ISO contains. Include:
 A short template:
 
 ```markdown
-# SanusOS 1.0 "Ashen"
+# WebOS 1.0 "Ashen"
 
-Kernel: 6.12.0-sanusos (BORE, fsync, ntsync, BBRv3, AMD P-State EPP, MGLRU)
+Kernel: 6.12.0-webos (BORE, fsync, ntsync, BBRv3, AMD P-State EPP, MGLRU)
 Base:   Gentoo <snapshot date>, profile sanus:default/linux/amd64/sanus
 Desktop: Hyprland (Wayland), greetd + tuigreet
 Installer: sanus-installer 1.0.0
@@ -217,7 +217,7 @@ checksum file alone: it travels next to the thing it checks.
 
 ## 8. Reproducibility notes
 
-SanusOS is not bit-for-bit reproducible yet, and the release notes should say
+WebOS is not bit-for-bit reproducible yet, and the release notes should say
 so honestly. What *is* deterministic:
 
 * the kernel patch series — `kernel/fetch-patches.sh --verify` fails on any
@@ -245,7 +245,7 @@ enough to verify a download, not to reproduce it.
 The tree is not a git repository in this sandbox; on the real project:
 
 ```bash
-git tag -s v1.0-Ashen -m "SanusOS 1.0 (Ashen)"
+git tag -s v1.0-Ashen -m "WebOS 1.0 (Ashen)"
 git push origin v1.0-Ashen
 ```
 

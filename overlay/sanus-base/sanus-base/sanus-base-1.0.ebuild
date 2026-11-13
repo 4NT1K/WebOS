@@ -1,7 +1,7 @@
 EAPI=8
 
-DESCRIPTION="SanusOS base system — init, networking, storage, diagnostics"
-HOMEPAGE="https://sanusos.org/"
+DESCRIPTION="WebOS base system — init, networking, storage, diagnostics"
+HOMEPAGE="https://github.com/4NT1K/WebOS/"
 SRC_URI=""
 
 LICENSE="metapackage"
@@ -9,7 +9,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~arm64"
 IUSE=""
 
-# Everything a SanusOS machine needs to boot, mount, network and repair itself.
+# Everything a WebOS machine needs to boot, mount, network and repair itself.
 # Deliberately excludes the desktop and the gaming stack; those are separate
 # packages so a server or a minimal install can skip them.
 RDEPEND="

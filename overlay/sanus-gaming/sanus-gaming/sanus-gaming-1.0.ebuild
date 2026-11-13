@@ -1,7 +1,7 @@
 EAPI=8
 
-DESCRIPTION="SanusOS gaming stack — Steam, Proton, gamescope, MangoHud, tuning"
-HOMEPAGE="https://sanusos.org/"
+DESCRIPTION="WebOS gaming stack — Steam, Proton, gamescope, MangoHud, tuning"
+HOMEPAGE="https://github.com/4NT1K/WebOS/"
 SRC_URI=""
 
 LICENSE="metapackage"

@@ -1,6 +1,6 @@
 # sanus-installer
 
-The SanusOS installer: one statically-ish linked binary, a keyboard, and a
+The WebOS installer: one statically-ish linked binary, a keyboard, and a
 black terminal. It partitions a disk, unpacks the live system onto it, and
 configures the result — including GRUB and the kernel command line.
 
@@ -29,7 +29,7 @@ sanus-installer -c answers.toml -y # unattended install
 sanus-installer -d                 # dry run: walk the wizard, write nothing
 ```
 
-`--config FILE --yes` is how SanusOS CI exercises installs: the wizard is
+`--config FILE --yes` is how WebOS CI exercises installs: the wizard is
 skipped, the summary is auto-confirmed, and every command is logged.
 
 ### Options

@@ -1,4 +1,4 @@
-# Packages masked on SanusOS.
+# Packages masked on WebOS.
 # We do not ship systemd as PID 1; mask anything that hard-requires it.
 # NOTE: sys-apps/systemd-utils is *kept* — it is our udev provider on OpenRC.
 sys-apps/systemd

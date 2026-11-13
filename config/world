@@ -1,4 +1,4 @@
-# SanusOS base world file — the minimum a SanusOS machine needs to be usable
+# WebOS base world file — the minimum a WebOS machine needs to be usable
 # and to boot itself. The gaming/desktop stack comes from /etc/portage/sets.
 app-admin/sudo
 app-admin/doas

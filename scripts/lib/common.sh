@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Shared shell library for the SanusOS build pipeline.
+# Shared shell library for the WebOS build pipeline.
 # Sourced by build.sh and by every scripts/NN-*.sh stage.
 
 # ---------------------------------------------------------------- guards -----
@@ -66,7 +66,7 @@ require_root() {
 
 require_gentoo() {
 	[[ -f /etc/gentoo-release || -n "${SANUS_FORCE:-}" ]] && return 0
-	die "SanusOS builds on Gentoo. Set SANUS_FORCE=1 to override (unsupported)."
+	die "WebOS builds on Gentoo. Set SANUS_FORCE=1 to override (unsupported)."
 }
 
 require_cmd() {
@@ -164,11 +164,11 @@ fetch() {
 }
 
 # ------------------------------------------------------------- overlays ------
-# Third-party ebuild repositories SanusOS builds against. ::gentoo and our own
+# Third-party ebuild repositories WebOS builds against. ::gentoo and our own
 # ::sanus overlay are handled separately.
 # Format: name|clone-url
 # Priority order (higher wins) is sanus > gentoo > these.
-# removed because its upstream URL is currently inaccessible; SanusOS ships
+# removed because its upstream URL is currently inaccessible; WebOS ships
 # sys-apps/pacman in its own overlay instead.
 SANUS_OVERLAYS=(
 	"guru|https://github.com/gentoo-mirror/guru.git"

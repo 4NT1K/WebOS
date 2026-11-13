@@ -1,7 +1,7 @@
 EAPI=8
 
-DESCRIPTION="SanusOS installer — a black, keyboard-driven TUI wizard"
-HOMEPAGE="https://sanusos.org/"
+DESCRIPTION="WebOS installer — a black, keyboard-driven TUI wizard"
+HOMEPAGE="https://github.com/4NT1K/WebOS/"
 SRC_URI="sanus-installer-${PV}.tar.gz"
 S="${WORKDIR}/sanus-installer-${PV}"
 
@@ -10,7 +10,7 @@ SLOT="0"
 KEYWORDS="~amd64 ~arm64"
 IUSE=""
 
-# The tarball is produced by the SanusOS build system from the `installer/`
+# The tarball is produced by the WebOS build system from the `installer/`
 # directory and dropped into DISTDIR (see scripts/30-rootfs.sh), so there is
 # nothing to fetch from a mirror.
 RESTRICT="mirror"
@@ -35,7 +35,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "The SanusOS installer is installed as /usr/bin/sanus-installer."
+	elog "The WebOS installer is installed as /usr/bin/sanus-installer."
 	elog ""
 	elog "  sanus-installer --check              inspect this machine"
 	elog "  sanus-installer -c FILE -y           unattended install"

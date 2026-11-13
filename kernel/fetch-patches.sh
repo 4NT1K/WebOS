@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Resolve, download and hash the SanusOS kernel patch series.
+# Resolve, download and hash the WebOS kernel patch series.
 #
 #   kernel/fetch-patches.sh [--out DIR] [--verify] [--kernel-series 6.12]
 #

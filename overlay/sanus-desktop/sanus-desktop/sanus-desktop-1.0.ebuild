@@ -1,7 +1,7 @@
 EAPI=8
 
-DESCRIPTION="SanusOS desktop — Hyprland, Wayland, the black/transparent rice"
-HOMEPAGE="https://sanusos.org/"
+DESCRIPTION="WebOS desktop — Hyprland, Wayland, the black/transparent rice"
+HOMEPAGE="https://github.com/4NT1K/WebOS/"
 SRC_URI=""
 
 LICENSE="metapackage"

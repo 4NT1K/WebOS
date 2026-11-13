@@ -1,4 +1,4 @@
-# SanusOS global per-package USE tuning.
+# WebOS global per-package USE tuning.
 
 # --- init / session ---------------------------------------------------------
 sys-auth/elogind pam policykit -acl

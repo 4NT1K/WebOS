@@ -5,7 +5,7 @@ SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export SANUS_ROOT
 source "${SANUS_ROOT}/scripts/lib/common.sh"
 
-step "check: SanusOS ${SANUS_VERSION_FULL}"
+step "check: WebOS ${SANUS_VERSION_FULL}"
 fail=0
 note() { printf '  %-6s %s\n' "$1" "$2" >&2; }
 bad()  { note FAIL "$1"; fail=$((fail + 1)); }

@@ -1,2 +1,2 @@
-# USE flags that must stay masked on SanusOS.
+# USE flags that must stay masked on WebOS.
 systemd

@@ -1,4 +1,4 @@
-# The SanusOS rice
+# The WebOS rice
 
 Everything here is installed to `/usr/share/sanus/rice/` and applied to a home
 directory by `sanus-rice`. The package that owns this directory is

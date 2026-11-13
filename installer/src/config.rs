@@ -193,7 +193,7 @@ impl Default for InstallConfig {
             esp_size_mib: 512,
             swap_size_mib: 4096,
 
-            hostname: "sanus".into(),
+            hostname: "webos".into(),
             username: String::new(),
             full_name: String::new(),
             user_password: String::new(),

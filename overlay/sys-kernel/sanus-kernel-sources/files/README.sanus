@@ -1,12 +1,12 @@
-SanusOS kernel sources
+WebOS kernel sources
 ======================
 
-This is the upstream Linux LTS tree with the SanusOS patch series applied.
+This is the upstream Linux LTS tree with the WebOS patch series applied.
 The series is not stored in the repository; it is resolved and hashed by
 `kernel/fetch-patches.sh` at build time.  See `kernel/patchset.conf` for the
 list and `kernel/README.md` for the rationale.
 
-The SanusOS config fragment is installed next to this file as
+The WebOS config fragment is installed next to this file as
 `sanus-fragment.config`.  It is a *fragment*, not a full config: it is applied
 on top of upstream `defconfig`.
 

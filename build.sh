@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SanusOS top-level build entry point.
+# WebOS top-level build entry point.
 #
 #   ./build.sh all | fetch | bootstrap | kernel | rootfs | iso
 #   ./build.sh clean | distclean | status | help
@@ -44,7 +44,7 @@ cmd_all() {
 	cmd_kernel
 	cmd_rootfs
 	cmd_iso
-	step "SanusOS ${SANUS_VERSION_FULL} built"
+	step "WebOS ${SANUS_VERSION_FULL} built"
 	step "  ISO: ${ISO_OUT}"
 	step "  sha256: $(cut -d' ' -f1 "${ISO_OUT}.sha256" 2>/dev/null || echo n/a)"
 }
@@ -73,7 +73,7 @@ cmd_distclean() {
 cmd_status() {
 	require_root
 	load_branding
-	printf '%s\n' "SanusOS ${SANUS_VERSION_FULL} (${SANUS_CODENAME})"
+	printf '%s\n' "WebOS ${SANUS_VERSION_FULL} (${SANUS_CODENAME})"
 	printf '  root        : %s\n' "${SANUS_ROOT}"
 	printf '  build dir   : %s\n' "${SANUS_BUILD_DIR}"
 	printf '  arch        : %s (%s)\n' "${SANUS_ARCH}" "${SANUS_STAGE3_VARIANT}"

@@ -1,6 +1,6 @@
 MIT License
 
-Copyright (c) 2026 The SanusOS Project
+Copyright (c) 2026 The WebOS Project
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -27,5 +27,5 @@ Exception: files under `overlay/**/*.ebuild`, `overlay/**/metadata/**` and
 as required by the Gentoo repository conventions. The full text of GPL-2.0 is
 available at <https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt>.
 
-The SanusOS kernel patch series resolved by `kernel/fetch-patches.sh` is not
+The WebOS kernel patch series resolved by `kernel/fetch-patches.sh` is not
 covered by this license; each patch retains the license of its upstream project.

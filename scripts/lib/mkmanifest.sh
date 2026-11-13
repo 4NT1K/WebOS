@@ -9,7 +9,7 @@
 #   EBUILD foo-1.0.ebuild 1234 BLAKE2B <hex> SHA512 <hex>
 #   DIST   foo-1.0.tar.gz 5678 BLAKE2B <hex> SHA512 <hex>
 #
-# This exists because the installer tarball is produced by the SanusOS build
+# This exists because the installer tarball is produced by the WebOS build
 # system at build time and therefore cannot be listed in the committed
 # Manifest; the build regenerates it here.
 #

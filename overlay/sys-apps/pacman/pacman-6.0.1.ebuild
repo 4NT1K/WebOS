@@ -1,6 +1,6 @@
 EAPI=8
 
-DESCRIPTION="Arch Linux package manager (pacman) — SanusOS application layer"
+DESCRIPTION="Arch Linux package manager (pacman) — WebOS application layer"
 HOMEPAGE="https://archlinux.org/"
 SRC_URI="https://archive.archlinux.org/packages/p/pacman/${P}.pkg.tar.zst"
 

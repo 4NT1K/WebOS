@@ -1,8 +1,8 @@
-# SanusOS kernel
+# WebOS kernel
 
 `sys-kernel/sanus-kernel` is a *dist-kernel* style ebuild: it builds the
-upstream Linux sources with the SanusOS patch series and config fragment, and
-installs `vmlinuz-*-sanusos`, modules, and a dracut initramfs.
+upstream Linux sources with the WebOS patch series and config fragment, and
+installs `vmlinuz-*-webos`, modules, and a dracut initramfs.
 
 ## Pieces
 
@@ -23,7 +23,7 @@ drops it — the build does not break.
 
 ## Why patches are fetched, not vendored
 
-SanusOS is a build system, not a patch dump. Patches come from the projects that
+WebOS is a build system, not a patch dump. Patches come from the projects that
 maintain them (firelzrd's BORE, the CachyOS kernel-patches tree, Frogging
 Family) so that credit and license stay with them. `fetch-patches.sh` hashes
 every patch; a rebuild either reproduces the exact kernel or fails.

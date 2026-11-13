@@ -66,15 +66,14 @@ pub fn good() -> Style {
     Style::default().bg(BASE).fg(GOOD)
 }
 
-/// The wordmark, as it appears on the welcome page: a tub of Velo snus.
-/// One line per row of the tub, drawn from block characters.
+/// The wordmark, as it appears on the welcome page: WebOS.
 pub const LOGO: [&str; 6] = [
-    "      .------.",
-    "     /        \\",
-    "    |  VELO   |",
-    "    |  SNUS   |",
-    "     \\        /",
-    "      '------'",
+    " __        __   _     ___  ____  ",
+    " \\ \\      / /__| |__ / _ \\/ ___| ",
+    "  \\ \\ /\\ / / _ \\ '_ \\ | | \\___ \\ ",
+    "   \\ V  V /  __/ |_) | |_| |___) |",
+    "    \\_/\\_/ \\___|_.__/ \\___/|____/ ",
+    "                                 ",
 ];
 
 // ── egui equivalents (used by the windowed installer) ─────────────────────

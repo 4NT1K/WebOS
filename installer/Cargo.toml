@@ -3,10 +3,10 @@ name = "sanus-installer"
 version = "1.0.0"
 edition = "2021"
 rust-version = "1.75"
-description = "SanusOS installer — a black, mouse- and keyboard-driven install wizard"
+description = "WebOS installer — a black, mouse- and keyboard-driven install wizard"
 license = "MIT"
-authors = ["The SanusOS Project <dev@sanusos.org>"]
-repository = "https://github.com/sanusos/sanusos"
+authors = ["The WebOS Project <4NT1K@users.noreply.github.com>"]
+repository = "https://github.com/4NT1K/WebOS"
 readme = "README.md"
 
 [[bin]]

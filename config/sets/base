@@ -1,4 +1,4 @@
-# SanusOS base set — desktop-agnostic system services and tools.
+# WebOS base set — desktop-agnostic system services and tools.
 sys-apps/systemd-utils
 sys-apps/openrc
 sys-apps/net-tools

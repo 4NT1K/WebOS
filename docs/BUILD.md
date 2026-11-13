@@ -1,9 +1,9 @@
-# Building SanusOS
+# Building WebOS
 
 This is the full walkthrough for turning the source tree into
 `build/sanus-1.0-Ashen-amd64.iso`.
 
-SanusOS is a source distribution, so a cold build compiles a toolchain, a
+WebOS is a source distribution, so a cold build compiles a toolchain, a
 kernel, a desktop and a gaming stack. Budget **several hours** and a real
 machine; the pipeline is designed for a Gentoo host with root access.
 
@@ -32,11 +32,11 @@ kernel, the tools above, and the network.
 ## 2. Quick start
 
 ```bash
-git clone https://github.com/sanusos/sanusos && cd sanusos
+git clone https://github.com/4NT1K/WebOS && cd WebOS
 sudo ./build.sh fetch       # stage3 + portage snapshot + kernel patchset + vendor
 sudo ./build.sh bootstrap   # unpack stage3, apply config/, emerge @world
 sudo ./build.sh kernel      # build sys-kernel/sanus-kernel
-sudo ./build.sh rootfs      # emerge the SanusOS sets, build the installer, apply the rice
+sudo ./build.sh rootfs      # emerge the WebOS sets, build the installer, apply the rice
 sudo ./build.sh iso         # squashfs + initramfs + hybrid GRUB image
 ```
 
@@ -97,7 +97,7 @@ sudo SANUS_JOBS=6 \
    `kernel/patchset.conf` into `build/cache/kernel-patches/`. Entries whose hash
    column is `auto` are pinned **in place** on first fetch; a mismatch against
    an existing pin is fatal.
-4. Shallow-clones the three third-party ebuild overlays that SanusOS builds
+4. Shallow-clones the three third-party ebuild overlays that WebOS builds
    against — `::guru`, `::hyproverlay` and `::steam-overlay` — into
    `build/cache/repos/` (see §10).
 5. Runs `installer/vendor.sh` (`cargo generate-lockfile` + `cargo vendor`) so
@@ -131,7 +131,7 @@ This is the long stage: it builds the toolchain and the base system from source.
    computed here, and the download lands in `DISTDIR` for the emerge that
    follows.
 4. Emerges `sys-kernel/sanus-kernel-sources` and `sys-kernel/sanus-kernel`.
-5. Writes the installed release (e.g. `6.12.0-sanusos`) to
+5. Writes the installed release (e.g. `6.12.0-webos`) to
    `build/.kernel-release`.
 
 ### `rootfs` — `scripts/30-rootfs.sh`
@@ -240,7 +240,7 @@ Because the Manifests for the kernel packages are regenerated at build time
 | Symptom | Cause / fix |
 | --- | --- |
 | `missing host tool: …` | Install the tool listed; the ISO stage needs `grub-mkrescue` and `mformat` (from `sys-boot/grub` and `sys-fs/mtools`). |
-| `SanusOS builds on Gentoo` | You are on another distro. Set `SANUS_FORCE=1` (unsupported) or build on Gentoo. |
+| `WebOS builds on Gentoo` | You are on another distro. Set `SANUS_FORCE=1` (unsupported) or build on Gentoo. |
 | `chroot not bootstrapped` | Run `./build.sh bootstrap` first. |
 | `installer/vendor is missing` | Run `./build.sh fetch` with `cargo` on `PATH`. |
 | `stage3 checksum mismatch` | A truncated download. Delete the file in `build/downloads` and re-run `fetch`. |
@@ -274,7 +274,7 @@ See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the pieces fit together and
 
 ## 10. Ebuild repositories
 
-SanusOS builds against five repositories. Their `repos.conf` files live in
+WebOS builds against five repositories. Their `repos.conf` files live in
 `config/repos.conf/` and are installed into the chroot verbatim.
 
 | Repo | Location | Source | Priority | Provides |

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Stage 30 — emerge the SanusOS meta sets, install the installer + branding,
+# Stage 30 — emerge the WebOS meta sets, install the installer + branding,
 # and export the finished rootfs that the ISO and the installer both use.
 set -Eeuo pipefail
 SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export SANUS_ROOT
 source "${SANUS_ROOT}/scripts/lib/common.sh"
 
-step "rootfs: emerging SanusOS system"
+step "rootfs: emerging WebOS system"
 require_root
 assert_stage_order rootfs
 trap_umount
@@ -73,10 +73,10 @@ stage_installer_tarball
 chroot_sh "emerge --quiet-build=y --jobs=${SANUS_JOBS} --load-average=$((SANUS_JOBS * 2)) \
 	--keep-going --exclude='app-alternatives/awk sys-apps/coreutils sys-apps/shadow sys-apps/systemd-utils' \
 	@base @desktop @gaming @sanus-installer" \
-	|| warn "SanusOS set emerge had failures (continuing; review if critical packages missing)"
+	|| warn "WebOS set emerge had failures (continuing; review if critical packages missing)"
 
 # --------------------------------------------------------- installer ---------
-step "rootfs: building the SanusOS installer"
+step "rootfs: building the WebOS installer"
 # If an interrupted earlier run left a mismatched distfile/Manifest pair,
 # rebuild the pair and retry rather than failing the whole stage.
 installed=0
@@ -116,8 +116,23 @@ install -d "${ROOTFS_DIR}"
 rsync -aHAX --delete \
 	--exclude='/proc/*' --exclude='/sys/*' --exclude='/dev/*' \
 	--exclude='/tmp/*' --exclude='/var/tmp/*' --exclude='/var/cache/*' \
-	--exclude='/usr/src/*' --exclude='/var/db/repos/*' \
+	--exclude='/usr/src/*' \
+	--exclude='/var/db/repos/guru' \
+	--exclude='/var/db/repos/hyproverlay' \
+	--exclude='/var/db/repos/steam-overlay' \
 	--exclude='/lib/modules/*/build' \
 	"${CHROOT}/" "${ROOTFS_DIR}/" || die "rootfs export failed"
+
+# The ::gentoo tree ships with the image so `emerge` works on a fresh install
+# and in the live session without a network round-trip. The optional overlays
+# are build-time only; disable their (otherwise dangling) repo entries so
+# Portage does not warn about them on every invocation.
+install -d "${ROOTFS_DIR}/etc/portage/repos.conf.disabled"
+for _repo in guru hyproverlay steam-overlay; do
+	if [[ -f "${ROOTFS_DIR}/etc/portage/repos.conf/${_repo}.conf" ]]; then
+		mv -f "${ROOTFS_DIR}/etc/portage/repos.conf/${_repo}.conf" \
+		      "${ROOTFS_DIR}/etc/portage/repos.conf.disabled/${_repo}.conf"
+	fi
+done
 
 ok "rootfs exported to ${ROOTFS_DIR} ($(du -sh "${ROOTFS_DIR}" | cut -f1))"

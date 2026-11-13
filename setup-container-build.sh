@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Quick setup script for building SanusOS in a Docker container
+# Quick setup script for building WebOS in a Docker container
 # Run this on CachyOS (or any non-Gentoo system)
 
 set -e
 
 echo "════════════════════════════════════════════════════════════════"
-echo "  SanusOS Container Build Setup"
+echo "  WebOS Container Build Setup"
 echo "════════════════════════════════════════════════════════════════"
 echo ""
 
@@ -119,7 +119,7 @@ echo "==> Syncing Portage tree..."
 emerge-webrsync
 echo "==> Installing build tools..."
 emerge --quiet sys-fs/squashfs-tools app-cdr/xorriso
-echo "==> Starting SanusOS build (this takes 3-6 hours)..."
+echo "==> Starting WebOS build (this takes 3-6 hours)..."
 cd /sanusos
 ./build.sh all
 echo ""

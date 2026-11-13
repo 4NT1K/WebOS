@@ -1,4 +1,4 @@
-# SanusOS desktop set — Hyprland/Wayland, black-transparent rice.
+# WebOS desktop set — Hyprland/Wayland, black-transparent rice.
 # Compositor (Hyprland stack comes from ::hyproverlay)
 gui-wm/hyprland
 gui-apps/hyprpaper

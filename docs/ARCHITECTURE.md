@@ -1,6 +1,6 @@
-# SanusOS architecture
+# WebOS architecture
 
-How the pieces of SanusOS fit together: the repository, the boot flow, the
+How the pieces of WebOS fit together: the repository, the boot flow, the
 install recipe, and the decisions behind them.
 
 ---
@@ -24,7 +24,7 @@ install recipe, and the decisions behind them.
 ## 2. Repository layout
 
 ```
-sanusos/
+WebOS/
 ├── build.sh                 top-level entry point (fetch → iso)
 ├── Makefile                 convenience wrappers (make iso, make lint, …)
 ├── branding/                version, os-release, issue, logo
@@ -62,7 +62,7 @@ Two symlinks keep a single source of truth:
 
 ## 3. Layers
 
-SanusOS is four things stacked:
+WebOS is four things stacked:
 
 ```
         ┌──────────────────────────────────────────────┐
@@ -86,7 +86,7 @@ SanusOS is four things stacked:
   the Arch application packages.
   Priority is `sanus (100) > gentoo (-1000) > third-party (-2000) >
   the base stack do not carry. See [`BUILD.md`](BUILD.md#10-ebuild-repositories).
-* **Package manager** — the base system and the SanusOS meta sets are installed
+* **Package manager** — the base system and the WebOS meta sets are installed
   with Portage (the Gentoo package manager).
   repository as `sys-apps/pacman` — is the **application package manager**: once
   it is installed, applications come from the Arch repositories configured in
@@ -134,10 +134,10 @@ deliberately stricter than `scripts/kconfig/merge_config.sh`: each `CONFIG_*`
 symbol in the fragment **replaces** whatever the base said, including a prior
 `# CONFIG_FOO is not set`. `make olddefconfig` resolves anything new.
 
-The fragment sets `CONFIG_LOCALVERSION="-sanusos"`, `CONFIG_HZ=1000`,
+The fragment sets `CONFIG_LOCALVERSION="-webos"`, `CONFIG_HZ=1000`,
 `CONFIG_PREEMPT_DYNAMIC=y`, `CONFIG_SCHED_CLASS_EXT=y` (sched-ext),
 `CONFIG_SCHED_BORE=y` (harmless if the patch is absent) and the usual desktop
-knobs. The installed release string is therefore `6.12.0-sanusos`.
+knobs. The installed release string is therefore `6.12.0-webos`.
 
 ### Eclass
 
@@ -197,8 +197,8 @@ touches the disk before the summary page is confirmed.
   `/run/sanus/rootfs`, …),
 * a fixed list of rootfs tarballs.
 
-A directory counts as a SanusOS root if it has `etc/` and `usr/` plus either
-`etc/sanus-release`, an `os-release` mentioning `ID=sanus`/`SanusOS`, or a
+A directory counts as a WebOS root if it has `etc/` and `usr/` plus either
+`etc/sanus-release`, an `os-release` mentioning `ID=sanus`/`WebOS`, or a
 `usr/local/portage/sanus` overlay. If only an unmounted `sanus.squashfs` is
 found, `install::run` calls `rootfs::ensure_mounted("/run/sanus/rootfs")` and
 looks again.
@@ -236,7 +236,7 @@ Only GRUB is supported: it is the one bootloader that installs cleanly onto
 both a UEFI ESP and a BIOS MBR from the same medium.
 
 * UEFI: `grub-install --target=x86_64-efi --efi-directory=/boot/efi
-  --bootloader-id=SanusOS`, with a fallback copy to
+  --bootloader-id=WebOS`, with a fallback copy to
   `/boot/efi/EFI/BOOT/BOOTX64.EFI`. If the machine booted in BIOS mode, the
   NVRAM entry is skipped (`--no-nvram`) rather than failing the install.
 * BIOS: `grub-install --target=i386-pc --boot-directory=/boot`.
@@ -337,7 +337,7 @@ firmware → GRUB (hybrid) → vmlinuz-sanus + initramfs-sanus.img
 ### Installed system
 
 ```
-firmware → GRUB → vmlinuz-6.12.0-sanusos + initramfs
+firmware → GRUB → vmlinuz-6.12.0-webos + initramfs
         → root=UUID=… [rd.luks.name=…] rootflags=subvol=@
         → OpenRC → greetd (tuigreet) → sanus-session → Hyprland
 ```

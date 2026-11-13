@@ -1,4 +1,4 @@
-# SanusOS — convenience wrappers over build.sh
+# WebOS — convenience wrappers over build.sh
 #
 #   make iso        build the full release ISO
 #   make kernel     build only sys-kernel/sanus-kernel

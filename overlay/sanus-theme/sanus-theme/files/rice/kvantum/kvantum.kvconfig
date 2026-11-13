@@ -1,5 +1,5 @@
 [General]
-# SanusOS Qt theming.
+# WebOS Qt theming.
 #
 # We do not ship a hand-drawn Kvantum SVG: a half-correct one looks worse than
 # a good existing theme. Instead we take KvArcDark (shipped by

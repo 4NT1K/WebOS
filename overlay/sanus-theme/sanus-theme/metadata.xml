@@ -2,16 +2,16 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>dev@sanusos.org</email>
-		<name>SanusOS Design</name>
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS Design</name>
 	</maintainer>
 	<longdescription lang="en">
-		The SanusOS look: a black, translucent Hyprland desktop with real
+		The WebOS look: a black, translucent Hyprland desktop with real
 		compositor blur. Ships Hyprland, waybar, wofi, hyprlock, mako, foot,
 		kitty, GTK/Kvantum/Qt theming, greetd configuration, a generated SVG
 		wallpaper, and the sanus-rice tool that applies it all idempotently.
 	</longdescription>
 	<upstream>
-		<remote-id type="github">sanusos/sanusos</remote-id>
+		<remote-id type="github">4NT1K/WebOS</remote-id>
 	</upstream>
 </pkgmetadata>

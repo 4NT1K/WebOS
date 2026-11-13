@@ -1,7 +1,7 @@
 EAPI=8
 
-DESCRIPTION="SanusOS rice — the black/transparent Hyprland theme, dotfiles and session glue"
-HOMEPAGE="https://sanusos.org/"
+DESCRIPTION="WebOS rice — the black/transparent Hyprland theme, dotfiles and session glue"
+HOMEPAGE="https://github.com/4NT1K/WebOS/"
 SRC_URI=""
 
 LICENSE="MIT"
@@ -77,7 +77,7 @@ src_install() {
 }
 
 pkg_postinst() {
-	elog "SanusOS rice installed under /usr/share/sanus/rice."
+	elog "WebOS rice installed under /usr/share/sanus/rice."
 	elog ""
 
 	if [[ -x ${EROOT}/usr/bin/sanus-wallpaper ]]; then
@@ -98,6 +98,6 @@ pkg_postinst() {
 pkg_config() {
 	# `emerge --config sanus-theme/sanus-theme` re-applies everything
 	# idempotently, including for every account in /home.
-	einfo "Re-applying the SanusOS rice"
+	einfo "Re-applying the WebOS rice"
 	${EROOT}/usr/bin/sanus-rice --system --force || die "sanus-rice failed"
 }

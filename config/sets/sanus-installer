@@ -1,4 +1,4 @@
-# SanusOS installer set.
+# WebOS installer set.
 app-admin/sanus-installer
 sys-block/parted
 sys-apps/gptfdisk

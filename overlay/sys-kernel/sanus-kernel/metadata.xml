@@ -2,11 +2,11 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>dev@sanusos.org</email>
-		<name>SanusOS Kernel Team</name>
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS Kernel Team</name>
 	</maintainer>
 	<longdescription lang="en">
-		The SanusOS Linux kernel: upstream LTS plus a deliberately small
+		The WebOS Linux kernel: upstream LTS plus a deliberately small
 		performance patch series (BORE scheduler, Wine fsync/ntsync, TCP BBRv3,
 		AMD P-State preferred cores) configured for a gaming desktop with
 		CONFIG_HZ=1000, full preemption and zstd zram.

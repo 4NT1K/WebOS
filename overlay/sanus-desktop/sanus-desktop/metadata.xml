@@ -2,12 +2,12 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>dev@sanusos.org</email>
-		<name>SanusOS</name>
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS</name>
 	</maintainer>
 	<longdescription lang="en">
-		Meta-package for the SanusOS desktop: Hyprland on Wayland, waybar, wofi,
-		greetd, the SanusOS rice, and the Wayland toolset.
+		Meta-package for the WebOS desktop: Hyprland on Wayland, waybar, wofi,
+		greetd, the WebOS rice, and the Wayland toolset.
 	</longdescription>
 	<use>
 		<flag name="bluetooth">Install the BlueZ stack and blueman.</flag>

@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────────────────────────────────
- *  SanusOS waybar — black glass.
+ *  WebOS waybar — black glass.
  *  The bar itself is translucent; Hyprland blurs what is behind it via the
  *  `layerrule = blur, waybar` rule. Keep the alpha in one place: --surface.
  * ────────────────────────────────────────────────────────────────────────── */

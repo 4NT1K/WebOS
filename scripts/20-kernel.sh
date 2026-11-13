@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Stage 20 — build the SanusOS kernel (sys-kernel/sanus-kernel) inside the
+# Stage 20 — build the WebOS kernel (sys-kernel/sanus-kernel) inside the
 # chroot and install it under /boot.
 set -Eeuo pipefail
 SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export SANUS_ROOT
 source "${SANUS_ROOT}/scripts/lib/common.sh"
 
-step "kernel: sys-kernel/sanus-kernel (${SANUS_KERNEL_SERIES}-sanusos)"
+step "kernel: sys-kernel/sanus-kernel (${SANUS_KERNEL_SERIES}-webos)"
 require_root
 assert_stage_order kernel
 trap_umount

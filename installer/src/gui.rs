@@ -183,7 +183,7 @@ impl InstallerGui {
 
     fn header(&self, ui: &mut Ui) {
         let app = self.app().borrow();
-        let title = format!("SanusOS Installer  ·  {}", app.step.title());
+        let title = format!("WebOS Installer  ·  {}", app.step.title());
         ui.label(
             egui::RichText::new(title)
                 .color(theme::E_TEXT)
@@ -353,7 +353,7 @@ impl InstallerGui {
         ui.add_space(8.0);
         ui.label(
             egui::RichText::new(
-                "This will erase the disk you choose and install SanusOS on it.",
+                "This will erase the disk you choose and install WebOS on it.",
             )
             .color(theme::E_WARN),
         );
@@ -789,7 +789,7 @@ impl InstallerGui {
             );
             ui.add_space(8.0);
             ui.label(
-                egui::RichText::new("Reboot, remove the installation medium, and enjoy SanusOS.")
+                egui::RichText::new("Reboot, remove the installation medium, and enjoy WebOS.")
                     .color(theme::E_TEXT),
             );
         } else {
@@ -831,13 +831,13 @@ pub fn run_gui(app: App) -> anyhow::Result<App> {
 
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_title("SanusOS Installer")
+            .with_title("WebOS Installer")
             .with_fullscreen(true),
         ..Default::default()
     };
 
     let creator: eframe::AppCreator = Box::new(move |_cc| Ok(Box::new(gui)));
-    eframe::run_native("SanusOS Installer", options, creator)
+    eframe::run_native("WebOS Installer", options, creator)
         .map_err(|e| anyhow::anyhow!("GUI failed to start: {e}"))?;
 
     let app = Rc::try_unwrap(app_rc)

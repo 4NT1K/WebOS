@@ -6,7 +6,7 @@ SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 export SANUS_ROOT
 source "${SANUS_ROOT}/scripts/lib/common.sh"
 
-step "fetch: SanusOS ${SANUS_VERSION_FULL} (${SANUS_ARCH}/${SANUS_STAGE3_VARIANT})"
+step "fetch: WebOS ${SANUS_VERSION_FULL} (${SANUS_ARCH}/${SANUS_STAGE3_VARIANT})"
 require_cmd curl tar sha256sum
 mkdir -p "${DL_DIR}"
 

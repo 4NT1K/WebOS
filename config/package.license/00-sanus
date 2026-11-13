@@ -1,4 +1,4 @@
-# License acceptances specific to SanusOS.
+# License acceptances specific to WebOS.
 # @FREE and @BINARY-REDISTRIBUTABLE are already global in make.conf; only
 # licenses that belong to neither group need an explicit entry here.
 games-util/steam-launcher ValveSteamLicense

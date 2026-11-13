@@ -2,12 +2,12 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>dev@sanusos.org</email>
-		<name>SanusOS Kernel Team</name>
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS Kernel Team</name>
 	</maintainer>
 	<longdescription lang="en">
-		Patched Linux kernel sources for SanusOS. Installs the upstream LTS tree
-		with the SanusOS patch series applied and the SanusOS config fragment
+		Patched Linux kernel sources for WebOS. Installs the upstream LTS tree
+		with the WebOS patch series applied and the WebOS config fragment
 		alongside it, for users who want to configure and build by hand.
 	</longdescription>
 	<upstream>

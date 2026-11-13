@@ -54,6 +54,7 @@ USAGE:
 OPTIONS:
     -c, --config <FILE>   Load answers from a TOML file and skip those pages
     -y, --yes             Do not prompt for the final confirmation
+        --unattended      With --config: install without a TTY, printing the log
     -d, --dry-run         Go through the whole wizard, but write nothing
     -l, --log <FILE>      Write the command log to FILE (default: /var/log/sanus-install.log)
         --check           Print what the installer found (disks, firmware, rootfs) and exit
@@ -77,6 +78,7 @@ MOUSE:
 struct Args {
     config: Option<PathBuf>,
     yes: bool,
+    unattended: bool,
     dry_run: bool,
     log: Option<PathBuf>,
     check: bool,
@@ -93,6 +95,7 @@ fn parse_args() -> Result<Option<Args>> {
                 args.config = Some(PathBuf::from(it.next().context("--config needs a file")?))
             }
             "-y" | "--yes" => args.yes = true,
+            "--unattended" => args.unattended = true,
             "-d" | "--dry-run" => args.dry_run = true,
             "-l" | "--log" => {
                 args.log = Some(PathBuf::from(it.next().context("--log needs a file")?))
@@ -139,7 +142,7 @@ fn run() -> Result<ExitCode> {
         anyhow::bail!("sanus-installer must run as root");
     }
 
-    let mut app = App::new(args.dry_run, args.yes, args.log.clone())?;
+    let mut app = App::new(args.dry_run, args.yes || args.unattended, args.log.clone())?;
 
     if let Some(path) = &args.config {
         let text = std::fs::read_to_string(path)
@@ -150,6 +153,13 @@ fn run() -> Result<ExitCode> {
     }
 
     install_panic_hook();
+
+    if args.unattended {
+        if args.config.is_none() {
+            anyhow::bail!("--unattended needs --config FILE");
+        }
+        return run_unattended(app);
+    }
 
     if args.gui {
         // The windowed installer owns its own rendering; no terminal needed.
@@ -178,6 +188,43 @@ fn run() -> Result<ExitCode> {
     } else {
         Ok(ExitCode::from(2))
     }
+}
+
+/// `--config FILE --unattended`: no TUI, no TTY. Used by CI and by the
+/// QEMU install test; every line of the command log is echoed to stdout.
+fn run_unattended(mut app: App) -> Result<ExitCode> {
+    let mut printed = 0usize;
+    let flush = |app: &mut App, printed: &mut usize| {
+        while *printed < app.log.len() {
+            println!("{}", app.log[*printed]);
+            *printed += 1;
+        }
+    };
+
+    while !app.done {
+        app.tick();
+        flush(&mut app, &mut printed);
+
+        // start_install() refuses invalid configs without setting `done`.
+        if !app.installing && !app.started && app.error.is_some() {
+            break;
+        }
+        if !app.done {
+            std::thread::sleep(Duration::from_millis(100));
+        }
+    }
+    flush(&mut app, &mut printed);
+
+    if let Some(e) = &app.error {
+        eprintln!("install failed: {e}");
+    }
+    println!("log: {}", app.log_path.display());
+
+    Ok(if app.installed {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::from(2)
+    })
 }
 
 fn preflight() -> Result<ExitCode> {

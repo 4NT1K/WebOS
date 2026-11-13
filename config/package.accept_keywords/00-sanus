@@ -1,5 +1,5 @@
 # Packages accepted from testing (~amd64) while the rest of the tree is stable.
-# SanusOS ships a mostly-stable base with a rolling gaming/desktop layer,
+# WebOS ships a mostly-stable base with a rolling gaming/desktop layer,
 # which is the same trade-off CachyOS makes.
 gui-apps/kanshi ~amd64
 gui-apps/mako ~amd64
@@ -16,7 +16,7 @@ sys-kernel/scx ~amd64
 */*::hyproverlay ~amd64
 */*::steam-overlay ~amd64
 
-# SanusOS's own overlay.
+# WebOS's own overlay.
 app-admin/sanus-installer ~amd64
 sanus-base/sanus-base ~amd64
 sanus-desktop/sanus-desktop ~amd64

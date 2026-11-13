@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  sanus-wallpaper — render the SanusOS wallpaper to PNG and apply it.
+#  sanus-wallpaper — render the WebOS wallpaper to PNG and apply it.
 #
 #    sanus-wallpaper              render + apply
 #    sanus-wallpaper --dark       render the lock-screen variant

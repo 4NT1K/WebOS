@@ -1,4 +1,4 @@
-# SanusOS wofi — a black glass launcher.
+# WebOS wofi — a black glass launcher.
 # wofi reads this from ~/.config/wofi/config
 
 show=drun

@@ -1,4 +1,4 @@
-# SanusOS — build artifacts that must never be committed.
+# WebOS — build artifacts that must never be committed.
 
 # The whole build scratch tree (stage3, portage snapshot, chroot, rootfs, ISO).
 /build/

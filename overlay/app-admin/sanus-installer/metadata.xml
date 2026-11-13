@@ -2,15 +2,15 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>dev@sanusos.org</email>
-		<name>SanusOS</name>
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS</name>
 	</maintainer>
 	<longdescription lang="en">
-		The SanusOS installer: a single-binary TUI that partitions a disk,
+		The WebOS installer: a single-binary TUI that partitions a disk,
 		unpacks the live system onto it, configures it, and installs GRUB.
 		Built from source with a vendored, offline cargo build.
 	</longdescription>
 	<upstream>
-		<remote-id type="github">sanusos/sanusos</remote-id>
+		<remote-id type="github">4NT1K/WebOS</remote-id>
 	</upstream>
 </pkgmetadata>

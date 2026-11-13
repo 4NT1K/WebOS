@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  sanus-shot — screenshots on Wayland, the SanusOS way.
+#  sanus-shot — screenshots on Wayland, the WebOS way.
 #
 #    sanus-shot region  [--clipboard|--save]   select an area
 #    sanus-shot window  [--clipboard|--save]   the focused window

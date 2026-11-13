@@ -1,5 +1,5 @@
 // ────────────────────────────────────────────────────────────────────────────
-//  SanusOS waybar — a single floating black capsule.
+//  WebOS waybar — a single floating black capsule.
 //  Left: workspaces + focused window.  Center: clock.  Right: system.
 // ────────────────────────────────────────────────────────────────────────────
 {
