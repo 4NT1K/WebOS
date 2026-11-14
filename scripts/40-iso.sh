@@ -78,10 +78,9 @@ else
 
 	# The live tree is the install source: the installer rsyncs it with
 	# --numeric-ids, so every owner here is copied to the target verbatim.
-	# A rootless/uid-mapped build flattens these to uid 1000, which produces a
-	# system whose /, /etc, /usr and /boot belong to the first user (breaks
-	# systemd-tmpfiles, setuid binaries and login). Force root ownership.
-	chown -R 0:0 "${LIVE_ROOT}"
+	# Normalize ownership without stripping setuid/setgid bits.
+	chown 0:0 "${LIVE_ROOT}" 2>/dev/null || true
+	find "${LIVE_ROOT}" -xdev \( ! -uid 0 -o ! -gid 0 \) -exec chown 0:0 {} + 2>/dev/null || true
 	[[ "$(stat -c %u "${LIVE_ROOT}")" == 0 ]] || die "live root is not owned by root"
 	[[ "$(stat -c %u "${LIVE_ROOT}/usr")" == 0 ]] || die "live /usr is not owned by root"
 	[[ "$(stat -c %u "${LIVE_ROOT}/etc")" == 0 ]] || die "live /etc is not owned by root"

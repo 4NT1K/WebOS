@@ -341,19 +341,20 @@ fn mount_target(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
 
 fn fix_root_ownership(r: &Runner) -> Result<()> {
     r.phase("Fixing filesystem ownership");
-    // Live/source images built under user namespaces can end up with uid 1000 on
-    // /, /etc, /usr, etc. The copy preserves numeric ids, so normalize critical
-    // system paths to root:root before chrooting/configuring.
+    // The copy step now forces root:root while preserving modes. This pass only
+    // repairs anything still not root-owned in critical system paths, without
+    // mass-chowning (chown can clear setuid/setgid bits).
     let script = r#"
 set -euo pipefail
 T="${1}"
-chown 0:0 "$T"
-for d in bin boot etc lib lib64 opt root sbin srv usr var; do
-  [ -e "$T/$d" ] && chown -R 0:0 "$T/$d"
+chown 0:0 "$T" 2>/dev/null || true
+for d in bin boot etc lib lib64 opt root sbin srv usr; do
+  [ -e "$T/$d" ] || continue
+  find "$T/$d" -xdev \( ! -uid 0 -o ! -gid 0 \) -exec chown 0:0 {} + 2>/dev/null || true
 done
-mkdir -p "$T"/{dev,proc,sys,run,tmp,home,mnt,media}
-chown 0:0 "$T/dev" "$T/proc" "$T/sys" "$T/run" "$T/home" "$T/mnt" "$T/media" 2>/dev/null || true
-chmod 1777 "$T/tmp"
+mkdir -p "$T"/{dev,proc,sys,run,tmp,home,mnt,media,var/tmp}
+chown 0:0 "$T/dev" "$T/proc" "$T/sys" "$T/run" "$T/home" "$T/mnt" "$T/media" "$T/var" "$T/var/tmp" 2>/dev/null || true
+chmod 1777 "$T/tmp" "$T/var/tmp"
 "#;
     r.run("bash", &["-c", script, "--", TARGET])
 }
@@ -369,8 +370,9 @@ fn copy_rootfs(r: &Runner, src: &Source) -> Result<()> {
             r.run(
                 "rsync",
                 &[
-                    "-aHAX",
+                    "-rlptDHAX",
                     "--numeric-ids",
+                    "--chown=0:0",
                     "--one-file-system",
                     "--info=progress2",
                     "--no-inc-recursive",
@@ -395,6 +397,8 @@ fn copy_rootfs(r: &Runner, src: &Source) -> Result<()> {
                 "--xattrs".to_string(),
                 "--acls".into(),
                 "--numeric-owner".into(),
+                "--owner=0".into(),
+                "--group=0".into(),
                 "-xpf".into(),
                 path.display().to_string(),
                 "-C".into(),
@@ -608,8 +612,10 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
 
     // ── users ────────────────────────────────────────────────────────────
     s.push_str(&format!(
-        "useradd --create-home --shell /bin/bash --groups wheel,audio,video,render,input,plugdev,gamemode,usb,kvm '{u}' || \
-         useradd --create-home --shell /bin/bash '{u}'\n",
+        "for g in wheel audio video render input plugdev gamemode usb kvm seat; do getent group \"$g\" >/dev/null 2>&1 || groupadd -r \"$g\" 2>/dev/null || groupadd \"$g\" 2>/dev/null || true; done\n\
+         useradd --create-home --shell /bin/bash '{u}' 2>/dev/null || true\n\
+         usermod -aG wheel,audio,video,render,input,plugdev,gamemode,usb,kvm,seat '{u}' 2>/dev/null || true\n\
+         chown -R '{u}:{u}' '/home/{u}' 2>/dev/null || true\n",
         u = cfg.username
     ));
     s.push_str(&format!(
