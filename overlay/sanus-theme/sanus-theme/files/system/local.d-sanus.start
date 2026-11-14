@@ -1,53 +1,43 @@
-#!/sbin/openrc-run
+#!/bin/sh
 # WebOS — one-shot first-boot and boot-time glue.
 # Installed by sanus-theme/sanus-theme as /etc/local.d/sanus.start.
 #
-# It is deliberately tiny: everything it does is idempotent, so it is safe to
-# leave enabled forever. Run `rc-update del sanus` to stop it entirely.
+# local.d scripts are executed directly by OpenRC's `local` service, so this
+# must be a plain shell script (not an openrc-run service script).
+# Everything here is idempotent and safe to run on every boot.
 
-description="WebOS boot glue"
-
-depend() {
-	after localmount
-	before display-manager
-}
-
-start() {
-	ebegin "Applying WebOS boot glue"
-
-	# 1. zram: a compressed swap device sized to RAM/2, capped at 8 GiB.
-	#    Cheaper than a swapfile on a desktop that mostly runs games.
-	if ! swapon --show=NAME --noheadings 2>/dev/null | grep -q zram; then
-		if [[ -x /usr/sbin/zramctl ]] || command -v zramctl >/dev/null 2>&1; then
-			modprobe zram 2>/dev/null || true
-			local mem_kb zram_dev size
-			mem_kb="$(awk '/MemTotal/{print $2}' /proc/meminfo)"
-			size=$(( mem_kb / 2 ))
-			(( size > 8388608 )) && size=8388608
-			if [[ -b /dev/zram0 ]]; then
-				zram_dev=/dev/zram0
-			else
-				zram_dev="$(zramctl --find --size "${size}K" --algorithm zstd 2>/dev/null || true)"
-			fi
-			if [[ -n "${zram_dev}" && -b "${zram_dev}" ]]; then
-				zramctl "${zram_dev}" --size "${size}K" --algorithm zstd 2>/dev/null || true
-				mkswap "${zram_dev}" >/dev/null 2>&1 || true
-				swapon --priority 100 "${zram_dev}" 2>/dev/null || true
-			fi
+# 1. zram: a compressed swap device sized to RAM/2, capped at 8 GiB.
+#    Cheaper than a swapfile on a desktop that mostly runs games.
+if ! swapon --show=NAME --noheadings 2>/dev/null | grep -q zram; then
+	if command -v zramctl >/dev/null 2>&1; then
+		modprobe zram 2>/dev/null || true
+		mem_kb="$(awk '/MemTotal/{print $2}' /proc/meminfo 2>/dev/null)"
+		[ -n "$mem_kb" ] || mem_kb=4194304
+		size=$(( mem_kb / 2 ))
+		[ "$size" -gt 8388608 ] && size=8388608
+		if [ -b /dev/zram0 ]; then
+			zram_dev=/dev/zram0
+		else
+			zram_dev="$(zramctl --find --size "${size}K" --algorithm zstd 2>/dev/null || true)"
+		fi
+		if [ -n "$zram_dev" ] && [ -b "$zram_dev" ]; then
+			zramctl "$zram_dev" --size "${size}K" --algorithm zstd 2>/dev/null || true
+			mkswap "$zram_dev" >/dev/null 2>&1 || true
+			swapon --priority 100 "$zram_dev" 2>/dev/null || true
 		fi
 	fi
+fi
 
-	# 2. VM tuning that helps games without hurting anything else.
-	sysctl -q -w vm.swappiness=100 2>/dev/null || true      # zram wants to be used
-	sysctl -q -w vm.vfs_cache_pressure=50 2>/dev/null || true
-	sysctl -q -w vm.max_map_count=2147483642 2>/dev/null || true   # Proton wants this
-	sysctl -q -w kernel.split_lock_mitigate=0 2>/dev/null || true
-	sysctl -q -w net.core.netdev_max_backlog=16384 2>/dev/null || true
+# 2. VM tuning that helps games without hurting anything else.
+sysctl -q -w vm.swappiness=100 2>/dev/null || true      # zram wants to be used
+sysctl -q -w vm.vfs_cache_pressure=50 2>/dev/null || true
+sysctl -q -w vm.max_map_count=2147483642 2>/dev/null || true   # Proton wants this
+sysctl -q -w kernel.split_lock_mitigate=0 2>/dev/null || true
+sysctl -q -w net.core.netdev_max_backlog=16384 2>/dev/null || true
 
-	# 3. Make sure the wallpaper exists (harmless if it already does).
-	[[ -x /usr/bin/sanus-wallpaper ]] && \
-		[[ ! -s /usr/share/sanus/wallpaper/sanus-wallpaper.png ]] && \
-		/usr/bin/sanus-wallpaper --quiet 2>/dev/null || true
+# 3. Make sure the wallpaper exists (harmless if it already does).
+if [ -x /usr/bin/sanus-wallpaper ] && [ ! -s /usr/share/sanus/wallpaper/sanus-wallpaper.png ]; then
+	/usr/bin/sanus-wallpaper --quiet 2>/dev/null || true
+fi
 
-	eend 0
-}
+exit 0
