@@ -149,6 +149,14 @@ rsync -aHAX --delete \
 	--exclude='/lib/modules/*/build' \
 	"${CHROOT}/" "${ROOTFS_DIR}/" || die "rootfs export failed"
 
+# rsync protects excluded paths from --delete, so stale build links survive.
+# A dangling /lib/modules/*/build confuses module tooling on the target.
+rm -f "${ROOTFS_DIR}"/lib/modules/*/build
+# sanus-theme is not always re-emerged (same version), so make sure the
+# boot-glue script is the current one from the tree.
+install -m 0755 "${SANUS_ROOT}/overlay/sanus-theme/sanus-theme/files/system/local.d-sanus.start" \
+	"${ROOTFS_DIR}/etc/local.d/sanus.start"
+
 # The ::gentoo tree ships with the image so `emerge` works on a fresh install
 # and in the live session without a network round-trip. The optional overlays
 # are build-time only; disable their (otherwise dangling) repo entries so
