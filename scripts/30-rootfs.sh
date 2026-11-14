@@ -134,6 +134,9 @@ step "rootfs: finalizing"
 chroot_sh "env-update; ldconfig" || true
 # NVIDIA's driver cannot load while nouveau owns the GPU. Harmless on AMD/Intel.
 chroot_sh "printf 'blacklist nouveau\\n' > /etc/modprobe.d/blacklist-nouveau.conf" || true
+# nvidia-drivers ships a dracut drop-in that *omits* the modules; since we ship
+# the driver we want it in the initramfs for early KMS/modeset.
+chroot_sh "rm -f /usr/lib/dracut/dracut.conf.d/10-nvidia-drivers.conf" || true
 # Freeze the world file so rebuilds are reproducible.
 install -d "${ROOTFS_DIR}"
 rsync -aHAX --delete \

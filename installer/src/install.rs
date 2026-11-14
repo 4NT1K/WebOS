@@ -789,6 +789,7 @@ fn build_initramfs(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()
 
     let nvidia_extra = if cfg.nvidia {
         "printf 'blacklist nouveau\\n' > /etc/modprobe.d/blacklist-nouveau.conf\n\
+         rm -f /usr/lib/dracut/dracut.conf.d/10-nvidia-drivers.conf\n\
          printf 'force_drivers+=\" nvidia nvidia_modeset nvidia_uvm nvidia_drm \"\\n' > /etc/dracut.conf.d/nvidia.conf\n"
     } else {
         ""
