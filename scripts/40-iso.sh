@@ -97,6 +97,9 @@ else
 		# restores inittab.sanus-orig on the target, which undoes this.
 		sed -i -E '/tty[1-6]/ s|(/sbin/agetty)([[:space:]])|\1 --autologin root\2|' \
 			"${LIVE_ROOT}/etc/inittab"
+		# Also give the live medium a serial console (headless installs and
+		# automated testing). The installer restores inittab.sanus-orig.
+		sed -i -E 's|^#(s0:.*ttyS0.*)$|\1|' "${LIVE_ROOT}/etc/inittab"
 	elif [[ -f "${LIVE_ROOT}/etc/init.d/agetty.tty1" ]]; then
 		# OpenRC-only stage3: enable the agetty service in the default runlevel.
 		mkdir -p "${LIVE_ROOT}/etc/runlevels/default"
