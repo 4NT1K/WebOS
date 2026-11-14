@@ -1,0 +1,11 @@
+[General]
+ColorScheme=DeepBlack
+Name=Deep Black
+shadeSortColumn=true
+
+[KDE]
+contrast=4
+LookAndFeelPackage=org.kde.breezedark.desktop
+
+[Icons]
+Theme=Papirus-Dark

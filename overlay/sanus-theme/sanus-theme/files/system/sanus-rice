@@ -153,8 +153,9 @@ apply_home() {
 	[[ -d "$home" ]] || return 0
 	note "applying rice to ${home}"
 	apply_tree "$home" "$force"
-	# gtk settings + bookmarks live one level up from the rice
+	# gtk/plasma defaults live outside the managed tree dirs
 	install_gtk_user "$home" "$force"
+	install_plasma_user "$home" "$force"
 	done_ "rice applied to ${home}"
 }
 
@@ -164,6 +165,16 @@ install_gtk_user() {
 	install_file "${RICE_SRC}/gtk-3.0/settings.ini" "${home}/.config/gtk-3.0/settings.ini" "$mf" "$force"
 	install_file "${RICE_SRC}/gtk-4.0/settings.ini" "${home}/.config/gtk-4.0/settings.ini" "$mf" "$force"
 	install_file "${RICE_SRC}/fastfetch/fastfetch.json" "${home}/.config/fastfetch/fastfetch.json" "$mf" "$force"
+	[[ -f "${RICE_SRC}/fastfetch/webos.txt" ]] && install_file "${RICE_SRC}/fastfetch/webos.txt" "${home}/.config/fastfetch/webos.txt" "$mf" "$force"
+}
+
+install_plasma_user() {
+	local home="$1" force="$2" mf
+	mf="$(manifest_of "$home")"
+	[[ -d "${RICE_SRC}/plasma" ]] || return 0
+	[[ -f "${RICE_SRC}/plasma/kdeglobals" ]] && install_file "${RICE_SRC}/plasma/kdeglobals" "${home}/.config/kdeglobals" "$mf" "$force"
+	[[ -f "${RICE_SRC}/plasma/kcminputrc" ]] && install_file "${RICE_SRC}/plasma/kcminputrc" "${home}/.config/kcminputrc" "$mf" "$force"
+	mkdir -p "${home}/.config/autostart" 2>/dev/null || true
 }
 
 # ── system-wide bits (run as root) ──────────────────────────────────────────
