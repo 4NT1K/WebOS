@@ -171,12 +171,22 @@ pub struct InstallConfig {
     // ── options ───────────────────────────────────────────────────────────
     pub profile: Profile,
     pub install_gaming: bool,
+    #[serde(default = "default_true")]
+    pub install_steam: bool,
+    #[serde(default = "default_true")]
+    pub install_firefox: bool,
+    #[serde(default)]
+    pub install_discord: bool,
+    #[serde(default)]
+    pub install_opencode: bool,
     pub nvidia: bool,
     pub enable_bluetooth: bool,
     pub enable_sshd: bool,
     pub enable_firewall: bool,
     pub use_grub: bool,
 }
+
+fn default_true() -> bool { true }
 
 impl Default for InstallConfig {
     fn default() -> Self {
@@ -205,6 +215,10 @@ impl Default for InstallConfig {
 
             profile: Profile::Full,
             install_gaming: true,
+            install_steam: true,
+            install_firefox: true,
+            install_discord: false,
+            install_opencode: false,
             nvidia: false,
             enable_bluetooth: true,
             enable_sshd: false,

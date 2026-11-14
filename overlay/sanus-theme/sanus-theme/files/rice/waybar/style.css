@@ -4,16 +4,16 @@
  *  `layerrule = blur, waybar` rule. Keep the alpha in one place: --surface.
  * ────────────────────────────────────────────────────────────────────────── */
 
-@define-color base      #050508;   /* deep black */
-@define-color surface   rgba(10, 10, 12, 0.55);
-@define-color surface2  rgba(20, 20, 24, 0.55);
-@define-color text      #f0f0f5;   /* white */
-@define-color text-dim  #9aa3ad;
-@define-color text-faint #5b6470;
-@define-color accent    #f0f0f5;   /* white */
-@define-color accent-lo rgba(125, 211, 252, 0.18);
-@define-color urgent    #f87171;
-@define-color border    rgba(255, 255, 255, 0.08);
+@define-color base      #000000;   /* pure black */
+@define-color surface   rgba(0, 0, 0, 0.60);
+@define-color surface2  rgba(20, 20, 20, 0.55);
+@define-color text      #ededed;   /* near white */
+@define-color text-dim  #8c8c8c;
+@define-color text-faint #5b5b5b;
+@define-color accent    #ffffff;   /* white */
+@define-color accent-lo rgba(255, 255, 255, 0.12);
+@define-color urgent    #d27878;
+@define-color border    rgba(255, 255, 255, 0.10);
 
 * {
     border: none;

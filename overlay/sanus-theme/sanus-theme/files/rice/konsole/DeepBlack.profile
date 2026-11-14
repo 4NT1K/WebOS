@@ -1,0 +1,15 @@
+[Appearance]
+ColorScheme=DeepBlack
+
+[Cursor Options]
+CursorShape=1
+CustomCursorColor=255,255,255
+CustomCursorTextColor=0,0,0
+UseCustomCursorColor=true
+
+[General]
+Name=Deep Black
+Parent=FALLBACK/
+
+[Scrolling]
+ScrollBarPosition=2

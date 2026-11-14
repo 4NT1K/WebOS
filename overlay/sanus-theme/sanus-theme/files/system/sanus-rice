@@ -57,6 +57,8 @@ declare -A TREES=(
 	[qt5ct]=".config/qt5ct"
 	[qt6ct]=".config/qt6ct"
 	[kvantum]=".config/Kvantum"
+	[color-schemes]=".local/share/color-schemes"
+	[konsole]=".local/share/konsole"
 )
 
 sha() { sha256sum "$1" | cut -d' ' -f1; }

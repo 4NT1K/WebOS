@@ -16,11 +16,11 @@ window {
 }
 
 #outer-box {
-    background: rgba(8, 8, 10, 0.62);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(0, 0, 0, 0.70);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 18px;
     padding: 14px;
-    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.65);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.75);
 }
 
 #input {
@@ -33,7 +33,7 @@ window {
     caret-color: #7dd3fc;
 }
 #input:focus {
-    border-color: rgba(125, 211, 252, 0.45);
+    border-color: rgba(255, 255, 255, 0.35);
     background: rgba(255, 255, 255, 0.06);
 }
 #input placeholder { color: #5b6470; }

@@ -668,6 +668,14 @@ impl InstallerGui {
             if c.install_gaming { "yes" } else { "no" }.to_string(),
         ));
         lines.push((
+            "Apps".into(),
+            format!("steam={} firefox={} discord={} opencode={}",
+                if c.install_steam {"yes"} else {"no"},
+                if c.install_firefox {"yes"} else {"no"},
+                if c.install_discord {"yes"} else {"no"},
+                if c.install_opencode {"yes"} else {"no"}),
+        ));
+        lines.push((
             "GPU".into(),
             if c.nvidia { "NVIDIA" } else { "Mesa" }.to_string(),
         ));

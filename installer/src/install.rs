@@ -736,6 +736,29 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
     s.push('\n');
 
+    // ── optional applications (prebuilt/binpkg only, no compiling) ───────
+    if cfg.profile != Profile::Minimal {
+        s.push_str("emerge_app() { emerge --quiet-build=y --noreplace --getbinpkg=n --usepkg y \"$@\" 2>/dev/null || emerge --quiet-build=y --noreplace -K \"$@\" 2>/dev/null || true; }\n");
+        s.push_str("remove_app() { emerge --quiet-build=y --unmerge \"$@\" 2>/dev/null || true; }\n");
+        if cfg.install_firefox {
+            s.push_str("emerge_app www-client/firefox\n");
+        } else {
+            s.push_str("remove_app www-client/firefox\n");
+        }
+        if cfg.install_steam {
+            s.push_str("emerge_app games-util/steam-launcher\n");
+        } else {
+            s.push_str("remove_app games-util/steam-launcher\n");
+        }
+        if cfg.install_discord {
+            s.push_str("emerge_app net-im/discord-bin net-im/discord\n");
+        }
+        if cfg.install_opencode {
+            s.push_str("emerge_app app-misc/opencode-bin app-misc/opencode dev-util/opencode-bin www-apps/opencode\n");
+        }
+        s.push_str("if command -v emaint >/dev/null 2>&1; then emaint --fix binhost 2>/dev/null || true; fi\n\n");
+    }
+
     // ── record the install choices ───────────────────────────────────────
     s.push_str("mkdir -p /etc/sanus\n");
     s.push_str("cat > /etc/sanus/install.toml <<'EOF'\n");

@@ -462,6 +462,10 @@ impl App {
             ("Swap".into(), self.cfg.swap.label().into()),
             ("Profile".into(), self.cfg.profile.label().into()),
             ("Gaming stack".into(), on_off(self.cfg.install_gaming).into()),
+            ("Steam".into(), on_off(self.cfg.install_steam).into()),
+            ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
+            ("Discord".into(), on_off(self.cfg.install_discord).into()),
+            ("OpenCode".into(), on_off(self.cfg.install_opencode).into()),
             ("NVIDIA driver".into(), on_off(self.cfg.nvidia).into()),
             ("Bluetooth".into(), on_off(self.cfg.enable_bluetooth).into()),
             ("SSH server".into(), on_off(self.cfg.enable_sshd).into()),
@@ -490,11 +494,15 @@ impl App {
                 self.cfg.profile = Profile::ALL[(i + 1) % Profile::ALL.len()];
             }
             2 => self.cfg.install_gaming = !self.cfg.install_gaming,
-            3 => self.cfg.nvidia = !self.cfg.nvidia,
-            4 => self.cfg.enable_bluetooth = !self.cfg.enable_bluetooth,
-            5 => self.cfg.enable_sshd = !self.cfg.enable_sshd,
-            6 => self.cfg.enable_firewall = !self.cfg.enable_firewall,
-            7 => self.cfg.use_grub = !self.cfg.use_grub,
+            3 => self.cfg.install_steam = !self.cfg.install_steam,
+            4 => self.cfg.install_firefox = !self.cfg.install_firefox,
+            5 => self.cfg.install_discord = !self.cfg.install_discord,
+            6 => self.cfg.install_opencode = !self.cfg.install_opencode,
+            7 => self.cfg.nvidia = !self.cfg.nvidia,
+            8 => self.cfg.enable_bluetooth = !self.cfg.enable_bluetooth,
+            9 => self.cfg.enable_sshd = !self.cfg.enable_sshd,
+            10 => self.cfg.enable_firewall = !self.cfg.enable_firewall,
+            11 => self.cfg.use_grub = !self.cfg.use_grub,
             _ => {}
         }
     }

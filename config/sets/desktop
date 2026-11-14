@@ -88,3 +88,6 @@ www-client/firefox
 # GPU: NVIDIA proprietary/open driver. Inert on AMD/Intel systems; the
 # installer only adds nvidia-drm.modeset=1 when the NVIDIA option is chosen.
 x11-drivers/nvidia-drivers
+
+# Optional apps (preinstalled for fast setup; installer can toggle)
+net-im/discord-bin

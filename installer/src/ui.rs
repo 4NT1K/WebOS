@@ -463,6 +463,16 @@ fn page_summary(f: &mut Frame, area: Rect, app: &mut App) {
         &mut lines,
     );
     row(
+        "Apps",
+        format!("steam={} firefox={} discord={} opencode={}",
+            if c.install_steam {"yes"} else {"no"},
+            if c.install_firefox {"yes"} else {"no"},
+            if c.install_discord {"yes"} else {"no"},
+            if c.install_opencode {"yes"} else {"no"}),
+        theme::base(),
+        &mut lines,
+    );
+    row(
         "GPU",
         if c.nvidia { "NVIDIA" } else { "Mesa" }.to_string(),
         theme::base(),
