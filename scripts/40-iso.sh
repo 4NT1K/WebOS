@@ -46,12 +46,12 @@ chroot_sh "mkdir -p /etc/dracut.conf.d && \
 	EOF
 	dracut --force --kver ${KREL} /boot/initramfs-sanus.img" \
 	|| die "dracut failed"
-if [[ -f "${ROOTFS_DIR}/boot/initramfs-sanus.img" ]]; then
-	cp -f "${ROOTFS_DIR}/boot/initramfs-sanus.img" "${ISO_STAGING}/boot/initramfs-sanus.img"
-elif [[ -f "${CHROOT}/boot/initramfs-sanus.img" ]]; then
+if [[ -f "${CHROOT}/boot/initramfs-sanus.img" ]]; then
 	cp -f "${CHROOT}/boot/initramfs-sanus.img" "${ISO_STAGING}/boot/initramfs-sanus.img"
+elif [[ -f "${ROOTFS_DIR}/boot/initramfs-sanus.img" ]]; then
+	cp -f "${ROOTFS_DIR}/boot/initramfs-sanus.img" "${ISO_STAGING}/boot/initramfs-sanus.img"
 else
-	die "initramfs not found in rootfs or chroot"
+	die "initramfs not found in chroot or rootfs"
 fi
 
 # microcode blobs, if present
