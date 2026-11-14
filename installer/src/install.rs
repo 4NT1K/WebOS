@@ -783,9 +783,8 @@ fn build_initramfs(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()
     if cfg.filesystem == Filesystem::Btrfs {
         extra.push_str(" --add btrfs ");
     }
-    if cfg.nvidia {
-        extra.push_str(" --add nvidia ");
-    }
+    // `--add` selects dracut *modules*, not kernel drivers; nvidia has no
+    // dracut module. The driver is pulled in by force_drivers in nvidia.conf.
 
     let nvidia_extra = if cfg.nvidia {
         "printf 'blacklist nouveau\\n' > /etc/modprobe.d/blacklist-nouveau.conf\n\
