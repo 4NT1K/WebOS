@@ -232,7 +232,7 @@ mksquashfs_root() {
 	require_cmd mksquashfs
 	info "squashfs: $(du -sh "${src}" | cut -f1) -> ${out}"
 	mksquashfs "${src}" "${out}" \
-		-noappend -comp zstd -Xcompression-level 15 \
+		-noappend -comp zstd -Xcompression-level 19 \
 		-b 1M -no-progress -wildcards \
 		-e 'var/cache/*' 'var/tmp/*' 'tmp/*' 'usr/src/*' 'proc/*' 'sys/*' 'dev/*'
 }
