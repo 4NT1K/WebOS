@@ -38,7 +38,7 @@ chroot_sh "mkdir -p /etc/dracut.conf.d && \
 	cat > /etc/dracut.conf.d/sanus-live.conf <<-'EOF'
 	add_dracutmodules+=\" dmsquash-live pollcdrom \"
 	omit_dracutmodules+=\" network-legacy \"
-	force_drivers+=\" overlay squashfs loop isofs sr_mod sd_mod ahci nvme usb-storage xhci_pci virtio_blk virtio_pci \"
+	force_drivers+=\" overlay squashfs loop isofs sr_mod sd_mod ahci nvme usb-storage xhci_pci virtio_blk virtio_pci nvidia nvidia_modeset nvidia_uvm nvidia_drm \"
 	compress=\"zstd\"
 	hostonly=\"no\"
 	use_fstab=\"no\"

@@ -783,6 +783,16 @@ fn build_initramfs(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()
     if cfg.filesystem == Filesystem::Btrfs {
         extra.push_str(" --add btrfs ");
     }
+    if cfg.nvidia {
+        extra.push_str(" --add nvidia ");
+    }
+
+    let nvidia_extra = if cfg.nvidia {
+        "printf 'blacklist nouveau\\n' > /etc/modprobe.d/blacklist-nouveau.conf\n\
+         printf 'force_drivers+=\" nvidia nvidia_modeset nvidia_uvm nvidia_drm \"\\n' > /etc/dracut.conf.d/nvidia.conf\n"
+    } else {
+        ""
+    };
 
     let script = format!(
         "#!/bin/bash\nset -euo pipefail\n\
@@ -794,9 +804,11 @@ fn build_initramfs(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()
          hostonly=\"yes\"\n\
          early_microcode=\"yes\"\n\
          EOF\n\
+         {nvidia_extra}\
          dracut --force --kver {kver}{extra} /boot/initramfs-{kver}.img\n",
         kver = kver,
-        extra = extra
+        extra = extra,
+        nvidia_extra = nvidia_extra
     );
     let _ = p;
     in_chroot(r, &script)

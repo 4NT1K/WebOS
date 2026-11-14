@@ -67,6 +67,27 @@ stage_installer_tarball() {
 stage_installer_tarball
 
 # ------------------------------------------------------------- sets ----------
+# nvidia-drivers builds kernel modules against /usr/src/linux. The sources
+# ebuild deliberately drops .config/Module.symvers, so restore the build tree
+# from the /boot artifacts the sanus-kernel ebuild installs.
+step "rootfs: preparing the kernel build tree"
+KREL="$(cat "${BUILD_DIR}/.kernel-release" 2>/dev/null || true)"
+[[ -n ${KREL} ]] || KREL="$(chroot_sh "ls /lib/modules | sort -V | tail -n1" | tr -d '\r')"
+[[ -n ${KREL} ]] || die "could not determine kernel release for module builds"
+chroot_sh "set -e
+KREL='${KREL}'
+SRC=\$(ls -d /usr/src/linux-* 2>/dev/null | sort -V | tail -n1)
+[[ -n \"\$SRC\" ]] || { echo 'no kernel sources'; exit 1; }
+ln -sfn \"\$SRC\" /usr/src/linux
+ln -sfn \"\$SRC\" \"/lib/modules/\$KREL/build\"
+cp -f \"/boot/config-\$KREL\" \"\$SRC/.config\"
+cp -f /boot/Module.symvers \"\$SRC/Module.symvers\"
+cp -a /boot/include/. \"\$SRC/include/\"
+cp -a /boot/scripts/. \"\$SRC/scripts/\"
+find \"\$SRC/scripts\" -type f -exec sh -c 'head -c2 \"\$1\" 2>/dev/null | grep -q \"#!\" && chmod +x \"\$1\"' _ {} \; 2>/dev/null || true
+cd \"\$SRC\" && make olddefconfig >/dev/null && make modules_prepare >/dev/null
+" || die "kernel build tree preparation failed"
+
 # Exclude packages known to hit merged-usr internal collisions in this build
 # environment (stage3 provides working versions). Keep going to tolerate
 # non-critical failures in the large desktop/gaming set.
@@ -111,6 +132,8 @@ chroot_sh "emerge --quiet-build=y sanus-theme/sanus-theme && emerge --config san
 # ------------------------------------------------------- finalize ------------
 step "rootfs: finalizing"
 chroot_sh "env-update; ldconfig" || true
+# NVIDIA's driver cannot load while nouveau owns the GPU. Harmless on AMD/Intel.
+chroot_sh "printf 'blacklist nouveau\\n' > /etc/modprobe.d/blacklist-nouveau.conf" || true
 # Freeze the world file so rebuilds are reproducible.
 install -d "${ROOTFS_DIR}"
 rsync -aHAX --delete \
