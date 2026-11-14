@@ -85,6 +85,10 @@ lxqt-base/lxqt-policykit
 # Browsers (lightweight default; user can add more)
 www-client/firefox
 
+# File manager and KDE settings (available in Hyprland too)
+kde-apps/dolphin
+kde-plasma/systemsettings
+
 # GPU: NVIDIA proprietary/open driver. Inert on AMD/Intel systems; the
 # installer only adds nvidia-drm.modeset=1 when the NVIDIA option is chosen.
 x11-drivers/nvidia-drivers
