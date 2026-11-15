@@ -64,3 +64,5 @@ dev-lang/python -bluetooth
 dev-python/pillow -truetype
 # Avoid extra GUI/toolkit pulls during bootstrap cycles
 sys-apps/systemd-utils -boot -ukify
+media-gfx/swayimg lua_single_target_lua5-4
+dev-libs/libdbusmenu gtk3
