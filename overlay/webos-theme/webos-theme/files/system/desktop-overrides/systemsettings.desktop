@@ -1,0 +1,14 @@
+[Desktop Entry]
+Exec=systemsettings
+Icon=preferences-system
+Type=Application
+SingleMainWindow=true
+X-DocPath=systemsettings/index.html
+StartupNotify=true
+X-KDE-Shortcuts=Tools
+OnlyShowIn=KDE;
+
+Name=System Settings
+GenericName=System Settings
+Comment=Configuration tools for your computer
+Categories=Qt;KDE;Settings;

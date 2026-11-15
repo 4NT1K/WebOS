@@ -1,6 +1,6 @@
 # WebOS roadmap
 
-Planned work after **v1.13 (Ashen)**. Nothing here is a promise of a date; items
+Planned work beyond **v1.0 (Ashen)**. Nothing here is a promise of a date; items
 move up when they unblock gaming or the install experience.
 
 ## Next release (priority)
@@ -46,7 +46,7 @@ move up when they unblock gaming or the install experience.
 
 ## Updates / infra
 
-- ~~`webos-update` wrapper~~ — **shipped in v1.13**: `sudo webos-update`
+- ~~`webos-update` wrapper~~ — **shipped in v1.0**: `sudo webos-update`
   (sync, `@world`, depclean, config merges, Flatpak, rice, reboot check).
 - Signed release artefacts and reproducible ISO builds in CI.
 - Automated QEMU install tests (serial console) on every release.

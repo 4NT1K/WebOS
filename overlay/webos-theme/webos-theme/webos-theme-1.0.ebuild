@@ -50,6 +50,15 @@ src_install() {
 	newins "${FILESDIR}"/system/profile.d-webos.sh webos.sh
 	insinto /etc/environment.d
 	newins "${FILESDIR}"/system/environment.d-webos.conf 10-webos.conf
+	insinto /etc
+	newins "${FILESDIR}"/system/locale.conf locale.conf
+	insinto /etc/xdg
+	newins "${FILESDIR}"/system/xdg/kcm-about-distrorc kcm-about-distrorc
+	insinto /usr/local/share/applications
+	newins "${FILESDIR}"/system/desktop-overrides/kdesystemsettings.desktop kdesystemsettings.desktop
+	newins "${FILESDIR}"/system/desktop-overrides/systemsettings.desktop systemsettings.desktop
+	insinto /usr/share/icons/default
+	newins "${FILESDIR}"/system/icons-default/index.theme index.theme
 
 	# --- 4. Wayland/X session entries -----------------------------------
 	# Named `webos`, not `hyprland`, so we never collide with the upstream

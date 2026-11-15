@@ -1,0 +1,12 @@
+[Desktop Entry]
+Exec=systemsettings
+Icon=preferences-system
+Type=Application
+SingleMainWindow=true
+StartupNotify=true
+NotShowIn=KDE;Hyprland;
+
+Name=KDE System Settings
+GenericName=KDE System Settings
+Comment=Configuration tools for your computer
+Categories=Qt;KDE;Settings;

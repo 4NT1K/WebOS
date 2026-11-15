@@ -174,6 +174,25 @@ step "rootfs: applying the rice (webos-theme)"
 chroot_sh "emerge --quiet-build=y webos-theme/webos-theme && emerge --config webos-theme/webos-theme" \
 	|| warn "webos-theme config hook reported an issue; continuing"
 
+# -------------------------------------------------------- debranding ---------
+step "rootfs: applying WebOS branding overrides (remove Gentoo identifiers)"
+rm -f "${CHROOT}/etc/gentoo-release"
+install -d "${CHROOT}/etc/xdg" "${CHROOT}/usr/local/share/applications"
+install -m 0644 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc" \
+	"${CHROOT}/etc/xdg/kcm-about-distrorc"
+install -m 0644 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/locale.conf" \
+	"${CHROOT}/etc/locale.conf"
+install -m 0644 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/desktop-overrides/kdesystemsettings.desktop" \
+	"${CHROOT}/usr/local/share/applications/kdesystemsettings.desktop"
+install -m 0644 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/desktop-overrides/systemsettings.desktop" \
+	"${CHROOT}/usr/local/share/applications/systemsettings.desktop"
+install -d "${CHROOT}/usr/share/icons/default"
+install -m 0644 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/icons-default/index.theme" \
+	"${CHROOT}/usr/share/icons/default/index.theme"
+# Ensure UTF-8 locale is the default in the live/installed environment.
+printf 'LANG=C.UTF-8\nLC_CTYPE=C.UTF-8\n' > "${CHROOT}/etc/env.d/02locale"
+chroot_sh "env-update" || true
+
 # ------------------------------------------------------- finalize ------------
 step "rootfs: finalizing"
 chroot_sh "env-update; ldconfig" || true

@@ -1,10 +1,10 @@
-WebOS 1.13 "Ashen" — system information
+WebOS 1.0 "Ashen" — system information
 =======================================
 
 RELEASE
 -------
-- Version : WebOS 1.13 "Ashen" (Gentoo/OpenRC, gaming-focused)
-- ISO     : webos-1.13-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
+- Version : WebOS 1.0 "Ashen" (Gentoo/OpenRC, gaming-focused)
+- ISO     : webos-1.0-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
 - Arch    : amd64, 64-bit only (ABI_X86="64", no multilib)
 

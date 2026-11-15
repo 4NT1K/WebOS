@@ -15,14 +15,17 @@ strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
 width="$(printf '%s\n' "$out" | strip_ansi |
 	awk '{ if (length($0) > m) m = length($0) } END { print m + 0 }')"
 [ "${width:-0}" -ge 4 ] || width=4
-border="$(printf '%*s' $((width + 2)) '' | tr ' ' '─')"
+
+# ASCII-safe borders: live/TTY environments often lack UTF-8 locale/fonts and
+# would render Unicode box-drawing as '?'.
+border="$(printf '%*s' $((width + 2)) '' | tr ' ' '-')"
 
 white='\033[97m'; reset='\033[0m'
-printf "${white}╭%s╮${reset}\n" "$border"
+printf "${white}+%s+${reset}\n" "$border"
 printf '%s\n' "$out" | while IFS= read -r line; do
 	clean="$(printf '%s' "$line" | strip_ansi)"
 	pad=$((width - ${#clean}))
 	[ "$pad" -lt 0 ] && pad=0
-	printf "${white}│${reset} %s%*s ${white}│${reset}\n" "$line" "$pad" ""
+	printf "${white}|${reset} %s%*s ${white}|${reset}\n" "$line" "$pad" ""
 done
-printf "${white}╰%s╯${reset}\n" "$border"
+printf "${white}+%s+${reset}\n" "$border"

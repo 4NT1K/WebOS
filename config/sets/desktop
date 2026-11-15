@@ -79,7 +79,8 @@ net-wireless/bluez
 net-wireless/blueman
 gnome-extra/nm-applet
 
-# Authentication agent — Hyprland ships none, and lxqt's is the light one.
+# Authentication agent — hyprpolkitagent for Hyprland, lxqt as fallback.
+sys-auth/hyprpolkitagent
 lxqt-base/lxqt-policykit
 
 # Browsers (lightweight default; user can add more)

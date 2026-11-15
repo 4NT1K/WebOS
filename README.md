@@ -197,7 +197,7 @@ needed. See [`WEBOS-INFO.txt`](overlay/webos-theme/webos-theme/files/WEBOS-INFO.
 
 ## Roadmap
 
-What is planned after v1.13 lives in [`ROADMAP.md`](ROADMAP.md) — multilib/Steam,
+What is planned beyond v1.0 lives in [`ROADMAP.md`](ROADMAP.md) — multilib/Steam,
 Flatpak, installer encryption, handheld support, binhost and more.
 
 ## Status
