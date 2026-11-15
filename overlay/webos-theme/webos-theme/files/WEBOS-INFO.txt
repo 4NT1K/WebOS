@@ -3,6 +3,7 @@ WebOS 1.0 "Ashen" — system information
 
 RELEASE
 -------
+- True v1.0: WebOS-branded (cobweb logo, no Gentoo welcome/identity leaks).
 - Version : WebOS 1.0 "Ashen" (Gentoo/OpenRC, gaming-focused)
 - ISO     : webos-1.0-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
@@ -16,6 +17,9 @@ KDE Plasma 6.
 
 SESSIONS
 --------
+- Hyprland uses xdg-desktop-portal-hyprland/gtk and a polkit auth agent
+  (hyprpolkitagent with fallbacks). KDE apps/duplicates are hidden from
+  Hyprland menus to keep sessions separate.
 - Hyprland  : session "WebOS" in SDDM (also `webos-session` from a TTY)
 - KDE Plasma: normal Plasma 6 session in SDDM
 - Gamescope : `webos-session --gamescope` (SteamOS-style session)
@@ -51,15 +55,16 @@ Commands:
 Rice lives in /usr/share/webos/rice (read-only source of truth). Per-user
 copies: ~/.config/{hypr,waybar,wofi,kitty,fastfetch,gtk-3.0,gtk-4.0},
 ~/.local/share/color-schemes/DeepBlack.colors, ~/.local/share/konsole.
-KDE: DeepBlack color scheme, Konsole "Deep Black" profile, Breeze_Light white
-cursor, pure-black wallpaper. Hyprland: white borders, Breeze_Light cursor.
+KDE: DeepBlack color scheme, Konsole "Deep Black" profile, Breeze_Light cursor, pure-black wallpaper. Hyprland: white borders and
+Breeze_Light cursor (XCursor default).
 
 TERMINAL / FASTFETCH
 --------------------
 kitty runs /usr/bin/webos-shell, which prints the WebOS ASCII fastfetch card
 (display, uptime, cpu, gpu, terminal, memory, disk, packages, shell, datetime)
-framed in a white box, then execs $SHELL. Nested shells do not repeat it.
+with a cobweb logo, framed in an ASCII-safe box, then execs $SHELL. Nested shells do not repeat it.
 Manual: `webos-fastfetch`. Config: /usr/share/webos/rice/fastfetch/.
+ASCII borders are used for compatibility with live/TTY environments.
 
 PREINSTALLED APPS (all prebuilt — nothing compiles during install)
 ------------------------------------------------------------------
@@ -162,6 +167,7 @@ TROUBLESHOOTING
 
 PATHS
 -----
+( /etc/gentoo-release is removed; WebOS branding via os-release/issue/xdg )
 /usr/share/webos/            branding, rice, wallpaper, this file
 /usr/share/webos/rice/       theme source (hypr, waybar, wofi, kitty, ...)
 /etc/webos/                  installer config and notes
