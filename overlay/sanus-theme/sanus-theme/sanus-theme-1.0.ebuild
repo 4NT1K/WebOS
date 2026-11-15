@@ -60,9 +60,18 @@ src_install() {
 	insinto /usr/share/xsessions
 	newins "${FILESDIR}"/system/sanus.desktop sanus.desktop
 
+	# --- 4b. application entries ----------------------------------------
+	insinto /usr/share/applications
+	newins "${FILESDIR}"/system/webos-settings.desktop webos-settings.desktop
+
 	# --- 5. OpenRC: first-boot glue -------------------------------------
 	exeinto /etc/local.d
 	newexe "${FILESDIR}"/system/local.d-sanus.start sanus.start
+
+	# --- 5b. per-login glue ---------------------------------------------
+	insinto /etc/xdg/autostart
+	newins "${FILESDIR}"/system/sanus-rice-autostart.desktop sanus-rice.desktop
+	newins "${FILESDIR}"/system/sanus-plasma-setup.desktop sanus-plasma-setup.desktop
 
 	# --- 6. helper binaries ---------------------------------------------
 	exeinto /usr/bin
@@ -71,6 +80,8 @@ src_install() {
 	newexe "${FILESDIR}"/system/sanus-wallpaper sanus-wallpaper
 	newexe "${FILESDIR}"/system/sanus-shot sanus-shot
 	newexe "${FILESDIR}"/system/sanus-gaming sanus-gaming
+	newexe "${FILESDIR}"/system/sanus-shell sanus-shell
+	newexe "${FILESDIR}"/system/sanus-plasma-setup sanus-plasma-setup
 
 	# --- 7. docs ---------------------------------------------------------
 	dodoc "${FILESDIR}"/rice/README.rice

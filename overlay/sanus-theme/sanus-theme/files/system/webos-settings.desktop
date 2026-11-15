@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=WebOS Settings
+GenericName=System Settings
+Comment=Configure the desktop, display, audio, network and more
+Exec=systemsettings
+Icon=preferences-system
+Terminal=false
+Categories=Settings;System;
+Keywords=settings;control;panel;configure;
+StartupNotify=true

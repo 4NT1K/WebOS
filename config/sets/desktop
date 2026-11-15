@@ -94,4 +94,5 @@ kde-plasma/systemsettings
 x11-drivers/nvidia-drivers
 
 # Optional apps (preinstalled for fast setup; installer can toggle)
-net-im/discord-bin
+net-im/discord
+dev-util/opencode-bin

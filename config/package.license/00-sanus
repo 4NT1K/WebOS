@@ -3,4 +3,4 @@
 # licenses that belong to neither group need an explicit entry here.
 games-util/steam-launcher ValveSteamLicense
 games-emulation/dosbox-staging XMAME
-net-im/discord-bin all-rights-reserved
+net-im/discord all-rights-reserved

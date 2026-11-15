@@ -60,6 +60,13 @@ if [[ -z ${LIBVA_DRIVER_NAME:-} ]]; then
 	fi
 fi
 
+# ── rice ────────────────────────────────────────────────────────────────────
+# Guarantee the WebOS theme exists for this account even if the installer
+# skipped it (e.g. a Plasma-profile install that later logs into Hyprland).
+if command -v sanus-rice >/dev/null 2>&1; then
+	sanus-rice --ensure >/dev/null 2>&1 || true
+fi
+
 # ── run ─────────────────────────────────────────────────────────────────────
 case "$MODE" in
 	hyprland)

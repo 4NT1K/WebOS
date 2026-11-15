@@ -4,6 +4,7 @@
 #
 #    sanus-rice --user            apply to $HOME
 #    sanus-rice --system          apply to /etc/skel, /root and every /home/*
+#    sanus-rice --ensure          install only missing rice files
 #    sanus-rice --check           dry run: report what would change
 #    sanus-rice --force           overwrite files you have modified
 #    sanus-rice --doctor          verify the running environment
@@ -174,6 +175,7 @@ install_plasma_user() {
 	[[ -d "${RICE_SRC}/plasma" ]] || return 0
 	[[ -f "${RICE_SRC}/plasma/kdeglobals" ]] && install_file "${RICE_SRC}/plasma/kdeglobals" "${home}/.config/kdeglobals" "$mf" "$force"
 	[[ -f "${RICE_SRC}/plasma/kcminputrc" ]] && install_file "${RICE_SRC}/plasma/kcminputrc" "${home}/.config/kcminputrc" "$mf" "$force"
+	[[ -f "${RICE_SRC}/konsolerc/konsolerc" ]] && install_file "${RICE_SRC}/konsolerc/konsolerc" "${home}/.config/konsolerc" "$mf" "$force"
 	mkdir -p "${home}/.config/autostart" 2>/dev/null || true
 }
 
@@ -253,6 +255,31 @@ EOF
 system_wallpaper() {
 	if [[ -x /usr/bin/sanus-wallpaper ]]; then
 		/usr/bin/sanus-wallpaper --quiet || skip "wallpaper generation failed"
+	fi
+}
+
+ensure_home() {
+	# Install the rice only if this account has never had it, otherwise
+	# just fill in files that are missing. Never overwrites user edits.
+	local home="$1"
+	[[ -d "$home" ]] || return 0
+	if [[ -f "$(manifest_of "$home")" ]]; then
+		apply_home "$home" 0
+	else
+		apply_home "$home" 1
+	fi
+}
+
+ensure_all() {
+	if [[ ${EUID} -eq 0 ]]; then
+		ensure_home /etc/skel
+		ensure_home /root
+		local d
+		for d in /home/*; do
+			[[ -d "$d" ]] && ensure_home "$d"
+		done
+	else
+		ensure_home "$HOME"
 	fi
 }
 
@@ -337,6 +364,7 @@ main() {
 		case "$1" in
 			--user)         MODE="user"; shift ;;
 			--system)       MODE="system"; shift ;;
+			--ensure)       MODE="ensure"; shift ;;
 			--check|--dry-run) MODE="check"; shift ;;
 			--force)        FORCE=1; shift ;;
 			--quiet|-q)     QUIET=1; shift ;;
@@ -365,6 +393,7 @@ main() {
 			note "restart the compositor or run: hyprctl reload"
 			;;
 		system) system_all "$FORCE" ;;
+		ensure) ensure_all ;;
 		check)
 			FORCE=0
 			say "dry run: no files will be written"

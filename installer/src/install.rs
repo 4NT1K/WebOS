@@ -694,7 +694,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push('\n');
 
     // ── apply the rice ───────────────────────────────────────────────────
-    if cfg.profile == Profile::Full && Path::new(&format!("{TARGET}/usr/bin/sanus-rice")).exists() {
+    if cfg.profile != Profile::Minimal && Path::new(&format!("{TARGET}/usr/bin/sanus-rice")).exists() {
         s.push_str("sanus-rice --system --force || true\n");
         s.push_str(&format!(
             "chown -R {u}:{u} /home/{u}/.config /home/{u}/.local 2>/dev/null || true\n",
@@ -738,8 +738,8 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
 
     // ── optional applications (prebuilt/binpkg only, no compiling) ───────
     if cfg.profile != Profile::Minimal {
-        s.push_str("emerge_app() { emerge --quiet-build=y --noreplace --getbinpkg=n --usepkg y \"$@\" 2>/dev/null || emerge --quiet-build=y --noreplace -K \"$@\" 2>/dev/null || true; }\n");
-        s.push_str("remove_app() { emerge --quiet-build=y --unmerge \"$@\" 2>/dev/null || true; }\n");
+        s.push_str("emerge_app() { emerge --quiet --noreplace \"$@\" >/dev/null 2>&1 || true; }\n");
+        s.push_str("remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || true; }\n");
         if cfg.install_firefox {
             s.push_str("emerge_app www-client/firefox\n");
         } else {
@@ -751,12 +751,15 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
             s.push_str("remove_app games-util/steam-launcher\n");
         }
         if cfg.install_discord {
-            s.push_str("emerge_app net-im/discord-bin net-im/discord\n");
+            s.push_str("emerge_app net-im/discord\n");
+        } else {
+            s.push_str("remove_app net-im/discord\n");
         }
         if cfg.install_opencode {
-            s.push_str("emerge_app app-misc/opencode-bin app-misc/opencode dev-util/opencode-bin www-apps/opencode\n");
+            s.push_str("emerge_app dev-util/opencode-bin\n");
+        } else {
+            s.push_str("remove_app dev-util/opencode-bin\n");
         }
-        s.push_str("if command -v emaint >/dev/null 2>&1; then emaint --fix binhost 2>/dev/null || true; fi\n\n");
     }
 
     // ── record the install choices ───────────────────────────────────────
