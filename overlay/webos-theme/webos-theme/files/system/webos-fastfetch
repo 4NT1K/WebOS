@@ -1,7 +1,7 @@
 #!/bin/sh
 # webos-fastfetch — WebOS terminal card.
 # Runs fastfetch with the WebOS ASCII logo and selected modules, framed in a
-# smooth rounded box.
+# smooth continuous-line box.
 set -u
 
 export LANG="${LANG:-C.UTF-8}"
@@ -22,11 +22,11 @@ width="$(printf '%s\n' "$out" | strip_ansi |
 border="$(printf '%*s' $((width + 2)) '' | tr ' ' '─')"
 white='\033[97m'; reset='\033[0m'
 
-printf "${white}╭%s╮${reset}\n" "$border"
+printf "${white}┌%s┐${reset}\n" "$border"
 printf '%s\n' "$out" | while IFS= read -r line; do
 	clean="$(printf '%s' "$line" | strip_ansi)"
 	pad=$((width - ${#clean}))
 	[ "$pad" -lt 0 ] && pad=0
 	printf "${white}│${reset} %s%*s ${white}│${reset}\n" "$line" "$pad" ""
 done
-printf "${white}╰%s╯${reset}\n" "$border"
+printf "${white}└%s┘${reset}\n" "$border"
