@@ -1,212 +1,141 @@
+<p align="center">
+  <img src="assets/webos-cobweb-logo-512.png" alt="WebOS cobweb logo" width="160" />
+</p>
+
 # WebOS
 
-A lightweight, source-built gaming operating system based on **Gentoo**, with its own
-kernel, its own installer, and a clean black / transparent desktop.
-
-```
-⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤
-⣿⡿⢯⡉⠱⢾⣇⣶⠋⣀⠾⢁⡰⠞⠁⢰⠋⠉⠀⣀⠾⠉⢀⡰⠞⠁
-⣿⢧⡈⢱⣶⡎⠉⣿⠶⠿⢶⣸⡇⠀⢀⡼⠄⠀⣀⠿⠀⢰⡎⠁⠀⠀
-⣿⠚⢳⡎⠉⢱⣶⠉⠀⠀⣴⠛⠓⢲⣾⡇⡄⠀⣿⠀⠀⢸⡇⠀⠀⠀
-⣿⣀⣸⣇⡰⠎⠉⠶⣀⣶⠉⢀⡰⠎⠉⠉⠉⣶⣿⣀⣀⣸⡇⠀⠀⠀
-⣿⠉⢉⣹⡇⠀⣀⠶⠿⠿⣀⢸⡇⠀⠀⢀⠶⠉⠉⠉⣹⠿⠷⠆⠀⠀
-⣿⠒⠚⠙⢳⣶⡃⠀⠀⠀⣼⣾⡇⠀⠀⢸⠀⠀⠀⣤⠓⠀⠀⠀⠀⠀
-⣿⢠⣤⣤⣤⣼⡅⠀⣤⠛⠀⠀⠘⢣⡄⢸⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀
-⣿⠓⠀⠀⠀⠘⢻⣿⠀⠀⠀⣰⠤⠤⠼⠿⣀⠀⠀⣿⠀⠀⠀⠀⠀⠀
-⣿⡰⠶⠶⠶⠶⣏⣿⠀⣀⠶⠁⠀⠀⠀⠀⠉⠶⣀⣿⠀⠀⠀⠀⠀⠀
-⣿⠉⠀⠀⠀⠀⠈⠿⣶⠉⠀⠀⠀⠀⢀⣠⣤⣀⣍⣿⣀⠀⠀⠀⠀⠀
-⣿⠀⢀⣀⣀⣀⡀⠀⠿⣀⠀⢀⡸⠿⠟⠀⠀⠀⠀⠀⠸⠄⠀⠀⠀⠀
-⣿⡰⠾⠉⠉⠉⠳⠶⣀⣿⣀⡎⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⣿⠉⠀⠀⠀⠀⠀⠀⠉⠉⣿⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-```
+A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC), with its own kernel, installer, and Deep Black desktop experience for **Hyprland** and **KDE Plasma**.
 
 | | |
 |---|---|
-| **Codename** | Ashen |
-| **Base** | Gentoo (OpenRC + elogind, `webos` profile) |
-| **Kernel** | `sys-kernel/webos-kernel` — vanilla LTS + gaming patchset, `-webos` localversion |
-| **Init** | OpenRC (systemd variant documented, not default) |
-| **Desktop** | Hyprland (Wayland) with blur + true transparency |
-| **Installer** | `webos-installer` — custom Rust TUI wizard |
-| **Filesystem** | Btrfs (default, subvolumes + snapshots), ext4, xfs; optional LUKS2 |
-| **Bootloader** | GRUB2 (BIOS + UEFI), systemd-boot optional |
-| **Target** | x86_64, ~2 GB RAM idle-friendly, tuned for Steam/Proton/gamescope |
+| **Version** | 1.01 (Ashen) |
+| **Base** | Gentoo (OpenRC + elogind, WebOS overlay/profile) |
+| **Kernel** | `sys-kernel/webos-kernel` — vanilla LTS + gaming-oriented tuning, `-webos` localversion |
+| **Init** | OpenRC (default) |
+| **Desktops** | Hyprland (Wayland, default) + KDE Plasma 6 |
+| **Installer** | `webos-installer` — custom Rust TUI/GUI wizard with profile + feature/app/shell customization |
+| **Filesystem** | btrfs (default, subvolumes), ext4, xfs; LUKS2 option |
+| **Bootloader** | GRUB2 (BIOS + UEFI) |
+| **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
+| **ISO** | `webos-1.01-Ashen-amd64.iso` |
 
-WebOS targets the same *experience* CachyOS
-does — a fast, gaming-first desktop with performance patches and sane defaults — but it is
-built the Gentoo way: your binaries come from source, the toolchain is yours, and the
-kernel is tuned for your machine.
+WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “Deep Black / frosted glass” look, prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
 
----
+## What’s in 1.01
 
-## Why it is light
+- **Branding:** white spiderweb WebOS logo, WebOS identity across boot/login/desktop (OpenRC boot branding patched to WebOS), no Gentoo welcome/identity leaks.
+- **Deep Black / monochrome theme parity (Hyprland + KDE Plasma):** pure-black frosted surfaces (~60% opacity, strong blur), monochrome palette (`#000000` bg, `#F2F2F2` fg, `#FFFFFF` labels, `#8C8C8C` dim, greyscale ANSI), white accents/cursor, custom default wallpaper.
+- **Terminal stack:** kitty + fish + fastfetch themed to match; Konsole profile/colorscheme aligned for Plasma. Fastfetch shows the original WebOS ASCII art in a smooth continuous-line box (`┌─┐│└─┘`) with UTF-8/ASCII fallback.
+- **Hyprland UI:** frosted-glass top bar (waybar) with MPRIS/music controls, wallpaper launcher (waypaper / `webos-wallpaper` fallback), smoother animations, reliable wallpaper startup, `Super+I` settings access, portals + polkit agent configured.
+- **Desktops/sessions:** Hyprland (xdg-desktop-portal-hyprland/gtk/wlr, hyprpolkitagent + fallbacks) and KDE Plasma (xdg-desktop-portal-kde, polkit-kde-authentication-agent-1), with session separation for menus where appropriate.
+- **Installer customization:** profiles (Hyprland, KDE Plasma, Minimal) plus toggles for features/apps/shells/services (e.g. Firefox, Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, gaming stack, NVIDIA, Bluetooth, SSH, firewall, GRUB).
+- **Updates & packaging:** `webos-update` for sync/@world/depclean/config/flatpak/rice flow; build-time-only Portage overlays disabled on installed systems to avoid missing-repo warnings.
 
-* **No GNOME/KDE stack.** Hyprland + Waybar + a small set of Wayland tools.
-* **No systemd.** OpenRC + elogind. Faster boot, fewer daemons, no journal bloat.
-* **Compiled for gaming, not for generality.** `-O2 -march=native`-capable, LTO-able,
-  `USE` flags trimmed to what a gaming desktop actually needs.
-* **Kernel tuned, not patched-to-death.** BORE scheduler, fsync/ntsync, BBRv3, zstd
-  zram, `CONFIG_HZ=1000`, sched-ext available. Nothing that costs frames.
-* **Idle target:** ~450 MB RAM with the desktop up, no browser.
+> UI note: the top bar/music-player experience is an Archeclipse-inspired approximation using **Hyprland + waybar** (not a 1:1 Quickshell clone).
 
-## Why it games
+## Key features
 
-* `steam`, `gamescope` (with the SteamOS session), `gamemode`, `mangohud`, `vkbasalt`,
-  `goverlay`, `lact`, `corectrl`, `ananicy-cpp`, `irqbalance`, `thermald`.
-* `wine-staging` + a first-class `webos-proton` helper that installs Proton-GE.
-* Mesa RADV/ANV + `vulkan-loader`, optional NVIDIA `nvidia-drivers` via a module set.
-* `pipewire`/`wireplumber` low-latency audio, `scx_*` schedulers for per-game tuning.
-* Applications install with **pacman** from the Arch repositories
-  (`core`, `extra`, `multilib`): `sudo pacman -S steam firefox`. The base
-  system stays source-built (Portage); only applications come from Arch.
+- **Two desktop experiences:** Hyprland (Wayland) and KDE Plasma 6 on one image.
+- **Gaming-oriented stack:** gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton, Lutris, Heroic, PipeWire/WirePlumber, Vulkan/Mesa tooling (and NVIDIA driver support option).
+- **Prebuilt essentials:** Firefox, Discord, OpenCode, Spotify, Dolphin, kitty, waybar, wofi, mako, mpv/imv and more (no compile during install for included apps).
+- **WebOS tooling:** `webos-installer`, `webos-update`, `webos-rice`, `webos-fastfetch`, `webos-shell`, `webos-session`, `webos-wallpaper`, `webos-shot`, `webos-gaming`, `webos-plasma-setup`.
 
----
+## Install
+
+Download the latest release ISO (split parts + checksums): **[Releases](https://github.com/4NT1K/WebOS/releases)**
+
+Reassemble and verify (Linux/macOS):
+```bash
+cat webos-1.01-Ashen-amd64.iso.part-* > webos-1.01-Ashen-amd64.iso
+sha256sum -c SHA256SUMS.txt
+```
+
+Windows (PowerShell/CMD):
+```bat
+copy /b webos-1.01-Ashen-amd64.iso.part-* webos-1.01-Ashen-amd64.iso
+```
+
+Flash with Ventoy, Rufus, balenaEtcher, or `dd` (UEFI supported). Boot the live medium and run:
+```bash
+webos-installer
+```
+
+Unattended install:
+```bash
+webos-installer -c /etc/webos/install.toml -y
+```
+
+## Package management & updates
+
+WebOS uses **Portage** (Gentoo) and **OpenRC**. There is no binary host configured by default, so `emerge` builds from source.
+
+```bash
+sudo emerge --sync
+sudo emerge -av <package>
+sudo emerge -avuDN @world
+```
+
+One-command updater:
+```bash
+sudo webos-update           # sync, update world, depclean, config updates, flatpak, rice
+sudo webos-update --check   # dry run
+```
+
+- Enabled repos in image config: `gentoo`, `webos` (local overlay), and build-time third-party overlays; some are disabled on installed systems under `/etc/portage/repos.conf.disabled`.
+- See installed docs: `/usr/share/webos/WEBOS-INFO.txt`
+
+## Steam / 32-bit note
+
+This image is **64-bit only** (no multilib runtime shipped). Native 32-bit Steam/Wine stacks are not included yet.
+- **Flatpak Steam** works (kernel has 32-bit emulation): install Flatpak + Flathub, then `com.valvesoftware.Steam`.
+- Distrobox is another option.
+- Native multilib/Steam support is on the roadmap.
 
 ## Repository layout
 
-```
+```text
 WebOS/
-├── build.sh                  # one entry point: ./build.sh all
-├── Makefile                  # convenience wrappers
-├── config/                   # portage config injected into the build chroot
-│   ├── make.conf             # CFLAGS, USE, FEATURES, BINHOST off
-│   ├── package.use/          # per-package USE overrides
-│   ├── package.accept_keywords/
-│   ├── package.license/
-│   ├── package.mask/
-│   ├── repos.conf/           # gentoo, webos, third-party overlays
-│   └── world                 # the WebOS package world file
-├── kernel/
-│   ├── webos-fragment.config # merge_config fragment applied over defconfig
-│   ├── patchset.conf         # upstream patch sources (BORE, fsync, BBRv3, ...)
-│   └── fetch-patches.sh      # resolves + verifies the patch series
-├── overlay/                  # the WebOS Gentoo overlay ("webos")
-│   ├── metadata/layout.conf
-│   ├── profiles/webos/
-│   ├── sys-kernel/webos-kernel/
-│   ├── sys-kernel/webos-kernel-sources/
-│   ├── app-admin/webos-installer/
-│   ├── webos-base/webos-base/
-│   ├── webos-desktop/webos-desktop/
-│   ├── webos-gaming/webos-gaming/
-│   └── webos-theme/webos-theme/
-├── installer/                # Rust TUI installer (crate: webos-installer)
-│   ├── Cargo.toml            # ratatui + crossterm; release profile tuned for size
-│   ├── vendor.sh             # cargo vendor -> vendor/ + .cargo/ for offline builds
-│   └── src/{main,app,ui,theme,config,disk,rootfs,install,bootloader,exec}.rs
-├── desktop/                  # Hyprland rice + theming, installed by webos-theme
-│   ├── hypr/  waybar/  wofi/  foot/  kitty/  gtk-3.0/  gtk-4.0/  kvantum/
-│   └── wallpapers/           # (symlink to overlay/webos-theme/.../files/rice)
-├── livecd/                   # live-medium overlay: autologin, live menu, grub.cfg
-│   ├── boot/grub/grub.cfg    # ISO GRUB config (@VOLID@ / @VERSION_FULL@ substituted)
-│   ├── etc/                  # live marker, autologin glue
-│   └── usr/local/bin/        # webos-live-session
-├── branding/                 # os-release, issue, lsb-release, logo, version
+├── build.sh                  # build entry point
+├── config/                   # Portage config, repos, sets, profile bits
+├── kernel/                   # kernel config/patchset
+├── overlay/                  # WebOS Gentoo overlay (ebuilds, theme/rice, tools)
+├── installer/                # Rust installer (webos-installer)
+├── livecd/                   # live-medium overlay
+├── branding/                 # os-release, logos, version, issue
 ├── scripts/                  # build pipeline stages (00-fetch … 50-check)
-└── docs/                     # BUILD.md, ARCHITECTURE.md, RELEASE.md
+└── docs/                     # build/architecture/release docs
 ```
 
-## Building
+## Building (from source)
 
-WebOS builds **on Gentoo** (or any host with `bubblewrap`/`chroot` + the Gentoo
-tools). It needs root, ~40 GB free disk, and a few hours for a cold `@world`.
+WebOS is built on a Gentoo-capable host with the required tools and disk space.
 
 ```bash
 git clone https://github.com/4NT1K/WebOS && cd WebOS
-sudo ./build.sh fetch      # stage3 + portage snapshot + patchset + vendor the installer
-sudo ./build.sh bootstrap  # unpack stage3, apply config/, emerge base
-sudo ./build.sh kernel     # build sys-kernel/webos-kernel
-sudo ./build.sh rootfs     # emerge webos-base/desktop/gaming, build installer, apply rice
-sudo ./build.sh iso        # squashfs + initramfs + GRUB hybrid ISO
-# or just:
+sudo ./build.sh fetch      # stage3, snapshots, overlays, patchset, vendor deps
+sudo ./build.sh bootstrap  # unpack/apply config/base system
+sudo ./build.sh kernel     # build webos-kernel
+sudo ./build.sh rootfs     # emerge sets, installer, rice, branding
+sudo ./build.sh iso        # squashfs/initramfs/GRUB hybrid ISO
+# or
 sudo ./build.sh all
 ```
 
-The `fetch` stage also runs `installer/vendor.sh` (`cargo vendor`), which is
-what lets `app-admin/webos-installer` build with `--locked --offline` inside
-the chroot — the build never talks to crates.io. If `cargo` is not installed
-when you fetch, the installer cannot be built; install `dev-lang/rust` and
-re-run `./build.sh fetch`.
+Output: `build/webos-1.01-Ashen-amd64.iso`
 
-### Ebuild repositories
-
-WebOS builds against five repositories, wired up in `config/repos.conf/`:
-
-| Repo | Priority | Source | Provides |
-|---|---|---|---|
-| `webos` | `100` | this tree (`/usr/local/portage/webos`) | the kernel, installer, metas, theme |
-| `gentoo` | `-1000` | Gentoo snapshot | the base system |
-| `guru` | `-2000` | `gentoo-mirror/guru` | `mangohud`, `goverlay`, `lact`, `corectrl`, fonts, Wayland tools |
-| `hyproverlay` | `-2000` | `codeberg.org/hyproverlay/hyproverlay` | `hyprland`, `waybar`, `hyprlock`, … |
-| `steam-overlay` | `-2000` | `anyc/steam-overlay` | `steam-launcher` |
-
-Higher priority wins, so `webos` overrides `gentoo`, which overrides the
-third-party overlays; the overlays are only consulted for packages `::gentoo`
-does not carry. `fetch` shallow-clones them into `build/cache/repos/`,
-`bootstrap` materialises them under `/var/db/repos/`, and Portage re-syncs
-them on first use on an installed system (they are not shipped in the rootfs).
-
-### Installing applications
-
-
-```bash
-sudo pacman -S firefox steam
-sudo pacman -S steam   # Steam, from multilib/extra as applicable
-```
-
-The Arch repositories themselves are declared in
-carries pacman and the Arch-sourced packages.
-
-Output: `build/webos-1.0-Ashen-amd64.iso` (~1.6 GB).
-
-
-See [`docs/BUILD.md`](docs/BUILD.md) for the full walkthrough, prerequisites,
-mirrors, and how to bump the kernel or rebuild a single package;
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit together;
-[`docs/RELEASE.md`](docs/RELEASE.md) for the release checklist.
-
-Before a release, or after touching the tree:
-
-```bash
-./scripts/50-check.sh    # manifests, metadata, branding, patchset, shell syntax
-make lint                # shellcheck + cargo clippy + pkgcheck (skips what is absent)
-```
+See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details.
 
 ## Design rules
 
-1. **Everything is an ebuild.** No hand-copied binaries into the rootfs except the
-   installer, which is itself built and installed by `app-admin/webos-installer`.
-2. **Nothing is patched silently.** Kernel patches live in `kernel/patchset.conf` with
-   URLs + hashes, and `fetch-patches.sh` refuses to build on a mismatch.
-3. **The rice is a package.** `webos-theme` owns every dotfile under `desktop/`, so
-   `emerge --config webos-theme` re-applies the aesthetic idempotently.
-4. **The installer is not special.** It installs the same rootfs the ISO was built from,
-   plus your choices. No hidden third-party install path.
-
-## Updating
-
-```sh
-sudo webos-update            # sync, rebuild @world, depclean, flatpak, rice
-sudo webos-update --check    # dry run
-```
-
-`webos-update` is the Gentoo/Portage equivalent of `pacman -Syu`: it keeps the
-Deep Black rice intact, reports unread news and tells you when a reboot is
-needed. See [`WEBOS-INFO.txt`](overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt).
+1. **Everything is an ebuild where practical.** System components and theme are packaged in the overlay.
+2. **No silent patching.** Kernel patch sources/hashes are tracked and verified.
+3. **The rice is a package.** `webos-theme`/`webos-rice` can re-apply the look idempotently.
+4. **Installer installs the built system.** The live/install flow uses the produced rootfs + your choices.
 
 ## Roadmap
 
-What is planned beyond v1.0 lives in [`ROADMAP.md`](ROADMAP.md) — multilib/Steam,
-Flatpak, installer encryption, handheld support, binhost and more.
-
-## Status
-
-This is the buildable source tree: overlay, ebuilds, kernel config, patch resolver,
-installer, rice, ISO pipeline, and docs. It is designed to be run on a Gentoo host;
-`build.sh` will refuse to run on a non-Gentoo system unless `WEBOS_FORCE=1`.
+Planned work beyond 1.01 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, binhost, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
 
 ## License
 
-MIT for the build system, installer, rice and docs. Ebuilds are GPL-2.0 (Gentoo
-convention). See [`LICENSE`](LICENSE).
+MIT for the build system, installer, rice and docs (where applicable). Ebuilds follow Gentoo conventions (typically GPL-2.0). See [`LICENSE`](LICENSE).
