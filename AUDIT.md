@@ -21,7 +21,7 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 
 **Phase 3: Config Correctness** ✓
 - Portage config: CORRECT
-- Overlay priorities: CORRECT (sanus 100 > gentoo -1000 > third-party -2000)
+- Overlay priorities: CORRECT (webos 100 > gentoo -1000 > third-party -2000)
 - Kernel patchset: COMPLETE (BORE, fsync, ntsync, BBRv3, AMD P-State, MGLRU)
 - Kernel config fragment: COMPLETE (378 lines, all gaming features enabled)
 
@@ -29,7 +29,7 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 - Color palette: CONSISTENT (#050508 background, #f0f0f5 white)
 - Fixed kitty.conf color mismatches
 - fastfetch: 8 modules (correct)
-- sanus-rice: --wallpaper and --wallpaper-menu implemented
+- webos-rice: --wallpaper and --wallpaper-menu implemented
 
 **Phase 5: Taskbar** ✓
 - Implementation: waybar (standard, not custom)
@@ -61,11 +61,11 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 
 ## Build Requirements (For User)
 To complete Phase 7, you need:
-1. **Gentoo Linux host** (or set SANUS_FORCE=1, unsupported)
+1. **Gentoo Linux host** (or set WEBOS_FORCE=1, unsupported)
 2. **Root/sudo access** with password
 3. **Install tools**: `sudo pacman -S squashfs-tools libisoburn` (on CachyOS)
    OR `sudo emerge sys-fs/squashfs-tools app-cdr/xorriso` (on Gentoo)
-4. **Run**: `cd /home/brah/sanusos && sudo ./build.sh all` (or with SANUS_FORCE=1 on non-Gentoo)
+4. **Run**: `cd /home/brah/sanusos && sudo ./build.sh all` (or with WEBOS_FORCE=1 on non-Gentoo)
 
 ---
 
@@ -107,8 +107,8 @@ Status: COMPLETE ✓
 
 Checked:
 - Portage config (make.conf): CORRECT (x86-64-v3, -march flags, OpenRC setup)
-- Overlay priorities: CORRECT (sanus 100 > gentoo -1000 > guru/hyproverlay/steam -2000)
-- Package sets: VERIFIED (@base, @desktop, @gaming, @sanus-installer all exist)
+- Overlay priorities: CORRECT (webos 100 > gentoo -1000 > guru/hyproverlay/steam -2000)
+- Package sets: VERIFIED (@base, @desktop, @gaming, @webos-installer all exist)
 - Kernel patchset: COMPLETE (BORE, fsync, ntsync, BBRv3, AMD P-State, MGLRU)
 - Kernel fragment: COMPLETE (378 lines, all gaming/desktop features enabled)
 - Btrfs layout: NOT IN CONFIG (installer handles @ @home @snapshots @cache @log @tmp)
@@ -128,11 +128,11 @@ Status: COMPLETE ✓
 
 Checked:
 - installer/src/theme.rs: CORRECT (#050508 background, #f0f0f5 white)
-- hypr/sanus-colors.conf: CORRECT (matches theme.rs)
+- hypr/webos-colors.conf: CORRECT (matches theme.rs)
 - waybar/style.css: CORRECT (matches theme.rs)
 - kitty/kitty.conf: FIXED (corrected to #050508 bg, #f0f0f5 white)
 - fastfetch: CORRECT (exactly 8 modules)
-- sanus-rice script: COMPLETE (--wallpaper and --wallpaper-menu implemented)
+- webos-rice script: COMPLETE (--wallpaper and --wallpaper-menu implemented)
 
 Fixed:
 - kitty.conf colors (background #000000 -> #050508, foreground variants aligned)
@@ -147,11 +147,11 @@ Status: COMPLETE ✓
 
 Checked:
 - Taskbar implementation: waybar (not a custom bar, standard Wayland bar)
-- waybar config: /overlay/sanus-theme/sanus-theme/files/rice/waybar/
+- waybar config: /overlay/webos-theme/webos-theme/files/rice/waybar/
 - Hyprland integration: exec-once = waybar in hyprland.conf
 - Layerrules: blur and ignorealpha configured for waybar
 - Palette consistency: waybar/style.css matches theme.rs
-- sanus-rice integration: waybar config managed by sanus-rice script
+- webos-rice integration: waybar config managed by webos-rice script
 
 Fixed:
 - None needed (waybar is the bar, fully configured)
@@ -181,7 +181,7 @@ Status: CANNOT COMPLETE - Host System Incompatible
 
 Environment Analysis:
 - Host OS: CachyOS Linux (Arch-based)
-- Required: Gentoo Linux (or SANUS_FORCE=1 override)
+- Required: Gentoo Linux (or WEBOS_FORCE=1 override)
 - User: brah (uid=1000, not root)
 - Sudo: Requires password (cannot install tools)
 - Disk space: 723 GB available ✓
@@ -190,7 +190,7 @@ Missing Prerequisites:
 1. Root/sudo access (password required, user must provide)
 2. squashfs-tools (pacman -S squashfs-tools) - available but not installed
 3. libisoburn (pacman -S libisoburn) - available but not installed
-4. Gentoo host or SANUS_FORCE=1 override
+4. Gentoo host or WEBOS_FORCE=1 override
 
 Build System Verification:
 - All scripts: VALID ✓
@@ -200,14 +200,14 @@ Build System Verification:
 
 Why Build Cannot Proceed:
 1. WebOS is designed to build on Gentoo (uses emerge, portage, stage3)
-2. Running on CachyOS requires SANUS_FORCE=1 (unsupported, will likely fail)
-3. Even with SANUS_FORCE=1, needs root access for chroot operations
+2. Running on CachyOS requires WEBOS_FORCE=1 (unsupported, will likely fail)
+3. Even with WEBOS_FORCE=1, needs root access for chroot operations
 4. Missing critical ISO tools (mksquashfs, xorriso) - cannot install without sudo
 
 Recommendation:
 To complete the build, the user must either:
 - Run on a Gentoo host with root access, OR
-- Provide sudo password to install tools and run: sudo SANUS_FORCE=1 ./build.sh all
+- Provide sudo password to install tools and run: sudo WEBOS_FORCE=1 ./build.sh all
   (Note: Build will likely fail on non-Gentoo due to missing Gentoo toolchain)
 
 What Was Accomplished:
@@ -229,7 +229,7 @@ Container build fixes applied so far:
 
 - `kernel/patchset.conf`: disabled unavailable 6.12 patch URLs (stock 6.12
   kernel path).
-- `config/repos.conf/arch.conf` disabled and removed from `SANUS_OVERLAYS`.
+- `config/repos.conf/arch.conf` disabled and removed from `WEBOS_OVERLAYS`.
 - `ACCEPT_KEYWORDS="~amd64"`; gaming multilib `abi_x86_32` lines disabled.
 - `sys-apps/pacman` commented out of `config/sets/base`.
 - `scripts/10-bootstrap.sh` / `scripts/30-rootfs.sh`: `--keep-going`, excludes
@@ -238,13 +238,13 @@ Container build fixes applied so far:
   `https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz`;
   `K_DEBLOB_AVAILABLE=0`; `ETYPE="sources"` added for `kernel-2.eclass`;
   overlay manifests regenerated.
-- `sanus-kernel.eclass`: pass
+- `webos-kernel.eclass`: pass
   `-Wno-unterminated-string-initialization -Wno-error=unterminated-string-initialization`
   via `KCFLAGS` and disable `CONFIG_WERROR` in the fragment.  Reason: the
   chroot toolchain is **GCC 16**, which promotes new diagnostics to errors;
   kernel 6.12's ACPI 4-byte signature arrays (`"BERT"`, `"BGRT"`, …) trip
   `-Werror=unterminated-string-initialization` and abort `drivers/acpi/tables.c`.
-- `sanus_merge_config()`: fixed to apply both `CONFIG_FOO=…` and
+- `webos_merge_config()`: fixed to apply both `CONFIG_FOO=…` and
   `# CONFIG_FOO is not set` lines.  Previously the "is not set" form was
   silently ignored, so options such as `CONFIG_WERROR`, `CONFIG_DEBUG_INFO`,
   `CONFIG_KALLSYMS_ALL`, `CONFIG_HZ_100/250` and `CONFIG_LOCALVERSION_AUTO`
@@ -280,9 +280,9 @@ Other fixes from the same pass:
 
 - Regenerated **all** overlay `Manifest` files; the committed EBUILD hashes were
   stale for every package (only the kernel ones were refreshed at build time).
-  This could have made `sanus-theme` silently fail its `|| warn` emerge.
+  This could have made `webos-theme` silently fail its `|| warn` emerge.
 - Rice palette aligned to the canonical Ashen values used by
-  `hypr/sanus-colors.conf`, `waybar/style.css` and `installer/src/theme.rs`:
+  `hypr/webos-colors.conf`, `waybar/style.css` and `installer/src/theme.rs`:
   base `#050508`, text `#f0f0f5`, accent white, ice-blue `#7dd3fc` as glow.
   Updated `foot`, `gtk-3.0`, `gtk-4.0`, `mako`, `wofi`, `waybar` calendar,
   `hyprlock`, `docs/ARCHITECTURE.md`, `README.rice`.
@@ -296,12 +296,12 @@ Retry order remains: `./build.sh kernel`, then `rootfs`, then `iso`.
 
 ### Phase 7 fix — installer BDEPEND
 
-`emerge app-admin/sanus-installer` failed with
+`emerge app-admin/webos-installer` failed with
 `there are no ebuilds to satisfy "virtual/rust"`.  The current Gentoo tree no
 longer carries `virtual/rust` (confirmed: no such package in the chroot tree
 and no ebuild in `::gentoo` references it).
 
-Changed `overlay/app-admin/sanus-installer/sanus-installer-1.0.0.ebuild`:
+Changed `overlay/app-admin/webos-installer/webos-installer-1.0.0.ebuild`:
 
 ```ebuild
 BDEPEND="|| ( dev-lang/rust-bin dev-lang/rust )"
@@ -314,7 +314,7 @@ Manifest regenerated.
 
 ### Phase 7 fix — installer distfile Manifest
 
-`emerge app-admin/sanus-installer` kept failing at manifest verification with
+`emerge app-admin/webos-installer` kept failing at manifest verification with
 `Failed on BLAKE2B verification`, even though `b2sum` and `openssl` agreed on
 the tarball's digest.  Two separate defects caused this:
 
@@ -335,10 +335,10 @@ the tarball's digest.  Two separate defects caused this:
 
 `scripts/30-rootfs.sh` also now:
 
-- stages the deterministic installer tarball **before** the `@sanus-installer`
-  set emerge (the set contains `app-admin/sanus-installer`, so staging after it
+- stages the deterministic installer tarball **before** the `@webos-installer`
+  set emerge (the set contains `app-admin/webos-installer`, so staging after it
   validated a stale distfile against the new Manifest);
-- removes any leftover `sanus-installer-*.tar.gz` and Portage's
+- removes any leftover `webos-installer-*.tar.gz` and Portage's
   `._checksum_failure_*` copy before rebuilding, so an interrupted run cannot
   poison the next one;
 - retries the installer emerge up to three times, rebuilding the tarball and
@@ -350,7 +350,7 @@ the chroot.
 ### Phase 7 — rootfs complete, corrective desktop emerge in progress
 
 - `./build.sh rootfs` finished with `rc=0` and exported
-  `build/rootfs` (~7.4 GB). `sanus-installer 1.0.0` is installed in the image.
+  `build/rootfs` (~7.4 GB). `webos-installer 1.0.0` is installed in the image.
 - The initial `@desktop` set emerge failed because `kde-plasma/plasma-meta` was
   masked and the set mixed Hyprland/KDE atoms (`x11-libs/gtk+:4`, `qt6ct` block);
   as a result Hyprland/Plasma/greetd are **missing** from the exported rootfs.

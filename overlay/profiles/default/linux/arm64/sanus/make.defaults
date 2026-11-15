@@ -1,9 +1,0 @@
-# WebOS arm64 profile defaults (experimental).
-SANUS_OS="1"
-SANUS_VERSION="1.0"
-USE="elogind -systemd wayland X vulkan opengl gbm pipewire alsa udisks policykit dbus udev bluetooth networkmanager threads"
-USE="${USE} -gnome -kde -doc -test -debug -cups -samba"
-ACCEPT_LICENSE="@FREE @BINARY-REDISTRIBUTABLE"
-ACCEPT_KEYWORDS="arm64"
-L10N="en"
-LINGUAS="en"

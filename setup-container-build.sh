@@ -89,7 +89,7 @@ case $choice in
         echo "  ./build.sh all"
         echo ""
         echo "When done, type 'exit' to leave the container."
-        echo "The ISO will be in build/sanus-*.iso"
+        echo "The ISO will be in build/webos-*.iso"
         echo ""
         read -p "Press Enter to start..."
         
@@ -161,15 +161,15 @@ BUILDEOF
 esac
 
 echo ""
-if [[ -f build/sanus-*.iso ]]; then
+if [[ -f build/webos-*.iso ]]; then
     echo "════════════════════════════════════════════════════════════════"
     echo "  ✅ SUCCESS! ISO created:"
     echo "════════════════════════════════════════════════════════════════"
-    ls -lh build/sanus-*.iso
+    ls -lh build/webos-*.iso
     echo ""
     echo "Next steps:"
-    echo "  - Test it: qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/sanus-*.iso -boot d"
-    echo "  - Flash to USB: sudo dd if=build/sanus-*.iso of=/dev/sdX bs=4M status=progress"
+    echo "  - Test it: qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/webos-*.iso -boot d"
+    echo "  - Flash to USB: sudo dd if=build/webos-*.iso of=/dev/sdX bs=4M status=progress"
 else
     echo "No ISO found. Check the output above for errors."
 fi

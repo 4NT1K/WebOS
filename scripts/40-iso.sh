@@ -3,14 +3,14 @@
 #
 # Layout produced:
 #   /boot/grub/grub.cfg
-#   /boot/vmlinuz-sanus
-#   /boot/initramfs-sanus.img
-#   /live/sanus.squashfs          <- the live system, also the install source
-#   /sanus/version                <- branding, read by the live session
+#   /boot/vmlinuz-webos
+#   /boot/initramfs-webos.img
+#   /live/webos.squashfs          <- the live system, also the install source
+#   /webos/version                <- branding, read by the live session
 set -Eeuo pipefail
-SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-export SANUS_ROOT
-source "${SANUS_ROOT}/scripts/lib/common.sh"
+WEBOS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export WEBOS_ROOT
+source "${WEBOS_ROOT}/scripts/lib/common.sh"
 
 step "iso: building live medium"
 require_root
@@ -24,18 +24,18 @@ KREL="$(cat "${BUILD_DIR}/.kernel-release" 2>/dev/null || ls "${ROOTFS_DIR}/lib/
 rm -rf "${ISO_STAGING}"
 install -d "${ISO_STAGING}/boot/grub" \
            "${ISO_STAGING}/live" \
-           "${ISO_STAGING}/sanus"
+           "${ISO_STAGING}/webos"
 
 # ------------------------------------------------------------ kernel ---------
 info "copying kernel ${KREL}"
-cp -f "${ROOTFS_DIR}/boot/vmlinuz-${KREL}" "${ISO_STAGING}/boot/vmlinuz-sanus"
+cp -f "${ROOTFS_DIR}/boot/vmlinuz-${KREL}" "${ISO_STAGING}/boot/vmlinuz-webos"
 
 # ---------------------------------------------------------- initramfs --------
 # Build inside the chroot so dracut sees the real module tree.
 step "iso: building live initramfs (dracut, dmsquash-live)"
 mount_chroot
 chroot_sh "mkdir -p /etc/dracut.conf.d && \
-	cat > /etc/dracut.conf.d/sanus-live.conf <<-'EOF'
+	cat > /etc/dracut.conf.d/webos-live.conf <<-'EOF'
 	add_dracutmodules+=\" dmsquash-live pollcdrom \"
 	omit_dracutmodules+=\" network-legacy \"
 	force_drivers+=\" overlay squashfs loop isofs sr_mod sd_mod ahci nvme usb-storage xhci_pci virtio_blk virtio_pci nvidia nvidia_modeset nvidia_uvm nvidia_drm \"
@@ -44,12 +44,12 @@ chroot_sh "mkdir -p /etc/dracut.conf.d && \
 	use_fstab=\"no\"
 	early_microcode=\"yes\"
 	EOF
-	dracut --force --kver ${KREL} /boot/initramfs-sanus.img" \
+	dracut --force --kver ${KREL} /boot/initramfs-webos.img" \
 	|| die "dracut failed"
-if [[ -f "${CHROOT}/boot/initramfs-sanus.img" ]]; then
-	cp -f "${CHROOT}/boot/initramfs-sanus.img" "${ISO_STAGING}/boot/initramfs-sanus.img"
-elif [[ -f "${ROOTFS_DIR}/boot/initramfs-sanus.img" ]]; then
-	cp -f "${ROOTFS_DIR}/boot/initramfs-sanus.img" "${ISO_STAGING}/boot/initramfs-sanus.img"
+if [[ -f "${CHROOT}/boot/initramfs-webos.img" ]]; then
+	cp -f "${CHROOT}/boot/initramfs-webos.img" "${ISO_STAGING}/boot/initramfs-webos.img"
+elif [[ -f "${ROOTFS_DIR}/boot/initramfs-webos.img" ]]; then
+	cp -f "${ROOTFS_DIR}/boot/initramfs-webos.img" "${ISO_STAGING}/boot/initramfs-webos.img"
 else
 	die "initramfs not found in chroot or rootfs"
 fi
@@ -61,9 +61,9 @@ done
 
 # ----------------------------------------------------------- squashfs --------
 step "iso: compressing live filesystem"
-if [[ -n "${SANUS_REUSE_SQUASHFS:-}" && -f "${SANUS_REUSE_SQUASHFS}" ]]; then
-	info "reusing existing squashfs: ${SANUS_REUSE_SQUASHFS}"
-	cp -f "${SANUS_REUSE_SQUASHFS}" "${ISO_STAGING}/live/sanus.squashfs"
+if [[ -n "${WEBOS_REUSE_SQUASHFS:-}" && -f "${WEBOS_REUSE_SQUASHFS}" ]]; then
+	info "reusing existing squashfs: ${WEBOS_REUSE_SQUASHFS}"
+	cp -f "${WEBOS_REUSE_SQUASHFS}" "${ISO_STAGING}/live/webos.squashfs"
 else
 	# The live overlay: strip anything the live session must generate itself.
 	LIVE_ROOT="${BUILD_DIR}/live-root"
@@ -73,8 +73,8 @@ else
 	: > "${LIVE_ROOT}/etc/machine-id"
 	rm -f "${LIVE_ROOT}/etc/ssh/ssh_host_"* 2>/dev/null || true
 	# live-specific files
-	cp -a "${SANUS_ROOT}/livecd/." "${LIVE_ROOT}/" 2>/dev/null || true
-	chmod +x "${LIVE_ROOT}/usr/local/bin/sanus-live-session" 2>/dev/null || true
+	cp -a "${WEBOS_ROOT}/livecd/." "${LIVE_ROOT}/" 2>/dev/null || true
+	chmod +x "${LIVE_ROOT}/usr/local/bin/webos-live-session" 2>/dev/null || true
 
 	# The live tree is the install source: the installer rsyncs it with
 	# --numeric-ids, so every owner here is copied to the target verbatim.
@@ -91,14 +91,14 @@ else
 	# sysvinit's /etc/inittab. The inittab is patched here, with a backup the
 	# installer restores so the target system boots to a normal login.
 	if [[ -f "${LIVE_ROOT}/etc/inittab" ]]; then
-		cp -a "${LIVE_ROOT}/etc/inittab" "${LIVE_ROOT}/etc/inittab.sanus-orig"
+		cp -a "${LIVE_ROOT}/etc/inittab" "${LIVE_ROOT}/etc/inittab.webos-orig"
 		# Autologin root on tty1..tty6: the live root password is locked, so a
 		# plain login prompt on tty2+ would be a dead end. The installer
-		# restores inittab.sanus-orig on the target, which undoes this.
+		# restores inittab.webos-orig on the target, which undoes this.
 		sed -i -E '/tty[1-6]/ s|(/sbin/agetty)([[:space:]])|\1 --autologin root\2|' \
 			"${LIVE_ROOT}/etc/inittab"
 		# Also give the live medium a serial console (headless installs and
-		# automated testing). The installer restores inittab.sanus-orig.
+		# automated testing). The installer restores inittab.webos-orig.
 		sed -i -E 's|^#s0:.*|s0:12345:respawn:/sbin/agetty --autologin root -L 115200 ttyS0 vt100|' \
 			"${LIVE_ROOT}/etc/inittab"
 	elif [[ -f "${LIVE_ROOT}/etc/init.d/agetty.tty1" ]]; then
@@ -107,25 +107,25 @@ else
 		ln -sfn /etc/init.d/agetty.tty1 "${LIVE_ROOT}/etc/runlevels/default/agetty.tty1"
 	fi
 
-	mksquashfs_root "${LIVE_ROOT}" "${ISO_STAGING}/live/sanus.squashfs" sanus
+	mksquashfs_root "${LIVE_ROOT}" "${ISO_STAGING}/live/webos.squashfs" webos
 fi
 
 # ------------------------------------------------------------- branding ------
 {
-	printf 'SANUS_VERSION=%s\n' "${SANUS_VERSION_FULL}"
-	printf 'SANUS_CODENAME=%s\n' "${SANUS_CODENAME}"
-	printf 'SANUS_KERNEL=%s\n' "${KREL}"
-	printf 'SANUS_ARCH=%s\n' "${SANUS_ARCH}"
-	printf 'SANUS_BUILD=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-} > "${ISO_STAGING}/sanus/version"
-cp -f "${SANUS_ROOT}/branding/logo.svg" "${ISO_STAGING}/sanus/logo.svg" 2>/dev/null || true
+	printf 'WEBOS_VERSION=%s\n' "${WEBOS_VERSION_FULL}"
+	printf 'WEBOS_CODENAME=%s\n' "${WEBOS_CODENAME}"
+	printf 'WEBOS_KERNEL=%s\n' "${KREL}"
+	printf 'WEBOS_ARCH=%s\n' "${WEBOS_ARCH}"
+	printf 'WEBOS_BUILD=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+} > "${ISO_STAGING}/webos/version"
+cp -f "${WEBOS_ROOT}/branding/logo.svg" "${ISO_STAGING}/webos/logo.svg" 2>/dev/null || true
 
 # -------------------------------------------------------------- grub ---------
 step "iso: writing the GRUB configuration"
-VOLID="WEBOS_${SANUS_VERSION}"
+VOLID="WEBOS_${WEBOS_VERSION}"
 sed -e "s|@VOLID@|${VOLID}|g" \
-    -e "s|@VERSION_FULL@|${SANUS_VERSION_FULL}|g" \
-    "${SANUS_ROOT}/livecd/boot/grub/grub.cfg" \
+    -e "s|@VERSION_FULL@|${WEBOS_VERSION_FULL}|g" \
+    "${WEBOS_ROOT}/livecd/boot/grub/grub.cfg" \
     > "${ISO_STAGING}/boot/grub/grub.cfg"
 
 # --------------------------------------------------------------- iso ---------
@@ -136,7 +136,7 @@ step "iso: building the hybrid image (grub-mkrescue)"
 grub-mkrescue \
 	--output="${ISO_OUT}" \
 	--product-name="WebOS" \
-	--product-version="${SANUS_VERSION_FULL}" \
+	--product-version="${WEBOS_VERSION_FULL}" \
 	"${ISO_STAGING}" \
 	|| die "grub-mkrescue failed"
 

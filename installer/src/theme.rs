@@ -1,6 +1,6 @@
 //! The Ashen palette, in one place.
 //!
-//! These are the same values as `hypr/sanus-colors.conf` and
+//! These are the same values as `hypr/webos-colors.conf` and
 //! `waybar/style.css`. If you change one, change all three.
 
 use ratatui::style::{Color, Modifier, Style};
@@ -79,7 +79,7 @@ pub const LOGO: [&str; 6] = [
 // ── egui equivalents (used by the windowed installer) ─────────────────────
 //
 // Same values, different colour type. Keep these in lockstep with the ratatui
-// constants above and with `hypr/sanus-colors.conf` / `waybar/style.css`.
+// constants above and with `hypr/webos-colors.conf` / `waybar/style.css`.
 
 use egui::Color32;
 

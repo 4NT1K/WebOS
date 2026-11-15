@@ -1,8 +1,22 @@
 # WebOS build status
 
-_Last update: 2026-11-14 01:10 UTC — v7 verified, copied to USB_
+_Last update: 2026-11-14 17:08 UTC — v8 E2E+target checks passed, USB copy in progress_
 
-## Status: VERIFIED (not published)
+## Status: v8 VERIFIED LOCALLY (not published, not on USB yet)
+
+- ISO: `build/webos-1.0-Ashen-amd64.iso` (4.0G), sha256 `1db24ab5…`
+- v8:
+  - ships `x11-drivers/nvidia-drivers-595.112.07` (open modules)
+  - kernel build tree prepared in stage 30; `nouveau` blacklisted
+  - installer writes `nvidia.conf` (force_drivers) + `nvidia-drm.modeset=1` (no fake dracut module)
+  - initramfs includes nvidia modules/firmware (`lsinitrd`: 12 nvidia entries)
+  - squashfs < 4GiB (zstd 19); serial console `ttyS0` autologin on live
+  - fixed live `local.d` (`#!/bin/sh`)
+- E2E (QEMU, serial): `INSTALL_RC=0`, `QEMU_RC=0`
+- Target checks: setuid preserved, root ownership, 32-char machine-id, nvidia modules+blacklist+dracut+grub cmdline, user groups OK
+- USB copy to Ventoy `/dev/sdc1`: in progress (watcher will notify)
+
+### v7 (verified, copied to USB earlier)
 
 - ISO: `build/webos-1.0-Ashen-amd64.iso` (3.7G), sha256 `4e63e90c33b050d7…`
 - v7 fixes:
@@ -10,7 +24,7 @@ _Last update: 2026-11-14 01:10 UTC — v7 verified, copied to USB_
   - `scripts/40-iso.sh` normalizes ownership without stripping setuid bits
   - user creation robust: groups ensured (`wheel,audio,video,render,input,plugdev,gamemode,usb,kvm,seat`)
   - guaranteed 32-char `/etc/machine-id` + `/var/lib/dbus/machine-id` (symlink verified)
-  - `sanus-session` tolerates missing `XDG_RUNTIME_DIR`
+  - `webos-session` tolerates missing `XDG_RUNTIME_DIR`
   - removed forced `radeonsi` VA-API env from Hyprland rice (NVIDIA-safe defaults)
 - E2E install: `INSTALL_RC=0`
 - Installed target checks (verified in QEMU image):

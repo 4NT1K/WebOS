@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=WebOS Deep Black
+Comment=Apply the Deep Black color scheme, cursor and wallpaper
+Exec=/usr/bin/webos-plasma-setup
+Icon=preferences-desktop-theme
+Terminal=false
+NoDisplay=true
+OnlyShowIn=KDE;
+X-GNOME-Autostart-enabled=true

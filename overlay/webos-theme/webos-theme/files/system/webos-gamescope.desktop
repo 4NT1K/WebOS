@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=WebOS Gamescope
+Comment=A console-style gamescope session with Steam, like a handheld
+Exec=/usr/bin/webos-session --gamescope
+TryExec=/usr/bin/webos-gaming
+Type=Application
+DesktopNames=gamescope

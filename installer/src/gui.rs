@@ -817,7 +817,7 @@ impl InstallerGui {
                 );
             }
             ui.label(
-                egui::RichText::new("The log was written to /var/log/sanus-install.log.")
+                egui::RichText::new("The log was written to /var/log/webos-install.log.")
                     .color(theme::E_TEXT_DIM),
             );
         }

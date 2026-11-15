@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 cd /home/brah/sanusos
 INTERVAL=${STATUS_INTERVAL:-300}
-LOG=/tmp/sanus-status-updater.log
+LOG=/tmp/webos-status-updater.log
 
 fmt_dur() {
   local s=$1
@@ -50,7 +50,7 @@ progress_section() {
       # detect substep
       if grep -aq 're-exporting' build/finalize-rootfs.log 2>/dev/null; then
         pct=68; eta="10-30m"; detail="Re-exporting rootfs (rsync)."
-      elif grep -aq 'Emerging (1 of 1) app-admin/sanus-installer' build/finalize-rootfs.log 2>/dev/null; then
+      elif grep -aq 'Emerging (1 of 1) app-admin/webos-installer' build/finalize-rootfs.log 2>/dev/null; then
         pct=63; eta="10-20m"; detail="Rebuilding WebOS-branded installer."
       else
         pct=62; eta="15-30m"; detail="Applying branding and preparing installer."
@@ -175,8 +175,8 @@ snapshot() {
   echo "## Artifacts"
   echo '```'
   ls -lh build/rootfs 2>/dev/null | head -1 || echo "rootfs: (none)"
-  ls -lh build/chroot/usr/bin/sanus-installer 2>/dev/null || echo "installer: (none)"
-  ls -lh build/webos-*.iso build/sanus-*.iso 2>/dev/null || echo "iso: (none)"
+  ls -lh build/chroot/usr/bin/webos-installer 2>/dev/null || echo "installer: (none)"
+  ls -lh build/webos-*.iso build/webos-*.iso 2>/dev/null || echo "iso: (none)"
   ls -lh build/*.sha256 2>/dev/null || echo "checksums: (none)"
   echo '```'
 }

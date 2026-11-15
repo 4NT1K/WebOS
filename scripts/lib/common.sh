@@ -3,8 +3,8 @@
 # Sourced by build.sh and by every scripts/NN-*.sh stage.
 
 # ---------------------------------------------------------------- guards -----
-[[ -n "${SANUS_COMMON_SOURCED:-}" ]] && return 0
-SANUS_COMMON_SOURCED=1
+[[ -n "${WEBOS_COMMON_SOURCED:-}" ]] && return 0
+WEBOS_COMMON_SOURCED=1
 
 # ---------------------------------------------------------------- output -----
 if [[ -t 1 ]]; then
@@ -21,41 +21,41 @@ info()  { printf '%s  ->%s %s\n' "${C_CYN}" "${C_RESET}" "$*" >&2; }
 ok()    { printf '%s  ok%s %s\n' "${C_GRN}" "${C_RESET}" "$*" >&2; }
 warn()  { printf '%swarn%s %s\n' "${C_YEL}" "${C_RESET}" "$*" >&2; }
 die()   { printf '%sfail%s %s\n' "${C_RED}" "${C_RESET}" "$*" >&2; exit 1; }
-debug() { [[ -n "${SANUS_DEBUG:-}" ]] && printf '%sdebug%s %s\n' "${C_DIM}" "${C_RESET}" "$*" >&2 || true; }
+debug() { [[ -n "${WEBOS_DEBUG:-}" ]] && printf '%sdebug%s %s\n' "${C_DIM}" "${C_RESET}" "$*" >&2 || true; }
 
 # --------------------------------------------------------------- branding ----
 load_branding() {
 	# shellcheck source=/dev/null
-	source "${SANUS_ROOT}/branding/version"
+	source "${WEBOS_ROOT}/branding/version"
 }
 
 # --------------------------------------------------------------- defaults ----
 load_branding
-: "${SANUS_ARCH:=amd64}"
-: "${SANUS_STAGE3_VARIANT:=openrc}"
-: "${SANUS_JOBS:=$(nproc 2>/dev/null || echo 4)}"
-: "${SANUS_BUILD_DIR:=${SANUS_ROOT}/build}"
-: "${SANUS_MIRROR:=https://distfiles.gentoo.org}"
-: "${SANUS_PORTAGE_MIRROR:=https://snapshots.gentoo.org}"
-: "${SANUS_LOG_LEVEL:=info}"
+: "${WEBOS_ARCH:=amd64}"
+: "${WEBOS_STAGE3_VARIANT:=openrc}"
+: "${WEBOS_JOBS:=$(nproc 2>/dev/null || echo 4)}"
+: "${WEBOS_BUILD_DIR:=${WEBOS_ROOT}/build}"
+: "${WEBOS_MIRROR:=https://distfiles.gentoo.org}"
+: "${WEBOS_PORTAGE_MIRROR:=https://snapshots.gentoo.org}"
+: "${WEBOS_LOG_LEVEL:=info}"
 
-export SANUS_ARCH SANUS_JOBS SANUS_BUILD_DIR SANUS_STAGE3_VARIANT
+export WEBOS_ARCH WEBOS_JOBS WEBOS_BUILD_DIR WEBOS_STAGE3_VARIANT
 
-BUILD_DIR="${SANUS_BUILD_DIR}"
+BUILD_DIR="${WEBOS_BUILD_DIR}"
 CHROOT="${BUILD_DIR}/chroot"
 DL_DIR="${BUILD_DIR}/downloads"
 CACHE_DIR="${BUILD_DIR}/cache"
 ROOTFS_DIR="${BUILD_DIR}/rootfs"
 ISO_STAGING="${BUILD_DIR}/iso-staging"
-ISO_OUT="${BUILD_DIR}/${SANUS_ID:-sanus}-${SANUS_VERSION_FULL}-${SANUS_ARCH}.iso"
+ISO_OUT="${BUILD_DIR}/${WEBOS_ID:-webos}-${WEBOS_VERSION_FULL}-${WEBOS_ARCH}.iso"
 
 # Map our arch names onto Gentoo's stage3 naming.
-case "${SANUS_ARCH}" in
+case "${WEBOS_ARCH}" in
 	amd64) STAGE3_ARCH="amd64" ;;
 	arm64) STAGE3_ARCH="arm64" ;;
-	*)     die "unsupported SANUS_ARCH: ${SANUS_ARCH} (want amd64 or arm64)" ;;
+	*)     die "unsupported WEBOS_ARCH: ${WEBOS_ARCH} (want amd64 or arm64)" ;;
 esac
-STAGE3_FLAVOR="${SANUS_STAGE3_VARIANT}"
+STAGE3_FLAVOR="${WEBOS_STAGE3_VARIANT}"
 
 # --------------------------------------------------------------- helpers -----
 have() { command -v "$1" >/dev/null 2>&1; }
@@ -65,8 +65,8 @@ require_root() {
 }
 
 require_gentoo() {
-	[[ -f /etc/gentoo-release || -n "${SANUS_FORCE:-}" ]] && return 0
-	die "WebOS builds on Gentoo. Set SANUS_FORCE=1 to override (unsupported)."
+	[[ -f /etc/gentoo-release || -n "${WEBOS_FORCE:-}" ]] && return 0
+	die "WebOS builds on Gentoo. Set WEBOS_FORCE=1 to override (unsupported)."
 }
 
 require_cmd() {
@@ -165,12 +165,12 @@ fetch() {
 
 # ------------------------------------------------------------- overlays ------
 # Third-party ebuild repositories WebOS builds against. ::gentoo and our own
-# ::sanus overlay are handled separately.
+# ::webos overlay are handled separately.
 # Format: name|clone-url
-# Priority order (higher wins) is sanus > gentoo > these.
+# Priority order (higher wins) is webos > gentoo > these.
 # removed because its upstream URL is currently inaccessible; WebOS ships
 # sys-apps/pacman in its own overlay instead.
-SANUS_OVERLAYS=(
+WEBOS_OVERLAYS=(
 	"guru|https://github.com/gentoo-mirror/guru.git"
 	"hyproverlay|https://codeberg.org/hyproverlay/hyproverlay.git"
 	"steam-overlay|https://github.com/anyc/steam-overlay.git"
@@ -179,7 +179,7 @@ SANUS_OVERLAYS=(
 # overlay_url <name> — print the clone URL for a known overlay.
 overlay_url() {
 	local want="$1" entry
-	for entry in "${SANUS_OVERLAYS[@]}"; do
+	for entry in "${WEBOS_OVERLAYS[@]}"; do
 		if [[ "${entry%%|*}" == "${want}" ]]; then
 			printf '%s\n' "${entry#*|}"
 			return 0
@@ -207,19 +207,19 @@ clone_overlay() {
 # fetch_latest_stage3 — resolves the newest stage3 tarball for our arch/flavor
 # and writes its URL to stdout.
 resolve_stage3_url() {
-	local latest="${SANUS_MIRROR}/releases/${STAGE3_ARCH}/autobuilds/latest-stage3-${STAGE3_ARCH}-${STAGE3_FLAVOR}.txt"
+	local latest="${WEBOS_MIRROR}/releases/${STAGE3_ARCH}/autobuilds/latest-stage3-${STAGE3_ARCH}-${STAGE3_FLAVOR}.txt"
 	local line
 	# The latest file is PGP-signed, so skip headers/signatures and extract the
 	# actual stage3 tarball path.
 	line="$(curl --fail --silent --show-error --location "${latest}" \
 		| grep -oE '^[0-9TZ]+/stage3-[^[:space:]]+\.tar\.(xz|zst|bz2|gz)' | head -n1)"
 	[[ -n "${line}" ]] || die "could not resolve stage3 from ${latest}"
-	printf '%s/releases/%s/autobuilds/%s\n' "${SANUS_MIRROR}" "${STAGE3_ARCH}" "${line}"
+	printf '%s/releases/%s/autobuilds/%s\n' "${WEBOS_MIRROR}" "${STAGE3_ARCH}" "${line}"
 }
 
 # fetch_portage_snapshot — newest portage snapshot URL.
 resolve_portage_url() {
-	local latest="${SANUS_PORTAGE_MIRROR}/latest/"
+	local latest="${WEBOS_PORTAGE_MIRROR}/latest/"
 	curl --fail --silent --show-error --location "${latest}" \
 		| grep -oE 'portage-[0-9]{8}\.tar\.(xz|zst|bz2|gz)' \
 		| sort -u | tail -n1 \
@@ -228,7 +228,7 @@ resolve_portage_url() {
 
 # ------------------------------------------------------------ iso helpers ----
 mksquashfs_root() {
-	local src="$1" out="$2" label="${3:-sanus}"
+	local src="$1" out="$2" label="${3:-webos}"
 	require_cmd mksquashfs
 	info "squashfs: $(du -sh "${src}" | cut -f1) -> ${out}"
 	mksquashfs "${src}" "${out}" \

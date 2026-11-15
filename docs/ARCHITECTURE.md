@@ -8,12 +8,12 @@ install recipe, and the decisions behind them.
 ## 1. Principles
 
 1. **Everything is an ebuild.** Nothing is copied into the rootfs except by a
-   package. The installer is itself `app-admin/sanus-installer`.
+   package. The installer is itself `app-admin/webos-installer`.
 2. **Nothing is patched silently.** Kernel patches live in
    `kernel/patchset.conf` with URLs and hashes; `fetch-patches.sh` refuses to
    build on a mismatch.
-3. **The rice is a package.** `sanus-theme` owns every dotfile, so
-   `emerge --config sanus-theme/sanus-theme` re-applies the aesthetic
+3. **The rice is a package.** `webos-theme` owns every dotfile, so
+   `emerge --config webos-theme/webos-theme` re-applies the aesthetic
    idempotently.
 4. **One install code path.** The interactive wizard and
    `--config FILE --yes` fill the same `InstallConfig` and run the same
@@ -31,21 +31,21 @@ WebOS/
 ├── config/                  Portage configuration injected into the chroot
 │   ├── make.conf            CFLAGS/USE/FEATURES for the whole distro
 │   ├── world                the base world file
-│   ├── repos.conf/          gentoo, sanus, guru, hyproverlay, steam-overlay
-│   ├── sets/{base,desktop,gaming,sanus-installer}
+│   ├── repos.conf/          gentoo, webos, guru, hyproverlay, steam-overlay
+│   ├── sets/{base,desktop,gaming,webos-installer}
 │   └── package.{use,accept_keywords,license,mask}/
 ├── kernel/                  kernel metadata (not the sources)
 │   ├── patchset.conf        the patch series, with URLs and hashes
 │   ├── fetch-patches.sh     resolves, downloads, pins and verifies
-│   └── sanus-fragment.config → overlay/sys-kernel/sanus-kernel/files/…
-├── overlay/                 the "sanus" Gentoo overlay
-│   ├── metadata/, profiles/ repository metadata and the sanus profile
-│   ├── eclass/sanus-kernel.eclass
-│   ├── sys-kernel/sanus-kernel{,-sources}/
-│   ├── app-admin/sanus-installer/
-│   └── sanus-{base,desktop,gaming,theme}/
+│   └── webos-fragment.config → overlay/sys-kernel/webos-kernel/files/…
+├── overlay/                 the "webos" Gentoo overlay
+│   ├── metadata/, profiles/ repository metadata and the webos profile
+│   ├── eclass/webos-kernel.eclass
+│   ├── sys-kernel/webos-kernel{,-sources}/
+│   ├── app-admin/webos-installer/
+│   └── webos-{base,desktop,gaming,theme}/
 ├── installer/               the Rust TUI installer crate
-├── desktop → overlay/sanus-theme/sanus-theme/files/rice
+├── desktop → overlay/webos-theme/webos-theme/files/rice
 ├── livecd/                  live-medium overlay (autologin, live menu, grub.cfg)
 ├── scripts/                 the build pipeline (00-fetch … 50-check)
 └── docs/                    BUILD.md, ARCHITECTURE.md, RELEASE.md
@@ -53,9 +53,9 @@ WebOS/
 
 Two symlinks keep a single source of truth:
 
-* `desktop` → `overlay/sanus-theme/sanus-theme/files/rice` — the rice lives in
+* `desktop` → `overlay/webos-theme/webos-theme/files/rice` — the rice lives in
   the package that installs it.
-* `kernel/sanus-fragment.config` → the overlay's kernel fragment — the fragment
+* `kernel/webos-fragment.config` → the overlay's kernel fragment — the fragment
   lives with the ebuild that consumes it.
 
 ---
@@ -66,13 +66,13 @@ WebOS is four things stacked:
 
 ```
         ┌──────────────────────────────────────────────┐
-        │  rice        sanus-theme  (Hyprland, Waybar…) │
+        │  rice        webos-theme  (Hyprland, Waybar…) │
         ├──────────────────────────────────────────────┤
-        │  gaming      sanus-gaming (Steam, Proton…)    │
-        │  desktop     sanus-desktop (Hyprland, greetd) │
-        │  base        sanus-base    (OpenRC, NM, …)    │
+        │  gaming      webos-gaming (Steam, Proton…)    │
+        │  desktop     webos-desktop (Hyprland, greetd) │
+        │  base        webos-base    (OpenRC, NM, …)    │
         ├──────────────────────────────────────────────┤
-        │  kernel      sanus-kernel  (LTS + patchset)   │
+        │  kernel      webos-kernel  (LTS + patchset)   │
         ├──────────────────────────────────────────────┤
         │  base system Gentoo stage3 + our Portage cfg  │
         └──────────────────────────────────────────────┘
@@ -80,11 +80,11 @@ WebOS is four things stacked:
 
 * **Base system** — Gentoo stage3 plus `config/` (make.conf, USE policy,
   keywords, masks, licenses, profile). This is what `bootstrap` produces.
-* **Ebuild repositories** — `::gentoo` plus our `::sanus` overlay and three
+* **Ebuild repositories** — `::gentoo` plus our `::webos` overlay and three
   third-party overlays (`::guru`, `::hyproverlay`, `::steam-overlay`) that
   carry the Hyprland stack, the Steam launcher and the misc gaming tools, plus
   the Arch application packages.
-  Priority is `sanus (100) > gentoo (-1000) > third-party (-2000) >
+  Priority is `webos (100) > gentoo (-1000) > third-party (-2000) >
   the base stack do not carry. See [`BUILD.md`](BUILD.md#10-ebuild-repositories).
 * **Package manager** — the base system and the WebOS meta sets are installed
   with Portage (the Gentoo package manager).
@@ -93,12 +93,12 @@ WebOS is four things stacked:
   `/etc/pacman.conf` (`core`, `extra`, `multilib`) via `pacman -S`. This gives a
   CachyOS-like "install apps, don't compile them" experience on top of the
   source-built Gentoo base.
-* **Kernel** — `sys-kernel/sanus-kernel`, built from upstream LTS plus the
+* **Kernel** — `sys-kernel/webos-kernel`, built from upstream LTS plus the
   patch series, configured by the fragment.
-* **Meta sets** — `sanus-base`, `sanus-desktop`, `sanus-gaming` are pure
+* **Meta sets** — `webos-base`, `webos-desktop`, `webos-gaming` are pure
   metapackages (`RDEPEND` only). `config/sets/*` mirror them for build-time
   `emerge @set` convenience.
-* **Rice** — `sanus-theme` owns the dotfiles and the session glue.
+* **Rice** — `webos-theme` owns the dotfiles and the session glue.
 
 `config/sets/*` and the metapackage `RDEPEND` overlap on purpose: the sets are
 what the build emerges, the metapackages are what an installed system can
@@ -128,8 +128,8 @@ BBRv3, AMD P-State EPP, `i2c-piix4` for OpenRGB, and MGLRU knobs.
 
 ### Config fragment
 
-The kernel is configured by merging `sanus-fragment.config` over upstream
-`defconfig`. `sanus-kernel.eclass` implements `sanus_merge_config`, which is
+The kernel is configured by merging `webos-fragment.config` over upstream
+`defconfig`. `webos-kernel.eclass` implements `webos_merge_config`, which is
 deliberately stricter than `scripts/kconfig/merge_config.sh`: each `CONFIG_*`
 symbol in the fragment **replaces** whatever the base said, including a prior
 `# CONFIG_FOO is not set`. `make olddefconfig` resolves anything new.
@@ -141,16 +141,16 @@ knobs. The installed release string is therefore `6.12.0-webos`.
 
 ### Eclass
 
-`sanus-kernel.eclass` provides four functions shared by
-`sanus-kernel` and `sanus-kernel-sources`:
+`webos-kernel.eclass` provides four functions shared by
+`webos-kernel` and `webos-kernel-sources`:
 
 | Function | Purpose |
 | --- | --- |
-| `sanus_apply_patchset` | Apply `series`; a missing patch is fatal. Falls back to `${FILESDIR}/*.patch` with a warning if no series was resolved. |
-| `sanus_merge_config` | Deterministic Kconfig fragment merge. |
-| `sanus_kernel_make` | `make` with the right `ARCH`/`CC`/`LD`/jobs. |
-| `sanus_kernel_release` | Print the release string. |
-| `sanus_kernel_install` | Install the image, modules, and a header tree for DKMS/out-of-tree builds. |
+| `webos_apply_patchset` | Apply `series`; a missing patch is fatal. Falls back to `${FILESDIR}/*.patch` with a warning if no series was resolved. |
+| `webos_merge_config` | Deterministic Kconfig fragment merge. |
+| `webos_kernel_make` | `make` with the right `ARCH`/`CC`/`LD`/jobs. |
+| `webos_kernel_release` | Print the release string. |
+| `webos_kernel_install` | Install the image, modules, and a header tree for DKMS/out-of-tree builds. |
 
 The sources package ships the patched tree under `/usr/src/linux-<PV>` and the
 fragment alongside it, so a manual build is `make defconfig` +
@@ -161,7 +161,7 @@ symlink so the *configured* tree is always the default.
 
 ## 5. The installer
 
-A single Rust binary (`installer/`, crate `sanus-installer`), ~1 MB, release
+A single Rust binary (`installer/`, crate `webos-installer`), ~1 MB, release
 profile `opt-level="z"`, LTO, `panic="abort"`, stripped. Dependencies: `ratatui`
 + `crossterm` for the TUI, `serde`/`toml` for the answer file, `anyhow`/
 `thiserror` for errors, `libc` for the euid check.
@@ -192,15 +192,15 @@ touches the disk before the summary page is confirmed.
 
 `rootfs::locate()` looks, in order, at:
 
-* `$SANUS_ROOTFS` (explicit override: a directory or a tarball),
+* `$WEBOS_ROOTFS` (explicit override: a directory or a tarball),
 * a fixed list of mounted live roots (`/run/initramfs/live`, `/run/rootfs`,
-  `/run/sanus/rootfs`, …),
+  `/run/webos/rootfs`, …),
 * a fixed list of rootfs tarballs.
 
 A directory counts as a WebOS root if it has `etc/` and `usr/` plus either
-`etc/sanus-release`, an `os-release` mentioning `ID=sanus`/`WebOS`, or a
-`usr/local/portage/sanus` overlay. If only an unmounted `sanus.squashfs` is
-found, `install::run` calls `rootfs::ensure_mounted("/run/sanus/rootfs")` and
+`etc/webos-release`, an `os-release` mentioning `ID=webos`/`WebOS`, or a
+`usr/local/portage/webos` overlay. If only an unmounted `webos.squashfs` is
+found, `install::run` calls `rootfs::ensure_mounted("/run/webos/rootfs")` and
 looks again.
 
 ### The install recipe (`install::run`)
@@ -212,7 +212,7 @@ Linear and logged, so a failed install reads like a recipe:
 2. **Partition** — `sgdisk --zap-all`, then ESP (UEFI, `ef00`) or BIOS boot
    (`ef02`), optional swap (`8200`), and a root partition (`8300`).
 3. **Encrypt** — optional LUKS2 (`aes-xts-plain64`, argon2id), opened as
-   `sanus_crypt`.
+   `webos_crypt`.
 4. **Filesystems** — `mkfs.btrfs`/`ext4`/`xfs`; on btrfs, create the subvolumes
    `@ @home @snapshots @cache @log @tmp` and remount by subvolume with
    `compress=zstd:1,noatime,ssd,space_cache=v2,discard=async`.
@@ -221,13 +221,13 @@ Linear and logged, so a failed install reads like a recipe:
    `machine-id` and SSH host keys.
 6. **fstab / crypttab** — UUID-based, btrfs subvolumes, a `/tmp` tmpfs.
 7. **Configure in chroot** — hostname, locale, timezone, keymap, users,
-   sudoers, OpenRC services, the rice, GPU selection, `/etc/sanus/install.toml`,
-   and removal of the live-medium glue (`/etc/inittab.sanus-orig` restored,
-   `/etc/sanus-live` and friends deleted).
+   sudoers, OpenRC services, the rice, GPU selection, `/etc/webos/install.toml`,
+   and removal of the live-medium glue (`/etc/inittab.webos-orig` restored,
+   `/etc/webos-live` and friends deleted).
 8. **Initramfs** — `dracut` inside the target, adding `crypt`/`dm` for LUKS
    and `btrfs` for btrfs.
 9. **Bootloader** — GRUB (see below).
-10. **Record** — copy the command log to `/var/log/sanus-install.log`, then
+10. **Record** — copy the command log to `/var/log/webos-install.log`, then
     unmount everything.
 
 ### Bootloader
@@ -245,7 +245,7 @@ The kernel command line is generated by `kernel_cmdline`:
 
 ```
 quiet loglevel=3 nowatchdog
-root=UUID=<uuid>            # or rd.luks.name=<uuid>=sanus_crypt root=/dev/mapper/sanus_crypt
+root=UUID=<uuid>            # or rd.luks.name=<uuid>=webos_crypt root=/dev/mapper/webos_crypt
 rootflags=subvol=@          # btrfs only
 nvidia-drm.modeset=1 …      # nvidia only
 ```
@@ -257,14 +257,14 @@ subvolid 5 and finds no `/sbin/init`.
 
 ## 6. The rice
 
-`sanus-theme` installs the pristine rice under `/usr/share/sanus/rice` and a
-set of helper binaries (`sanus-rice`, `sanus-session`, `sanus-wallpaper`,
-`sanus-shot`, `sanus-gaming`). Files that another package owns (GTK configs,
+`webos-theme` installs the pristine rice under `/usr/share/webos/rice` and a
+set of helper binaries (`webos-rice`, `webos-session`, `webos-wallpaper`,
+`webos-shot`, `webos-gaming`). Files that another package owns (GTK configs,
 greetd's config, Hyprland's own files) are **not** shipped from the package
-image; they are written by `sanus-rice --system` in `pkg_postinst`, with a
+image; they are written by `webos-rice --system` in `pkg_postinst`, with a
 one-time backup, which keeps the tree free of file collisions.
 
-`emerge --config sanus-theme/sanus-theme` re-applies everything idempotently,
+`emerge --config webos-theme/webos-theme` re-applies everything idempotently,
 including for every account in `/home`.
 
 ### Palette (Ashen)
@@ -284,9 +284,9 @@ desktop look like one product.
 
 ### Session
 
-Login is `greetd` + `tuigreet`. The session entries are named `sanus` (not
-`hyprland`) so they never collide with the upstream package. `sanus-session`
-exports the environment and starts Hyprland; `sanus-gamescope.desktop` is the
+Login is `greetd` + `tuigreet`. The session entries are named `webos` (not
+`hyprland`) so they never collide with the upstream package. `webos-session`
+exports the environment and starts Hyprland; `webos-gamescope.desktop` is the
 gamescope/SteamOS-style session.
 
 ---
@@ -297,25 +297,25 @@ The ISO is a hybrid BIOS+UEFI image built by `grub-mkrescue`:
 
 ```
 /boot/grub/grub.cfg          generated from livecd/boot/grub/grub.cfg
-/boot/vmlinuz-sanus          the kernel
-/boot/initramfs-sanus.img    dracut, with dmsquash-live
-/live/sanus.squashfs         the live system (also the install source)
-/sanus/version               branding read by the live session
+/boot/vmlinuz-webos          the kernel
+/boot/initramfs-webos.img    dracut, with dmsquash-live
+/live/webos.squashfs         the live system (also the install source)
+/webos/version               branding read by the live session
 ```
 
 `dmsquash-live` mounts the squashfs at `/run/initramfs/live` with an
 overlayfs upper layer, so the live system is writable but ephemeral. The
 installer treats `/run/initramfs/live` as its source.
 
-**Live autologin.** tty1 logs in as root and runs `sanus-live-session`, a small
+**Live autologin.** tty1 logs in as root and runs `webos-live-session`, a small
 menu in front of the installer. Two mechanisms cover the stage3 ambiguity:
 `livecd/etc/conf.d/agetty.tty1` (OpenRC `agetty`) and an `/etc/inittab` patch
-(sysvinit), the latter backed up as `/etc/inittab.sanus-orig`. The installer
+(sysvinit), the latter backed up as `/etc/inittab.webos-orig`. The installer
 restores the backup and deletes the rest of the glue, so an installed system
 boots to a normal login.
 
-**Safety net.** `sanus-live-session` and `/etc/profile.d/99-sanus-live.sh` both
-check for `/etc/sanus-live` before doing anything, so the live session can
+**Safety net.** `webos-live-session` and `/etc/profile.d/99-webos-live.sh` both
+check for `/etc/webos-live` before doing anything, so the live session can
 never take over a real system.
 
 ---
@@ -325,10 +325,10 @@ never take over a real system.
 ### Live medium → install
 
 ```
-firmware → GRUB (hybrid) → vmlinuz-sanus + initramfs-sanus.img
-        → dracut dmsquash-live mounts /live/sanus.squashfs at /run/initramfs/live
+firmware → GRUB (hybrid) → vmlinuz-webos + initramfs-webos.img
+        → dracut dmsquash-live mounts /live/webos.squashfs at /run/initramfs/live
         → OpenRC boots; tty1 autologins root
-        → sanus-live-session → sanus-installer
+        → webos-live-session → webos-installer
         → partition, copy /run/initramfs/live, chroot-configure
         → dracut + grub-install in the target
         → reboot into the installed system
@@ -339,7 +339,7 @@ firmware → GRUB (hybrid) → vmlinuz-sanus + initramfs-sanus.img
 ```
 firmware → GRUB → vmlinuz-6.12.0-webos + initramfs
         → root=UUID=… [rd.luks.name=…] rootflags=subvol=@
-        → OpenRC → greetd (tuigreet) → sanus-session → Hyprland
+        → OpenRC → greetd (tuigreet) → webos-session → Hyprland
 ```
 
 ---

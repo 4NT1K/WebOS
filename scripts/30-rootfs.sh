@@ -2,9 +2,9 @@
 # Stage 30 — emerge the WebOS meta sets, install the installer + branding,
 # and export the finished rootfs that the ISO and the installer both use.
 set -Eeuo pipefail
-SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-export SANUS_ROOT
-source "${SANUS_ROOT}/scripts/lib/common.sh"
+WEBOS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export WEBOS_ROOT
+source "${WEBOS_ROOT}/scripts/lib/common.sh"
 
 step "rootfs: emerging WebOS system"
 require_root
@@ -12,11 +12,26 @@ assert_stage_order rootfs
 trap_umount
 mount_chroot
 
+# Legacy cleanup: earlier builds used sanus-* names. A reused chroot still has
+# those packages installed, which would leave duplicate services/files next to
+# the new webos-* ones.
+chroot_sh "emerge --quiet --unmerge sanus-theme/sanus-theme app-admin/sanus-installer \
+	sanus-base/sanus-base sanus-desktop/sanus-desktop sanus-gaming/sanus-gaming \
+	sys-kernel/sanus-kernel sys-kernel/sanus-kernel-sources 2>/dev/null || true" || true
+rm -rf "${CHROOT}/usr/local/portage/sanus" "${CHROOT}/usr/share/sanus"
+rm -f "${CHROOT}"/etc/local.d/sanus.start "${CHROOT}"/etc/init.d/sanus \
+	"${CHROOT}"/etc/profile.d/sanus.sh "${CHROOT}"/etc/environment.d/10-sanus.conf \
+	"${CHROOT}"/usr/share/wayland-sessions/sanus.desktop \
+	"${CHROOT}"/usr/share/xsessions/sanus.desktop \
+	"${CHROOT}"/usr/share/applications/sanus*.desktop \
+	"${CHROOT}"/etc/xdg/autostart/sanus*.desktop \
+	"${CHROOT}"/usr/bin/sanus-* 2>/dev/null || true
+
 # Refresh the overlay + sets inside the chroot.
-rm -rf "${CHROOT}/usr/local/portage/sanus"
-cp -a "${SANUS_ROOT}/overlay" "${CHROOT}/usr/local/portage/sanus"
+rm -rf "${CHROOT}/usr/local/portage/webos"
+cp -a "${WEBOS_ROOT}/overlay" "${CHROOT}/usr/local/portage/webos"
 install -d "${CHROOT}/etc/portage/sets"
-for s in "${SANUS_ROOT}"/config/sets/*; do
+for s in "${WEBOS_ROOT}"/config/sets/*; do
 	[[ -e "$s" ]] || continue
 	install -m 0644 "$s" "${CHROOT}/etc/portage/sets/$(basename -- "$s")"
 done
@@ -25,14 +40,15 @@ done
 # a reused chroot keeps stale package.use/package.license/repos.conf files and
 # can silently mask packages (e.g. net-im/discord needs an explicit license).
 install -d "${CHROOT}/etc/portage/repos.conf"
-cp -a "${SANUS_ROOT}"/config/repos.conf/*.conf "${CHROOT}/etc/portage/repos.conf/"
+rm -f "${CHROOT}"/etc/portage/repos.conf/*.conf 2>/dev/null || true
+cp -a "${WEBOS_ROOT}"/config/repos.conf/*.conf "${CHROOT}/etc/portage/repos.conf/"
 for d in package.use package.license package.accept_keywords package.mask; do
-	[[ -d "${SANUS_ROOT}/config/${d}" ]] || continue
+	[[ -d "${WEBOS_ROOT}/config/${d}" ]] || continue
 	install -d "${CHROOT}/etc/portage/${d}"
 	rm -f "${CHROOT}/etc/portage/${d}"/* 2>/dev/null || true
-	cp -a "${SANUS_ROOT}/config/${d}/." "${CHROOT}/etc/portage/${d}/"
+	cp -a "${WEBOS_ROOT}/config/${d}/." "${CHROOT}/etc/portage/${d}/"
 done
-chroot_sh "egencache --repo=sanus --update --jobs=${SANUS_JOBS} >/dev/null 2>&1 || true"
+chroot_sh "egencache --repo=webos --update --jobs=${WEBOS_JOBS} >/dev/null 2>&1 || true"
 
 # Browsers moved from the source build to the prebuilt binary. Remove a stale
 # source copy from a reused chroot before the set merge so the image does not
@@ -41,21 +57,21 @@ chroot_sh "emerge --quiet --unmerge www-client/firefox 2>/dev/null || true"
 
 # --------------------------------------------------- installer sources -------
 # Stage the installer tarball and Manifest *before* any emerge that can pull
-# app-admin/sanus-installer (@sanus-installer includes it). Otherwise Portage
+# app-admin/webos-installer (@webos-installer includes it). Otherwise Portage
 # validates a distfile left over from a previous build against the freshly
 # generated Manifest and aborts on a checksum mismatch.
 step "rootfs: staging the installer sources"
 # shellcheck source=scripts/lib/mkmanifest.sh
-source "${SANUS_ROOT}/scripts/lib/mkmanifest.sh"
+source "${WEBOS_ROOT}/scripts/lib/mkmanifest.sh"
 
-INST_PV="$(sed -n 's/^version = "\(.*\)"/\1/p' "${SANUS_ROOT}/installer/Cargo.toml" | head -n1)"
+INST_PV="$(sed -n 's/^version = "\(.*\)"/\1/p' "${WEBOS_ROOT}/installer/Cargo.toml" | head -n1)"
 [[ -n ${INST_PV} ]] || die "could not read the installer version from Cargo.toml"
-INST_NAME="sanus-installer-${INST_PV}"
+INST_NAME="webos-installer-${INST_PV}"
 INST_TARBALL="${INST_NAME}.tar.gz"
 INST_DISTDIR="${CHROOT}/var/cache/distfiles"
-INST_PKGDIR="${CHROOT}/usr/local/portage/sanus/app-admin/sanus-installer"
+INST_PKGDIR="${CHROOT}/usr/local/portage/webos/app-admin/webos-installer"
 
-[[ -d "${SANUS_ROOT}/installer/vendor" ]] \
+[[ -d "${WEBOS_ROOT}/installer/vendor" ]] \
 	|| die "installer/vendor is missing — run ./build.sh fetch first"
 
 # DISTDIR must be writable by the portage user.
@@ -70,7 +86,7 @@ chroot_sh "install -d -m 0775 -o root -g portage /var/cache/distfiles" \
 stage_installer_tarball() {
 	rm -f "${INST_DISTDIR}/${INST_TARBALL}" \
 	      "${INST_DISTDIR}/${INST_TARBALL}"._checksum_failure_*
-	tar -C "${SANUS_ROOT}/installer" \
+	tar -C "${WEBOS_ROOT}/installer" \
 		--sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
 		--transform "s,^,${INST_NAME}/," \
 		--exclude='./target' \
@@ -86,7 +102,7 @@ stage_installer_tarball
 # ------------------------------------------------------------- sets ----------
 # nvidia-drivers builds kernel modules against /usr/src/linux. The sources
 # ebuild deliberately drops .config/Module.symvers, so restore the build tree
-# from the /boot artifacts the sanus-kernel ebuild installs.
+# from the /boot artifacts the webos-kernel ebuild installs.
 step "rootfs: preparing the kernel build tree"
 KREL="$(cat "${BUILD_DIR}/.kernel-release" 2>/dev/null || true)"
 [[ -n ${KREL} ]] || KREL="$(chroot_sh "ls /lib/modules | sort -V | tail -n1" | tr -d '\r')"
@@ -108,9 +124,9 @@ cd \"\$SRC\" && make olddefconfig >/dev/null && make modules_prepare >/dev/null
 # Exclude packages known to hit merged-usr internal collisions in this build
 # environment (stage3 provides working versions). Keep going to tolerate
 # non-critical failures in the large desktop/gaming set.
-chroot_sh "emerge --quiet-build=y --jobs=${SANUS_JOBS} --load-average=$((SANUS_JOBS * 2)) \
+chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_JOBS * 2)) \
 	--keep-going --exclude='app-alternatives/awk sys-apps/coreutils sys-apps/shadow sys-apps/systemd-utils' \
-	@base @desktop @gaming @sanus-installer" \
+	@base @desktop @gaming @webos-installer" \
 	|| warn "WebOS set emerge had failures (continuing; review if critical packages missing)"
 
 # --------------------------------------------------------- installer ---------
@@ -119,7 +135,7 @@ step "rootfs: building the WebOS installer"
 # rebuild the pair and retry rather than failing the whole stage.
 installed=0
 for attempt in 1 2 3; do
-	if chroot_sh "emerge --quiet-build=y app-admin/sanus-installer"; then
+	if chroot_sh "emerge --quiet-build=y app-admin/webos-installer"; then
 		installed=1
 		break
 	fi
@@ -127,24 +143,24 @@ for attempt in 1 2 3; do
 	stage_installer_tarball
 done
 [[ ${installed} == 1 ]] || die "installer emerge failed"
-chroot_sh "test -x /usr/bin/sanus-installer" || die "installer binary missing"
-info "installer: $(chroot_sh 'sanus-installer --version' | tr -d '\r')"
+chroot_sh "test -x /usr/bin/webos-installer" || die "installer binary missing"
+info "installer: $(chroot_sh 'webos-installer --version' | tr -d '\r')"
 
 # ---------------------------------------------------------- branding ---------
 step "rootfs: installing branding"
 install -d "${CHROOT}/etc" "${CHROOT}/usr/lib/os-release.d" "${CHROOT}/etc/skel"
-install -m 0644 "${SANUS_ROOT}/branding/os-release" "${CHROOT}/usr/lib/os-release"
+install -m 0644 "${WEBOS_ROOT}/branding/os-release" "${CHROOT}/usr/lib/os-release"
 ln -sfn ../usr/lib/os-release "${CHROOT}/etc/os-release"
-install -m 0644 "${SANUS_ROOT}/branding/issue"      "${CHROOT}/etc/issue"
-install -m 0644 "${SANUS_ROOT}/branding/issue"      "${CHROOT}/etc/issue.logo"
-install -m 0644 "${SANUS_ROOT}/branding/lsb-release" "${CHROOT}/etc/lsb-release"
-install -d "${CHROOT}/usr/share/sanus"
-cp -a "${SANUS_ROOT}/branding/logo.svg" "${CHROOT}/usr/share/sanus/logo.svg" 2>/dev/null || true
+install -m 0644 "${WEBOS_ROOT}/branding/issue"      "${CHROOT}/etc/issue"
+install -m 0644 "${WEBOS_ROOT}/branding/issue"      "${CHROOT}/etc/issue.logo"
+install -m 0644 "${WEBOS_ROOT}/branding/lsb-release" "${CHROOT}/etc/lsb-release"
+install -d "${CHROOT}/usr/share/webos"
+cp -a "${WEBOS_ROOT}/branding/logo.svg" "${CHROOT}/usr/share/webos/logo.svg" 2>/dev/null || true
 
 # ---------------------------------------------------------- theming ----------
-step "rootfs: applying the rice (sanus-theme)"
-chroot_sh "emerge --quiet-build=y sanus-theme/sanus-theme && emerge --config sanus-theme/sanus-theme" \
-	|| warn "sanus-theme config hook reported an issue; continuing"
+step "rootfs: applying the rice (webos-theme)"
+chroot_sh "emerge --quiet-build=y webos-theme/webos-theme && emerge --config webos-theme/webos-theme" \
+	|| warn "webos-theme config hook reported an issue; continuing"
 
 # ------------------------------------------------------- finalize ------------
 step "rootfs: finalizing"
@@ -169,10 +185,10 @@ rsync -aHAX --delete \
 # rsync protects excluded paths from --delete, so stale build links survive.
 # A dangling /lib/modules/*/build confuses module tooling on the target.
 rm -f "${ROOTFS_DIR}"/lib/modules/*/build
-# sanus-theme is not always re-emerged (same version), so make sure the
+# webos-theme is not always re-emerged (same version), so make sure the
 # boot-glue script is the current one from the tree.
-install -m 0755 "${SANUS_ROOT}/overlay/sanus-theme/sanus-theme/files/system/local.d-sanus.start" \
-	"${ROOTFS_DIR}/etc/local.d/sanus.start"
+install -m 0755 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/local.d-webos.start" \
+	"${ROOTFS_DIR}/etc/local.d/webos.start"
 
 # The ::gentoo tree ships with the image so `emerge` works on a fresh install
 # and in the live session without a network round-trip. The optional overlays

@@ -20,12 +20,12 @@
 # committed.  It never rewrites a non-auto hash.
 set -Eeuo pipefail
 
-SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-source "${SANUS_ROOT}/scripts/lib/common.sh"
+WEBOS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+source "${WEBOS_ROOT}/scripts/lib/common.sh"
 
-PATCHSET_CONF="${SANUS_ROOT}/kernel/patchset.conf"
-OUT_DIR="${SANUS_ROOT}/build/cache/kernel-patches"
-SERIES="${SANUS_KERNEL_SERIES:-6.12}"
+PATCHSET_CONF="${WEBOS_ROOT}/kernel/patchset.conf"
+OUT_DIR="${WEBOS_ROOT}/build/cache/kernel-patches"
+SERIES="${WEBOS_KERNEL_SERIES:-6.12}"
 MODE="fetch"
 
 while [[ $# -gt 0 ]]; do

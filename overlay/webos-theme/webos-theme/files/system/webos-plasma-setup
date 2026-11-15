@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Apply the WebOS Deep Black look to a running Plasma session.
+# Idempotent; safe to run at every login.
+set -uo pipefail
+
+command -v plasma-apply-colorscheme >/dev/null 2>&1 && \
+	plasma-apply-colorscheme DeepBlack >/dev/null 2>&1 || true
+command -v plasma-apply-cursortheme >/dev/null 2>&1 && \
+	plasma-apply-cursortheme Breeze_Light >/dev/null 2>&1 || true
+
+wall=/usr/share/webos/wallpaper/webos-wallpaper.png
+if [ ! -s "$wall" ] && [ -x /usr/bin/webos-wallpaper ]; then
+	/usr/bin/webos-wallpaper --quiet >/dev/null 2>&1 || true
+fi
+if [ -s "$wall" ] && command -v plasma-apply-wallpaperimage >/dev/null 2>&1; then
+	plasma-apply-wallpaperimage "$wall" >/dev/null 2>&1 || true
+fi
+
+command -v gsettings >/dev/null 2>&1 && \
+	gsettings set org.gnome.desktop.interface color-scheme prefer-dark >/dev/null 2>&1 || true
+exit 0

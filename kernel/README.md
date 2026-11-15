@@ -1,6 +1,6 @@
 # WebOS kernel
 
-`sys-kernel/sanus-kernel` is a *dist-kernel* style ebuild: it builds the
+`sys-kernel/webos-kernel` is a *dist-kernel* style ebuild: it builds the
 upstream Linux sources with the WebOS patch series and config fragment, and
 installs `vmlinuz-*-webos`, modules, and a dracut initramfs.
 
@@ -10,9 +10,9 @@ installs `vmlinuz-*-webos`, modules, and a dracut initramfs.
 |---|---|
 | `patchset.conf` | Declarative list of upstream patches (BORE, fsync, ntsync, BBRv3, …) with pinned hashes. |
 | `fetch-patches.sh` | Downloads and verifies the series; pins `auto` hashes on first run. |
-| `sanus-fragment.config` | `merge_config.sh` fragment applied over upstream `defconfig`. |
-| `../overlay/sys-kernel/sanus-kernel/` | The ebuild that does the build. |
-| `../overlay/sys-kernel/sanus-kernel-sources/` | Sources + patch application. |
+| `webos-fragment.config` | `merge_config.sh` fragment applied over upstream `defconfig`. |
+| `../overlay/sys-kernel/webos-kernel/` | The ebuild that does the build. |
+| `../overlay/sys-kernel/webos-kernel-sources/` | Sources + patch application. |
 
 ## Why a fragment and not a full `.config`
 
@@ -41,10 +41,10 @@ kernel/fetch-patches.sh --series 6.12 --list
 
 ## Bumping the series
 
-1. Edit `branding/version`: `SANUS_KERNEL_SERIES=6.13`.
+1. Edit `branding/version`: `WEBOS_KERNEL_SERIES=6.13`.
 2. Update `kernel/patchset.conf` target-series column and URLs.
 3. `kernel/fetch-patches.sh --series 6.13` to pin the new hashes.
-4. Bump `sys-kernel/sanus-kernel-sources` version in the overlay.
+4. Bump `sys-kernel/webos-kernel-sources` version in the overlay.
 5. Rebuild: `sudo ./build.sh kernel`.
 
 ## What is deliberately *not* enabled

@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Stage 20 — build the WebOS kernel (sys-kernel/sanus-kernel) inside the
+# Stage 20 — build the WebOS kernel (sys-kernel/webos-kernel) inside the
 # chroot and install it under /boot.
 set -Eeuo pipefail
-SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-export SANUS_ROOT
-source "${SANUS_ROOT}/scripts/lib/common.sh"
+WEBOS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export WEBOS_ROOT
+source "${WEBOS_ROOT}/scripts/lib/common.sh"
 
-step "kernel: sys-kernel/sanus-kernel (${SANUS_KERNEL_SERIES}-webos)"
+step "kernel: sys-kernel/webos-kernel (${WEBOS_KERNEL_SERIES}-webos)"
 require_root
 assert_stage_order kernel
 trap_umount
@@ -14,32 +14,32 @@ trap_umount
 mount_chroot
 
 # Make sure the overlay inside the chroot is current.
-rm -rf "${CHROOT}/usr/local/portage/sanus"
-cp -a "${SANUS_ROOT}/overlay" "${CHROOT}/usr/local/portage/sanus"
+rm -rf "${CHROOT}/usr/local/portage/webos"
+cp -a "${WEBOS_ROOT}/overlay" "${CHROOT}/usr/local/portage/webos"
 # Patches resolved by the fetch stage.
-install -d "${CHROOT}/var/cache/sanus/patches"
-cp -a "${CACHE_DIR}/kernel-patches/." "${CHROOT}/var/cache/sanus/patches/" 2>/dev/null || true
+install -d "${CHROOT}/var/cache/webos/patches"
+cp -a "${CACHE_DIR}/kernel-patches/." "${CHROOT}/var/cache/webos/patches/" 2>/dev/null || true
 
 # egencache so the new ebuild is visible immediately.
-chroot_sh "egencache --repo=sanus --update --jobs=${SANUS_JOBS} >/dev/null 2>&1 || true"
+chroot_sh "egencache --repo=webos --update --jobs=${WEBOS_JOBS} >/dev/null 2>&1 || true"
 
 # The kernel tarball is a remote distfile, so its hash cannot be in the
 # committed Manifest. Regenerate the kernel Manifests here — this also
-# downloads linux-${SANUS_KERNEL_SERIES}.tar.xz into DISTDIR, which the
+# downloads linux-${WEBOS_KERNEL_SERIES}.tar.xz into DISTDIR, which the
 # emerge below would have done anyway.
 step "kernel: refreshing overlay manifests"
-chroot_sh 'for p in sys-kernel/sanus-kernel-sources sys-kernel/sanus-kernel; do
-	e=$(ls /usr/local/portage/sanus/$p/*.ebuild 2>/dev/null | head -n1)
+chroot_sh 'for p in sys-kernel/webos-kernel-sources sys-kernel/webos-kernel; do
+	e=$(ls /usr/local/portage/webos/$p/*.ebuild 2>/dev/null | head -n1)
 	[[ -n "$e" ]] && ebuild "$e" manifest >/dev/null 2>&1 || true
 done' || warn "manifest refresh reported problems"
 
 step "kernel: emerging sources + kernel"
-chroot_sh "emerge --quiet-build=y --jobs=${SANUS_JOBS} \
-	sys-kernel/sanus-kernel-sources sys-kernel/sanus-kernel" \
+chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} \
+	sys-kernel/webos-kernel-sources sys-kernel/webos-kernel" \
 	|| die "kernel emerge failed"
 
 step "kernel: installing to /boot"
-chroot_sh "emerge --quiet-build=y sys-kernel/sanus-kernel && \
+chroot_sh "emerge --quiet-build=y sys-kernel/webos-kernel && \
 	eselect kernel list && \
 	ln -sfn \$(eselect kernel list | awk '/\\*/{print \$2}') /usr/src/linux 2>/dev/null || true"
 

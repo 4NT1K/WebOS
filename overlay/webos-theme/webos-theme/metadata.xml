@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS Design</name>
+	</maintainer>
+	<longdescription lang="en">
+		The WebOS look: a black, translucent Hyprland desktop with real
+		compositor blur. Ships Hyprland, waybar, wofi, hyprlock, mako, foot,
+		kitty, GTK/Kvantum/Qt theming, greetd configuration, a generated SVG
+		wallpaper, and the webos-rice tool that applies it all idempotently.
+	</longdescription>
+	<upstream>
+		<remote-id type="github">4NT1K/WebOS</remote-id>
+	</upstream>
+</pkgmetadata>

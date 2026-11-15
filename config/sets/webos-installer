@@ -1,0 +1,14 @@
+# WebOS installer set.
+app-admin/webos-installer
+sys-block/parted
+sys-apps/gptfdisk
+sys-fs/btrfs-progs
+sys-fs/xfsprogs
+sys-fs/dosfstools
+sys-fs/cryptsetup
+sys-boot/grub
+sys-kernel/dracut
+sys-apps/arch-chroot
+sys-apps/util-linux
+sys-apps/coreutils
+net-misc/curl

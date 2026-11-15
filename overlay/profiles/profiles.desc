@@ -1,2 +1,2 @@
-amd64 default/linux/amd64/sanus stable
-arm64 default/linux/arm64/sanus stable
+amd64 default/linux/amd64/webos stable
+arm64 default/linux/arm64/webos stable

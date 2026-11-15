@@ -1,0 +1,26 @@
+# Packages accepted from testing (~amd64) while the rest of the tree is stable.
+# WebOS ships a mostly-stable base with a rolling gaming/desktop layer,
+# which is the same trade-off CachyOS makes.
+gui-apps/kanshi ~amd64
+gui-apps/mako ~amd64
+gui-apps/qt6ct ~amd64
+gui-apps/wofi ~amd64
+gui-libs/xdg-desktop-portal-wlr ~amd64
+media-video/pipewire ~amd64
+media-video/wireplumber ~amd64
+sys-kernel/scx ~amd64
+
+# Third-party overlays only ship ~amd64 ebuilds. Accept them wholesale
+# instead of listing every atom (they are keyword-unstable by design).
+*/*::guru ~amd64
+*/*::hyproverlay ~amd64
+*/*::steam-overlay ~amd64
+
+# WebOS's own overlay.
+app-admin/webos-installer ~amd64
+webos-base/webos-base ~amd64
+webos-desktop/webos-desktop ~amd64
+webos-gaming/webos-gaming ~amd64
+webos-theme/webos-theme ~amd64
+sys-kernel/webos-kernel ~amd64
+sys-kernel/webos-kernel-sources ~amd64

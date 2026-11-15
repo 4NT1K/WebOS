@@ -1,7 +1,7 @@
 # WebOS — convenience wrappers over build.sh
 #
 #   make iso        build the full release ISO
-#   make kernel     build only sys-kernel/sanus-kernel
+#   make kernel     build only sys-kernel/webos-kernel
 #   make rootfs     build only the system rootfs
 #   make installer  build only the Rust installer
 #   make lint       shellcheck + pkgcheck + cargo clippy
@@ -17,7 +17,7 @@ JOBS  ?= $(shell nproc 2>/dev/null || echo 4)
 all: iso
 
 fetch bootstrap kernel rootfs iso:
-	@SANUS_JOBS=$(JOBS) ./build.sh $@
+	@WEBOS_JOBS=$(JOBS) ./build.sh $@
 
 installer:
 	@$(MAKE) -C installer release

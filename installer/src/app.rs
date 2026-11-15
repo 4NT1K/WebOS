@@ -190,7 +190,7 @@ impl App {
             should_quit: false,
             dry_run,
             yes,
-            log_path: log.unwrap_or_else(|| PathBuf::from("/var/log/sanus-install.log")),
+            log_path: log.unwrap_or_else(|| PathBuf::from("/var/log/webos-install.log")),
             prefilled: false,
             list_area: None,
             rx: None,

@@ -2,11 +2,11 @@
 # Stage 00 — fetch everything the build needs: stage3, portage snapshot,
 # kernel patchset, and the Gentoo binhost index (optional).
 set -Eeuo pipefail
-SANUS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
-export SANUS_ROOT
-source "${SANUS_ROOT}/scripts/lib/common.sh"
+WEBOS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+export WEBOS_ROOT
+source "${WEBOS_ROOT}/scripts/lib/common.sh"
 
-step "fetch: WebOS ${SANUS_VERSION_FULL} (${SANUS_ARCH}/${SANUS_STAGE3_VARIANT})"
+step "fetch: WebOS ${WEBOS_VERSION_FULL} (${WEBOS_ARCH}/${WEBOS_STAGE3_VARIANT})"
 require_cmd curl tar sha256sum
 mkdir -p "${DL_DIR}"
 
@@ -44,13 +44,13 @@ else
 fi
 
 # ------------------------------------------------------- kernel patchset -----
-step "fetch: kernel patchset (series ${SANUS_KERNEL_SERIES})"
-bash "${SANUS_ROOT}/kernel/fetch-patches.sh" --out "${CACHE_DIR}/kernel-patches"
+step "fetch: kernel patchset (series ${WEBOS_KERNEL_SERIES})"
+bash "${WEBOS_ROOT}/kernel/fetch-patches.sh" --out "${CACHE_DIR}/kernel-patches"
 
 # --------------------------------------------------- third-party overlays ----
 step "fetch: third-party ebuild overlays"
 if have git; then
-	for entry in "${SANUS_OVERLAYS[@]}"; do
+	for entry in "${WEBOS_OVERLAYS[@]}"; do
 		clone_overlay "${entry%%|*}" "${CACHE_DIR}/repos/${entry%%|*}"
 	done
 else
@@ -60,7 +60,7 @@ fi
 # ------------------------------------------------------ installer vendor -----
 step "fetch: vendoring the installer crate"
 if have cargo; then
-	bash "${SANUS_ROOT}/installer/vendor.sh" || die "cargo vendor failed"
+	bash "${WEBOS_ROOT}/installer/vendor.sh" || die "cargo vendor failed"
 else
 	warn "cargo not found — the installer cannot be built offline"
 	warn "install dev-lang/rust (or rust-bin) and re-run ./build.sh fetch"

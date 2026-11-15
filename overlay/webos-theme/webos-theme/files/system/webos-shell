@@ -1,0 +1,16 @@
+#!/bin/sh
+# WebOS shell wrapper.
+# kitty is configured with `shell /usr/bin/webos-shell`, so every interactive
+# terminal shows the WebOS fastfetch card before handing over to the user's
+# real shell. Nested shells are left alone via WEBOS_FASTFETCH_SHOWN.
+if [ "$#" -eq 0 ] && [ -t 0 ] && [ -t 1 ] && [ -z "${WEBOS_FASTFETCH_SHOWN:-}" ]; then
+	export WEBOS_FASTFETCH_SHOWN=1
+	if command -v fastfetch >/dev/null 2>&1; then
+		fastfetch 2>/dev/null || true
+	fi
+fi
+
+shell="${SHELL:-/bin/bash}"
+# Never recurse if SHELL itself points at this wrapper.
+[ "$shell" = "/usr/bin/webos-shell" ] && shell=/bin/bash
+exec "$shell" "$@"

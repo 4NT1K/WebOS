@@ -2747,21 +2747,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sanus-installer"
-version = "1.0.0"
-dependencies = [
- "anyhow",
- "crossterm",
- "eframe",
- "egui",
- "libc",
- "ratatui",
- "serde",
- "thiserror 2.0.21",
- "toml",
-]
-
-[[package]]
 name = "scoped-tls"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3671,6 +3656,21 @@ dependencies = [
  "objc2-foundation 0.3.2",
  "url",
  "web-sys",
+]
+
+[[package]]
+name = "webos-installer"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "crossterm",
+ "eframe",
+ "egui",
+ "libc",
+ "ratatui",
+ "serde",
+ "thiserror 2.0.21",
+ "toml",
 ]
 
 [[package]]

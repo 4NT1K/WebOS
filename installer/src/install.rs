@@ -15,10 +15,10 @@ use crate::exec::Runner;
 use crate::rootfs::{self, Source};
 
 /// Where the new system is assembled before it is configured.
-pub const TARGET: &str = "/mnt/sanus";
+pub const TARGET: &str = "/mnt/webos";
 
 /// The name the LUKS container is opened as.
-pub(crate) const CRYPT_NAME: &str = "sanus_crypt";
+pub(crate) const CRYPT_NAME: &str = "webos_crypt";
 
 #[derive(Debug, Default, Clone)]
 pub struct Partitions {
@@ -48,8 +48,8 @@ pub fn run(cfg: &InstallConfig, r: &Runner) -> Result<()> {
 /// Copy the command log onto the target (and the live root) after a failure.
 fn preserve_log(r: &Runner) {
     for dst in [
-        format!("{TARGET}/var/log/sanus-install.log"),
-        format!("{TARGET}/root/sanus-install.log"),
+        format!("{TARGET}/var/log/webos-install.log"),
+        format!("{TARGET}/root/webos-install.log"),
     ] {
         if let Some(dir) = Path::new(&dst).parent() {
             let _ = std::fs::create_dir_all(dir);
@@ -65,7 +65,7 @@ fn run_inner(cfg: &InstallConfig, r: &Runner) -> Result<()> {
         Err(_) => {
             // The live squashfs may not have been auto-mounted; mount it and
             // look again before giving up.
-            rootfs::ensure_mounted("/run/sanus/rootfs")
+            rootfs::ensure_mounted("/run/webos/rootfs")
                 .context("locating the install source")?;
             rootfs::locate().context("locating the install source")?
         }
@@ -479,7 +479,7 @@ fn write_fstab(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()> {
 
     if cfg.swap == SwapChoice::Zram {
         fstab.push_str(
-            "\n# Swap is provided by zram (see /etc/local.d/sanus.start).\n\
+            "\n# Swap is provided by zram (see /etc/local.d/webos.start).\n\
              # No on-disk swap: it costs a partition and buys nothing on an SSD.\n",
         );
     }
@@ -530,7 +530,7 @@ fn leave_chroot(r: &Runner) -> Result<()> {
 }
 
 pub(crate) fn in_chroot(r: &Runner, script: &str) -> Result<()> {
-    let path = format!("{TARGET}/tmp/sanus-chroot.sh");
+    let path = format!("{TARGET}/tmp/webos-chroot.sh");
     if !r.dry_run() {
         std::fs::create_dir_all(format!("{TARGET}/tmp")).ok();
         std::fs::write(&path, script).with_context(|| format!("writing {path}"))?;
@@ -540,7 +540,7 @@ pub(crate) fn in_chroot(r: &Runner, script: &str) -> Result<()> {
             std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).ok();
         }
     }
-    r.run("chroot", &[TARGET, "/bin/bash", "/tmp/sanus-chroot.sh"])?;
+    r.run("chroot", &[TARGET, "/bin/bash", "/tmp/webos-chroot.sh"])?;
     let _ = std::fs::remove_file(&path);
     Ok(())
 }
@@ -552,7 +552,7 @@ fn configure_in_chroot(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Resul
     s.push_str("#!/bin/bash\n");
     s.push_str("set -euo pipefail\n");
     s.push_str("export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\n");
-    s.push_str("export SANUS_OS=1\n\n");
+    s.push_str("export WEBOS_OS=1\n\n");
 
     // ── hostname ─────────────────────────────────────────────────────────
     s.push_str(&format!("echo '{}' > /etc/hostname\n", cfg.hostname));
@@ -635,10 +635,10 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // mandatory, because `cat > /etc/sudoers.d/...` aborts the whole configure
     // step under `set -e` when the directory is missing.
     s.push_str("install -d -m 0750 /etc/sudoers.d\n");
-    s.push_str("cat > /etc/sudoers.d/10-sanus <<'EOF'\n");
+    s.push_str("cat > /etc/sudoers.d/10-webos <<'EOF'\n");
     s.push_str("%wheel ALL=(ALL:ALL) ALL\n");
-    s.push_str("%wheel ALL=(ALL:ALL) NOPASSWD: /usr/bin/sanus-gaming, /usr/bin/sanus-rice\n");
-    s.push_str("EOF\nchmod 0440 /etc/sudoers.d/10-sanus\n\n");
+    s.push_str("%wheel ALL=(ALL:ALL) NOPASSWD: /usr/bin/webos-gaming, /usr/bin/webos-rice\n");
+    s.push_str("EOF\nchmod 0440 /etc/sudoers.d/10-webos\n\n");
 
     // ── remove the live-medium glue ──────────────────────────────────────
     // The target must not autologin root and must not offer the live menu.
@@ -647,9 +647,9 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // Restore / undo both BEFORE configuring services or applying the rice,
     // so the result is a normal login (Minimal) or greetd on tty1 (Full).
     s.push_str("# remove the live-medium glue (restore a normal login)\n");
-    s.push_str("if [[ -f /etc/inittab.sanus-orig ]]; then mv -f /etc/inittab.sanus-orig /etc/inittab; fi\n");
-    s.push_str("rm -f /etc/sanus-live /etc/conf.d/agetty.tty1 \\\n");
-    s.push_str("      /etc/profile.d/99-sanus-live.sh /usr/local/bin/sanus-live-session\n");
+    s.push_str("if [[ -f /etc/inittab.webos-orig ]]; then mv -f /etc/inittab.webos-orig /etc/inittab; fi\n");
+    s.push_str("rm -f /etc/webos-live /etc/conf.d/agetty.tty1 \\\n");
+    s.push_str("      /etc/profile.d/99-webos-live.sh /usr/local/bin/webos-live-session\n");
     // If sysvinit's inittab already spawns a getty on tty1, the OpenRC agetty
     // service is redundant there; drop it so the two cannot fight over the VT.
     s.push_str("if [[ -f /etc/inittab ]] && \\\n");
@@ -664,7 +664,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         "NetworkManager",
         "syslog-ng",
         "acpid",
-        "sanus",
+        "webos",
         "ananicy-cpp",
         "irqbalance",
     ];
@@ -694,8 +694,8 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push('\n');
 
     // ── apply the rice ───────────────────────────────────────────────────
-    if cfg.profile != Profile::Minimal && Path::new(&format!("{TARGET}/usr/bin/sanus-rice")).exists() {
-        s.push_str("sanus-rice --system --force || true\n");
+    if cfg.profile != Profile::Minimal && Path::new(&format!("{TARGET}/usr/bin/webos-rice")).exists() {
+        s.push_str("webos-rice --system --force || true\n");
         s.push_str(&format!(
             "chown -R {u}:{u} /home/{u}/.config /home/{u}/.local 2>/dev/null || true\n",
             u = cfg.username
@@ -708,7 +708,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         let session = if cfg.profile == Profile::Plasma {
             "plasma.desktop"
         } else {
-            "sanus.desktop"
+            "webos.desktop"
         };
         s.push_str(&format!(
             "install -d -m 0755 /var/lib/sddm\n\
@@ -725,7 +725,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // ── profile-specific defaults ────────────────────────────────────────
     if cfg.profile == Profile::Minimal {
         s.push_str("cat > /etc/portage/package.mask/20-no-desktop <<'EOF'\n");
-        s.push_str("sanus-desktop/sanus-desktop\nsanus-theme/sanus-theme\nEOF\n");
+        s.push_str("webos-desktop/webos-desktop\nwebos-theme/webos-theme\nEOF\n");
     }
 
     // ── GPU selection ────────────────────────────────────────────────────
@@ -768,20 +768,20 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
 
     // ── record the install choices ───────────────────────────────────────
-    s.push_str("mkdir -p /etc/sanus\n");
-    s.push_str("cat > /etc/sanus/install.toml <<'EOF'\n");
+    s.push_str("mkdir -p /etc/webos\n");
+    s.push_str("cat > /etc/webos/install.toml <<'EOF'\n");
     s.push_str(&format!(
         "# Written by the WebOS installer on {}.\n\
-         # Re-running `sanus-installer --config /etc/sanus/install.toml`\n\
+         # Re-running `webos-installer --config /etc/webos/install.toml`\n\
          # reproduces this install exactly.\n\n{}",
         chrono_now(),
         toml::to_string_pretty(cfg).unwrap_or_default()
     ));
     s.push_str("EOF\n");
     s.push_str(&format!(
-        "chmod 0600 /etc/sanus/install.toml\n\
+        "chmod 0600 /etc/webos/install.toml\n\
          printf 'WebOS %s\\n' '{0}' > /etc/webos-release\n\
-         printf 'WebOS %s\\n' '{0}' > /etc/sanus-release\n\n",
+         printf 'WebOS %s\\n' '{0}' > /etc/webos-release\n\n",
         "1.0 (Ashen)"
     ));
 
@@ -829,7 +829,7 @@ fn build_initramfs(r: &Runner, cfg: &InstallConfig, p: &Partitions) -> Result<()
         "#!/bin/bash\nset -euo pipefail\n\
          export PATH=/usr/sbin:/usr/bin:/sbin:/bin\n\
          mkdir -p /etc/dracut.conf.d\n\
-         cat > /etc/dracut.conf.d/10-sanus.conf <<'EOF'\n\
+         cat > /etc/dracut.conf.d/10-webos.conf <<'EOF'\n\
          force_drivers+=\" overlay squashfs loop isofs sr_mod sd_mod ahci nvme usb-storage xhci_pci virtio_blk virtio_pci btrfs dm_crypt \"\n\
          compress=\"zstd\"\n\
          hostonly=\"yes\"\n\
@@ -853,7 +853,7 @@ fn record_install(r: &Runner, cfg: &InstallConfig, _p: &Partitions) -> Result<()
     if !r.dry_run() {
         let dst_dir = format!("{TARGET}/var/log");
         std::fs::create_dir_all(&dst_dir).ok();
-        let dst = format!("{dst_dir}/sanus-install.log");
+        let dst = format!("{dst_dir}/webos-install.log");
         let _ = std::fs::copy(r.log_path(), &dst);
     }
     let _ = cfg;

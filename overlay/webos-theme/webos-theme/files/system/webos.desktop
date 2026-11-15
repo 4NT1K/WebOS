@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=WebOS
+Comment=WebOS desktop (Hyprland, Wayland)
+Exec=/usr/bin/webos-session
+TryExec=/usr/bin/webos-session
+Type=Application
+DesktopNames=Hyprland

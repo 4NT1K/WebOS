@@ -10,30 +10,30 @@ checksummed ISO built from a frozen tree, plus the notes that describe it.
 The single source of truth is `branding/version`:
 
 ```sh
-SANUS_NAME="WebOS"
-SANUS_CODENAME="Ashen"
-SANUS_VERSION="1.0"
-SANUS_VERSION_FULL="1.0-Ashen"
-SANUS_ID="sanus"
-SANUS_HOME="https://github.com/4NT1K/WebOS"
-SANUS_KERNEL_SERIES="6.12"
+WEBOS_NAME="WebOS"
+WEBOS_CODENAME="Ashen"
+WEBOS_VERSION="1.0"
+WEBOS_VERSION_FULL="1.0-Ashen"
+WEBOS_ID="webos"
+WEBOS_HOME="https://github.com/4NT1K/WebOS"
+WEBOS_KERNEL_SERIES="6.12"
 ```
 
-* `SANUS_VERSION` — the marketing version (`1.0`). Used in the ISO label.
-* `SANUS_VERSION_FULL` — `SANUS_VERSION` + codename (`1.0-Ashen`). Used in
+* `WEBOS_VERSION` — the marketing version (`1.0`). Used in the ISO label.
+* `WEBOS_VERSION_FULL` — `WEBOS_VERSION` + codename (`1.0-Ashen`). Used in
   `os-release`, the ISO filename, and the live GRUB menu.
-* `SANUS_CODENAME` — the release name (`Ashen`).
+* `WEBOS_CODENAME` — the release name (`Ashen`).
 
 The ISO filename is derived, not written down anywhere:
 
 ```
-build/${SANUS_ID}-${SANUS_VERSION_FULL}-${SANUS_ARCH}.iso
-→ build/sanus-1.0-Ashen-amd64.iso
+build/${WEBOS_ID}-${WEBOS_VERSION_FULL}-${WEBOS_ARCH}.iso
+→ build/webos-1.0-Ashen-amd64.iso
 ```
 
 **The installer has its own version.** `installer/Cargo.toml`'s `version`
 (`1.0.0`) is what names the installer tarball
-(`sanus-installer-1.0.0.tar.gz`) and the ebuild. Bump it independently of
+(`webos-installer-1.0.0.tar.gz`) and the ebuild. Bump it independently of
 `branding/version` when the installer changes.
 
 ### Codename policy
@@ -46,19 +46,19 @@ release: `1.0.x` all ship as Ashen.
 
 ## 2. Before you build
 
-- [ ] `branding/version` has the intended `SANUS_VERSION` /
-      `SANUS_VERSION_FULL` / `SANUS_CODENAME`.
+- [ ] `branding/version` has the intended `WEBOS_VERSION` /
+      `WEBOS_VERSION_FULL` / `WEBOS_CODENAME`.
 - [ ] `installer/Cargo.toml` version is bumped if the installer changed, and
-      the matching `sanus-installer-<PV>.ebuild` exists.
-- [ ] Kernel: `branding/version`'s `SANUS_KERNEL_SERIES` matches the ebuilds
+      the matching `webos-installer-<PV>.ebuild` exists.
+- [ ] Kernel: `branding/version`'s `WEBOS_KERNEL_SERIES` matches the ebuilds
       and `kernel/patchset.conf`.
 - [ ] Every overlay package has a `Manifest` and a `metadata.xml`.
 - [ ] `config/repos.conf/` lists every repository the tree needs
-      (`gentoo`, `sanus`, and the third-party overlays), each with the intended
+      (`gentoo`, `webos`, and the third-party overlays), each with the intended
       priority.
 - [ ] Every atom resolved from `guru` / `hyproverlay` / `steam-overlay` still
       exists in that overlay at the pinned commit you build against.
-      and `sys-apps/pacman` is in the world and in `sanus-base`'s RDEPEND.
+      and `sys-apps/pacman` is in the world and in `webos-base`'s RDEPEND.
 - [ ] `docs/` reflects reality (BUILD.md, ARCHITECTURE.md, this file).
 - [ ] `README.md` reflects reality (tree layout, build commands).
 - [ ] `CHANGELOG` / release notes drafted (see §6).
@@ -120,26 +120,26 @@ cat build/.kernel-release        # e.g. 6.12.0-webos
 Never publish an ISO you have not booted.
 
 ```bash
-qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/sanus-1.0-Ashen-amd64.iso -boot d
+qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/webos-1.0-Ashen-amd64.iso -boot d
 ```
 
 - [ ] GRUB menu appears with the three WebOS entries and the "first hard
       disk" entry.
 - [ ] The live medium boots to the WebOS live menu on tty1.
-- [ ] `sanus-installer --check` finds the firmware, the install source and the
+- [ ] `webos-installer --check` finds the firmware, the install source and the
       candidate disks.
 - [ ] A **BIOS** install completes and reboots into Hyprland.
 - [ ] A **UEFI** install completes and reboots into Hyprland.
 - [ ] A **btrfs + LUKS2** install completes, prompts for the passphrase, and
       reboots into Hyprland.
 - [ ] The installed system does **not** autologin and does **not** show the
-      live menu (`/etc/sanus-live` is gone, `/etc/inittab` is restored).
+      live menu (`/etc/webos-live` is gone, `/etc/inittab` is restored).
 - [ ] `uname -r` reports `…-webos`.
-- [ ] `cat /etc/os-release` reports `ID=sanus`, `VERSION="1.0 (Ashen)"`.
-- [ ] `sanus-rice --doctor` is clean; the desktop is black/transparent.
+- [ ] `cat /etc/os-release` reports `ID=webos`, `VERSION="1.0 (Ashen)"`.
+- [ ] `webos-rice --doctor` is clean; the desktop is black/transparent.
 - [ ] A Steam game launches (gamescope/MangoHud as configured).
-- [ ] `/etc/sanus/install.toml` exists and re-running
-      `sanus-installer --config /etc/sanus/install.toml --yes` is valid.
+- [ ] `/etc/webos/install.toml` exists and re-running
+      `webos-installer --config /etc/webos/install.toml --yes` is valid.
 
 Record the firmware(s) and GPU(s) you tested. An untested GPU is an untested
 release.
@@ -163,9 +163,9 @@ A short template:
 # WebOS 1.0 "Ashen"
 
 Kernel: 6.12.0-webos (BORE, fsync, ntsync, BBRv3, AMD P-State EPP, MGLRU)
-Base:   Gentoo <snapshot date>, profile sanus:default/linux/amd64/sanus
+Base:   Gentoo <snapshot date>, profile webos:default/linux/amd64/webos
 Desktop: Hyprland (Wayland), greetd + tuigreet
-Installer: sanus-installer 1.0.0
+Installer: webos-installer 1.0.0
 
 ## Highlights
 - …
@@ -185,27 +185,27 @@ Installer: sanus-installer 1.0.0
 
 ## 7. Checksums and signing
 
-`40-iso.sh` already writes `build/sanus-1.0-Ashen-amd64.iso.sha256`. Verify it,
+`40-iso.sh` already writes `build/webos-1.0-Ashen-amd64.iso.sha256`. Verify it,
 then produce stronger artefacts:
 
 ```bash
 cd build
-sha256sum -c sanus-1.0-Ashen-amd64.iso.sha256
+sha256sum -c webos-1.0-Ashen-amd64.iso.sha256
 
 # BLAKE2b alongside SHA-256
-b2sum sanus-1.0-Ashen-amd64.iso > sanus-1.0-Ashen-amd64.iso.b2
+b2sum webos-1.0-Ashen-amd64.iso > webos-1.0-Ashen-amd64.iso.b2
 
 # Detached, ASCII-armoured signature
-gpg --armor --detach-sign sanus-1.0-Ashen-amd64.iso
+gpg --armor --detach-sign webos-1.0-Ashen-amd64.iso
 ```
 
 Publish, together:
 
 ```
-sanus-1.0-Ashen-amd64.iso
-sanus-1.0-Ashen-amd64.iso.sha256
-sanus-1.0-Ashen-amd64.iso.b2
-sanus-1.0-Ashen-amd64.iso.asc
+webos-1.0-Ashen-amd64.iso
+webos-1.0-Ashen-amd64.iso.sha256
+webos-1.0-Ashen-amd64.iso.b2
+webos-1.0-Ashen-amd64.iso.asc
 RELEASE-NOTES-1.0-Ashen.md
 ```
 
@@ -223,7 +223,7 @@ so honestly. What *is* deterministic:
 * the kernel patch series — `kernel/fetch-patches.sh --verify` fails on any
   upstream rewrite;
 * the installer — built `--locked --offline` from vendored crates;
-* the rice — owned by `sanus-theme`, re-applied idempotently.
+* the rice — owned by `webos-theme`, re-applied idempotently.
 
 What is not, and why:
 

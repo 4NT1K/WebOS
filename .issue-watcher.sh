@@ -5,7 +5,7 @@ seen=/tmp/webos-issues-seen.txt
 touch "$seen"
 while true; do
   # ISO build completion/failure handled by step-watcher, but also catch here
-  if grep -aq '^rc=0' build/iso-build.log 2>/dev/null && (ls build/webos-*.iso >/dev/null 2>&1 || ls build/sanus-*.iso >/dev/null 2>&1); then
+  if grep -aq '^rc=0' build/iso-build.log 2>/dev/null && (ls build/webos-*.iso >/dev/null 2>&1 || ls build/webos-*.iso >/dev/null 2>&1); then
     if ! grep -q '^iso-done$' "$seen"; then echo 'iso-done' >> "$seen"; notify "ISO build finished successfully (rc=0). Verification in progress/done."; fi
     # don't exit immediately; verification may follow
   fi

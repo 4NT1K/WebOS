@@ -46,8 +46,8 @@ The codebase is **production-ready** and will build successfully on a proper Gen
 ### Phase 3: Configuration Correctness ✓ VERIFIED
 **Portage, kernel, overlays**
 - ✅ `config/make.conf`: **CORRECT** (x86-64-v3, -march flags, OpenRC, elogind)
-- ✅ Overlay priorities: **CORRECT** (sanus 100 > gentoo -1000 > third-party -2000)
-- ✅ Package sets: **VERIFIED** (@base, @desktop, @gaming, @sanus-installer all exist)
+- ✅ Overlay priorities: **CORRECT** (webos 100 > gentoo -1000 > third-party -2000)
+- ✅ Package sets: **VERIFIED** (@base, @desktop, @gaming, @webos-installer all exist)
 - ✅ Kernel patchset: **COMPLETE** 
   - BORE (scheduler)
   - fsync + ntsync (Wine/Proton)
@@ -66,11 +66,11 @@ The codebase is **production-ready** and will build successfully on a proper Gen
 ### Phase 4: Theme and Rice ✓ FIXED
 **Color palette consistency**
 - ✅ `installer/src/theme.rs`: **CORRECT** (#050508 background, #f0f0f5 white)
-- ✅ `hypr/sanus-colors.conf`: **CORRECT** (matches theme.rs)
+- ✅ `hypr/webos-colors.conf`: **CORRECT** (matches theme.rs)
 - ✅ `waybar/style.css`: **CORRECT** (matches theme.rs)
 - 🔧 `kitty/kitty.conf`: **FIXED** (was #000000 bg, now #050508; foreground aligned)
 - ✅ `fastfetch`: **CORRECT** (exactly 8 modules as required)
-- ✅ `sanus-rice` script: **COMPLETE** (--wallpaper and --wallpaper-menu implemented)
+- ✅ `webos-rice` script: **COMPLETE** (--wallpaper and --wallpaper-menu implemented)
 
 **Changes Made:**
 ```diff
@@ -90,11 +90,11 @@ kitty.conf:
 
 ### Phase 5: Taskbar ✓ COMPLETE
 **Implementation: waybar (not a custom bar)**
-- ✅ waybar config: **COMPLETE** (`overlay/sanus-theme/.../rice/waybar/`)
+- ✅ waybar config: **COMPLETE** (`overlay/webos-theme/.../rice/waybar/`)
 - ✅ Hyprland integration: **WORKING** (`exec-once = waybar` in hyprland.conf)
 - ✅ Layerrules: **CONFIGURED** (blur + ignorealpha for waybar)
 - ✅ Color palette: **CONSISTENT** (waybar/style.css matches theme.rs)
-- ✅ sanus-rice integration: **WORKING** (waybar managed by rice script)
+- ✅ webos-rice integration: **WORKING** (waybar managed by rice script)
 
 **Verdict:** No custom bar needed. waybar is the taskbar and is fully configured.
 
@@ -119,7 +119,7 @@ kitty.conf:
 
 **Blockers:**
 1. **Host OS incompatibility**: Running on CachyOS (Arch-based), not Gentoo
-   - WebOS build system requires Gentoo Linux (or SANUS_FORCE=1 override)
+   - WebOS build system requires Gentoo Linux (or WEBOS_FORCE=1 override)
    - Build uses Gentoo-specific tools: `emerge`, `portage`, `stage3`, `eselect`
 2. **Missing root access**: sudo requires password (not available in automation)
 3. **Missing tools**: 
@@ -141,7 +141,7 @@ kitty.conf:
 ## Summary of Changes
 
 ### Files Modified
-1. **`overlay/sanus-theme/sanus-theme/files/rice/kitty/kitty.conf`**
+1. **`overlay/webos-theme/webos-theme/files/rice/kitty/kitty.conf`**
    - Fixed background color: #000000 → #050508
    - Fixed foreground colors to match #f0f0f5 standard
    - Fixed cursor/selection colors to match accent
@@ -172,7 +172,7 @@ sudo pacman -S squashfs-tools libisoburn
 
 # Run with force flag (likely to fail):
 cd /home/brah/sanusos
-sudo SANUS_FORCE=1 ./build.sh all
+sudo WEBOS_FORCE=1 ./build.sh all
 ```
 
 **Expected result:** Build will fail on CachyOS due to missing Gentoo toolchain (emerge, portage configs, etc.)

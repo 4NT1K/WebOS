@@ -14,9 +14,9 @@ while true; do
 done
 # wait for ISO
 while true; do
-  if grep -aq '^rc=0' build/iso-build.log 2>/dev/null && (ls build/webos-*.iso >/dev/null 2>&1 || ls build/sanus-*.iso >/dev/null 2>&1); then
+  if grep -aq '^rc=0' build/iso-build.log 2>/dev/null && (ls build/webos-*.iso >/dev/null 2>&1 || ls build/webos-*.iso >/dev/null 2>&1); then
     notify "Step complete: ISO built. Running verification."
-    printf 'docker exec sanus-build bash -lc "/sanusos/.post-iso.sh"\n' | newgrp docker >/dev/null 2>&1 || true
+    printf 'docker exec webos-build bash -lc "/sanusos/.post-iso.sh"\n' | newgrp docker >/dev/null 2>&1 || true
     sleep 5
     # wait for verify
     while ! grep -aq '^rc=' build/verify.log 2>/dev/null; do sleep 15; done

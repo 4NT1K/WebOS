@@ -1,5 +1,5 @@
 [package]
-name = "sanus-installer"
+name = "webos-installer"
 version = "1.0.0"
 edition = "2021"
 rust-version = "1.75"
@@ -10,7 +10,7 @@ repository = "https://github.com/4NT1K/WebOS"
 readme = "README.md"
 
 [[bin]]
-name = "sanus-installer"
+name = "webos-installer"
 path = "src/main.rs"
 
 [dependencies]

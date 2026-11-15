@@ -1,7 +1,7 @@
 # Building WebOS
 
 This is the full walkthrough for turning the source tree into
-`build/sanus-1.0-Ashen-amd64.iso`.
+`build/webos-1.0-Ashen-amd64.iso`.
 
 WebOS is a source distribution, so a cold build compiles a toolchain, a
 kernel, a desktop and a gaming stack. Budget **several hours** and a real
@@ -13,7 +13,7 @@ machine; the pipeline is designed for a Gentoo host with root access.
 
 | Requirement | Why |
 | --- | --- |
-| A **Gentoo** host (or a container that looks like one) | `build.sh` refuses other hosts unless `SANUS_FORCE=1`. |
+| A **Gentoo** host (or a container that looks like one) | `build.sh` refuses other hosts unless `WEBOS_FORCE=1`. |
 | **root** | `bootstrap`, `kernel`, `rootfs` and `iso` mount filesystems and chroot. |
 | **~40 GB** free in the build directory | stage3 + portage snapshot + chroot + rootfs + ISO staging. |
 | **~8 GB RAM** (16 GB comfortable) | `MAKEOPTS` and `EMERGE_DEFAULT_OPTS` assume parallelism; lower them on small machines. |
@@ -35,7 +35,7 @@ kernel, the tools above, and the network.
 git clone https://github.com/4NT1K/WebOS && cd WebOS
 sudo ./build.sh fetch       # stage3 + portage snapshot + kernel patchset + vendor
 sudo ./build.sh bootstrap   # unpack stage3, apply config/, emerge @world
-sudo ./build.sh kernel      # build sys-kernel/sanus-kernel
+sudo ./build.sh kernel      # build sys-kernel/webos-kernel
 sudo ./build.sh rootfs      # emerge the WebOS sets, build the installer, apply the rice
 sudo ./build.sh iso         # squashfs + initramfs + hybrid GRUB image
 ```
@@ -49,8 +49,8 @@ sudo ./build.sh all
 Output:
 
 ```
-build/sanus-1.0-Ashen-amd64.iso
-build/sanus-1.0-Ashen-amd64.iso.sha256
+build/webos-1.0-Ashen-amd64.iso
+build/webos-1.0-Ashen-amd64.iso.sha256
 ```
 
 `make iso`, `make kernel`, etc. are thin wrappers over the same stages.
@@ -63,22 +63,22 @@ Every knob is optional. They are read by `scripts/lib/common.sh`.
 
 | Variable | Default | Effect |
 | --- | --- | --- |
-| `SANUS_ARCH` | `amd64` | Target architecture (`amd64` or `arm64`). |
-| `SANUS_STAGE3_VARIANT` | `openrc` | Which stage3 flavour to unpack (`openrc`, `systemd`, `nomultilib`). |
-| `SANUS_JOBS` | `nproc` | Parallelism for `emerge`, `make` and `egencache`. |
-| `SANUS_BUILD_DIR` | `./build` | Where the chroot, downloads, rootfs and ISO live. |
-| `SANUS_MIRROR` | `https://distfiles.gentoo.org` | Gentoo **distfiles** mirror for stage3 and the kernel tarball. |
-| `SANUS_PORTAGE_MIRROR` | `https://snapshots.gentoo.org` | Portage **snapshot** mirror. |
-| `SANUS_KERNEL_SERIES` | `6.12` | Kernel series; also selects the patchset entries to fetch. |
-| `SANUS_FORCE` | unset | Run on a non-Gentoo host (unsupported). |
-| `SANUS_DEBUG` | unset | Echo every command the pipeline runs. |
+| `WEBOS_ARCH` | `amd64` | Target architecture (`amd64` or `arm64`). |
+| `WEBOS_STAGE3_VARIANT` | `openrc` | Which stage3 flavour to unpack (`openrc`, `systemd`, `nomultilib`). |
+| `WEBOS_JOBS` | `nproc` | Parallelism for `emerge`, `make` and `egencache`. |
+| `WEBOS_BUILD_DIR` | `./build` | Where the chroot, downloads, rootfs and ISO live. |
+| `WEBOS_MIRROR` | `https://distfiles.gentoo.org` | Gentoo **distfiles** mirror for stage3 and the kernel tarball. |
+| `WEBOS_PORTAGE_MIRROR` | `https://snapshots.gentoo.org` | Portage **snapshot** mirror. |
+| `WEBOS_KERNEL_SERIES` | `6.12` | Kernel series; also selects the patchset entries to fetch. |
+| `WEBOS_FORCE` | unset | Run on a non-Gentoo host (unsupported). |
+| `WEBOS_DEBUG` | unset | Echo every command the pipeline runs. |
 
 Example: build on a 6-core laptop from a local mirror.
 
 ```bash
-sudo SANUS_JOBS=6 \
-     SANUS_MIRROR=https://mirror.example.net/gentoo \
-     SANUS_PORTAGE_MIRROR=https://mirror.example.net/gentoo-snapshots \
+sudo WEBOS_JOBS=6 \
+     WEBOS_MIRROR=https://mirror.example.net/gentoo \
+     WEBOS_PORTAGE_MIRROR=https://mirror.example.net/gentoo-snapshots \
      ./build.sh all
 ```
 
@@ -110,40 +110,40 @@ Nothing needs root; downloads are resumable (`curl --continue-at -`).
 1. Unpacks the stage3 into `build/chroot` (skipping `/dev`).
 2. Unpacks the portage snapshot into `/var/db/repos/gentoo`.
 3. Installs `config/` into the chroot: `make.conf`, the `package.*` trees,
-   every `repos.conf/*.conf` (`gentoo`, `sanus`, `guru`, `hyproverlay`,
+   every `repos.conf/*.conf` (`gentoo`, `webos`, `guru`, `hyproverlay`,
    `steam-overlay`), `sets/`, and the `world` file.
-4. Copies the whole `overlay/` to `/usr/local/portage/sanus` **inside** the
+4. Copies the whole `overlay/` to `/usr/local/portage/webos` **inside** the
    chroot, and materialises the cached third-party overlays under
    `/var/db/repos/`, so `emerge` needs no host bind mounts.
 5. Mounts `/proc /sys /dev …` into the chroot, selects the
-   `sanus:default/linux/<arch>/sanus` profile, and emerges `@world`.
+   `webos:default/linux/<arch>/webos` profile, and emerges `@world`.
 
 This is the long stage: it builds the toolchain and the base system from source.
 
 ### `kernel` — `scripts/20-kernel.sh`
 
 1. Refreshes the overlay copy inside the chroot and drops the resolved patch
-   series into `/var/cache/sanus/patches` (the eclass reads it from there).
+   series into `/var/cache/webos/patches` (the eclass reads it from there).
 2. Runs `egencache` so the freshly-copied ebuilds are visible.
-3. Regenerates the Manifests for `sys-kernel/sanus-kernel-sources` and
-   `sys-kernel/sanus-kernel` with `ebuild … manifest`. The kernel tarball is a
+3. Regenerates the Manifests for `sys-kernel/webos-kernel-sources` and
+   `sys-kernel/webos-kernel` with `ebuild … manifest`. The kernel tarball is a
    remote distfile, so its hash cannot live in the committed Manifest — it is
    computed here, and the download lands in `DISTDIR` for the emerge that
    follows.
-4. Emerges `sys-kernel/sanus-kernel-sources` and `sys-kernel/sanus-kernel`.
+4. Emerges `sys-kernel/webos-kernel-sources` and `sys-kernel/webos-kernel`.
 5. Writes the installed release (e.g. `6.12.0-webos`) to
    `build/.kernel-release`.
 
 ### `rootfs` — `scripts/30-rootfs.sh`
 
 1. Refreshes the overlay and the `sets/` inside the chroot.
-2. Emerges `@base @desktop @gaming @sanus-installer`.
+2. Emerges `@base @desktop @gaming @webos-installer`.
 3. Builds the installer tarball from `installer/` (`Cargo.toml`, `Cargo.lock`,
    `src/`, `vendor/`, `.cargo/`) and drops it into the chroot's `DISTDIR`,
    then regenerates the installer Manifest with `scripts/lib/mkmanifest.sh`.
-4. Emerges `app-admin/sanus-installer` (offline `cargo build --release`).
+4. Emerges `app-admin/webos-installer` (offline `cargo build --release`).
 5. Installs branding (`os-release`, `issue`, `lsb-release`, logo).
-6. Emerges `sanus-theme/sanus-theme` and runs its config hook.
+6. Emerges `webos-theme/webos-theme` and runs its config hook.
 7. `rsync`s the chroot into `build/rootfs`, excluding `/proc /sys /dev /tmp
    /var/tmp /var/cache /usr/src /var/db/repos` and the module build trees.
 
@@ -152,16 +152,16 @@ consume it.
 
 ### `iso` — `scripts/40-iso.sh`
 
-1. Copies the kernel image to `/boot/vmlinuz-sanus`.
+1. Copies the kernel image to `/boot/vmlinuz-webos`.
 2. Builds a live initramfs **inside the chroot** with `dracut`, enabling
    `dmsquash-live` and `pollcdrom` (see the stage script for the exact module
    and driver list).
 3. Copies `build/rootfs` to `build/live-root`, overlays `livecd/` on top, and
    patches the live getty for root autologin (both the OpenRC `agetty.tty1`
    path and the sysvinit `/etc/inittab` path; the latter is backed up as
-   `/etc/inittab.sanus-orig`).
-4. Compresses it to `/live/sanus.squashfs` (zstd, 1 MiB blocks).
-5. Writes `/sanus/version` and substitutes `@VOLID@` / `@VERSION_FULL@` in
+   `/etc/inittab.webos-orig`).
+4. Compresses it to `/live/webos.squashfs` (zstd, 1 MiB blocks).
+5. Writes `/webos/version` and substitutes `@VOLID@` / `@VERSION_FULL@` in
    `livecd/boot/grub/grub.cfg`.
 6. Builds a **hybrid** BIOS+UEFI image with `grub-mkrescue` and writes the
    `.sha256`.
@@ -176,7 +176,7 @@ The stages are idempotent enough to re-run individually.
 
 ```bash
 sudo ./build.sh status              # confirms the chroot exists
-sudo SANUS_DEBUG=1 ./build.sh rootfs   # or enter the chroot yourself
+sudo WEBOS_DEBUG=1 ./build.sh rootfs   # or enter the chroot yourself
 ```
 
 There is no `enter` subcommand; mount and chroot by hand if you want a shell:
@@ -190,7 +190,7 @@ sudo chroot build/chroot /bin/bash
 
 ```bash
 make installer          # == make -C installer release
-installer/target/release/sanus-installer --version
+installer/target/release/webos-installer --version
 ```
 
 **Rebuild just the kernel**: `sudo ./build.sh kernel`, then `iso` (the ISO
@@ -199,22 +199,22 @@ embeds a copy of the kernel and a freshly built initramfs).
 **Re-apply the rice** inside a running system:
 
 ```bash
-sudo emerge --config sanus-theme/sanus-theme
-sanus-rice --user        # for the current user
-sanus-rice --doctor      # check what the compositor picked up
+sudo emerge --config webos-theme/webos-theme
+webos-rice --user        # for the current user
+webos-rice --doctor      # check what the compositor picked up
 ```
 
 ---
 
 ## 6. Bumping the kernel
 
-1. Edit `branding/version` → `SANUS_KERNEL_SERIES`.
+1. Edit `branding/version` → `WEBOS_KERNEL_SERIES`.
 2. Update `kernel/patchset.conf`: change the `target-series` column and the
    `sha256` column back to `auto` for any patch that moved.
-3. Add a matching `sys-kernel/sanus-kernel/sanus-kernel-<PV>.ebuild` and
-   `sys-kernel/sanus-kernel-sources/sanus-kernel-sources-<PV>.ebuild` (bump
+3. Add a matching `sys-kernel/webos-kernel/webos-kernel-<PV>.ebuild` and
+   `sys-kernel/webos-kernel-sources/webos-kernel-sources-<PV>.ebuild` (bump
    `PV`; the eclass derives the series from it).
-4. Point the `kernel/sanus-fragment.config` symlink at the (single) fragment —
+4. Point the `kernel/webos-fragment.config` symlink at the (single) fragment —
    it is shared by both packages, so there is usually nothing to change.
 5. `./build.sh fetch` to re-pin the hashes, then `kernel` and `iso`.
 
@@ -225,7 +225,7 @@ Because the Manifests for the kernel packages are regenerated at build time
 
 ## 7. Offline and mirrored builds
 
-* **Stage3 + snapshot**: point `SANUS_MIRROR` / `SANUS_PORTAGE_MIRROR` at a
+* **Stage3 + snapshot**: point `WEBOS_MIRROR` / `WEBOS_PORTAGE_MIRROR` at a
   local mirror. `fetch` caches into `build/downloads`, so a second run is
   offline for those files.
 * **Installer**: `installer/vendor.sh` vendors the crates; the ebuild then
@@ -240,12 +240,12 @@ Because the Manifests for the kernel packages are regenerated at build time
 | Symptom | Cause / fix |
 | --- | --- |
 | `missing host tool: …` | Install the tool listed; the ISO stage needs `grub-mkrescue` and `mformat` (from `sys-boot/grub` and `sys-fs/mtools`). |
-| `WebOS builds on Gentoo` | You are on another distro. Set `SANUS_FORCE=1` (unsupported) or build on Gentoo. |
+| `WebOS builds on Gentoo` | You are on another distro. Set `WEBOS_FORCE=1` (unsupported) or build on Gentoo. |
 | `chroot not bootstrapped` | Run `./build.sh bootstrap` first. |
 | `installer/vendor is missing` | Run `./build.sh fetch` with `cargo` on `PATH`. |
 | `stage3 checksum mismatch` | A truncated download. Delete the file in `build/downloads` and re-run `fetch`. |
 | `HASH MISMATCH … refusing to continue` | Upstream rewrote a kernel patch. Review the diff and re-pin deliberately in `kernel/patchset.conf`. |
-| `could not resolve stage3` | The mirror layout changed or the network is down; try another `SANUS_MIRROR`. |
+| `could not resolve stage3` | The mirror layout changed or the network is down; try another `WEBOS_MIRROR`. |
 | Out of disk | `./build.sh clean` removes the rootfs/ISO staging but keeps the chroot; `./build.sh distclean` removes everything. |
 
 Unmounting: every stage installs an `EXIT` trap that unmounts the chroot. If a
@@ -265,7 +265,7 @@ stage is killed hard, run `./build.sh distclean` (it umounts first) or
 | `build/rootfs/` | the exported, ready-to-install system. |
 | `build/live-root/` | `rootfs` + `livecd/` before squashfs. |
 | `build/iso-staging/` | the ISO tree handed to `grub-mkrescue`. |
-| `build/sanus-1.0-Ashen-amd64.iso` | the deliverable. |
+| `build/webos-1.0-Ashen-amd64.iso` | the deliverable. |
 
 See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the pieces fit together and
 [`RELEASE.md`](RELEASE.md) for the release checklist.
@@ -280,12 +280,12 @@ WebOS builds against five repositories. Their `repos.conf` files live in
 | Repo | Location | Source | Priority | Provides |
 | --- | --- | --- | --- | --- |
 | `gentoo` | `/var/db/repos/gentoo` | rsync snapshot (unpacked by `fetch`/`bootstrap`) | `-1000` | the base system |
-| `sanus` | `/usr/local/portage/sanus` | this tree's `overlay/` | `100` | our kernel, sets, theme, installer |
+| `webos` | `/usr/local/portage/webos` | this tree's `overlay/` | `100` | our kernel, sets, theme, installer |
 | `guru` | `/var/db/repos/guru` | <https://github.com/gentoo-mirror/guru.git> | `-2000` | `mangohud`, `goverlay`, `cliphist`, `nwg-look`, `corectrl`, `lact`, `nerdfonts`, `swayimg`, … |
 | `hyproverlay` | `/var/db/repos/hyproverlay` | <https://codeberg.org/hyproverlay/hyproverlay.git> | `-2000` | `hyprland` and the `hypr*` tooling |
 | `steam-overlay` | `/var/db/repos/steam-overlay` | <https://github.com/anyc/steam-overlay.git> | `-2000` | `steam-launcher` |
 
-**Priority** is "higher wins". `sanus` overrides everything; `gentoo` wins over
+**Priority** is "higher wins". `webos` overrides everything; `gentoo` wins over
 the third-party overlays, so those are only ever consulted for packages
 `::gentoo` does not carry.
 system does not carry itself.

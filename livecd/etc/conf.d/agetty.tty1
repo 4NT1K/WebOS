@@ -2,6 +2,6 @@
 #
 # This is the OpenRC getty path (used when /etc/init.d/agetty.tty1 is in the
 # default runlevel). The sysvinit/inittab path is handled by 40-iso.sh, which
-# patches /etc/inittab and leaves an /etc/inittab.sanus-orig backup for the
+# patches /etc/inittab and leaves an /etc/inittab.webos-orig backup for the
 # installer to restore.
 agetty_options="--autologin root --noclear"

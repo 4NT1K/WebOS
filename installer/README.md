@@ -1,4 +1,4 @@
-# sanus-installer
+# webos-installer
 
 The WebOS installer: one statically-ish linked binary, a keyboard, and a
 black terminal. It partitions a disk, unpacks the live system onto it, and
@@ -12,7 +12,7 @@ part of the live medium or a small external tool (`sgdisk`, `mkfs.*`, `mount`,
 ## Building
 
 ```sh
-cargo build --release          # -> target/release/sanus-installer
+cargo build --release          # -> target/release/webos-installer
 cargo build --release --offline   # what the ebuild does, from vendor/
 ```
 
@@ -23,10 +23,10 @@ beyond libc.
 ## Running
 
 ```sh
-sanus-installer                    # interactive wizard
-sanus-installer --check            # print what it can see, then exit
-sanus-installer -c answers.toml -y # unattended install
-sanus-installer -d                 # dry run: walk the wizard, write nothing
+webos-installer                    # interactive wizard
+webos-installer --check            # print what it can see, then exit
+webos-installer -c answers.toml -y # unattended install
+webos-installer -d                 # dry run: walk the wizard, write nothing
 ```
 
 `--config FILE --yes` is how WebOS CI exercises installs: the wizard is
@@ -39,7 +39,7 @@ skipped, the summary is auto-confirmed, and every command is logged.
 | `-c`, `--config FILE` | Load answers from a TOML file (see below) and jump to the summary |
 | `-y`, `--yes` | Do not ask for the final confirmation |
 | `-d`, `--dry-run` | Run the whole pipeline but execute nothing |
-| `-l`, `--log FILE` | Command log (default `/var/log/sanus-install.log`) |
+| `-l`, `--log FILE` | Command log (default `/var/log/webos-install.log`) |
 | `--check` | Print disks, firmware, and install source, then exit |
 | `-h`, `--help` | Usage |
 | `-V`, `--version` | Version |
@@ -62,11 +62,11 @@ disk; the UI cannot change anything until it reports `Done` or `Failed`.
 
 Any field of `InstallConfig` may be set. Unknown keys are rejected, and missing
 keys take their defaults. A copy of the effective configuration is written to
-`/etc/sanus/install.toml` inside the new system, so a machine can be rebuilt
+`/etc/webos/install.toml` inside the new system, so a machine can be rebuilt
 from its own record:
 
 ```sh
-sanus-installer --config /etc/sanus/install.toml --yes
+webos-installer --config /etc/webos/install.toml --yes
 ```
 
 ```toml
@@ -79,7 +79,7 @@ luks_passphrase = "correct horse battery staple"
 esp_size_mib = 512
 swap_size_mib = 4096
 
-hostname = "sanus"
+hostname = "webos"
 username = "player"
 full_name = "Player One"
 user_password = "hunter2"
@@ -105,7 +105,7 @@ use_grub = true
    `Enter` (or immediately with `--yes`).
 2. **The installer never guesses a disk.** It must be selected explicitly.
 3. **Every command is logged verbatim**, and the log is copied into the new
-   system as `/var/log/sanus-install.log`.
+   system as `/var/log/webos-install.log`.
 4. **One code path.** The interactive wizard and `--config --yes` fill the same
    `InstallConfig` and run the same `install::run`.
 
@@ -126,8 +126,8 @@ use_grub = true
 
 ## How it is installed
 
-The installer is packaged as `app-admin/sanus-installer`, which builds this
+The installer is packaged as `app-admin/webos-installer`, which builds this
 crate with `cargo build --release --offline` from the vendored dependencies in
 `vendor/` (see `vendor.sh`) and installs the binary as
-`/usr/bin/sanus-installer`. It is on the live medium and in the installed
+`/usr/bin/webos-installer`. It is on the live medium and in the installed
 system.

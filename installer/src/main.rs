@@ -7,7 +7,7 @@
 //! Design rules:
 //!   * Nothing is written to disk until the summary page is confirmed.
 //!   * Every command that touches a disk is logged verbatim, and the log is
-//!     copied to the new system as /var/log/sanus-install.log.
+//!     copied to the new system as /var/log/webos-install.log.
 //!   * The installer never guesses a disk. It must be chosen explicitly.
 //!   * `--config file.toml --yes` performs an unattended install from a
 //!     recorded configuration, which is how WebOS CI tests installs.
@@ -49,14 +49,14 @@ const USAGE: &str = "\
 WebOS installer
 
 USAGE:
-    sanus-installer [OPTIONS]
+    webos-installer [OPTIONS]
 
 OPTIONS:
     -c, --config <FILE>   Load answers from a TOML file and skip those pages
     -y, --yes             Do not prompt for the final confirmation
         --unattended      With --config: install without a TTY, printing the log
     -d, --dry-run         Go through the whole wizard, but write nothing
-    -l, --log <FILE>      Write the command log to FILE (default: /var/log/sanus-install.log)
+    -l, --log <FILE>      Write the command log to FILE (default: /var/log/webos-install.log)
         --check           Print what the installer found (disks, firmware, rootfs) and exit
         --gui             Use the windowed egui installer (mouse + keyboard)
     -h, --help            Print this help
@@ -107,7 +107,7 @@ fn parse_args() -> Result<Option<Args>> {
                 return Ok(None);
             }
             "-V" | "--version" => {
-                println!("sanus-installer {VERSION}");
+                println!("webos-installer {VERSION}");
                 return Ok(None);
             }
             other => anyhow::bail!("unknown argument: {other}\n\n{USAGE}"),
@@ -122,7 +122,7 @@ fn main() -> ExitCode {
         Err(e) => {
             // Make sure we never leave the terminal in raw mode on the way out.
             let _ = restore_terminal();
-            eprintln!("sanus-installer: {e:#}");
+            eprintln!("webos-installer: {e:#}");
             ExitCode::FAILURE
         }
     }
@@ -139,7 +139,7 @@ fn run() -> Result<ExitCode> {
     }
 
     if unsafe { libc::geteuid() } != 0 {
-        anyhow::bail!("sanus-installer must run as root");
+        anyhow::bail!("webos-installer must run as root");
     }
 
     let mut app = App::new(args.dry_run, args.yes || args.unattended, args.log.clone())?;
@@ -173,7 +173,7 @@ fn run() -> Result<ExitCode> {
 
     if !io::stdin().is_terminal() || !io::stdout().is_terminal() {
         anyhow::bail!(
-            "sanus-installer needs a terminal. Use --check to inspect this machine,\n\
+            "webos-installer needs a terminal. Use --check to inspect this machine,\n\
              --gui for the windowed installer, or --config FILE --yes for an unattended install."
         );
     }
@@ -228,7 +228,7 @@ fn run_unattended(mut app: App) -> Result<ExitCode> {
 }
 
 fn preflight() -> Result<ExitCode> {
-    println!("sanus-installer {VERSION} — preflight\n");
+    println!("webos-installer {VERSION} — preflight\n");
 
     println!("firmware      : {}", if disk::is_efi() { "UEFI" } else { "BIOS/legacy" });
     println!("root fs       : {}", rootfs::describe());

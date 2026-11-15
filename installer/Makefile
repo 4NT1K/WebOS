@@ -1,6 +1,6 @@
 # WebOS installer — convenience targets.
 #
-#   make release    optimised binary in target/release/sanus-installer
+#   make release    optimised binary in target/release/webos-installer
 #   make debug      debug binary
 #   make vendor     refresh vendor/ for offline builds (needs network)
 #   make lint       clippy, warnings are errors
