@@ -15,9 +15,11 @@ mount_chroot
 # Legacy cleanup: earlier builds used sanus-* names. A reused chroot still has
 # those packages installed, which would leave duplicate services/files next to
 # the new webos-* ones.
+# The kernel keeps its historical package name: re-emerging it would mean a
+# full kernel rebuild, and the binary is unaffected by the rename.
 chroot_sh "emerge --quiet --unmerge sanus-theme/sanus-theme app-admin/sanus-installer \
 	sanus-base/sanus-base sanus-desktop/sanus-desktop sanus-gaming/sanus-gaming \
-	sys-kernel/sanus-kernel sys-kernel/sanus-kernel-sources 2>/dev/null || true" || true
+	2>/dev/null || true" || true
 rm -rf "${CHROOT}/usr/local/portage/sanus" "${CHROOT}/usr/share/sanus"
 rm -f "${CHROOT}"/etc/local.d/sanus.start "${CHROOT}"/etc/init.d/sanus \
 	"${CHROOT}"/etc/profile.d/sanus.sh "${CHROOT}"/etc/environment.d/10-sanus.conf \
