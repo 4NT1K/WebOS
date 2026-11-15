@@ -50,7 +50,7 @@ done
 install -d "${CHROOT}/etc/portage/repos.conf"
 rm -f "${CHROOT}"/etc/portage/repos.conf/*.conf 2>/dev/null || true
 cp -a "${WEBOS_ROOT}"/config/repos.conf/*.conf "${CHROOT}/etc/portage/repos.conf/"
-for d in package.use package.license package.accept_keywords package.mask; do
+for d in package.use package.license package.accept_keywords package.mask package.env env; do
 	[[ -d "${WEBOS_ROOT}/config/${d}" ]] || continue
 	install -d "${CHROOT}/etc/portage/${d}"
 	rm -f "${CHROOT}/etc/portage/${d}"/* 2>/dev/null || true
