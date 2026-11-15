@@ -27,3 +27,9 @@ export GAMEMODE_AUTO="${GAMEMODE_AUTO:-1}"
 
 # WebOS marker.
 export WEBOS_OS=1
+
+
+# Dark mode defaults
+export GTK_THEME="${GTK_THEME:-Adwaita:dark}"
+export GTK_APPLICATION_PREFER_DARK_THEME=1
+export QT_STYLE_OVERRIDE="${QT_STYLE_OVERRIDE:-kvantum-dark}"

@@ -72,6 +72,12 @@ src_install() {
 	insinto /usr/share/icons/default
 	newins "${FILESDIR}"/system/icons-default/index.theme index.theme
 
+	# xdg-desktop-portal defaults (Hyprland session)
+	insinto /usr/share/xdg-desktop-portal
+	if compgen -G "${FILESDIR}"/system/xdg-desktop-portal/*.conf > /dev/null; then
+		doins "${FILESDIR}"/system/xdg-desktop-portal/*.conf
+	fi
+
 	# --- 4. Wayland/X session entries -----------------------------------
 	# Named `webos`, not `hyprland`, so we never collide with the upstream
 	# package's own desktop file.

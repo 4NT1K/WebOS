@@ -1,7 +1,6 @@
 #!/bin/sh
 # webos-fastfetch — WebOS terminal card.
-# Runs fastfetch with the WebOS ASCII logo and selected modules, framed in a
-# smooth continuous-line box (ASCII fallback if UTF-8 unavailable).
+# Prints fastfetch with the configured WebOS logo (image in kitty, or text fallback).
 set -u
 
 export LANG="${LANG:-C.UTF-8}"
@@ -10,33 +9,5 @@ export LC_ALL="${LC_ALL:-$LANG}"
 CFG=/usr/share/webos/rice/fastfetch/fastfetch.json
 command -v fastfetch >/dev/null 2>&1 || exit 0
 
-out="$(fastfetch --config "$CFG" 2>/dev/null)" || exit 0
-[ -n "$out" ] || exit 0
-
-strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
-
-width="$(printf '%s\n' "$out" | strip_ansi |
-	awk '{ if (length($0) > m) m = length($0) } END { print m + 0 }')"
-[ "${width:-0}" -ge 4 ] || width=4
-
-# UTF-8 box drawing when locale supports it; otherwise ASCII to avoid '?' glyphs.
-tl='+'; trc='+'; bl='+'; brc='+'; h='-'; v='|'
-case "${LC_ALL:-${LC_CTYPE:-${LANG:-}}}" in
-	*[Uu][Tt][Ff]8*|*[Uu][Tt][Ff]-8*)
-		tl='┌'; trc='┐'; bl='└'; brc='┘'; h='─'; v='│'
-		;;
-esac
-
-border=""
-i=0
-while [ "$i" -lt $((width + 2)) ]; do border="${border}${h}"; i=$((i + 1)); done
-white='\033[97m'; reset='\033[0m'
-
-printf "${white}%s%s%s${reset}\n" "$tl" "$border" "$trc"
-printf '%s\n' "$out" | while IFS= read -r line; do
-	clean="$(printf '%s' "$line" | strip_ansi)"
-	pad=$((width - ${#clean}))
-	[ "$pad" -lt 0 ] && pad=0
-	printf "${white}%s${reset} %s%*s ${white}%s${reset}\n" "$v" "$line" "$pad" "" "$v"
-done
-printf "${white}%s%s%s${reset}\n" "$bl" "$border" "$brc"
+# Image logos (kitty-direct/sixel/etc.) are rendered by fastfetch; don't wrap in a box.
+exec fastfetch --config "$CFG" "$@" 2>/dev/null

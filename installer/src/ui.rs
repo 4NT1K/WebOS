@@ -58,7 +58,7 @@ fn draw_header(f: &mut Frame, area: Rect, app: &App, phase: Option<&str>) {
 
     let right_text = match phase {
         Some(p) => format!("{p}  "),
-        None => format!("{}/8  ", app.step.index().min(7) + 1),
+        None => format!("{}/9  ", app.step.index().min(8) + 1),
     };
 
     let block = Block::default()
@@ -120,6 +120,7 @@ fn draw_page(f: &mut Frame, area: Rect, app: &mut App) {
         Step::Encryption => page_encryption(f, area, app),
         Step::Locale | Step::User => page_text(f, area, app),
         Step::Options => page_options(f, area, app),
+        Step::Extras => page_extras(f, area, app),
         Step::Summary => page_summary(f, area, app),
         Step::Install | Step::Done => {}
     }
@@ -370,7 +371,7 @@ fn page_text(f: &mut Frame, area: Rect, app: &mut App) {
 }
 
 fn page_options(f: &mut Frame, area: Rect, app: &mut App) {
-    let block = panel("Features, apps & options");
+    let block = panel("System options");
     let inner = block.inner(area);
     f.render_widget(block, area);
 
@@ -403,10 +404,48 @@ fn page_options(f: &mut Frame, area: Rect, app: &mut App) {
     let help = if app.cursor == 1 {
         app.cfg.profile.note().to_string()
     } else {
-        "Enter/Space cycles options (apps, shells, features, services).".to_string()
+        "Enter/Space cycles system options. Tab for Extra features.".to_string()
     };
     f.render_widget(
         Paragraph::new(Line::from(Span::styled(help, theme::faint()))).wrap(Wrap { trim: true }),
+        rows[1],
+    );
+}
+
+fn page_extras(f: &mut Frame, area: Rect, app: &mut App) {
+    let block = panel("Extra features");
+    let inner = block.inner(area);
+    f.render_widget(block, area);
+
+    let rows = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([Constraint::Min(4), Constraint::Length(2)])
+        .split(inner);
+
+    app.list_area = Some(rows[0]);
+
+    let items: Vec<ListItem> = app
+        .extras()
+        .iter()
+        .enumerate()
+        .map(|(i, (label, value))| {
+            let line = Line::from(vec![
+                Span::styled(format!("{label:<24}"), theme::dim()),
+                Span::styled(value.clone(), theme::base()),
+            ]);
+            let item = ListItem::new(line);
+            if i == app.cursor {
+                item.style(theme::selected())
+            } else {
+                item
+            }
+        })
+        .collect();
+    f.render_widget(List::new(items), rows[0]);
+
+    let help = "Choose apps, shells and features (Discord, Spotify, Firefox, Vesktop, Waypaper, etc.). Enter/Space to toggle.";
+    f.render_widget(
+        Paragraph::new(Line::from(Span::styled(help.to_string(), theme::faint()))).wrap(Wrap { trim: true }),
         rows[1],
     );
 }
@@ -673,7 +712,8 @@ fn footer_keys(step: Step) -> &'static str {
         Step::Locale | Step::User => {
             "↑↓ field    Enter edit    Tab next    Esc back    Ctrl-C quit"
         }
-        Step::Options => "↑↓ choose    Enter/Space cycle    Esc back",
+        Step::Options => "↑↓ choose    Enter/Space cycle    Tab extras    Esc back",
+        Step::Extras => "↑↓ choose    Enter/Space cycle    Tab summary    Esc back",
         Step::Summary => "Enter install    Esc back    Ctrl-C quit",
         Step::Install | Step::Done => "↑↓ scroll    Ctrl-C quit",
     }

@@ -31,6 +31,7 @@ pub enum Step {
     Locale,
     User,
     Options,
+    Extras,
     Summary,
     Install,
     Done,
@@ -45,7 +46,8 @@ impl Step {
             Step::Encryption => "Encryption",
             Step::Locale => "Region",
             Step::User => "Account",
-            Step::Options => "Options",
+            Step::Options => "System options",
+            Step::Extras => "Extra features",
             Step::Summary => "Summary",
             Step::Install => "Installing",
             Step::Done => "Finished",
@@ -61,14 +63,15 @@ impl Step {
             Step::Locale => 4,
             Step::User => 5,
             Step::Options => 6,
-            Step::Summary => 7,
-            Step::Install => 8,
-            Step::Done => 9,
+            Step::Extras => 7,
+            Step::Summary => 8,
+            Step::Install => 9,
+            Step::Done => 10,
         }
     }
 
     /// How many pages come before the install starts (used for the sidebar).
-    pub const STEPS: [Step; 8] = [
+    pub const STEPS: [Step; 9] = [
         Step::Welcome,
         Step::Disk,
         Step::Filesystem,
@@ -76,6 +79,7 @@ impl Step {
         Step::Locale,
         Step::User,
         Step::Options,
+        Step::Extras,
         Step::Summary,
     ];
 
@@ -87,7 +91,8 @@ impl Step {
             Step::Encryption => Step::Locale,
             Step::Locale => Step::User,
             Step::User => Step::Options,
-            Step::Options => Step::Summary,
+            Step::Options => Step::Extras,
+            Step::Extras => Step::Summary,
             Step::Summary => Step::Install,
             Step::Install | Step::Done => self,
         }
@@ -102,7 +107,8 @@ impl Step {
             Step::Locale => Step::Encryption,
             Step::User => Step::Locale,
             Step::Options => Step::User,
-            Step::Summary => Step::Options,
+            Step::Extras => Step::Options,
+            Step::Summary => Step::Extras,
             Step::Install | Step::Done => self,
         }
     }
@@ -455,23 +461,12 @@ impl App {
         }
     }
 
-    // ── options ──────────────────────────────────────────────────────────
+    // ── options / extras ─────────────────────────────────────────────────
 
     pub fn options(&self) -> Vec<(String, String)> {
         vec![
             ("Swap".into(), self.cfg.swap.label().into()),
             ("Profile".into(), self.cfg.profile.label().into()),
-            ("Gaming stack".into(), on_off(self.cfg.install_gaming).into()),
-            ("Steam (note)".into(), on_off(self.cfg.install_steam).into()),
-            ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
-            ("Discord".into(), on_off(self.cfg.install_discord).into()),
-            ("Vesktop (Vencord)".into(), on_off(self.cfg.install_vesktop).into()),
-            ("OpenCode".into(), on_off(self.cfg.install_opencode).into()),
-            ("Spotify".into(), on_off(self.cfg.install_spotify).into()),
-            ("Waypaper (wallpapers)".into(), on_off(self.cfg.install_waypaper).into()),
-            ("Fish shell".into(), on_off(self.cfg.install_fish).into()),
-            ("Zsh shell".into(), on_off(self.cfg.install_zsh).into()),
-            ("Flatpak".into(), on_off(self.cfg.install_flatpak).into()),
             ("NVIDIA driver".into(), on_off(self.cfg.nvidia).into()),
             ("Bluetooth".into(), on_off(self.cfg.enable_bluetooth).into()),
             ("SSH server".into(), on_off(self.cfg.enable_sshd).into()),
@@ -496,22 +491,44 @@ impl App {
                     .unwrap_or(0);
                 self.cfg.profile = Profile::ALL[(i + 1) % Profile::ALL.len()];
             }
-            2 => self.cfg.install_gaming = !self.cfg.install_gaming,
-            3 => self.cfg.install_steam = !self.cfg.install_steam,
-            4 => self.cfg.install_firefox = !self.cfg.install_firefox,
-            5 => self.cfg.install_discord = !self.cfg.install_discord,
-            6 => self.cfg.install_vesktop = !self.cfg.install_vesktop,
-            7 => self.cfg.install_opencode = !self.cfg.install_opencode,
-            8 => self.cfg.install_spotify = !self.cfg.install_spotify,
-            9 => self.cfg.install_waypaper = !self.cfg.install_waypaper,
-            10 => self.cfg.install_fish = !self.cfg.install_fish,
-            11 => self.cfg.install_zsh = !self.cfg.install_zsh,
-            12 => self.cfg.install_flatpak = !self.cfg.install_flatpak,
-            13 => self.cfg.nvidia = !self.cfg.nvidia,
-            14 => self.cfg.enable_bluetooth = !self.cfg.enable_bluetooth,
-            15 => self.cfg.enable_sshd = !self.cfg.enable_sshd,
-            16 => self.cfg.enable_firewall = !self.cfg.enable_firewall,
-            17 => self.cfg.use_grub = !self.cfg.use_grub,
+            2 => self.cfg.nvidia = !self.cfg.nvidia,
+            3 => self.cfg.enable_bluetooth = !self.cfg.enable_bluetooth,
+            4 => self.cfg.enable_sshd = !self.cfg.enable_sshd,
+            5 => self.cfg.enable_firewall = !self.cfg.enable_firewall,
+            6 => self.cfg.use_grub = !self.cfg.use_grub,
+            _ => {}
+        }
+    }
+
+    pub fn extras(&self) -> Vec<(String, String)> {
+        vec![
+            ("Gaming stack".into(), on_off(self.cfg.install_gaming).into()),
+            ("Steam (64-bit note)".into(), on_off(self.cfg.install_steam).into()),
+            ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
+            ("Discord".into(), on_off(self.cfg.install_discord).into()),
+            ("Vesktop (Vencord)".into(), on_off(self.cfg.install_vesktop).into()),
+            ("OpenCode".into(), on_off(self.cfg.install_opencode).into()),
+            ("Spotify".into(), on_off(self.cfg.install_spotify).into()),
+            ("Waypaper (wallpapers)".into(), on_off(self.cfg.install_waypaper).into()),
+            ("Fish shell".into(), on_off(self.cfg.install_fish).into()),
+            ("Zsh shell".into(), on_off(self.cfg.install_zsh).into()),
+            ("Flatpak".into(), on_off(self.cfg.install_flatpak).into()),
+        ]
+    }
+
+    fn toggle_extra(&mut self, i: usize) {
+        match i {
+            0 => self.cfg.install_gaming = !self.cfg.install_gaming,
+            1 => self.cfg.install_steam = !self.cfg.install_steam,
+            2 => self.cfg.install_firefox = !self.cfg.install_firefox,
+            3 => self.cfg.install_discord = !self.cfg.install_discord,
+            4 => self.cfg.install_vesktop = !self.cfg.install_vesktop,
+            5 => self.cfg.install_opencode = !self.cfg.install_opencode,
+            6 => self.cfg.install_spotify = !self.cfg.install_spotify,
+            7 => self.cfg.install_waypaper = !self.cfg.install_waypaper,
+            8 => self.cfg.install_fish = !self.cfg.install_fish,
+            9 => self.cfg.install_zsh = !self.cfg.install_zsh,
+            10 => self.cfg.install_flatpak = !self.cfg.install_flatpak,
             _ => {}
         }
     }
@@ -543,6 +560,7 @@ impl App {
             Step::Filesystem => Filesystem::ALL.len(),
             Step::Encryption => Encryption::ALL.len(),
             Step::Options => self.options().len(),
+            Step::Extras => self.extras().len(),
             Step::Locale | Step::User => self.field_count(self.step),
             _ => 0,
         }
@@ -629,6 +647,7 @@ impl App {
             Step::Encryption => self.key_encryption(key),
             Step::Locale | Step::User => self.key_text(key),
             Step::Options => self.key_options(key),
+            Step::Extras => self.key_extras(key),
             Step::Summary => self.key_summary(key),
             Step::Install | Step::Done => {}
         }
@@ -776,8 +795,27 @@ impl App {
                 let i = self.cursor;
                 self.toggle_option(i);
             }
-            KeyCode::Tab => self.goto(Step::Summary),
+            KeyCode::Tab => self.goto(Step::Extras),
             KeyCode::Esc => self.goto(Step::User),
+            _ => {}
+        }
+    }
+
+    fn key_extras(&mut self, key: KeyEvent) {
+        let n = self.extras().len();
+        match key.code {
+            KeyCode::Up | KeyCode::Char('k') => self.cursor = self.cursor.saturating_sub(1),
+            KeyCode::Down | KeyCode::Char('j') => {
+                if self.cursor + 1 < n {
+                    self.cursor += 1;
+                }
+            }
+            KeyCode::Enter | KeyCode::Char(' ') | KeyCode::Left | KeyCode::Right => {
+                let i = self.cursor;
+                self.toggle_extra(i);
+            }
+            KeyCode::Tab => self.goto(Step::Summary),
+            KeyCode::Esc => self.goto(Step::Options),
             _ => {}
         }
     }
@@ -792,7 +830,7 @@ impl App {
                     self.start_install();
                 }
             }
-            KeyCode::Esc => self.goto(Step::Options),
+            KeyCode::Esc => self.goto(Step::Extras),
             _ => {}
         }
     }
