@@ -5,15 +5,15 @@
  * ────────────────────────────────────────────────────────────────────────── */
 
 @define-color base      #000000;   /* pure black */
-@define-color surface   rgba(0, 0, 0, 0.60);
-@define-color surface2  rgba(20, 20, 20, 0.55);
+@define-color surface   rgba(0, 0, 0, 0.55);
+@define-color surface2  rgba(28, 28, 28, 0.55);
 @define-color text      #ededed;   /* near white */
-@define-color text-dim  #8c8c8c;
+@define-color text-dim  #8f8f8f;
 @define-color text-faint #5b5b5b;
 @define-color accent    #ffffff;   /* white */
 @define-color accent-lo rgba(255, 255, 255, 0.12);
 @define-color urgent    #d27878;
-@define-color border    rgba(255, 255, 255, 0.10);
+@define-color border    rgba(255, 255, 255, 0.16);
 
 * {
     border: none;
@@ -42,8 +42,8 @@ window#waybar > box {
 }
 
 tooltip {
-    background: rgba(8, 8, 10, 0.92);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    background: rgba(10, 10, 10, 0.92);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 12px;
     padding: 6px 2px;
 }
@@ -112,7 +112,7 @@ tooltip label {
 #workspaces button.active {
     color: @base;
     background: @accent;
-    box-shadow: 0 0 12px rgba(125, 211, 252, 0.35);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
 }
 #workspaces button.urgent {
     color: @base;
