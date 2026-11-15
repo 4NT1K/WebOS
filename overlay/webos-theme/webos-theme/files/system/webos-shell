@@ -1,4 +1,5 @@
 #!/bin/sh
+export LANG="${LANG:-C.UTF-8}"
 # WebOS shell wrapper.
 # kitty is configured with `shell /usr/bin/webos-shell`, so every interactive
 # terminal shows the WebOS fastfetch card before handing over to the user's

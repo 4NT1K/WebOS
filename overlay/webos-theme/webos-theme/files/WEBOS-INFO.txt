@@ -3,7 +3,7 @@ WebOS 1.0 "Ashen" — system information
 
 RELEASE
 -------
-- True v1.0: WebOS-branded (cobweb logo, no Gentoo welcome/identity leaks).
+- True v1.0: WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS).
 - Version : WebOS 1.0 "Ashen" (Gentoo/OpenRC, gaming-focused)
 - ISO     : webos-1.0-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
@@ -62,9 +62,9 @@ TERMINAL / FASTFETCH
 --------------------
 kitty runs /usr/bin/webos-shell, which prints the WebOS ASCII fastfetch card
 (display, uptime, cpu, gpu, terminal, memory, disk, packages, shell, datetime)
-with a cobweb logo, framed in an ASCII-safe box, then execs $SHELL. Nested shells do not repeat it.
+with the WebOS logo, framed in a smooth rounded box, then execs $SHELL. Nested shells do not repeat it.
 Manual: `webos-fastfetch`. Config: /usr/share/webos/rice/fastfetch/.
-ASCII borders are used for compatibility with live/TTY environments.
+UTF-8 locale (C.UTF-8) is set for proper rendering.
 
 PREINSTALLED APPS (all prebuilt — nothing compiles during install)
 ------------------------------------------------------------------

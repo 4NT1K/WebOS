@@ -44,6 +44,9 @@ src_install() {
 	# --- 2. branding assets ---------------------------------------------
 	insinto /usr/share/webos
 	newins "${FILESDIR}"/rice/wallpapers/webos-wallpaper.svg logo.svg
+	if [[ -f "${FILESDIR}"/system/webos-logo.png ]]; then
+		newins "${FILESDIR}"/system/webos-logo.png webos-logo.png
+	fi
 	insinto /usr/share/webos/wallpaper
 	if [[ -f "${FILESDIR}"/rice/wallpapers/webos-wallpaper.png ]]; then
 		newins "${FILESDIR}"/rice/wallpapers/webos-wallpaper.png webos-wallpaper.png

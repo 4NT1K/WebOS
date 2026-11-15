@@ -1,8 +1,11 @@
 #!/bin/sh
-# webos-fastfetch — the WebOS terminal card.
-# Runs fastfetch with the WebOS ASCII logo and the selected modules, then
-# frames the whole card in a white box to match the Deep Black scheme.
+# webos-fastfetch — WebOS terminal card.
+# Runs fastfetch with the WebOS ASCII logo and selected modules, framed in a
+# smooth rounded box.
 set -u
+
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LC_ALL:-$LANG}"
 
 CFG=/usr/share/webos/rice/fastfetch/fastfetch.json
 command -v fastfetch >/dev/null 2>&1 || exit 0
@@ -16,16 +19,14 @@ width="$(printf '%s\n' "$out" | strip_ansi |
 	awk '{ if (length($0) > m) m = length($0) } END { print m + 0 }')"
 [ "${width:-0}" -ge 4 ] || width=4
 
-# ASCII-safe borders: live/TTY environments often lack UTF-8 locale/fonts and
-# would render Unicode box-drawing as '?'.
-border="$(printf '%*s' $((width + 2)) '' | tr ' ' '-')"
-
+border="$(printf '%*s' $((width + 2)) '' | tr ' ' '─')"
 white='\033[97m'; reset='\033[0m'
-printf "${white}+%s+${reset}\n" "$border"
+
+printf "${white}╭%s╮${reset}\n" "$border"
 printf '%s\n' "$out" | while IFS= read -r line; do
 	clean="$(printf '%s' "$line" | strip_ansi)"
 	pad=$((width - ${#clean}))
 	[ "$pad" -lt 0 ] && pad=0
-	printf "${white}|${reset} %s%*s ${white}|${reset}\n" "$line" "$pad" ""
+	printf "${white}│${reset} %s%*s ${white}│${reset}\n" "$line" "$pad" ""
 done
-printf "${white}+%s+${reset}\n" "$border"
+printf "${white}╰%s╯${reset}\n" "$border"
