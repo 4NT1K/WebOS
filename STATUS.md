@@ -1,8 +1,22 @@
 # WebOS build status
 
-_Last update: 2026-11-14 17:08 UTC — v8 E2E+target checks passed, USB copy in progress_
+_Last update: 2026-11-15 11:45 UTC — v1.13 (Ashen) rebuilding: rebrand, Spotify, KDE+Hyprland rice, white-box fastfetch_
 
-## Status: v8 VERIFIED LOCALLY (not published, not on USB yet)
+## Status: v1.13 building
+
+- Version bumped to 1.13; ISO `webos-1.13-Ashen-amd64.iso`.
+- All `sanus-*` names renamed to `webos-*` (packages, binaries, paths, overlay).
+- Installer toggles: Firefox (firefox-bin), Discord, OpenCode, Spotify — prebuilt.
+- Steam/Wine/winetricks/protontricks/goverlay dropped: image is 64-bit only
+  (`ABI_X86="64"`); Steam needs multilib. Kernel has IA32 emulation, so Flatpak
+  Steam works. Multilib rebuild planned for a future release.
+- Fastfetch card: WebOS ASCII logo + display, uptime, cpu, gpu, terminal,
+  memory, disk, packages, shell, datetime, framed in a white box.
+- `/usr/share/webos/WEBOS-INFO.txt` ships a full system brief for OpenCode.
+- Reused chroot: Portage config refreshed, profile symlink repointed, legacy
+  `sanus-*` packages removed.
+
+### v8 (verified locally earlier)
 
 - ISO: `build/webos-1.0-Ashen-amd64.iso` (4.0G), sha256 `1db24ab5…`
 - v8:
