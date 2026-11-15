@@ -138,8 +138,8 @@ grub-mkrescue \
 	--output="${ISO_OUT}" \
 	--product-name="WebOS" \
 	--product-version="${WEBOS_VERSION_FULL}" \
+	--iso-level 3 \
 	"${ISO_STAGING}" \
-	-- -iso-level 3 \
 	|| die "grub-mkrescue failed"
 
 # ------------------------------------------------------------ checksums ------
