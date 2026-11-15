@@ -46,7 +46,7 @@ net-misc/curl http2 ssl
 gui-wm/hyprland X
 x11-terms/kitty X wayland
 x11-terms/wezterm wayland
-www-client/firefox wayland system-av1 hwaccel system-pipewire
+www-client/firefox-bin wayland
 media-video/mpv vaapi vdpau lua vulkan wayland
 gui-apps/waybar pulseaudio network upower
 media-gfx/swayimg gif webp

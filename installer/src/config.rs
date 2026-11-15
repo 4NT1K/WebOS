@@ -179,6 +179,8 @@ pub struct InstallConfig {
     pub install_discord: bool,
     #[serde(default)]
     pub install_opencode: bool,
+    #[serde(default)]
+    pub install_spotify: bool,
     pub nvidia: bool,
     pub enable_bluetooth: bool,
     pub enable_sshd: bool,
@@ -219,6 +221,7 @@ impl Default for InstallConfig {
             install_firefox: true,
             install_discord: false,
             install_opencode: false,
+            install_spotify: false,
             nvidia: false,
             enable_bluetooth: true,
             enable_sshd: false,

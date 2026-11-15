@@ -741,9 +741,9 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         s.push_str("emerge_app() { emerge --quiet --noreplace \"$@\" >/dev/null 2>&1 || true; }\n");
         s.push_str("remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || true; }\n");
         if cfg.install_firefox {
-            s.push_str("emerge_app www-client/firefox\n");
+            s.push_str("emerge_app www-client/firefox-bin\n");
         } else {
-            s.push_str("remove_app www-client/firefox\n");
+            s.push_str("remove_app www-client/firefox-bin\n");
         }
         if cfg.install_steam {
             s.push_str("emerge_app games-util/steam-launcher\n");
@@ -759,6 +759,11 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
             s.push_str("emerge_app dev-util/opencode-bin\n");
         } else {
             s.push_str("remove_app dev-util/opencode-bin\n");
+        }
+        if cfg.install_spotify {
+            s.push_str("emerge_app media-sound/spotify\n");
+        } else {
+            s.push_str("remove_app media-sound/spotify\n");
         }
     }
 

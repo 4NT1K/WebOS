@@ -464,11 +464,12 @@ fn page_summary(f: &mut Frame, area: Rect, app: &mut App) {
     );
     row(
         "Apps",
-        format!("steam={} firefox={} discord={} opencode={}",
+        format!("steam={} firefox={} discord={} opencode={} spotify={}",
             if c.install_steam {"yes"} else {"no"},
             if c.install_firefox {"yes"} else {"no"},
             if c.install_discord {"yes"} else {"no"},
-            if c.install_opencode {"yes"} else {"no"}),
+            if c.install_opencode {"yes"} else {"no"},
+            if c.install_spotify {"yes"} else {"no"}),
         theme::base(),
         &mut lines,
     );

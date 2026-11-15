@@ -20,7 +20,24 @@ for s in "${SANUS_ROOT}"/config/sets/*; do
 	[[ -e "$s" ]] || continue
 	install -m 0644 "$s" "${CHROOT}/etc/portage/sets/$(basename -- "$s")"
 done
+
+# Refresh the Portage configuration too. Bootstrap only copies these once, so
+# a reused chroot keeps stale package.use/package.license/repos.conf files and
+# can silently mask packages (e.g. net-im/discord needs an explicit license).
+install -d "${CHROOT}/etc/portage/repos.conf"
+cp -a "${SANUS_ROOT}"/config/repos.conf/*.conf "${CHROOT}/etc/portage/repos.conf/"
+for d in package.use package.license package.accept_keywords package.mask; do
+	[[ -d "${SANUS_ROOT}/config/${d}" ]] || continue
+	install -d "${CHROOT}/etc/portage/${d}"
+	rm -f "${CHROOT}/etc/portage/${d}"/* 2>/dev/null || true
+	cp -a "${SANUS_ROOT}/config/${d}/." "${CHROOT}/etc/portage/${d}/"
+done
 chroot_sh "egencache --repo=sanus --update --jobs=${SANUS_JOBS} >/dev/null 2>&1 || true"
+
+# Browsers moved from the source build to the prebuilt binary. Remove a stale
+# source copy from a reused chroot before the set merge so the image does not
+# carry (and recompile) both.
+chroot_sh "emerge --quiet --unmerge www-client/firefox 2>/dev/null || true"
 
 # --------------------------------------------------- installer sources -------
 # Stage the installer tarball and Manifest *before* any emerge that can pull

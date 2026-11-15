@@ -83,7 +83,7 @@ gnome-extra/nm-applet
 lxqt-base/lxqt-policykit
 
 # Browsers (lightweight default; user can add more)
-www-client/firefox
+www-client/firefox-bin
 
 # File manager and KDE settings (available in Hyprland too)
 kde-apps/dolphin
@@ -96,3 +96,4 @@ x11-drivers/nvidia-drivers
 # Optional apps (preinstalled for fast setup; installer can toggle)
 net-im/discord
 dev-util/opencode-bin
+media-sound/spotify

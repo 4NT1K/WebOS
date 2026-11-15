@@ -466,6 +466,7 @@ impl App {
             ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
             ("Discord".into(), on_off(self.cfg.install_discord).into()),
             ("OpenCode".into(), on_off(self.cfg.install_opencode).into()),
+            ("Spotify".into(), on_off(self.cfg.install_spotify).into()),
             ("NVIDIA driver".into(), on_off(self.cfg.nvidia).into()),
             ("Bluetooth".into(), on_off(self.cfg.enable_bluetooth).into()),
             ("SSH server".into(), on_off(self.cfg.enable_sshd).into()),
@@ -498,11 +499,12 @@ impl App {
             4 => self.cfg.install_firefox = !self.cfg.install_firefox,
             5 => self.cfg.install_discord = !self.cfg.install_discord,
             6 => self.cfg.install_opencode = !self.cfg.install_opencode,
-            7 => self.cfg.nvidia = !self.cfg.nvidia,
-            8 => self.cfg.enable_bluetooth = !self.cfg.enable_bluetooth,
-            9 => self.cfg.enable_sshd = !self.cfg.enable_sshd,
-            10 => self.cfg.enable_firewall = !self.cfg.enable_firewall,
-            11 => self.cfg.use_grub = !self.cfg.use_grub,
+            7 => self.cfg.install_spotify = !self.cfg.install_spotify,
+            8 => self.cfg.nvidia = !self.cfg.nvidia,
+            9 => self.cfg.enable_bluetooth = !self.cfg.enable_bluetooth,
+            10 => self.cfg.enable_sshd = !self.cfg.enable_sshd,
+            11 => self.cfg.enable_firewall = !self.cfg.enable_firewall,
+            12 => self.cfg.use_grub = !self.cfg.use_grub,
             _ => {}
         }
     }
