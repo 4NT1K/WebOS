@@ -56,6 +56,10 @@ for d in package.use package.license package.accept_keywords package.mask; do
 	rm -f "${CHROOT}/etc/portage/${d}"/* 2>/dev/null || true
 	cp -a "${WEBOS_ROOT}/config/${d}/." "${CHROOT}/etc/portage/${d}/"
 done
+# The theme ebuild changes between builds but keeps version 1.0, so refresh
+# its Manifest and force a reinstall to guarantee the new files land.
+chroot_sh "cd /usr/local/portage/webos/webos-theme/webos-theme && ebuild webos-theme-1.0.ebuild manifest >/dev/null 2>&1 || true"
+chroot_sh "emerge --quiet --unmerge webos-theme/webos-theme 2>/dev/null || true"
 chroot_sh "egencache --repo=webos --update --jobs=${WEBOS_JOBS} >/dev/null 2>&1 || true"
 
 # Browsers moved from the source build to the prebuilt binary. Remove a stale

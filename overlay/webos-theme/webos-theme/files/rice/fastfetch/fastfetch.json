@@ -15,23 +15,15 @@
         "separator": "  "
     },
     "modules": [
-        "title",
-        "separator",
-        "os",
-        "host",
-        "kernel",
-        "uptime",
-        "packages",
-        "shell",
         "display",
-        "de",
-        "wm",
-        "terminal",
+        "uptime",
         "cpu",
         "gpu",
+        "terminal",
         "memory",
         "disk",
-        "break",
-        "colors"
+        "packages",
+        "shell",
+        "datetime"
     ]
 }

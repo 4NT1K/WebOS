@@ -1,0 +1,28 @@
+#!/bin/sh
+# webos-fastfetch — the WebOS terminal card.
+# Runs fastfetch with the WebOS ASCII logo and the selected modules, then
+# frames the whole card in a white box to match the Deep Black scheme.
+set -u
+
+CFG=/usr/share/webos/rice/fastfetch/fastfetch.json
+command -v fastfetch >/dev/null 2>&1 || exit 0
+
+out="$(fastfetch --config "$CFG" 2>/dev/null)" || exit 0
+[ -n "$out" ] || exit 0
+
+strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
+
+width="$(printf '%s\n' "$out" | strip_ansi |
+	awk '{ if (length($0) > m) m = length($0) } END { print m + 0 }')"
+[ "${width:-0}" -ge 4 ] || width=4
+border="$(printf '%*s' $((width + 2)) '' | tr ' ' '─')"
+
+white='\033[97m'; reset='\033[0m'
+printf "${white}╭%s╮${reset}\n" "$border"
+printf '%s\n' "$out" | while IFS= read -r line; do
+	clean="$(printf '%s' "$line" | strip_ansi)"
+	pad=$((width - ${#clean}))
+	[ "$pad" -lt 0 ] && pad=0
+	printf "${white}│${reset} %s%*s ${white}│${reset}\n" "$line" "$pad" ""
+done
+printf "${white}╰%s╯${reset}\n" "$border"

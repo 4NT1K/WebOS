@@ -1,0 +1,141 @@
+WebOS 1.13 "Ashen" — system information
+=======================================
+
+PURPOSE
+-------
+WebOS is a gaming-focused Linux distribution built on Gentoo (OpenRC), with a
+"Deep Black" rice: pure-black surfaces, frosted translucency, white accents.
+Two desktops ship in the same image: Hyprland (Wayland, default) and KDE
+Plasma 6. amd64 only, 64-bit only (ABI_X86="64", no multilib).
+
+SESSIONS
+--------
+- Hyprland  : session "WebOS" in SDDM (also `webos-session` from a TTY)
+- KDE Plasma: normal Plasma 6 session in SDDM
+- Gamescope : `webos-session --gamescope` (SteamOS-style session)
+
+HYPRLAND KEYBINDS
+-----------------
+Super+Return        kitty terminal (shows the WebOS fastfetch card)
+Super+D             wofi application launcher
+Super+E             Dolphin file manager
+Super+I             System Settings (WebOS Settings)
+Super+Q             close window
+Super+V             clipboard history (cliphist + wofi)
+Super+Escape        lock screen (hyprlock)
+Super+P             show/hide waybar
+Super+LMB drag      move window
+Super+RMB drag      resize window
+Super+1..9          switch workspace
+Super+Shift+1..9    move window to workspace
+Print               region screenshot (grim + slurp, saved to ~/Pictures)
+
+THEME / RICE
+------------
+Commands:
+  webos-rice --user            apply the rice to the current account
+  webos-rice --system          apply to /etc/skel, /root and every /home/*
+  webos-rice --ensure          only fill in missing files (runs at login)
+  webos-rice --check           dry run, report what would change
+  webos-rice --doctor          diagnose missing theme pieces
+  webos-rice --toggle-panel    show/hide waybar
+  webos-rice --wallpaper FILE  set the wallpaper
+  webos-rice --force           overwrite existing files (keeps .webos-orig)
+
+Rice lives in /usr/share/webos/rice (read-only source of truth). Per-user
+copies: ~/.config/{hypr,waybar,wofi,kitty,fastfetch,gtk-3.0,gtk-4.0},
+~/.local/share/color-schemes/DeepBlack.colors, ~/.local/share/konsole.
+KDE: DeepBlack color scheme, Konsole "Deep Black" profile, Breeze_Light white
+cursor, pure-black wallpaper. Hyprland: white borders, Breeze_Light cursor.
+
+TERMINAL
+--------
+kitty runs /usr/bin/webos-shell, which prints the WebOS ASCII fastfetch card
+(display, uptime, cpu, gpu, terminal, memory, disk, packages, shell, datetime)
+framed in a white box, then execs $SHELL. Nested shells do not repeat it.
+Manual: `webos-fastfetch`. Config: /usr/share/webos/rice/fastfetch/.
+
+PREINSTALLED APPS (all prebuilt — nothing compiles during install)
+------------------------------------------------------------------
+Firefox (firefox-bin), Discord, OpenCode (opencode-bin), Spotify,
+Dolphin, KDE System Settings, kitty, waybar, wofi, mako, mpv, imv,
+Lutris, Heroic, gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton,
+Wine is NOT included (needs 32-bit). Steam is NOT included (see below).
+
+STEAM AND 32-BIT SOFTWARE
+-------------------------
+This image is 64-bit only. Steam, Wine (32-bit games), winetricks,
+protontricks and goverlay need a 32-bit multilib runtime and are not shipped.
+The kernel DOES support 32-bit code (CONFIG_IA32_EMULATION=y), so:
+  - Flatpak Steam works: `emerge flatpak`, then
+      flatpak install flathub com.valvesoftware.Steam
+    Games behave normally; libraries live under
+    ~/.var/app/com.valvesoftware.Steam/.local/share/Steam
+    (add ~/Games as a library and grant it with
+      flatpak override --user --filesystem=~/Games).
+  - Distrobox (Fedora/Arch container) is the alternative.
+  - Native Portage Steam requires a multilib rebuild (glibc/gcc 32-bit).
+A future WebOS build will ship multilib so Steam can be preinstalled.
+
+PACKAGE MANAGEMENT
+------------------
+Portage + OpenRC. There is no binary host configured, so `emerge` compiles
+from source. Enabled repos: gentoo, guru, hyprland (hyproverlay), steam-overlay,
+webos (local overlay at /usr/local/portage/webos, priority 100).
+Some repos are disabled on the installed system under
+/etc/portage/repos.conf.disabled (re-enable by moving the .conf back).
+  emerge --sync
+  emerge -av <package>
+  emerge -avuDN @world
+  emerge --depclean
+  dispatch-conf        # config file updates
+  eselect news read    # Gentoo news
+
+SERVICES (OpenRC)
+-----------------
+Default runlevel includes: dbus, elogind, NetworkManager, syslog-ng, acpid,
+webos (local.d glue), ananicy-cpp, irqbalance, local, display-manager (SDDM).
+Optional: bluetooth, sshd, nftables (installer toggles).
+  rc-service <name> status|start|stop|restart
+  rc-update add|del <name> default
+
+INSTALLER
+---------
+TUI installer: `webos-installer` (also on the ISO as the boot entry).
+Profiles: Hyprland, KDE Plasma, Minimal (console only).
+Toggles: gaming stack, Steam (recorded only on this 64-bit build), Firefox,
+Discord, OpenCode, Spotify, NVIDIA driver, Bluetooth, SSH, firewall, GRUB.
+Unattended: `webos-installer -c /etc/webos/install.toml -y` (dry run: -d).
+The installer applies the rice for Hyprland and Plasma profiles and enables
+SDDM; a per-login `webos-rice --ensure` repairs anything missing.
+
+NVIDIA
+------
+x11-drivers/nvidia-drivers is installed (open modules). nouveau is blacklisted;
+the installer adds nvidia-drm.modeset=1 and dracut force_drivers when the
+NVIDIA option is chosen. AMD/Intel systems ignore it.
+
+TROUBLESHOOTING
+---------------
+- Windows look default / no theme: `webos-rice --user --force` (backs up files
+  as *.webos-orig), then log out and back in.
+- No waybar: `webos-rice --toggle-panel` or `waybar` in a terminal;
+  check `webos-rice --doctor`.
+- wofi does not open: it is a launcher, not a daemon — press Super+D.
+- Missing app after install: `emerge -av <pkg>` (compiles).
+- Installer log: /var/log/webos-installer.log. Install config:
+  /etc/webos/install.toml.
+- Session log: ~/.local/share/hyprland/hyprland.log (Hyprland).
+
+PATHS
+-----
+/usr/share/webos/            branding, rice, wallpaper, this file
+/usr/share/webos/rice/       theme source (hypr, waybar, wofi, kitty, ...)
+/etc/webos/                  installer config and notes
+/etc/skel/                   themed skeleton for new accounts
+/usr/local/portage/webos/    WebOS ebuild overlay
+
+LINKS
+-----
+Source and releases: https://github.com/4NT1K/WebOS
+ISO: webos-1.13-Ashen-amd64.iso

@@ -81,10 +81,13 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-shot webos-shot
 	newexe "${FILESDIR}"/system/webos-gaming webos-gaming
 	newexe "${FILESDIR}"/system/webos-shell webos-shell
+	newexe "${FILESDIR}"/system/webos-fastfetch webos-fastfetch
 	newexe "${FILESDIR}"/system/webos-plasma-setup webos-plasma-setup
 
 	# --- 7. docs ---------------------------------------------------------
 	dodoc "${FILESDIR}"/rice/README.rice
+	insinto /usr/share/webos
+	newins "${FILESDIR}"/WEBOS-INFO.txt WEBOS-INFO.txt
 }
 
 pkg_postinst() {

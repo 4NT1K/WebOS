@@ -5,7 +5,9 @@
 # real shell. Nested shells are left alone via WEBOS_FASTFETCH_SHOWN.
 if [ "$#" -eq 0 ] && [ -t 0 ] && [ -t 1 ] && [ -z "${WEBOS_FASTFETCH_SHOWN:-}" ]; then
 	export WEBOS_FASTFETCH_SHOWN=1
-	if command -v fastfetch >/dev/null 2>&1; then
+	if command -v webos-fastfetch >/dev/null 2>&1; then
+		webos-fastfetch 2>/dev/null || true
+	elif command -v fastfetch >/dev/null 2>&1; then
 		fastfetch 2>/dev/null || true
 	fi
 fi
