@@ -21,6 +21,12 @@ chroot_sh "emerge --quiet --unmerge sanus-theme/sanus-theme app-admin/sanus-inst
 	sanus-base/sanus-base sanus-desktop/sanus-desktop sanus-gaming/sanus-gaming \
 	2>/dev/null || true" || true
 rm -rf "${CHROOT}/usr/local/portage/sanus" "${CHROOT}/usr/share/sanus"
+# A reused chroot's profile symlink still points at the old overlay path.
+if [[ -L "${CHROOT}/etc/portage/make.profile" ]] &&
+   [[ "$(readlink "${CHROOT}/etc/portage/make.profile")" == *sanus* ]]; then
+	ln -sfn ../../usr/local/portage/webos/profiles/default/linux/amd64/webos \
+		"${CHROOT}/etc/portage/make.profile"
+fi
 rm -f "${CHROOT}"/etc/local.d/sanus.start "${CHROOT}"/etc/init.d/sanus \
 	"${CHROOT}"/etc/profile.d/sanus.sh "${CHROOT}"/etc/environment.d/10-sanus.conf \
 	"${CHROOT}"/usr/share/wayland-sessions/sanus.desktop \
