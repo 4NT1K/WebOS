@@ -745,10 +745,10 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         } else {
             s.push_str("remove_app www-client/firefox-bin\n");
         }
+        // Steam is 32-bit only and this image is 64-bit (ABI_X86="64").
+        // Record the choice instead of pulling in a multilib rebuild.
         if cfg.install_steam {
-            s.push_str("emerge_app games-util/steam-launcher\n");
-        } else {
-            s.push_str("remove_app games-util/steam-launcher\n");
+            s.push_str("mkdir -p /etc/webos && printf 'Steam needs a 32-bit (multilib) runtime; not included in this image.\\n' > /etc/webos/steam-unavailable.txt\n");
         }
         if cfg.install_discord {
             s.push_str("emerge_app net-im/discord\n");

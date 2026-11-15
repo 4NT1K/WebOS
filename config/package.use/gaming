@@ -8,7 +8,7 @@ games-emulation/dosbox-staging -debug
 gui-wm/gamescope pipewire
 games-util/gamemode -systemd elogind
 games-util/mangohud X wayland
-sys-apps/lact gui
+# sys-apps/lact gui
 
 # 32-bit graphics stack (multilib) — required by Steam/Proton.
 # Disabled for now to avoid multilib dependency complexity during initial build.

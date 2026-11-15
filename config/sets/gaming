@@ -1,14 +1,15 @@
 # WebOS gaming set — the reason this distro exists.
 # --- Steam / Proton ---------------------------------------------------------
-games-util/steam-launcher
+# games-util/steam-launcher — Steam is 32-bit only; this image is 64-bit (ABI_X86="64"),
+# so multilib would need a full 32-bit toolchain rebuild. See STATUS.md.
 gui-wm/gamescope
 games-util/gamemode
 games-util/mangohud
 media-gfx/vkBasalt
-games-util/goverlay
-app-emulation/wine-staging
-app-emulation/winetricks
-app-emulation/protontricks
+# games-util/goverlay — needs 32-bit wine/abi_x86_32 or a large fpc/lazarus build
+# app-emulation/wine-staging — needs 32-bit wine/abi_x86_32 or a large fpc/lazarus build
+# app-emulation/winetricks — needs 32-bit wine/abi_x86_32 or a large fpc/lazarus build
+# app-emulation/protontricks — needs 32-bit wine/abi_x86_32 or a large fpc/lazarus build
 games-util/lutris
 games-util/heroic-bin
 games-emulation/dosbox-staging
@@ -18,7 +19,7 @@ app-arch/innoextract
 app-arch/unrar
 
 # --- Performance ------------------------------------------------------------
-sys-apps/lact
+# sys-apps/lact — pins libdisplay-info:0/3, conflicts with installed KWin (0/4)
 app-misc/corectrl
 app-admin/ananicy-cpp
 sys-apps/earlyoom

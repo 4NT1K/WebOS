@@ -66,3 +66,7 @@ dev-python/pillow -truetype
 sys-apps/systemd-utils -boot -ukify
 media-gfx/swayimg lua_single_target_lua5-4
 dev-libs/libdbusmenu gtk3
+media-libs/libsdl2 gles2
+sys-auth/elogind acl
+dev-qt/qtcharts qml
+sys-libs/zlib minizip
