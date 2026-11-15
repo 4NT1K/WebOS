@@ -20,7 +20,7 @@
     "modules-left": ["custom/logo", "hyprland/workspaces", "hyprland/window"],
     "modules-center": ["clock"],
     "modules-right": [
-        "custom/gamemode", "cpu", "memory", "temperature",
+        "custom/gamemode", "custom/updates", "cpu", "memory", "temperature",
         "pulseaudio", "network", "bluetooth", "battery", "tray", "custom/power"
     ],
 
@@ -143,6 +143,16 @@
         "icon-size": 15,
         "spacing": 8,
         "show-passive-items": true
+    },
+
+    "custom/updates": {
+        "exec": "~/.config/waybar/scripts/updates.sh",
+        "interval": 3600,
+        "return-type": "json",
+        "format": "{}",
+        "tooltip": true,
+        "on-click": "kitty -e sudo webos-update --check",
+        "on-click-right": "kitty -e sudo webos-update"
     },
 
     // Lights up only while a game is running under gamemode.

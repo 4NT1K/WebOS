@@ -66,6 +66,7 @@ tooltip label {
 #tray,
 #custom-logo,
 #custom-gamemode,
+#custom-updates,
 #custom-power {
     background: transparent;
     color: @text;
@@ -160,6 +161,11 @@ window#waybar.empty #window { background: transparent; }
 /* ── gamemode indicator ──────────────────────────────────────────────────── */
 #custom-gamemode { color: @accent; }
 #custom-gamemode.off { color: transparent; padding: 0; margin: 0; }
+
+/* ── update indicator ────────────────────────────────────────────────────── */
+#custom-updates { color: @accent; font-weight: 600; }
+#custom-updates.pending { color: #fbbf24; }
+#custom-updates.none { color: transparent; padding: 0; margin: 0; }
 
 /* ── tray ────────────────────────────────────────────────────────────────── */
 #tray { padding: 4px 8px; }
