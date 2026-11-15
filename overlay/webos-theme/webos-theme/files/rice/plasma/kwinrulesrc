@@ -1,0 +1,16 @@
+[General]
+count=1
+rules=1
+
+[1]
+Description=WebOS Kitty Blur
+blur=true
+blurrule=2
+clientmachine=localhost
+opacityactive=60
+opacityactiverule=2
+opacityinactive=55
+opacityinactiverule=2
+wmclass=kitty
+wmclasscomplete=false
+wmclassmatch=1

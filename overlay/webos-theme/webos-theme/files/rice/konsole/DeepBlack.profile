@@ -6,6 +6,10 @@ CursorShape=1
 CustomCursorColor=255,255,255
 CustomCursorTextColor=0,0,0
 UseCustomCursorColor=true
+BlinkingCursorEnabled=false
+
+[Terminal Features]
+BlinkingCursorEnabled=false
 
 [General]
 Name=Deep Black

@@ -12,18 +12,84 @@
         }
     },
     "display": {
-        "separator": "  "
+        "separator": "  ",
+        "color": {
+            "keys": "bold_white",
+            "title": "white",
+            "output": "38;2;204;204;204",
+            "separator": "38;2;140;140;140"
+        },
+        "percent": {
+            "color": {
+                "green": "38;2;140;140;140",
+                "yellow": "38;2;140;140;140",
+                "red": "38;2;140;140;140"
+            }
+        },
+        "key": {
+            "type": "both"
+        }
     },
     "modules": [
-        "display",
-        "uptime",
-        "cpu",
-        "gpu",
-        "terminal",
-        "memory",
-        "disk",
-        "packages",
-        "shell",
-        "datetime"
+        {
+            "type": "display",
+            "key": "Display",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "uptime",
+            "key": "Uptime",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "cpu",
+            "key": "CPU",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "gpu",
+            "key": "GPU",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "terminal",
+            "key": "Terminal",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "memory",
+            "key": "Memory",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "disk",
+            "key": "Disk",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "packages",
+            "key": "Packages",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "shell",
+            "key": "Shell",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        },
+        {
+            "type": "datetime",
+            "key": "Date",
+            "keyColor": "bold_white",
+            "outputColor": "38;2;204;204;204"
+        }
     ]
 }

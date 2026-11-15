@@ -193,6 +193,21 @@ install -m 0644 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/icon
 printf 'LANG=C.UTF-8\nLC_CTYPE=C.UTF-8\n' > "${CHROOT}/etc/env.d/02locale"
 chroot_sh "env-update" || true
 
+# Patch OpenRC boot branding: "Gentoo Linux" -> "WebOS Linux" (binary strings)
+chroot_sh "python3 -c '
+from pathlib import Path
+for path in [Path(\"/sbin/openrc\")]:
+    if not path.exists(): continue
+    data=bytearray(path.read_bytes()); c=0
+    for old,new in [(b\"Gentoo Linux (%s)\", b\"WebOS  Linux (%s)\"), (b\"Gentoo Linux\", b\"WebOS Linux \")]:
+        i=0
+        while True:
+            j=data.find(old,i)
+            if j==-1: break
+            data[j:j+len(old)]=new; c+=1; i=j+len(new)
+    if c: path.write_bytes(bytes(data)); print(\"patched\",path,c)
+'" || true
+
 # ------------------------------------------------------- finalize ------------
 step "rootfs: finalizing"
 chroot_sh "env-update; ldconfig" || true

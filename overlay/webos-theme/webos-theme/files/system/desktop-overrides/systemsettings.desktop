@@ -6,7 +6,7 @@ SingleMainWindow=true
 X-DocPath=systemsettings/index.html
 StartupNotify=true
 X-KDE-Shortcuts=Tools
-OnlyShowIn=KDE;
+OnlyShowIn=KDE;Hyprland;
 
 Name=System Settings
 GenericName=System Settings

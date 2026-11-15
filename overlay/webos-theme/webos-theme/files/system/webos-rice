@@ -51,6 +51,7 @@ declare -A TREES=(
 	[mako]=".config/mako"
 	[foot]=".config/foot"
 	[kitty]=".config/kitty"
+	[fish]=".config/fish"
 	[wlogout]=".config/wlogout"
 	[gtk-3.0]=".config/gtk-3.0"
 	[gtk-4.0]=".config/gtk-4.0"
@@ -175,6 +176,8 @@ install_plasma_user() {
 	[[ -d "${RICE_SRC}/plasma" ]] || return 0
 	[[ -f "${RICE_SRC}/plasma/kdeglobals" ]] && install_file "${RICE_SRC}/plasma/kdeglobals" "${home}/.config/kdeglobals" "$mf" "$force"
 	[[ -f "${RICE_SRC}/plasma/kcminputrc" ]] && install_file "${RICE_SRC}/plasma/kcminputrc" "${home}/.config/kcminputrc" "$mf" "$force"
+	[[ -f "${RICE_SRC}/plasma/kwinrc" ]] && install_file "${RICE_SRC}/plasma/kwinrc" "${home}/.config/kwinrc" "$mf" "$force"
+	[[ -f "${RICE_SRC}/plasma/kwinrulesrc" ]] && install_file "${RICE_SRC}/plasma/kwinrulesrc" "${home}/.config/kwinrulesrc" "$mf" "$force"
 	[[ -f "${RICE_SRC}/konsolerc/konsolerc" ]] && install_file "${RICE_SRC}/konsolerc/konsolerc" "${home}/.config/konsolerc" "$mf" "$force"
 	mkdir -p "${home}/.config/autostart" 2>/dev/null || true
 }

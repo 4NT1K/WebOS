@@ -3,7 +3,7 @@ WebOS 1.0 "Ashen" — system information
 
 RELEASE
 -------
-- True v1.0: WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS).
+- True v1.0: WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS, patched in build scripts).
 - Version : WebOS 1.0 "Ashen" (Gentoo/OpenRC, gaming-focused)
 - ISO     : webos-1.0-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
@@ -29,7 +29,7 @@ HYPRLAND KEYBINDS
 Super+Return        kitty terminal (shows the WebOS fastfetch card)
 Super+D             wofi application launcher
 Super+E             Dolphin file manager
-Super+I             System Settings (WebOS Settings)
+Super+I             System Settings (WebOS Settings / systemsettings)
 Super+Q             close window
 Super+V             clipboard history (cliphist + wofi)
 Super+Escape        lock screen (hyprlock)
@@ -53,18 +53,26 @@ Commands:
   webos-rice --force           overwrite existing files (keeps .webos-orig)
 
 Rice lives in /usr/share/webos/rice (read-only source of truth). Per-user
-copies: ~/.config/{hypr,waybar,wofi,kitty,fastfetch,gtk-3.0,gtk-4.0},
-~/.local/share/color-schemes/DeepBlack.colors, ~/.local/share/konsole.
-KDE: DeepBlack color scheme, Konsole "Deep Black" profile, Breeze_Light cursor, pure-black wallpaper. Hyprland: white borders and
-Breeze_Light cursor (XCursor default).
+copies: ~/.config/{hypr,waybar,wofi,kitty,fish,fastfetch,gtk-3.0,gtk-4.0},
+~/.local/share/color-schemes/DeepBlack.colors, ~/.local/share/konsole, and
+Plasma configs (kdeglobals/kwinrc/kwinrulesrc).
+KDE Plasma: Deep Black scheme, Breeze_Light cursor, custom wallpaper, and a KWin
+blur/opacity rule for kitty. Hyprland: white borders, Breeze_Light cursor, and
+blurred/frosted translucent surfaces. Overall palette matches the monochrome
+terminal theme (pure black bg, #F2F2F2 fg, #FFFFFF labels, #8C8C8C dim).
 
 TERMINAL / FASTFETCH
 --------------------
-kitty runs /usr/bin/webos-shell, which prints the WebOS ASCII fastfetch card
-(display, uptime, cpu, gpu, terminal, memory, disk, packages, shell, datetime)
-with the WebOS logo, framed in a smooth rounded box, then execs $SHELL. Nested shells do not repeat it.
-Manual: `webos-fastfetch`. Config: /usr/share/webos/rice/fastfetch/.
-UTF-8 locale (C.UTF-8) is set for proper rendering.
+kitty runs /usr/bin/webos-shell, which prints the WebOS fastfetch card (original
+WebOS ASCII art, smooth continuous-line box ┌─┐│└─┘) then execs $SHELL. Nested
+shells do not repeat it. Modules: display, uptime, cpu, gpu, terminal, memory,
+disk, packages, shell, datetime.
+Theme: pure black (#000000) ~60% opacity with strong blur (frosted glass),
+strictly monochrome (fg #F2F2F2, bold/labels #FFFFFF, dim/secondary #8C8C8C,
+greyscale ANSI 0–15), thin white bar cursor (no blink), white selection ~20%.
+Fish prompt is minimal `~ ❯` in white. Applied to kitty/fish/fastfetch on both
+Hyprland and KDE Plasma (KWin blur rule for kitty).
+Manual: `webos-fastfetch`. Config: /usr/share/webos/rice/fastfetch/. UTF-8 (C.UTF-8).
 
 PREINSTALLED APPS (all prebuilt — nothing compiles during install)
 ------------------------------------------------------------------
