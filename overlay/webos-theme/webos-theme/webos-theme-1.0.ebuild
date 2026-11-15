@@ -82,6 +82,7 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-gaming webos-gaming
 	newexe "${FILESDIR}"/system/webos-shell webos-shell
 	newexe "${FILESDIR}"/system/webos-fastfetch webos-fastfetch
+	newexe "${FILESDIR}"/system/webos-update webos-update
 	newexe "${FILESDIR}"/system/webos-plasma-setup webos-plasma-setup
 
 	# --- 7. docs ---------------------------------------------------------

@@ -1,0 +1,195 @@
+#!/usr/bin/env bash
+# webos-update — one-command WebOS system updater.
+#
+# The Portage equivalent of `pacman -Syu` / `cachy-update`:
+# sync repos, rebuild @world with USE changes, clean orphans, fold in config
+# file updates, update Flatpaks, re-apply the rice and tell you whether a
+# reboot is needed.
+#
+# Usage:
+#   webos-update                 update everything
+#   webos-update --check         show what would be updated, change nothing
+#   webos-update --yes           do not prompt for config-file merges
+#   webos-update --no-sync       skip `emerge --sync`
+#   webos-update --no-flatpak    skip `flatpak update`
+#   webos-update --no-depclean   skip `emerge --depclean`
+#   webos-update --quiet         only warnings and the summary
+set -uo pipefail
+
+VERSION="1.0"
+LOG="/var/log/webos-update.log"
+STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+CHECK=0
+ASSUME_YES=0
+DO_SYNC=1
+DO_FLATPAK=1
+DO_DEPCLEAN=1
+QUIET=0
+FAILED=0
+
+# ---------------------------------------------------------------- helpers ---
+say()  { [ "$QUIET" -eq 1 ] || printf '\n\033[97m==>\033[0m %s\n' "$*"; }
+note() { printf '    %s\n' "$*"; }
+warn() { printf '\033[93m  ! \033[0m%s\n' "$*"; }
+ok()   { printf '\033[92m  ok\033[0m %s\n' "$*"; }
+die()  { printf '\033[91m  xx\033[0m %s\n' "$*"; exit 1; }
+
+usage() {
+	sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+	exit 0
+}
+
+# Record a failure but keep going: one broken package should not stop the rest.
+step_fail() { FAILED=$((FAILED + 1)); warn "$*"; }
+
+need_root() {
+	[ "$(id -u)" -eq 0 ] || die "webos-update must run as root (try: sudo webos-update)"
+}
+
+# ------------------------------------------------------------------ args ----
+while [ $# -gt 0 ]; do
+	case "$1" in
+		-c|--check)      CHECK=1 ;;
+		-y|--yes)        ASSUME_YES=1 ;;
+		-n|--no-sync)    DO_SYNC=0 ;;
+		--no-flatpak)    DO_FLATPAK=0 ;;
+		--no-depclean)   DO_DEPCLEAN=0 ;;
+		-q|--quiet)      QUIET=1 ;;
+		-h|--help)       usage ;;
+		*)               die "unknown option: $1 (try --help)" ;;
+	esac
+	shift
+done
+
+need_root
+
+if [ "$CHECK" -eq 1 ]; then
+	LOG=/dev/null
+else
+	# Everything below is captured, and still shown on the terminal.
+	exec > >(tee -a "$LOG") 2>&1
+	chmod 0644 "$LOG" 2>/dev/null || true
+fi
+
+say "WebOS update ($STAMP) — webos-update $VERSION"
+note "log: $LOG"
+
+# --------------------------------------------------------------- 1. sync ----
+if [ "$DO_SYNC" -eq 1 ] && [ "$CHECK" -eq 0 ]; then
+	say "[1/7] Syncing repositories"
+	if emerge --sync --quiet; then
+		ok "repositories up to date"
+	else
+		step_fail "emerge --sync failed (network or a stale mirror); continuing with the local tree"
+	fi
+else
+	say "[1/7] Sync skipped"
+fi
+
+# ---------------------------------------------------------- 2. world ----
+if [ "$CHECK" -eq 1 ]; then
+	say "[2/7] Pending updates (dry run)"
+	emerge --pretend --verbose --update --deep --newuse @world
+	rc=$?
+	[ "$rc" -eq 0 ] || step_fail "dependency calculation failed (rc=$rc)"
+	say "Summary"
+	note "run 'sudo webos-update' to apply"
+	[ "$FAILED" -eq 0 ] || exit 1
+	exit 0
+fi
+
+say "[2/7] Updating @world (this is the long part; it compiles from source)"
+if emerge --verbose --update --deep --newuse --autounmask-write=y @world; then
+	ok "world updated"
+else
+	step_fail "emerge @world reported an error — see $LOG"
+fi
+
+# Some packages were rebuilt in place; repair their dependants.
+if emerge --quiet @preserved-rebuild; then
+	ok "preserved rebuilds complete"
+else
+	step_fail "@preserved-rebuild reported an error"
+fi
+
+# ------------------------------------------------- 3. config file updates ---
+say "[3/7] Config file updates"
+pending="$(find /etc -name '._cfg????_*' -print 2>/dev/null | head -n 50)"
+if [ -z "$pending" ]; then
+	ok "no pending config changes"
+elif [ "$ASSUME_YES" -eq 1 ]; then
+	dispatch-conf --automerge=y >/dev/null 2>&1 || true
+	ok "config changes merged automatically (keep-new is default)"
+else
+	warn "config files need merging; run 'dispatch-conf' to review:"
+	printf '%s\n' "$pending" | sed 's/^/      /'
+fi
+
+# ------------------------------------------------------------- 4. depclean --
+if [ "$DO_DEPCLEAN" -eq 1 ]; then
+	say "[4/7] Removing orphaned packages"
+	if emerge --quiet --depclean; then
+		ok "depclean complete"
+	else
+		step_fail "depclean reported an error"
+	fi
+else
+	say "[4/7] Depclean skipped"
+fi
+
+# ------------------------------------------------------------- 5. flatpak ---
+if [ "$DO_FLATPAK" -eq 1 ] && command -v flatpak >/dev/null 2>&1; then
+	say "[5/7] Updating Flatpaks"
+	if flatpak update -y --noninteractive >/dev/null 2>&1; then
+		ok "flatpaks up to date"
+	else
+		step_fail "flatpak update reported an error"
+	fi
+else
+	say "[5/7] Flatpak skipped"
+fi
+
+# ----------------------------------------------------------------- 6. rice --
+say "[6/7] Re-applying the Deep Black rice"
+if command -v webos-rice >/dev/null 2>&1; then
+	if webos-rice --system --ensure >/dev/null 2>&1; then
+		ok "rice intact"
+	else
+		step_fail "webos-rice --system --ensure reported an error"
+	fi
+else
+	note "webos-rice not installed; skipped"
+fi
+
+# -------------------------------------------------------------- 7. report ---
+say "[7/7] Health check"
+
+# Unread news (Gentoo items that need a human).
+unread="$(eselect news list 2>/dev/null | grep -c '^  *[0-9]\{4\}-' || true)"
+[ "${unread:-0}" -gt 0 ] && warn "$unread unread news item(s): run 'eselect news read'"
+
+# A new kernel only takes effect after a reboot.
+running="$(uname -r)"
+newest="$(ls -1 /usr/src 2>/dev/null | sed -n 's/^linux-\(.*\)$/\1/p' | sort -V | tail -n 1)"
+if [ -n "$newest" ] && [ "$running" != "$newest" ]; then
+	warn "running kernel $running, installed $newest — reboot to use it"
+	REBOOT=1
+fi
+if [ -e /var/run/reboot-required ] || [ -e /run/reboot-required ]; then
+	warn "system requested a reboot"
+	REBOOT=1
+fi
+if [ -n "${REBOOT:-}" ]; then
+	note "reboot with: reboot"
+else
+	ok "no reboot needed"
+fi
+
+say "Summary"
+if [ "$FAILED" -eq 0 ]; then
+	ok "update finished with no errors"
+else
+	warn "$FAILED step(s) reported errors — review $LOG"
+fi
+exit $([ "$FAILED" -eq 0 ] && echo 0 || echo 1)

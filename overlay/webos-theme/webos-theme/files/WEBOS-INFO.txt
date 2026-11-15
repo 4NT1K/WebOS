@@ -77,6 +77,18 @@ The kernel DOES support 32-bit code (CONFIG_IA32_EMULATION=y), so:
   - Native Portage Steam requires a multilib rebuild (glibc/gcc 32-bit).
 A future WebOS build will ship multilib so Steam can be preinstalled.
 
+UPDATES
+-------
+`webos-update` is the one-command updater (Portage equivalent of `pacman -Syu`):
+  sudo webos-update              sync repos, rebuild @world, depclean, fold in
+                                 config changes, update Flatpaks, re-apply rice
+  sudo webos-update --check      dry run: show what would be updated
+  sudo webos-update --yes        non-interactive config merges
+  --no-sync | --no-flatpak | --no-depclean | --quiet
+Log: /var/log/webos-update.log. It warns about unread Gentoo news and tells you
+when a reboot is needed (new kernel). Updates compile from source, so expect a
+source-build wait rather than Arch-style binary downloads.
+
 PACKAGE MANAGEMENT
 ------------------
 Portage + OpenRC. There is no binary host configured, so `emerge` compiles
