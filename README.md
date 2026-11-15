@@ -184,6 +184,11 @@ make lint                # shellcheck + cargo clippy + pkgcheck (skips what is a
 4. **The installer is not special.** It installs the same rootfs the ISO was built from,
    plus your choices. No hidden third-party install path.
 
+## Roadmap
+
+What is planned after v1.13 lives in [`ROADMAP.md`](ROADMAP.md) — multilib/Steam,
+Flatpak, installer encryption, handheld support, binhost and more.
+
 ## Status
 
 This is the buildable source tree: overlay, ebuilds, kernel config, patch resolver,

@@ -1,0 +1,59 @@
+# WebOS roadmap
+
+Planned work after **v1.13 (Ashen)**. Nothing here is a promise of a date; items
+move up when they unblock gaming or the install experience.
+
+## Next release (priority)
+
+- **Multilib image + native Steam.** Rebuild the toolchain with `abi_x86_32` so
+  `games-util/steam-launcher`, Wine/Proton 32-bit prefixes, winetricks,
+  protontricks and goverlay can be preinstalled as binary packages. This is the
+  main blocker for shipping Steam in the installer.
+- **Flatpak preinstalled** with Flathub enabled, so Steam, Bottles, Heroic and
+  other apps install without a source build. Add the Steam Flatpak as a fallback
+  for the current 64-bit-only image.
+- **Installer:** Steam toggle becomes real once multilib lands; keep the current
+  “recorded only” behaviour until then.
+- **`WEBOS-INFO.txt` refresh** whenever packages, keybinds or paths change.
+
+## Desktop / rice
+
+- Theme switcher and accent-colour picker (`webos-rice --theme`, `--accent`).
+- Graphical wallpaper picker in the WebOS Settings entry.
+- A single WebOS Settings hub (display, audio, network, theme, gaming) built on
+  KDE System Settings modules.
+- Hyprland: per-monitor workspaces, gesture config, optional rounded corners
+  toggle, HDR/VRR helpers.
+- Plasma: Plasma Login Manager (PLM) instead of SDDM once it is stable on OpenRC.
+
+## Gaming
+
+- Steam preinstall + first-run Proton setup (see multilib above).
+- Gamescope session polish: HDR, VRR, per-game launch profiles.
+- Handheld support: ROG Ally / Legion Go / Steam Deck controller mapping and
+  TDP control in the WebOS Settings hub.
+- Optional MangoHud/GameMode toggles per game, plus a benchmark helper.
+- Better NVIDIA handling: runtime driver selection, hybrid graphics switching.
+
+## Install / system
+
+- Optional LUKS full-disk encryption and TPM unlock in the TUI installer.
+- Btrfs + snapper rollback profile, and a “reset to stock” option.
+- Secure Boot signing (shim + MOK) for the ISO and installed system.
+- Binary package host (binhost) so installs and updates stop compiling.
+- Smaller ISO: split optional apps into a post-install download set.
+- ARM64 image (Asahi/ROCK 5 class hardware) once the desktop stack is verified.
+
+## Updates / infra
+
+- `webos-update` wrapper: sync, rebuild world, keep the rice intact, notify on
+  reboot-required.
+- Signed release artefacts and reproducible ISO builds in CI.
+- Automated QEMU install tests (serial console) on every release.
+- Ventoy persistence profile and a recovery/rescue entry on the ISO.
+
+## Docs
+
+- Per-app setup guides (Discord, Spotify, OpenCode, Lutris/Heroic, Flatpak Steam).
+- Troubleshooting matrix for common GPU/audio/Wi-Fi issues.
+- Contribution guide for the overlay and rice.
