@@ -46,8 +46,8 @@ move up when they unblock gaming or the install experience.
 
 ## Updates / infra
 
-- `webos-update` wrapper: sync, rebuild world, keep the rice intact, notify on
-  reboot-required.
+- ~~`webos-update` wrapper~~ — **shipped in v1.13**: `sudo webos-update`
+  (sync, `@world`, depclean, config merges, Flatpak, rice, reboot check).
 - Signed release artefacts and reproducible ISO builds in CI.
 - Automated QEMU install tests (serial console) on every release.
 - Ventoy persistence profile and a recovery/rescue entry on the ISO.
