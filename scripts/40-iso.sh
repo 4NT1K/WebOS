@@ -133,11 +133,13 @@ sed -e "s|@VOLID@|${VOLID}|g" \
 # us; hand-rolling them with xorriso means keeping two sets of GRUB modules in
 # sync, which is a bug factory. Extra xorriso arguments go after `--`.
 step "iso: building the hybrid image (grub-mkrescue)"
+# webos.squashfs can exceed 4 GiB; ISO 9660 level 3 removes the per-file limit.
 grub-mkrescue \
 	--output="${ISO_OUT}" \
 	--product-name="WebOS" \
 	--product-version="${WEBOS_VERSION_FULL}" \
 	"${ISO_STAGING}" \
+	-- -iso-level 3 \
 	|| die "grub-mkrescue failed"
 
 # ------------------------------------------------------------ checksums ------
