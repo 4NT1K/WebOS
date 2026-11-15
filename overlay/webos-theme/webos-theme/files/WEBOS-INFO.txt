@@ -1,11 +1,11 @@
-WebOS 1.0 "Ashen" — system information
+WebOS 1.01 "Ashen" — system information
 =======================================
 
 RELEASE
 -------
-- True v1.0: WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS, patched in build scripts).
-- Version : WebOS 1.0 "Ashen" (Gentoo/OpenRC, gaming-focused)
-- ISO     : webos-1.0-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
+- v1.01: WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS, patched in build scripts).
+- Version : WebOS 1.01 "Ashen" (Gentoo/OpenRC, gaming-focused)
+- ISO     : webos-1.01-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
 - Arch    : amd64, 64-bit only (ABI_X86="64", no multilib)
 

@@ -5,15 +5,15 @@
  * ────────────────────────────────────────────────────────────────────────── */
 
 @define-color base      #000000;   /* pure black */
-@define-color surface   rgba(0, 0, 0, 0.55);
-@define-color surface2  rgba(28, 28, 28, 0.55);
-@define-color text      #ededed;   /* near white */
-@define-color text-dim  #8f8f8f;
+@define-color surface   rgba(10, 10, 10, 0.38);
+@define-color surface2  rgba(255, 255, 255, 0.06);
+@define-color text      #f2f2f2;   /* near white */
+@define-color text-dim  #8c8c8c;
 @define-color text-faint #5b5b5b;
 @define-color accent    #ffffff;   /* white */
-@define-color accent-lo rgba(255, 255, 255, 0.12);
+@define-color accent-lo rgba(255, 255, 255, 0.10);
 @define-color urgent    #d27878;
-@define-color border    rgba(255, 255, 255, 0.16);
+@define-color border    rgba(255, 255, 255, 0.14);
 
 * {
     border: none;
@@ -35,10 +35,10 @@ window#waybar {
 window#waybar > box {
     background: @surface;
     border: 1px solid @border;
-    border-radius: 16px;
-    padding: 0 6px;
+    border-radius: 18px;
+    padding: 2px 8px;
     margin: 0;
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 tooltip {
@@ -56,6 +56,7 @@ tooltip label {
 #workspaces,
 #window,
 #clock,
+#mpris,
 #cpu,
 #memory,
 #temperature,
@@ -65,6 +66,7 @@ tooltip label {
 #battery,
 #tray,
 #custom-logo,
+#custom-wallpaper,
 #custom-gamemode,
 #custom-updates,
 #custom-power {
@@ -78,10 +80,17 @@ tooltip label {
 
 #custom-logo {
     color: @accent;
-    font-size: 15px;
+    font-size: 16px;
     padding: 4px 12px 4px 10px;
 }
 #custom-logo:hover { background: @accent-lo; }
+
+#custom-wallpaper {
+    color: @text-dim;
+    font-size: 14px;
+    padding: 4px 10px;
+}
+#custom-wallpaper:hover { background: @surface2; color: @text; }
 
 #custom-power {
     color: @text-dim;
@@ -129,11 +138,26 @@ tooltip label {
 }
 window#waybar.empty #window { background: transparent; }
 
-/* ── clock ───────────────────────────────────────────────────────────────── */
+/* ── center: music + clock ───────────────────────────────────────────────── */
+#mpris {
+    color: @text;
+    background: @surface2;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+#mpris.paused {
+    color: @text-dim;
+}
+#mpris:hover {
+    background: rgba(255, 255, 255, 0.10);
+}
+
 #clock {
     color: @text;
     font-weight: 600;
     letter-spacing: 0.4px;
+    padding: 4px 12px;
 }
 
 /* ── system modules ──────────────────────────────────────────────────────── */

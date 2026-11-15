@@ -1,10 +1,10 @@
 NAME="WebOS"
-PRETTY_NAME="WebOS 1.0 (Ashen)"
+PRETTY_NAME="WebOS 1.01 (Ashen)"
 ID=webos
 ID_LIKE="gentoo"
-BUILD_ID="1.0-Ashen"
+BUILD_ID="1.01-Ashen"
 VERSION_ID="1.0"
-VERSION="1.0 (Ashen)"
+VERSION="1.01 (Ashen)"
 VERSION_CODENAME=ashen
 ANSI_COLOR="38;2;125;211;252"
 HOME_URL="https://github.com/4NT1K/WebOS/"

@@ -370,7 +370,7 @@ fn page_text(f: &mut Frame, area: Rect, app: &mut App) {
 }
 
 fn page_options(f: &mut Frame, area: Rect, app: &mut App) {
-    let block = panel("Options");
+    let block = panel("Features, apps & options");
     let inner = block.inner(area);
     f.render_widget(block, area);
 
@@ -403,7 +403,7 @@ fn page_options(f: &mut Frame, area: Rect, app: &mut App) {
     let help = if app.cursor == 1 {
         app.cfg.profile.note().to_string()
     } else {
-        "Enter/Space cycles a value.".to_string()
+        "Enter/Space cycles options (apps, shells, features, services).".to_string()
     };
     f.render_widget(
         Paragraph::new(Line::from(Span::styled(help, theme::faint()))).wrap(Wrap { trim: true }),
@@ -464,12 +464,22 @@ fn page_summary(f: &mut Frame, area: Rect, app: &mut App) {
     );
     row(
         "Apps",
-        format!("steam={} firefox={} discord={} opencode={} spotify={}",
-            if c.install_steam {"yes"} else {"no"},
+        format!("firefox={} discord={} vesktop={} opencode={} spotify={}",
             if c.install_firefox {"yes"} else {"no"},
             if c.install_discord {"yes"} else {"no"},
+            if c.install_vesktop {"yes"} else {"no"},
             if c.install_opencode {"yes"} else {"no"},
             if c.install_spotify {"yes"} else {"no"}),
+        theme::base(),
+        &mut lines,
+    );
+    row(
+        "Features",
+        format!("waypaper={} fish={} zsh={} flatpak={}",
+            if c.install_waypaper {"yes"} else {"no"},
+            if c.install_fish {"yes"} else {"no"},
+            if c.install_zsh {"yes"} else {"no"},
+            if c.install_flatpak {"yes"} else {"no"}),
         theme::base(),
         &mut lines,
     );

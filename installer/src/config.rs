@@ -181,6 +181,16 @@ pub struct InstallConfig {
     pub install_opencode: bool,
     #[serde(default)]
     pub install_spotify: bool,
+    #[serde(default)]
+    pub install_vesktop: bool,
+    #[serde(default)]
+    pub install_waypaper: bool,
+    #[serde(default)]
+    pub install_fish: bool,
+    #[serde(default)]
+    pub install_zsh: bool,
+    #[serde(default)]
+    pub install_flatpak: bool,
     pub nvidia: bool,
     pub enable_bluetooth: bool,
     pub enable_sshd: bool,
@@ -222,6 +232,11 @@ impl Default for InstallConfig {
             install_discord: false,
             install_opencode: false,
             install_spotify: false,
+            install_vesktop: false,
+            install_waypaper: false,
+            install_fish: true,
+            install_zsh: true,
+            install_flatpak: false,
             nvidia: false,
             enable_bluetooth: true,
             enable_sshd: false,

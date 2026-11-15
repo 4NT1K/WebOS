@@ -95,6 +95,8 @@ kde-plasma/systemsettings
 x11-drivers/nvidia-drivers
 
 # Optional apps (preinstalled for fast setup; installer can toggle)
+gui-apps/waypaper
+net-im/vesktop-bin
 net-im/discord
 dev-util/opencode-bin
 media-sound/spotify

@@ -736,7 +736,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
     s.push('\n');
 
-    // ── optional applications (prebuilt/binpkg only, no compiling) ───────
+    // ── optional applications / shells / features (best-effort) ──────────
     if cfg.profile != Profile::Minimal {
         s.push_str("emerge_app() { emerge --quiet --noreplace \"$@\" >/dev/null 2>&1 || true; }\n");
         s.push_str("remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || true; }\n");
@@ -745,7 +745,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         } else {
             s.push_str("remove_app www-client/firefox-bin\n");
         }
-        // Steam is 32-bit only and this image is 64-bit (ABI_X86="64").
+        // Steam is 32-bit only and this image is 64-bit (ABI_X86=\"64\").
         // Record the choice instead of pulling in a multilib rebuild.
         if cfg.install_steam {
             s.push_str("mkdir -p /etc/webos && printf 'Steam needs a 32-bit (multilib) runtime; not included in this image.\\n' > /etc/webos/steam-unavailable.txt\n");
@@ -754,6 +754,9 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
             s.push_str("emerge_app net-im/discord\n");
         } else {
             s.push_str("remove_app net-im/discord\n");
+        }
+        if cfg.install_vesktop {
+            s.push_str("emerge_app net-im/vesktop-bin || emerge_app net-im/vesktop\n");
         }
         if cfg.install_opencode {
             s.push_str("emerge_app dev-util/opencode-bin\n");
@@ -764,6 +767,19 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
             s.push_str("emerge_app media-sound/spotify\n");
         } else {
             s.push_str("remove_app media-sound/spotify\n");
+        }
+        if cfg.install_waypaper {
+            s.push_str("emerge_app gui-apps/waypaper\n");
+        }
+        if cfg.install_fish {
+            s.push_str("emerge_app app-shells/fish\n");
+        }
+        if cfg.install_zsh {
+            s.push_str("emerge_app app-shells/zsh app-shells/zsh-completions\n");
+        }
+        if cfg.install_flatpak {
+            s.push_str("emerge_app sys-apps/flatpak\n");
+            s.push_str("if command -v flatpak >/dev/null 2>&1; then flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || true; fi\n");
         }
     }
 
@@ -782,7 +798,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         "chmod 0600 /etc/webos/install.toml\n\
          printf 'WebOS %s\\n' '{0}' > /etc/webos-release\n\
          printf 'WebOS %s\\n' '{0}' > /etc/webos-release\n\n",
-        "1.0 (Ashen)"
+        "1.01 (Ashen)"
     ));
 
     // ── purge anything machine-specific from the live medium ─────────────
