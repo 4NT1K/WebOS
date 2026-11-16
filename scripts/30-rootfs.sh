@@ -141,6 +141,12 @@ chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_J
 	@base @desktop @gaming @webos-installer" \
 	|| warn "WebOS set emerge had failures (continuing; review if critical packages missing)"
 
+# The bar must be built with the WebOS USE flags (mpris/tray/logind). The
+# plain set emerge above does not rebuild for USE changes on an existing
+# chroot, so force it explicitly.
+chroot_sh "emerge --quiet-build=y --changed-use --oneshot gui-apps/waybar" \
+	|| warn "waybar rebuild with WebOS USE flags failed"
+
 # --------------------------------------------------------- installer ---------
 step "rootfs: building the WebOS installer"
 # If an interrupted earlier run left a mismatched distfile/Manifest pair,
