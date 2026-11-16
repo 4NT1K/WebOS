@@ -108,6 +108,10 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-rice webos-rice
 	newexe "${FILESDIR}"/system/webos-session webos-session
 	newexe "${FILESDIR}"/system/webos-wallpaper webos-wallpaper
+
+	# Seed waypaper with the WebOS wallpaper folder + hyprpaper backend
+	insinto /etc/skel/.config/waypaper
+	newins "${FILESDIR}"/system/waypaper-config.ini config.ini
 	newexe "${FILESDIR}"/system/webos-shot webos-shot
 	newexe "${FILESDIR}"/system/webos-gaming webos-gaming
 	newexe "${FILESDIR}"/system/webos-shell webos-shell
