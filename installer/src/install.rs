@@ -696,6 +696,12 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // ── apply the rice ───────────────────────────────────────────────────
     if cfg.profile != Profile::Minimal && Path::new(&format!("{TARGET}/usr/bin/webos-rice")).exists() {
         s.push_str("webos-rice --system --force || true\n");
+        if cfg.profile == Profile::Full && Path::new(&format!("{TARGET}/usr/bin/webos-dotfiles")).exists() {
+            s.push_str(&format!(
+                "webos-dotfiles --apply {id} --system --force || true\n",
+                id = cfg.dotfiles.id()
+            ));
+        }
         s.push_str(&format!(
             "chown -R {u}:{u} /home/{u}/.config /home/{u}/.local 2>/dev/null || true\n",
             u = cfg.username

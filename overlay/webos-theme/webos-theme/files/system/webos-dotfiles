@@ -1,0 +1,87 @@
+#!/usr/bin/env bash
+# webos-dotfiles — choose the desktop look (dotfiles profile).
+#
+#   webos-dotfiles --list
+#   webos-dotfiles --apply ashen|jakoolit|minimal [--system] [--force]
+#
+# ashen     the full WebOS Deep Black rice (default)
+# jakoolit  JaKooLit-inspired frosted glass top bar
+# minimal   a plain, low-resource top bar
+#
+# --system applies to /etc/skel, /root and every /home/* (run as root).
+set -Eeuo pipefail
+
+SRC=/usr/share/webos/dotfiles
+STATE=/etc/webos/dotfiles.conf
+PROFILE=""
+SYSTEM=0
+FORCE=0
+
+say() { printf '%s\n' "$*"; }
+die() { printf 'webos-dotfiles: %s\n' "$*" >&2; exit 1; }
+
+profiles() { printf 'ashen\njakoolit\nminimal\n'; }
+
+apply_home() {
+	local home="$1" profile="$2" force="$3"
+	[[ -d "$home" ]] || return 0
+	local wb="$home/.config/waybar"
+	mkdir -p "$wb"
+
+	# Always keep the base rice (hyprland, kitty, fastfetch, portals) present.
+	if [[ -x /usr/bin/webos-rice ]]; then
+		HOME="$home" /usr/bin/webos-rice --ensure >/dev/null 2>&1 || true
+	fi
+
+	if [[ "$profile" == "ashen" ]]; then
+		return 0
+	fi
+
+	local src="$SRC/$profile/waybar"
+	[[ -d "$src" ]] || die "profile '$profile' is not installed"
+	for f in config.jsonc style.css; do
+		[[ -f "$src/$f" ]] || continue
+		if [[ -f "$wb/$f" && $force -eq 0 ]]; then
+			cp -a "$wb/$f" "$wb/$f.webos-orig" 2>/dev/null || true
+		fi
+		install -m 0644 "$src/$f" "$wb/$f"
+	done
+	printf '%s\n' "$profile" > "$home/.config/webos-dotfiles"
+	if [[ $EUID -eq 0 ]]; then
+		chown -R "$(stat -c '%u:%g' "$home")" "$wb" "$home/.config/webos-dotfiles" 2>/dev/null || true
+	fi
+}
+
+case "${1:-}" in
+	--list|-l)
+		for p in $(profiles); do printf '%-10s %s\n' "$p" "$(case $p in ashen) echo 'WebOS Deep Black rice (default)';; jakoolit) echo 'JaKooLit-inspired frosted top bar';; minimal) echo 'plain low-resource top bar';; esac)"; done
+		exit 0
+		;;
+	--apply) PROFILE="${2:-}"; shift 2 || true ;;
+	-h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+	*) die "usage: webos-dotfiles --apply ashen|jakoolit|minimal [--system] [--force]" ;;
+esac
+
+case "$PROFILE" in ashen|jakoolit|minimal) ;; *) die "unknown profile: ${PROFILE:-<empty>}" ;; esac
+for a in "$@"; do
+	case "$a" in
+		--system) SYSTEM=1 ;;
+		--force) FORCE=1 ;;
+	esac
+done
+
+if [[ $SYSTEM -eq 1 ]]; then
+	[[ $EUID -eq 0 ]] || die "--system must run as root"
+	mkdir -p /etc/skel
+	apply_home /etc/skel "$PROFILE" 1
+	apply_home /root "$PROFILE" "$FORCE"
+	for d in /home/*; do [[ -d "$d" ]] && apply_home "$d" "$PROFILE" "$FORCE"; done
+	mkdir -p "$(dirname "$STATE")"
+	printf 'profile=%s\n' "$PROFILE" > "$STATE"
+	say "WebOS dotfiles profile: $PROFILE (system)"
+else
+	apply_home "$HOME" "$PROFILE" "$FORCE"
+	say "WebOS dotfiles profile: $PROFILE"
+	pgrep -x waybar >/dev/null 2>&1 && { pkill -x waybar; sleep 1; }
+	[[ -n "${WAYLAND_DISPLAY:-}" ]] && { ( waybar >/tmp/waybar.log 2>&1 & ) || true; }
+fi

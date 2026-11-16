@@ -52,6 +52,43 @@ impl Filesystem {
     }
 }
 
+/// Desktop dotfiles/look applied to the installed account.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Dotfiles {
+    Ashen,
+    Jakoolit,
+    Minimal,
+}
+
+impl Dotfiles {
+    pub const ALL: [Dotfiles; 3] = [Dotfiles::Ashen, Dotfiles::Jakoolit, Dotfiles::Minimal];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Dotfiles::Ashen => "Ashen (WebOS default)",
+            Dotfiles::Jakoolit => "JaKooLit glass",
+            Dotfiles::Minimal => "Minimal bar",
+        }
+    }
+
+    pub fn note(self) -> &'static str {
+        match self {
+            Dotfiles::Ashen => "Deep Black rice: frosted top bar, music, wallpaper, portals.",
+            Dotfiles::Jakoolit => "JaKooLit-inspired frosted top bar with player, workspaces and tray.",
+            Dotfiles::Minimal => "Plain low-resource top bar; no extra modules or scripts.",
+        }
+    }
+
+    pub fn id(self) -> &'static str {
+        match self {
+            Dotfiles::Ashen => "ashen",
+            Dotfiles::Jakoolit => "jakoolit",
+            Dotfiles::Minimal => "minimal",
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Encryption {
@@ -139,6 +176,10 @@ impl Profile {
     }
 }
 
+fn default_dotfiles() -> Dotfiles {
+    Dotfiles::Ashen
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(default)]
 pub struct InstallConfig {
@@ -170,6 +211,8 @@ pub struct InstallConfig {
 
     // ── options ───────────────────────────────────────────────────────────
     pub profile: Profile,
+    #[serde(default = "default_dotfiles")]
+    pub dotfiles: Dotfiles,
     pub install_gaming: bool,
     #[serde(default = "default_true")]
     pub install_steam: bool,
@@ -226,6 +269,7 @@ impl Default for InstallConfig {
             keymap: "us".into(),
 
             profile: Profile::Full,
+            dotfiles: Dotfiles::Ashen,
             install_gaming: true,
             install_steam: true,
             install_firefox: true,

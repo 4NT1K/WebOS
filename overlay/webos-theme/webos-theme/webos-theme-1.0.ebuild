@@ -42,6 +42,10 @@ src_install() {
 	insinto /usr/share/webos/rice
 	doins -r "${FILESDIR}"/rice/. || die "failed to install rice"
 
+	# --- 1b. selectable dotfiles profiles -------------------------------
+	insinto /usr/share/webos/dotfiles
+	doins -r "${FILESDIR}"/dotfiles/. || die "failed to install dotfiles profiles"
+
 	# --- 2. branding assets ---------------------------------------------
 	insinto /usr/share/webos
 	newins "${FILESDIR}"/rice/wallpapers/webos-wallpaper.svg logo.svg
@@ -57,6 +61,15 @@ src_install() {
 			newins "${FILESDIR}"/rice/wallpapers/webos-wallpaper.png webos-wallpaper-dark.png
 		fi
 	fi
+
+	# --- 2b. system-wide fallbacks (work even before the user rice) ------
+	insinto /etc/xdg/kitty
+	newins "${FILESDIR}"/rice/kitty/kitty.conf kitty.conf
+	insinto /etc/xdg/waybar
+	newins "${FILESDIR}"/rice/waybar/config.jsonc config.jsonc
+	newins "${FILESDIR}"/rice/waybar/style.css style.css
+	insinto /etc/sddm.conf.d
+	newins "${FILESDIR}"/system/sddm-webos.conf 10-webos.conf
 
 	# --- 3. session environment -----------------------------------------
 	insinto /etc/profile.d
@@ -107,6 +120,8 @@ src_install() {
 	exeinto /usr/bin
 	newexe "${FILESDIR}"/system/webos-rice webos-rice
 	newexe "${FILESDIR}"/system/webos-session webos-session
+	newexe "${FILESDIR}"/system/webos-portals webos-portals
+	newexe "${FILESDIR}"/system/webos-dotfiles webos-dotfiles
 	newexe "${FILESDIR}"/system/webos-wallpaper webos-wallpaper
 
 	# Seed waypaper with the WebOS wallpaper folder + hyprpaper backend

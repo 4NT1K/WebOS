@@ -1,0 +1,92 @@
+// JaKooLit-inspired top bar, adapted for WebOS (self-contained, no scripts).
+{
+    "layer": "top",
+    "position": "top",
+    "height": 36,
+    "spacing": 4,
+    "fixed-center": true,
+    "exclusive": true,
+    "passthrough": false,
+    "ipc": true,
+    "margin-top": 4,
+    "margin-left": 10,
+    "margin-right": 10,
+
+    "modules-left": [
+        "custom/logo",
+        "hyprland/workspaces",
+        "hyprland/window"
+    ],
+    "modules-center": [
+        "mpris",
+        "clock"
+    ],
+    "modules-right": [
+        "pulseaudio",
+        "network",
+        "cpu",
+        "memory",
+        "battery",
+        "tray",
+        "custom/power"
+    ],
+
+    "custom/logo": {
+        "format": " 󰣇 ",
+        "tooltip": false,
+        "on-click": "wofi --show drun",
+        "on-click-right": "wlogout"
+    },
+    "hyprland/workspaces": {
+        "format": "{icon}",
+        "on-click": "activate",
+        "all-outputs": true,
+        "format-icons": {
+            "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
+            "active": "", "default": "", "urgent": ""
+        }
+    },
+    "hyprland/window": {
+        "format": "{title}",
+        "max-length": 48,
+        "separate-outputs": true
+    },
+    "mpris": {
+        "format": "{player_icon} {dynamic}",
+        "format-paused": "{status_icon} <i>{dynamic}</i>",
+        "dynamic-len": 30,
+        "player-icons": { "default": "▶", "spotify": "", "firefox": "󰈹", "mpv": "󰎆" },
+        "status-icons": { "paused": "⏸" },
+        "tooltip-format": "{player} — {title}\n{artist}"
+    },
+    "clock": {
+        "format": " {:%H:%M}",
+        "format-alt": " {:%a %d %b  %H:%M}",
+        "tooltip-format": "<tt><small>{calendar}</small></tt>"
+    },
+    "pulseaudio": {
+        "format": "{icon} {volume}%",
+        "format-muted": " muted",
+        "format-icons": { "default": ["󰕿", "󰖀", "󰕾"] },
+        "on-click": "pavucontrol",
+        "tooltip-format": "{desc}"
+    },
+    "network": {
+        "interval": 3,
+        "format-wifi": "󰖩 {signalStrength}%",
+        "format-ethernet": "󰈀 {ipaddr}",
+        "format-disconnected": "󰖪 offline",
+        "on-click": "nm-connection-editor"
+    },
+    "cpu": { "interval": 4, "format": " {usage}%", "on-click": "kitty -e btop" },
+    "memory": { "interval": 6, "format": " {percentage}%", "on-click": "kitty -e btop" },
+    "battery": {
+        "interval": 30,
+        "states": { "warning": 25, "critical": 12 },
+        "format": "{icon} {capacity}%",
+        "format-charging": "󰂄 {capacity}%",
+        "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰁹"]
+    },
+    "tray": { "icon-size": 15, "spacing": 8 },
+    "custom/power": { "format": " ⏻ ", "on-click": "wlogout", "tooltip": false }
+}

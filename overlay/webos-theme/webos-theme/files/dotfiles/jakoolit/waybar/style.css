@@ -1,0 +1,55 @@
+/* JaKooLit-inspired frosted glass bar, WebOS palette. */
+@define-color surface rgba(8, 8, 8, 0.34);
+@define-color text #f4f4f4;
+@define-color dim #9a9a9a;
+@define-color faint #5f5f5f;
+@define-color border rgba(255, 255, 255, 0.13);
+@define-color hover rgba(255, 255, 255, 0.07);
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "Inter", "JetBrainsMono Nerd Font", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+}
+window#waybar { background: transparent; color: @text; }
+window#waybar > box {
+    background: @surface;
+    border: 1px solid @border;
+    border-radius: 14px;
+    padding: 1px 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+tooltip { background: rgba(8,8,8,0.94); border: 1px solid @border; border-radius: 10px; }
+tooltip label { color: @text; padding: 4px 10px; }
+
+#workspaces, #window, #clock, #mpris, #cpu, #memory, #pulseaudio,
+#network, #battery, #tray, #custom-logo, #custom-power {
+    background: transparent;
+    color: @text;
+    padding: 4px 10px;
+    margin: 4px 1px;
+    border-radius: 9px;
+    transition: background 160ms ease;
+}
+#custom-logo { font-size: 16px; padding: 4px 10px; }
+#workspaces button {
+    all: initial;
+    font-family: "JetBrainsMono Nerd Font", monospace;
+    font-size: 12px;
+    color: @faint;
+    border-radius: 7px;
+    padding: 4px 9px;
+    margin: 4px 1px;
+    min-width: 14px;
+}
+#workspaces button:hover { color: @text; background: @hover; }
+#workspaces button.active { color: #000; background: #e8e8e8; }
+#workspaces button.urgent { color: #000; background: #d27878; }
+#mpris { color: @dim; }
+#window { color: @dim; }
+#custom-power:hover { background: rgba(210,120,120,0.18); color: #d27878; }

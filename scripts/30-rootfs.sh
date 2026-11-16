@@ -147,6 +147,12 @@ chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_J
 chroot_sh "emerge --quiet-build=y --changed-use --oneshot gui-apps/waybar" \
 	|| warn "waybar rebuild with WebOS USE flags failed"
 
+# Only the WebOS session should be offered by SDDM. The upstream
+# hyprland.desktop starts a bare Hyprland with no rice, which is exactly the
+# "no bar / no portals / no fastfetch" failure mode.
+rm -f "${CHROOT}/usr/share/wayland-sessions/hyprland.desktop"
+install -d "${CHROOT}/etc/sddm.conf.d"
+
 # --------------------------------------------------------- installer ---------
 step "rootfs: building the WebOS installer"
 # If an interrupted earlier run left a mismatched distfile/Manifest pair,
@@ -184,6 +190,12 @@ chroot_sh "test -x /usr/bin/webos-shell" \
 	|| die "webos-shell missing after webos-theme merge"
 chroot_sh "test -f /usr/share/webos/rice/waybar/config.jsonc" \
 	|| die "waybar config missing after webos-theme merge"
+chroot_sh "test -x /usr/bin/webos-portals" \
+	|| die "webos-portals missing after webos-theme merge"
+chroot_sh "test -x /usr/bin/webos-dotfiles" \
+	|| die "webos-dotfiles missing after webos-theme merge"
+chroot_sh "test -d /usr/share/webos/dotfiles" \
+	|| die "dotfiles profiles missing after webos-theme merge"
 
 # -------------------------------------------------------- debranding ---------
 step "rootfs: applying WebOS branding overrides (remove Gentoo identifiers)"
