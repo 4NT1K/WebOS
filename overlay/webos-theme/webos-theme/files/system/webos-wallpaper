@@ -11,7 +11,7 @@
 set -Eeuo pipefail
 
 readonly SRC_SVG="/usr/share/webos/rice/wallpapers/webos-wallpaper.svg"
-readonly OUT_DIR="/usr/share/webos/wallpaper"
+OUT_DIR="/usr/share/webos/wallpaper"
 readonly PNG="${OUT_DIR}/webos-wallpaper.png"
 readonly PNG_DARK="${OUT_DIR}/webos-wallpaper-dark.png"
 
@@ -114,7 +114,10 @@ render_dark() {
 
 # ── main ────────────────────────────────────────────────────────────────────
 mkdir -p "$OUT_DIR" 2>/dev/null || true
-[[ -w "$OUT_DIR" ]] || die "$OUT_DIR is not writable (run as root)"
+if [[ ! -w "$OUT_DIR" ]]; then
+	OUT_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/webos/wallpaper"
+	mkdir -p "$OUT_DIR" 2>/dev/null || die "cannot create $OUT_DIR"
+fi
 
 case "$ACTION" in
 	render)
