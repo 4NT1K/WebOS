@@ -2,30 +2,50 @@
 # ─────────────────────────────────────────────────────────────────────────────
 #  webos-session — start a WebOS Wayland session.
 #
-#    webos-session              Hyprland (default)
+#    webos-session              Hyprland + the WebOS rice (default)
+#    webos-session --niri       niri + the WebOS look
+#    webos-session --noctalia   Hyprland + the Noctalia shell
 #    webos-session --gamescope  a SteamOS-style gamescope session
 #    webos-session --safe       Hyprland with the rice disabled (debugging)
 #
-#  This is what greetd runs after login, and what the .desktop session entry
-#  points at. It exists so that the environment is identical whether you start
+#  This is what SDDM runs after login, and what the .desktop session entries
+#  point at. It exists so that the environment is identical whether you start
 #  from the greeter, a TTY, or a display manager.
+#
+#  WEBOS_SHELL=noctalia turns any Wayland session into a Noctalia session
+#  (useful with --niri).
 # ─────────────────────────────────────────────────────────────────────────────
 set -Eeuo pipefail
 
 MODE="hyprland"
 for arg in "$@"; do
 	case "$arg" in
+		--niri)      MODE="niri" ;;
+		--noctalia)  MODE="noctalia" ;;
 		--gamescope) MODE="gamescope" ;;
 		--safe)      MODE="hyprland-safe" ;;
-		--help|-h)   sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+		--help|-h)   sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 	esac
 done
 
 # ── environment ─────────────────────────────────────────────────────────────
 export XDG_SESSION_TYPE=wayland
-export XDG_SESSION_DESKTOP="Hyprland"
-export XDG_CURRENT_DESKTOP="Hyprland"
 export XDG_SESSION_CLASS=user
+case "$MODE" in
+	niri)
+		export XDG_SESSION_DESKTOP="niri"
+		export XDG_CURRENT_DESKTOP="niri"
+		;;
+	noctalia)
+		export XDG_SESSION_DESKTOP="Hyprland"
+		export XDG_CURRENT_DESKTOP="Hyprland"
+		export WEBOS_SHELL="noctalia"
+		;;
+	*)
+		export XDG_SESSION_DESKTOP="Hyprland"
+		export XDG_CURRENT_DESKTOP="Hyprland"
+		;;
+esac
 
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 if [[ ! -d "$XDG_RUNTIME_DIR" ]]; then
@@ -44,7 +64,7 @@ fi
 if command -v dbus-update-activation-environment >/dev/null 2>&1; then
 	dbus-update-activation-environment --systemd \
 		WAYLAND_DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE \
-		XDG_RUNTIME_DIR DISPLAY 2>/dev/null || true
+		XDG_RUNTIME_DIR DISPLAY WEBOS_SHELL 2>/dev/null || true
 fi
 
 # GPU hints. WebOS defaults to AMD; the rice's hyprland.conf sets the same
@@ -67,15 +87,47 @@ if command -v webos-rice >/dev/null 2>&1; then
 	webos-rice --ensure >/dev/null 2>&1 || true
 fi
 
+# ── niri config ─────────────────────────────────────────────────────────────
+# niri has no system-wide config directory: seed the WebOS config the first
+# time the account uses the niri session.
+if [[ "$MODE" == "niri" ]]; then
+	mkdir -p "$HOME/.config/niri"
+	if [[ ! -f "$HOME/.config/niri/config.kdl" && -f /usr/share/webos/niri/config.kdl ]]; then
+		install -m 0644 /usr/share/webos/niri/config.kdl "$HOME/.config/niri/config.kdl"
+	fi
+fi
+
+# ── noctalia config ─────────────────────────────────────────────────────────
+# Noctalia only reads $XDG_CONFIG_HOME/noctalia/*.toml, so seed the WebOS
+# defaults (dark, pure black, monochrome) when the account has none.
+if [[ "${WEBOS_SHELL:-}" == "noctalia" ]]; then
+	ndir="$HOME/.config/noctalia"
+	mkdir -p "$ndir"
+	if ! compgen -G "$ndir/*.toml" >/dev/null 2>&1 && [[ -f /usr/share/webos/noctalia/config.toml ]]; then
+		install -m 0644 /usr/share/webos/noctalia/config.toml "$ndir/config.toml"
+	fi
+fi
+
 # ── run ─────────────────────────────────────────────────────────────────────
 case "$MODE" in
-	hyprland)
+	hyprland|noctalia)
 		command -v Hyprland >/dev/null 2>&1 || {
 			printf 'webos-session: Hyprland is not installed\n' >&2
 			printf '  emerge webos-desktop/webos-desktop\n' >&2
 			exit 1
 		}
 		exec Hyprland
+		;;
+	niri)
+		command -v niri >/dev/null 2>&1 || {
+			printf 'webos-session: niri is not installed\n' >&2
+			printf '  emerge webos-desktop/webos-desktop\n' >&2
+			exit 1
+		}
+		if command -v dbus-run-session >/dev/null 2>&1 && [[ -z ${DBUS_SESSION_BUS_ADDRESS:-} ]]; then
+			exec dbus-run-session niri --session
+		fi
+		exec niri --session
 		;;
 	hyprland-safe)
 		# Skip the rice: useful when a config change breaks the session.

@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+# ─────────────────────────────────────────────────────────────────────────────
+#  webos-autostart — start the session services for a WebOS Wayland session.
+#
+#    webos-autostart hyprland
+#    webos-autostart niri
+#
+#  Which shell runs is chosen by WEBOS_SHELL:
+#
+#    ashen (default)  waybar + mako + hypridle
+#    mono/jakoolit/minimal  the same bar stack (the dotfiles profile only
+#                     changes its look, not what runs)
+#    noctalia         Noctalia (bar, notifications, wallpaper, lock, polkit);
+#                     waybar, mako, hypridle and the wallpaper daemons are
+#                     skipped because Noctalia provides all of them.
+#
+#  Log: /tmp/webos-autostart.log
+# ─────────────────────────────────────────────────────────────────────────────
+set -u
+
+COMPOSITOR="${1:-hyprland}"
+SHELL_KIND="${WEBOS_SHELL:-ashen}"
+export WEBOS_COMPOSITOR="$COMPOSITOR"
+log=/tmp/webos-autostart.log
+
+running() { pgrep -f -- "$1" >/dev/null 2>&1; }
+note() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" >>"$log"; }
+
+# ── portals + polkit ────────────────────────────────────────────────────────
+# webos-portals starts the portal implementations and the polkit agent. With
+# Noctalia the shell brings its own polkit agent, so it is told to skip it.
+if command -v webos-portals >/dev/null 2>&1; then
+	note "starting webos-portals (shell=$SHELL_KIND)"
+	webos-portals >>"$log" 2>&1 || note "webos-portals failed"
+fi
+
+# ── shell ───────────────────────────────────────────────────────────────────
+if [[ "$SHELL_KIND" == "noctalia" ]]; then
+	if command -v noctalia >/dev/null 2>&1; then
+		note "starting noctalia"
+		noctalia --daemon >>"$log" 2>&1 || note "noctalia failed to start"
+	else
+		note "noctalia requested but not installed; falling back to waybar"
+		SHELL_KIND=ashen
+	fi
+fi
+
+if [[ "$SHELL_KIND" != "noctalia" ]]; then
+	if command -v waybar >/dev/null 2>&1; then
+		note "starting waybar"
+		pkill -x waybar 2>/dev/null || true
+		cfg="$HOME/.config/waybar/config.jsonc"
+		[[ -f "$cfg" ]] || cfg=/usr/share/webos/rice/waybar/config.jsonc
+		[[ -f "$cfg" ]] || cfg=/etc/xdg/waybar/config.jsonc
+		st="$HOME/.config/waybar/style.css"
+		[[ -f "$st" ]] || st=/usr/share/webos/rice/waybar/style.css
+		[[ -f "$st" ]] || st=/etc/xdg/waybar/style.css
+		for _ in 1 2 3 4 5; do
+			waybar -c "$cfg" -s "$st" >>"$log" 2>&1 &
+			sleep 2
+			running waybar && break
+			sleep 1
+		done
+		running waybar || note "waybar did not stay running (see $log)"
+	fi
+	if command -v mako >/dev/null 2>&1; then
+		note "starting mako"
+		mako >>"$log" 2>&1 &
+	fi
+	if command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
+		note "starting hypridle"
+		hypridle >>"$log" 2>&1 &
+	fi
+fi
+
+# ── wallpaper ───────────────────────────────────────────────────────────────
+WALL=/usr/share/webos/wallpaper/webos-wallpaper.png
+if [[ "$SHELL_KIND" == "noctalia" ]]; then
+	note "wallpaper handled by noctalia"
+elif [[ "$COMPOSITOR" == "hyprland" ]]; then
+	if command -v hyprpaper >/dev/null 2>&1; then
+		note "starting hyprpaper"
+		hyprpaper >>"$log" 2>&1 &
+		if [[ -f "$WALL" ]]; then
+			for _ in 1 2 3 4 5; do
+				sleep 1
+				hyprctl hyprpaper preload "$WALL" >/dev/null 2>&1 \
+					&& hyprctl hyprpaper wallpaper ",$WALL" >/dev/null 2>&1 \
+					&& break
+			done
+		fi
+	fi
+elif [[ "$COMPOSITOR" == "niri" ]]; then
+	if command -v swaybg >/dev/null 2>&1 && [[ -f "$WALL" ]]; then
+		note "starting swaybg"
+		swaybg -i "$WALL" -m fill >>"$log" 2>&1 &
+	fi
+fi
+
+exit 0

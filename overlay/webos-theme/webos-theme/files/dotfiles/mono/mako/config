@@ -1,0 +1,33 @@
+# WebOS mono — mako, square and monochrome.
+# ~/.config/mako/config
+
+font=MesloLGM Nerd Font Mono 11
+background-color=#1a1a1aee
+text-color=#ffffff
+border-color=#ffffffcc
+border-size=1
+border-radius=0
+progress-color=over #ffffff
+padding=12
+margin=10
+width=300
+height=100
+max-visible=5
+anchor=top-right
+default-timeout=6000
+group-by=app-name
+icons=1
+max-icon-size=40
+icon-border-radius=0
+layer=overlay
+on-button-left=invoke-default-action
+on-button-middle=dismiss-group
+on-button-right=dismiss
+
+[urgency=low]
+border-color=#ffffff55
+default-timeout=4000
+
+[urgency=critical]
+border-color=#ffffff
+default-timeout=0

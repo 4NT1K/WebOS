@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=WebOS Noctalia
+Comment=WebOS desktop (Hyprland + Noctalia shell, Wayland)
+Exec=/usr/bin/webos-session --noctalia
+TryExec=/usr/bin/webos-session
+Type=Application
+DesktopNames=Hyprland

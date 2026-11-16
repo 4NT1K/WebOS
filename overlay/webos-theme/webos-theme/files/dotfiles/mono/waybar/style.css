@@ -1,0 +1,152 @@
+/* ──────────────────────────────────────────────────────────────────────────
+ *  WebOS mono — flat monochrome bar.
+ *  Transparent, bold Meslo, square corners. One accent: white.
+ * ────────────────────────────────────────────────────────────────────────── */
+
+@define-color text      #eeeeee;
+@define-color dim       #aaaaaa;
+@define-color faint     #666666;
+@define-color accent    #ffffff;
+@define-color surface   rgba(18, 18, 18, 0.55);
+@define-color border    rgba(255, 255, 255, 0.22);
+
+* {
+    border: none;
+    border-radius: 0;
+    font-family: "MesloLGM Nerd Font Mono", "JetBrainsMono Nerd Font", monospace;
+    font-size: 14px;
+    font-weight: bold;
+    min-height: 0;
+    padding: 0;
+    margin: 0;
+}
+
+window#waybar {
+    background: transparent;
+    color: @text;
+}
+
+window#waybar > box {
+    background: @surface;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+    padding: 0 10px;
+    margin: 0;
+}
+
+tooltip {
+    background: rgba(10, 10, 10, 0.95);
+    border: 1px solid @border;
+    border-radius: 0;
+    padding: 4px;
+}
+tooltip label {
+    color: @text;
+    padding: 4px 8px;
+}
+
+#workspaces,
+#window,
+#clock,
+#mpris,
+#cpu,
+#memory,
+#pulseaudio,
+#network,
+#battery,
+#tray,
+#custom-power {
+    background: transparent;
+    color: @text;
+    padding: 0 8px;
+    margin: 0;
+}
+
+/* ── workspaces: numbers, thin white outline when focused ────────────────── */
+#workspaces button {
+    color: @dim;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 0;
+    padding: 0 9px;
+    margin: 9px 2px;
+    min-width: 14px;
+    transition: color 120ms linear, border-color 120ms linear;
+}
+
+#workspaces button.empty {
+    color: @faint;
+}
+
+#workspaces button.active {
+    color: @accent;
+    border: 1px solid @accent;
+}
+
+#workspaces button.urgent {
+    color: @accent;
+    border: 1px dashed @accent;
+}
+
+#workspaces button:hover {
+    color: @accent;
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: none;
+    text-shadow: none;
+}
+
+/* ── window title: quiet, truncated ─────────────────────────────────────── */
+#window {
+    color: @dim;
+    font-weight: normal;
+}
+
+/* ── centre: media player ───────────────────────────────────────────────── */
+#mpris {
+    color: @text;
+    padding: 0 12px;
+}
+
+#mpris.paused {
+    color: @dim;
+}
+
+/* ── right cluster ──────────────────────────────────────────────────────── */
+#clock {
+    color: @accent;
+    padding: 0 10px;
+}
+
+#cpu,
+#memory,
+#pulseaudio,
+#network,
+#battery {
+    color: @dim;
+}
+
+#cpu:hover,
+#memory:hover,
+#pulseaudio:hover,
+#network:hover,
+#battery:hover,
+#custom-power:hover {
+    color: @accent;
+}
+
+#battery.warning {
+    color: @text;
+}
+
+#battery.critical {
+    color: @accent;
+    border-bottom: 1px solid @accent;
+}
+
+#tray {
+    padding: 0 6px;
+}
+
+#custom-power {
+    color: @dim;
+    padding: 0 10px;
+}

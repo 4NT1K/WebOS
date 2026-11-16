@@ -2,11 +2,17 @@
 # webos-dotfiles — choose the desktop look (dotfiles profile).
 #
 #   webos-dotfiles --list
-#   webos-dotfiles --apply ashen|jakoolit|minimal [--system] [--force]
+#   webos-dotfiles --apply ashen|jakoolit|minimal|mono [--system] [--force]
 #
 # ashen     the full WebOS Deep Black rice (default)
 # jakoolit  JaKooLit-inspired frosted glass top bar
 # minimal   a plain, low-resource top bar
+# mono      flat monochrome bar + grayscale kitty + square mako
+#
+# A profile may ship any of these trees, which are copied over the matching
+# ~/.config/<name> directory:
+#
+#   waybar/  kitty/  mako/  rofi/  foot/
 #
 # --system applies to /etc/skel, /root and every /home/* (run as root).
 set -Eeuo pipefail
@@ -20,7 +26,16 @@ FORCE=0
 say() { printf '%s\n' "$*"; }
 die() { printf 'webos-dotfiles: %s\n' "$*" >&2; exit 1; }
 
-profiles() { printf 'ashen\njakoolit\nminimal\n'; }
+profiles() { printf 'ashen\njakoolit\nminimal\nmono\n'; }
+
+describe() {
+	case "$1" in
+		ashen)    printf 'WebOS Deep Black rice (default)' ;;
+		jakoolit) printf 'JaKooLit-inspired frosted top bar' ;;
+		minimal)  printf 'plain low-resource top bar' ;;
+		mono)     printf 'flat monochrome bar, grayscale kitty and mako' ;;
+	esac
+}
 
 apply_home() {
 	local home="$1" profile="$2" force="$3"
@@ -34,35 +49,49 @@ apply_home() {
 	fi
 
 	if [[ "$profile" == "ashen" ]]; then
+		printf 'ashen\n' > "$home/.config/webos-dotfiles" 2>/dev/null || true
 		return 0
 	fi
 
-	local src="$SRC/$profile/waybar"
+	local src="$SRC/$profile"
 	[[ -d "$src" ]] || die "profile '$profile' is not installed"
-	for f in config.jsonc style.css; do
-		[[ -f "$src/$f" ]] || continue
-		if [[ -f "$wb/$f" && $force -eq 0 ]]; then
-			cp -a "$wb/$f" "$wb/$f.webos-orig" 2>/dev/null || true
-		fi
-		install -m 0644 "$src/$f" "$wb/$f"
+
+	# Copy every config tree the profile ships. A profile that only changes
+	# the bar (jakoolit, minimal) leaves kitty/mako exactly as the rice set
+	# them; mono replaces all three.
+	local tree name
+	for tree in "$src"/*/; do
+		[[ -d "$tree" ]] || continue
+		name="$(basename -- "$tree")"
+		local dest="$home/.config/$name"
+		mkdir -p "$dest"
+		local f
+		for f in "$tree"*; do
+			[[ -f "$f" ]] || continue
+			if [[ -f "$dest/$(basename -- "$f")" && $force -eq 0 ]]; then
+				cp -a "$dest/$(basename -- "$f")" "$dest/$(basename -- "$f").webos-orig" 2>/dev/null || true
+			fi
+			install -m 0644 "$f" "$dest/$(basename -- "$f")"
+		done
 	done
+
 	printf '%s\n' "$profile" > "$home/.config/webos-dotfiles"
 	if [[ $EUID -eq 0 ]]; then
-		chown -R "$(stat -c '%u:%g' "$home")" "$wb" "$home/.config/webos-dotfiles" 2>/dev/null || true
+		chown -R "$(stat -c '%u:%g' "$home")" "$home/.config" 2>/dev/null || true
 	fi
 }
 
 case "${1:-}" in
 	--list|-l)
-		for p in $(profiles); do printf '%-10s %s\n' "$p" "$(case $p in ashen) echo 'WebOS Deep Black rice (default)';; jakoolit) echo 'JaKooLit-inspired frosted top bar';; minimal) echo 'plain low-resource top bar';; esac)"; done
+		for p in $(profiles); do printf '%-10s %s\n' "$p" "$(describe "$p")"; done
 		exit 0
 		;;
 	--apply) PROFILE="${2:-}"; shift 2 || true ;;
-	-h|--help) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-	*) die "usage: webos-dotfiles --apply ashen|jakoolit|minimal [--system] [--force]" ;;
+	-h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+	*) die "usage: webos-dotfiles --apply ashen|jakoolit|minimal|mono [--system] [--force]" ;;
 esac
 
-case "$PROFILE" in ashen|jakoolit|minimal) ;; *) die "unknown profile: ${PROFILE:-<empty>}" ;; esac
+case "$PROFILE" in ashen|jakoolit|minimal|mono) ;; *) die "unknown profile: ${PROFILE:-<empty>}" ;; esac
 for a in "$@"; do
 	case "$a" in
 		--system) SYSTEM=1 ;;

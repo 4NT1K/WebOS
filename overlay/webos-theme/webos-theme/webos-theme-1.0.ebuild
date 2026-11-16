@@ -96,9 +96,12 @@ src_install() {
 
 	# --- 4. Wayland/X session entries -----------------------------------
 	# Named `webos`, not `hyprland`, so we never collide with the upstream
-	# package's own desktop file.
+	# package's own desktop file. Additional entries expose the niri and
+	# Noctalia sessions when those packages are installed.
 	insinto /usr/share/wayland-sessions
 	newins "${FILESDIR}"/system/webos.desktop webos.desktop
+	newins "${FILESDIR}"/system/webos-niri.desktop webos-niri.desktop
+	newins "${FILESDIR}"/system/webos-noctalia.desktop webos-noctalia.desktop
 	newins "${FILESDIR}"/system/webos-gamescope.desktop webos-gamescope.desktop
 	insinto /usr/share/xsessions
 	newins "${FILESDIR}"/system/webos.desktop webos.desktop
@@ -116,11 +119,20 @@ src_install() {
 	newins "${FILESDIR}"/system/webos-rice-autostart.desktop webos-rice.desktop
 	newins "${FILESDIR}"/system/webos-plasma-setup.desktop webos-plasma-setup.desktop
 
+	# --- 5c. compositor/shell config seeds ------------------------------
+	# niri reads ~/.config/niri/config.kdl (no /etc/xdg/niri); Noctalia
+	# reads ~/.config/noctalia/*.toml. webos-session seeds them per-user.
+	insinto /usr/share/webos/niri
+	newins "${FILESDIR}"/system/niri-config.kdl config.kdl
+	insinto /usr/share/webos/noctalia
+	newins "${FILESDIR}"/system/noctalia-config.toml config.toml
+
 	# --- 6. helper binaries ---------------------------------------------
 	exeinto /usr/bin
 	newexe "${FILESDIR}"/system/webos-rice webos-rice
 	newexe "${FILESDIR}"/system/webos-session webos-session
 	newexe "${FILESDIR}"/system/webos-portals webos-portals
+	newexe "${FILESDIR}"/system/webos-autostart webos-autostart
 	newexe "${FILESDIR}"/system/webos-dotfiles webos-dotfiles
 	newexe "${FILESDIR}"/system/webos-wallpaper webos-wallpaper
 

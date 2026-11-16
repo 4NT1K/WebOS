@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=WebOS Niri
+Comment=WebOS desktop (niri, Wayland)
+Exec=/usr/bin/webos-session --niri
+TryExec=/usr/bin/webos-session
+Type=Application
+DesktopNames=niri

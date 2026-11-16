@@ -1,19 +1,29 @@
 #!/bin/sh
-# webos-portals — start the XDG portals and a polkit agent for a Hyprland session.
+# webos-portals — start the XDG portals and a polkit agent for a Wayland session.
 #
 # OpenRC has no `systemctl --user`, so the portals must be started directly.
 # Everything here is idempotent; the log lives in /tmp/webos-portals.log.
+#
+# The compositor is taken from WEBOS_COMPOSITOR (set by webos-autostart) and
+# falls back to XDG_CURRENT_DESKTOP. With WEBOS_SHELL=noctalia the shell runs
+# its own polkit agent, so this script does not start a second one.
 set -u
 log=/tmp/webos-portals.log
 
-export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-Hyprland}"
-export XDG_SESSION_DESKTOP="${XDG_SESSION_DESKTOP:-Hyprland}"
 export XDG_SESSION_TYPE=wayland
+compositor="${WEBOS_COMPOSITOR:-${XDG_CURRENT_DESKTOP:-Hyprland}}"
+case "$compositor" in
+	*niri*|*Niri*|*NIRI*) desktop=niri ;;
+	*)                    desktop=hyprland ;;
+esac
+export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-$compositor}"
 
 if command -v dbus-update-activation-environment >/dev/null 2>&1; then
 	dbus-update-activation-environment --all >>"$log" 2>&1 || true
 	[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] && \
 		dbus-update-activation-environment HYPRLAND_INSTANCE_SIGNATURE >>"$log" 2>&1 || true
+	[ -n "${NIRI_SOCKET:-}" ] && \
+		dbus-update-activation-environment NIRI_SOCKET >>"$log" 2>&1 || true
 fi
 
 running() { pgrep -f -- "$1" >/dev/null 2>&1; }
@@ -27,12 +37,21 @@ start() { # $1 = process name, rest = command
 }
 
 # Implementations first, then the portal frontend that talks to them.
-start xdg-desktop-portal-hyprland /usr/libexec/xdg-desktop-portal-hyprland
+if [ "$desktop" = hyprland ]; then
+	start xdg-desktop-portal-hyprland /usr/libexec/xdg-desktop-portal-hyprland
+else
+	# niri: wlr handles screencopy; gtk handles the rest.
+	start xdg-desktop-portal-wlr /usr/libexec/xdg-desktop-portal-wlr
+fi
 start xdg-desktop-portal-gtk      /usr/libexec/xdg-desktop-portal-gtk
 start xdg-desktop-portal          /usr/libexec/xdg-desktop-portal
 
-# Polkit agent: lxqt's agent is the most reliable on OpenRC; fall back to
-# Hyprland's Qt agent and then to the GNOME one.
+# Polkit agent. Noctalia provides its own when WEBOS_SHELL=noctalia.
+if [ "${WEBOS_SHELL:-}" = noctalia ]; then
+	printf '[%s] polkit agent handled by noctalia\n' "$(date +%H:%M:%S)" >>"$log"
+	exit 0
+fi
+
 if ! running lxqt-policykit-agent && ! running hyprpolkitagent && \
    ! running polkit-gnome-authentication-agent-1; then
 	if command -v lxqt-policykit-agent >/dev/null 2>&1; then

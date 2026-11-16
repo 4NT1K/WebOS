@@ -11,18 +11,13 @@ RELEASE
 
 WHAT'S NEW / NOTABLE IN 1.02
 ----------------------------
-- SDDM now offers only the WebOS session; portals + polkit start via webos-portals on OpenRC.
-- Dotfiles profiles: webos-dotfiles --apply ashen|jakoolit|minimal (installer page included).
-- Fixed webos-theme merge collisions that could ship an ISO without /usr/bin/webos-shell, waybar config, portal prefs or dark-mode defaults.
-- webos-settings launcher added; Hyprland offers wdisplays/nwg-displays and hyprctl devices for real display/input detection.
-- Portal overrides installed under /etc/xdg-desktop-portal to avoid collisions; Hyprland starts/restarts portals and the polkit agent with fallbacks.
-- Terminal fastfetch now shows the WebOS cobweb logo image in kitty (kitty graphics) with themed system info; fastfetch wrapper simplified for reliable rendering.
-- Hyprland wallpaper startup/apply made more reliable (hyprpaper preload/wallpaper + daemon timing).
-- Waybar (top bar) improved: frosted-glass transparency, MPRIS/music module, wallpaper launcher button (waypaper / `webos-wallpaper` fallback), system modules, and more reliable autostart/toggle.
-- Smoother Hyprland animations (windows/layers/workspaces) and refined blur/transparency feel.
-- Installer split into "System options" and "Extra features": profile/swap/services plus selectable apps/features/shells (Gaming stack, Steam note, Firefox, Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, etc.).
-- Theme parity maintained across Hyprland and KDE Plasma (monochrome Deep Black, kitty/fish/fastfetch, Konsole/KWin blur for kitty).
-- Hyprland session wiring improved: dbus/systemd user environment import, portal restart on session start, polkit agent fallbacks, and Hyprland portal preferences to support file pickers/auth prompts.
+- Session reliability: SDDM offers only WebOS sessions (stock Hyprland entry removed). Portals and polkit start via webos-portals on OpenRC; webos-session applies rice before launch; waybar/fastfetch have system-wide fallbacks and reliable autostart.
+- Dotfiles profiles: installer page + `webos-dotfiles --apply ashen|mono|jakoolit|minimal` (default Deep Black, flat monochrome, frosted glass bar, minimal bar).
+- New sessions: WebOS Niri (`webos-niri`, niri compositor) and WebOS Noctalia (`webos-noctalia`, Hyprland + Noctalia shell) preinstalled with seeded configs alongside WebOS Hyprland and KDE Plasma.
+- Installer: desktop profile choices include Hyprland, Niri, Noctalia shell, KDE Plasma and TTY-only; chosen session/dotfiles are seeded for the installed user.
+- Fixed webos-theme merge collisions that could ship an ISO without webos-shell, waybar config, portal prefs or dark-mode defaults; portal overrides live under /etc/xdg-desktop-portal.
+- webos-settings launcher; under Hyprland/Niri use wdisplays and compositor device tools (KDE device panels require a Plasma session).
+- Theme parity maintained across Hyprland and KDE Plasma (monochrome Deep Black, kitty/fish/fastfetch).
 
 PURPOSE
 -------
@@ -32,13 +27,14 @@ KDE Plasma 6.
 
 SESSIONS
 --------
-- Hyprland uses xdg-desktop-portal-hyprland/gtk/wlr and a polkit auth agent
-  (hyprpolkitagent with fallbacks). KDE apps/duplicates are hidden from
-  Hyprland menus to keep sessions separate.
-- KDE Plasma uses xdg-desktop-portal-kde and polkit-kde-authentication-agent-1.
-- Hyprland  : session "WebOS" in SDDM (also `webos-session` from a TTY)
-- KDE Plasma: normal Plasma 6 session in SDDM
-- Gamescope : `webos-session --gamescope` (SteamOS-style session)
+- Hyprland  : "WebOS" in SDDM / `webos-session` (Wayland, WebOS rice)
+- Niri      : "WebOS Niri" in SDDM / `webos-session --niri`
+- Noctalia  : "WebOS Noctalia" in SDDM / `webos-session --noctalia` (Hyprland + Noctalia shell)
+- KDE Plasma: "Plasma (Wayland)" in SDDM (`startplasma-wayland`)
+- Gamescope : `webos-session --gamescope`
+
+KDE Plasma in 1.02 is Wayland-only (no `startplasma-x11` / Plasma X11 session in this image).
+Portals: Hyprland uses xdg-desktop-portal-hyprland/gtk, niri uses wlr/gtk; webos-portals starts them on OpenRC with a polkit agent (or Noctalia's own agent in the Noctalia session).
 
 HYPRLAND KEYBINDS
 -----------------

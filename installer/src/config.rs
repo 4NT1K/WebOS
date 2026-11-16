@@ -58,16 +58,23 @@ impl Filesystem {
 pub enum Dotfiles {
     Ashen,
     Jakoolit,
+    Mono,
     Minimal,
 }
 
 impl Dotfiles {
-    pub const ALL: [Dotfiles; 3] = [Dotfiles::Ashen, Dotfiles::Jakoolit, Dotfiles::Minimal];
+    pub const ALL: [Dotfiles; 4] = [
+        Dotfiles::Ashen,
+        Dotfiles::Mono,
+        Dotfiles::Jakoolit,
+        Dotfiles::Minimal,
+    ];
 
     pub fn label(self) -> &'static str {
         match self {
             Dotfiles::Ashen => "Ashen (WebOS default)",
             Dotfiles::Jakoolit => "JaKooLit glass",
+            Dotfiles::Mono => "Mono (monochrome)",
             Dotfiles::Minimal => "Minimal bar",
         }
     }
@@ -76,6 +83,7 @@ impl Dotfiles {
         match self {
             Dotfiles::Ashen => "Deep Black rice: frosted top bar, music, wallpaper, portals.",
             Dotfiles::Jakoolit => "JaKooLit-inspired frosted top bar with player, workspaces and tray.",
+            Dotfiles::Mono => "Flat monochrome bar, grayscale kitty and square mako. Light and fast.",
             Dotfiles::Minimal => "Plain low-resource top bar; no extra modules or scripts.",
         }
     }
@@ -84,6 +92,7 @@ impl Dotfiles {
         match self {
             Dotfiles::Ashen => "ashen",
             Dotfiles::Jakoolit => "jakoolit",
+            Dotfiles::Mono => "mono",
             Dotfiles::Minimal => "minimal",
         }
     }
@@ -141,22 +150,33 @@ impl SwapChoice {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Profile {
-    /// Hyprland, greetd, the full rice, the gaming stack.
+    /// Hyprland, SDDM, the full WebOS rice, the gaming stack.
     Full,
-    /// KDE Plasma instead of Hyprland: same greetd login, same gaming stack,
-    /// but the desktop session is Plasma rather than the WebOS rice.
+    /// niri compositor with the WebOS look, SDDM, the gaming stack.
+    Niri,
+    /// Hyprland + the Noctalia shell, SDDM, the gaming stack.
+    Noctalia,
+    /// KDE Plasma instead of the WebOS rice: SDDM, same gaming stack.
     Plasma,
     /// No graphical session: a TTY login and the base system.
     Minimal,
 }
 
 impl Profile {
-    pub const ALL: [Profile; 3] = [Profile::Full, Profile::Plasma, Profile::Minimal];
+    pub const ALL: [Profile; 5] = [
+        Profile::Full,
+        Profile::Niri,
+        Profile::Noctalia,
+        Profile::Plasma,
+        Profile::Minimal,
+    ];
 
     pub fn label(self) -> &'static str {
         match self {
-            Profile::Full => "Full — Hyprland + gaming",
-            Profile::Plasma => "Full — KDE Plasma + gaming",
+            Profile::Full => "WebOS — Hyprland + gaming",
+            Profile::Niri => "WebOS — Niri + gaming",
+            Profile::Noctalia => "WebOS — Noctalia shell + gaming",
+            Profile::Plasma => "KDE Plasma + gaming",
             Profile::Minimal => "Minimal — TTY only",
         }
     }
@@ -164,14 +184,41 @@ impl Profile {
     pub fn note(self) -> &'static str {
         match self {
             Profile::Full => {
-                "Hyprland desktop, greetd login, Steam, Proton, MangoHud. ~6 GB installed."
+                "Hyprland desktop, SDDM login, the WebOS rice and dotfiles, Steam, Proton, MangoHud."
+            }
+            Profile::Niri => {
+                "niri scrollable-tiling Wayland compositor with the WebOS look, SDDM, gaming stack."
+            }
+            Profile::Noctalia => {
+                "Hyprland + Noctalia: a monochrome Wayland shell (bar, notifications, launcher) with SDDM."
             }
             Profile::Plasma => {
-                "KDE Plasma desktop, greetd login, Steam, Proton, MangoHud. ~6 GB installed."
+                "KDE Plasma (Wayland) desktop, SDDM login, Steam, Proton, MangoHud."
             }
             Profile::Minimal => {
-                "Base system only. Boots to a console. You can emerge the desktop later."
+                "Base system only. Boots to a console. You can emerge a desktop later."
             }
+        }
+    }
+
+    /// Whether this profile boots a graphical session.
+    pub fn has_gui(self) -> bool {
+        !matches!(self, Profile::Minimal)
+    }
+
+    /// Whether this profile uses the WebOS rice/dotfiles (Hyprland or niri).
+    pub fn uses_rice(self) -> bool {
+        matches!(self, Profile::Full | Profile::Niri | Profile::Noctalia)
+    }
+
+    /// The SDDM session .desktop name for this profile.
+    pub fn session(self) -> &'static str {
+        match self {
+            Profile::Full => "webos.desktop",
+            Profile::Niri => "webos-niri.desktop",
+            Profile::Noctalia => "webos-noctalia.desktop",
+            Profile::Plasma => "plasma.desktop",
+            Profile::Minimal => "",
         }
     }
 }

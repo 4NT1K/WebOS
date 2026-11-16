@@ -12,8 +12,8 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 | **Base** | Gentoo (OpenRC + elogind, WebOS overlay/profile) |
 | **Kernel** | `sys-kernel/webos-kernel` — vanilla LTS + gaming-oriented tuning, `-webos` localversion |
 | **Init** | OpenRC (default) |
-| **Desktops** | Hyprland (Wayland, default) + KDE Plasma 6 |
-| **Installer** | `webos-installer` — custom Rust TUI/GUI wizard with profile + feature/app/shell customization |
+| **Desktops** | Hyprland (default), Niri, Noctalia shell, KDE Plasma 6 (Wayland) |
+| **Installer** | `webos-installer` — custom Rust TUI/GUI wizard with session profiles, dotfiles and feature/app/shell customization |
 | **Filesystem** | btrfs (default, subvolumes), ext4, xfs; LUKS2 option |
 | **Bootloader** | GRUB2 (BIOS + UEFI) |
 | **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
@@ -23,20 +23,17 @@ WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “De
 
 ## What’s in 1.02
 
-- **1.02 reliability:** SDDM only offers the WebOS session (the stock `Hyprland` entry caused “no bar / no portals / no fastfetch”); portals and a polkit agent start from `webos-portals` on OpenRC; kitty/waybar configs are installed system-wide as fallbacks.
-- **Dotfiles profiles:** installer page + `webos-dotfiles --apply ashen|jakoolit|minimal` (WebOS Ashen, JaKooLit-inspired glass bar, minimal bar).
-- **1.02 fix release:** repaired the `webos-theme` package merge (file collisions) that could leave the ISO without `webos-shell`, the waybar config, portal prefs and dark-mode defaults.
-- **Settings/devices:** new `webos-settings` launcher; under Hyprland it offers `wdisplays`/`nwg-displays` and `hyprctl devices` so monitors and input devices are actually visible (KDE device panels require a Plasma session).
-- **Portals/auth:** portal overrides moved to `/etc/xdg-desktop-portal` (no package collisions); Hyprland session restarts portals and starts the polkit agent with fallbacks.
-- **Branding:** white spiderweb WebOS logo, WebOS identity across boot/login/desktop (OpenRC boot branding patched to WebOS), no Gentoo welcome/identity leaks.
-- **Deep Black / monochrome theme parity (Hyprland + KDE Plasma):** pure-black frosted surfaces (~60% opacity, strong blur), monochrome palette (`#000000` bg, `#F2F2F2` fg, `#FFFFFF` labels, `#8C8C8C` dim, greyscale ANSI), white accents/cursor, custom default wallpaper, dark mode enabled by default.
-- **Terminal stack:** kitty + fish + fastfetch themed to match; Konsole profile/colorscheme aligned for Plasma. Fastfetch shows the WebOS cobweb logo image in kitty with themed system info.
-- **Hyprland UI:** frosted-glass top bar (waybar, ArchEclipse-inspired) with workspaces/window/music/system modules, wallpaper launcher, smoother animations, more reliable autostart/wallpaper, `Super+I` settings, and improved portal/auth session wiring.
-- **Desktops/sessions:** Hyprland (xdg-desktop-portal-hyprland/gtk/wlr, hyprpolkitagent + fallbacks) and KDE Plasma (xdg-desktop-portal-kde, polkit-kde-authentication-agent-1), with session separation for menus where appropriate.
-- **Installer customization:** separate **System options** and **Extra features** pages with profiles and selectable apps/features/shells/services (Gaming stack, Steam note, Firefox, Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, NVIDIA, Bluetooth, SSH, firewall, GRUB).
-- **Updates & packaging:** `webos-update` for sync/@world/depclean/config/flatpak/rice flow; build-time-only Portage overlays disabled on installed systems to avoid missing-repo warnings.
+- **Session reliability:** SDDM offers only WebOS sessions (the stock `Hyprland` entry is removed). Portals and a polkit agent start from `webos-portals` on OpenRC; `webos-session` applies the rice before launch; waybar and fastfetch have system-wide fallbacks and reliable autostart.
+- **Dotfiles profiles:** installer page + `webos-dotfiles --apply ashen|mono|jakoolit|minimal` — Deep Black default, flat **Mono** (monochrome bar/kitty/mako), JaKooLit-inspired glass bar, and a minimal bar.
+- **New sessions:** **WebOS Niri** (`gui-wm/niri`) and **WebOS Noctalia** (`gui-apps/noctalia`, native Wayland shell on Hyprland) are preinstalled with seeded configs and SDDM entries, alongside WebOS Hyprland and KDE Plasma.
+- **Installer:** desktop profile choices include Hyprland, Niri, Noctalia shell, KDE Plasma and TTY-only; the chosen session and dotfiles are seeded for the installed user.
+- **Fixes:** repaired `webos-theme` merge collisions that could leave an ISO without `webos-shell`, waybar config, portal prefs or dark-mode defaults; portal overrides live under `/etc/xdg-desktop-portal`.
+- **Settings/devices:** `webos-settings` launcher; under Hyprland/Niri use `wdisplays` and compositor device tools (KDE device panels require a Plasma session).
+- **Branding & theme:** white spiderweb WebOS logo and WebOS identity (no Gentoo welcome/identity leaks). Deep Black / monochrome parity across Hyprland and KDE Plasma; kitty + fish + fastfetch themed (WebOS cobweb fastfetch in kitty).
+- **Hyprland UI:** frosted-glass top bar (waybar) with workspaces/music/system modules, wallpaper launcher, smoother animations, improved portal/auth wiring.
+- **Updates & packaging:** `webos-update` sync/@world/depclean/config/flatpak/rice flow; build-time-only Portage overlays disabled on installed systems.
 
-> UI note: the top bar/music-player experience is an Archeclipse-inspired approximation using **Hyprland + waybar** (not a 1:1 Quickshell clone).
+> **KDE Plasma & X11:** Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.02 without adding X11 session packages.
 
 ## Key features
 

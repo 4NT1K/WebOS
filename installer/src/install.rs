@@ -680,7 +680,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // The image ships SDDM (gui-apps/sddm), driven by Gentoo's generic
     // `display-manager` OpenRC service. There is no greetd in the image, so
     // enabling one would silently do nothing and leave the user at a console.
-    if cfg.profile == Profile::Full || cfg.profile == Profile::Plasma {
+    if cfg.profile.has_gui() {
         s.push_str("cat > /etc/conf.d/display-manager <<'EOF'\nCHECKVT=7\nDISPLAYMANAGER=\"sddm\"\nEOF\n");
         services.push("display-manager");
     }
@@ -694,9 +694,9 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push('\n');
 
     // ── apply the rice ───────────────────────────────────────────────────
-    if cfg.profile != Profile::Minimal && Path::new(&format!("{TARGET}/usr/bin/webos-rice")).exists() {
+    if cfg.profile.uses_rice() && Path::new(&format!("{TARGET}/usr/bin/webos-rice")).exists() {
         s.push_str("webos-rice --system --force || true\n");
-        if cfg.profile == Profile::Full && Path::new(&format!("{TARGET}/usr/bin/webos-dotfiles")).exists() {
+        if Path::new(&format!("{TARGET}/usr/bin/webos-dotfiles")).exists() {
             s.push_str(&format!(
                 "webos-dotfiles --apply {id} --system --force || true\n",
                 id = cfg.dotfiles.id()
@@ -710,12 +710,8 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // ── default session ──────────────────────────────────────────────────
     // SDDM remembers the last session; seed it so the profile the user chose
     // in the installer is the one they land in after logging in.
-    if cfg.profile == Profile::Full || cfg.profile == Profile::Plasma {
-        let session = if cfg.profile == Profile::Plasma {
-            "plasma.desktop"
-        } else {
-            "webos.desktop"
-        };
+    if cfg.profile.has_gui() {
+        let session = cfg.profile.session();
         s.push_str(&format!(
             "install -d -m 0755 /var/lib/sddm\n\
              cat > /var/lib/sddm/state.conf <<'EOF'\n\
@@ -743,7 +739,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push('\n');
 
     // ── optional applications / shells / features (best-effort) ──────────
-    if cfg.profile != Profile::Minimal {
+    if cfg.profile.has_gui() {
         s.push_str("emerge_app() { emerge --quiet --noreplace \"$@\" >/dev/null 2>&1 || true; }\n");
         s.push_str("remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || true; }\n");
         if cfg.install_firefox {
