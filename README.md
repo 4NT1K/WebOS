@@ -41,7 +41,7 @@ WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “De
 - **Two desktop experiences:** Hyprland (Wayland) and KDE Plasma 6 on one image.
 - **Gaming-oriented stack:** gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton, Lutris, Heroic, PipeWire/WirePlumber, Vulkan/Mesa tooling (and NVIDIA driver support option).
 - **Prebuilt essentials:** Firefox, Discord, OpenCode, Spotify, Dolphin, kitty, waybar, wofi, mako, mpv/imv and more (no compile during install for included apps).
-- **WebOS tooling:** `webos-installer`, `webos-update`, `webos-rice`, `webos-fastfetch`, `webos-shell`, `webos-session`, `webos-wallpaper`, `webos-shot`, `webos-gaming`, `webos-plasma-setup`.
+- **WebOS tooling:** `webos-installer`, `webos-update`, `webos-rice`, `webos-fastfetch`, `webos-shell`, `webos-session`, `webos-wallpaper`, `webos-shot`, `webos-gaming`, `webos-plasma-setup`, `webos-settings`.
 
 ## Install
 
@@ -49,13 +49,13 @@ Download the latest release ISO (split parts + checksums): **[Releases](https://
 
 Reassemble and verify (Linux/macOS):
 ```bash
-cat webos-1.02-Ashen-amd64.iso.part-* > webos-1.01-Ashen-amd64.iso
+cat webos-1.02-Ashen-amd64.iso.part-* > webos-1.02-Ashen-amd64.iso
 sha256sum -c SHA256SUMS.txt
 ```
 
 Windows (PowerShell/CMD):
 ```bat
-copy /b webos-1.02-Ashen-amd64.iso.part-* webos-1.01-Ashen-amd64.iso
+copy /b webos-1.02-Ashen-amd64.iso.part-* webos-1.02-Ashen-amd64.iso
 ```
 
 Flash with Ventoy, Rufus, balenaEtcher, or `dd` (UEFI supported). Boot the live medium and run:
