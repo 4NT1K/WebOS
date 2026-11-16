@@ -48,7 +48,7 @@ x11-terms/kitty X wayland
 x11-terms/wezterm wayland
 www-client/firefox-bin wayland
 media-video/mpv vaapi vdpau lua vulkan wayland
-gui-apps/waybar pulseaudio network upower
+gui-apps/waybar pulseaudio network upower mpris tray logind
 media-gfx/swayimg gif webp
 
 # --- misc -------------------------------------------------------------------
