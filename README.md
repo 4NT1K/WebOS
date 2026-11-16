@@ -24,7 +24,7 @@ WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “De
 ## What’s in 1.02
 
 - **1.02 fix release:** repaired the `webos-theme` package merge (file collisions) that could leave the ISO without `webos-shell`, the waybar config, portal prefs and dark-mode defaults.
-- **Settings/devices:** new `webos-settings` launcher; under Hyprland it offers `nwg-displays`/`wdisplays` and `hyprctl devices` so monitors and input devices are actually visible (KDE device panels require a Plasma session).
+- **Settings/devices:** new `webos-settings` launcher; under Hyprland it offers `wdisplays`/`nwg-displays` and `hyprctl devices` so monitors and input devices are actually visible (KDE device panels require a Plasma session).
 - **Portals/auth:** portal overrides moved to `/etc/xdg-desktop-portal` (no package collisions); Hyprland session restarts portals and starts the polkit agent with fallbacks.
 - **Branding:** white spiderweb WebOS logo, WebOS identity across boot/login/desktop (OpenRC boot branding patched to WebOS), no Gentoo welcome/identity leaks.
 - **Deep Black / monochrome theme parity (Hyprland + KDE Plasma):** pure-black frosted surfaces (~60% opacity, strong blur), monochrome palette (`#000000` bg, `#F2F2F2` fg, `#FFFFFF` labels, `#8C8C8C` dim, greyscale ANSI), white accents/cursor, custom default wallpaper, dark mode enabled by default.

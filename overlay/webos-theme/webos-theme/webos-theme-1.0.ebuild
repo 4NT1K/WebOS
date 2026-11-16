@@ -16,7 +16,6 @@ RDEPEND="
 	app-misc/jq
 	gui-apps/grim
 	gui-apps/slurp
-	gui-apps/nwg-displays
 	gui-apps/wdisplays
 	gui-apps/swaybg
 	gui-apps/wl-clipboard
