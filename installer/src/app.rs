@@ -850,7 +850,12 @@ impl App {
                     self.cursor += 1;
                 }
             }
-            KeyCode::Enter | KeyCode::Char(' ') | KeyCode::Left | KeyCode::Right => {
+            KeyCode::Enter => {
+                let i = self.cursor;
+                self.select_dotfiles(i);
+                self.goto(Step::Summary);
+            }
+            KeyCode::Char(' ') | KeyCode::Left | KeyCode::Right => {
                 let i = self.cursor;
                 self.select_dotfiles(i);
             }
