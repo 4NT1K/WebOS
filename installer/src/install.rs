@@ -709,7 +709,8 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
     // ── default session ──────────────────────────────────────────────────
     // SDDM remembers the last session; seed it so the profile the user chose
-    // in the installer is the one they land in after logging in.
+    // in the installer is the one they land in after logging in. Also keep
+    // only that session available in the greeter.
     if cfg.profile.has_gui() {
         let session = cfg.profile.session();
         s.push_str(&format!(
@@ -719,7 +720,14 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
              Session={session}\n\
              User={u}\n\
              EOF\n\
-             chown -R sddm:sddm /var/lib/sddm 2>/dev/null || true\n\n",
+             chown -R sddm:sddm /var/lib/sddm 2>/dev/null || true\n\
+             install -d -m 0755 /usr/share/wayland-sessions /usr/share/xsessions\n\
+             for dir in /usr/share/wayland-sessions /usr/share/xsessions; do\n\
+               for f in \"$dir\"/*.desktop; do\n\
+                 [ -f \"$f\" ] || continue\n\
+                 [ \"$(basename \"$f\")\" = \"{session}\" ] || rm -f \"$f\"\n\
+               done\n\
+             done\n\n",
             u = cfg.username
         ));
     }

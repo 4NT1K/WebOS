@@ -640,11 +640,11 @@ fn draw_install(f: &mut Frame, app: &mut App) {
 
     let ratio = app.progress.clamp(0.0, 1.0) as f64;
     let gauge = Gauge::default()
-        .block(panel(""))
+        .block(panel("Progress"))
         .ratio(ratio)
         .gauge_style(
             Style::default()
-                .fg(theme::ACCENT)
+                .fg(theme::progress_color(ratio))
                 .bg(theme::BASE_SOFT)
                 .add_modifier(Modifier::BOLD),
         )

@@ -837,27 +837,61 @@ impl InstallerGui {
     fn page_install(&self, ui: &mut Ui, app: &App) {
         let w = ui.available_width();
 
-        let rect = Rect::from_min_size(ui.cursor().min, egui::Vec2::new(w, 10.0));
-        ui.painter().rect_filled(rect, 5.0, theme::E_BASE_SOFT);
         let frac = app.progress.clamp(0.0, 1.0);
-        if frac > 0.0 {
-            ui.painter().rect_filled(
-                Rect::from_min_size(rect.min, egui::Vec2::new(rect.width() * frac, 10.0)),
-                5.0,
-                theme::E_TEXT,
-            );
-        }
-        ui.add_space(14.0);
-
+        let pct = (frac * 100.0).round() as i32;
+        let bar_color = theme::e_progress_color(frac);
         let phase = if app.phase.is_empty() {
             "starting…".to_string()
         } else {
             app.phase.clone()
         };
+
+        // Progress box: keep the bar and label inside a bordered container.
+        let box_h = 54.0;
+        let box_rect = Rect::from_min_size(ui.cursor().min, egui::Vec2::new(w, box_h));
+        ui.painter().rect_filled(box_rect, 8.0, theme::E_BASE_SOFT);
+        ui.painter().rect_stroke(
+            box_rect,
+            8.0,
+            egui::Stroke::new(1.0, theme::E_BORDER),
+            egui::StrokeKind::Inside,
+        );
+
+        let label = format!("{:>3}%  {}", pct, phase);
+        ui.painter().text(
+            Pos2::new(box_rect.min.x + 14.0, box_rect.min.y + 14.0),
+            Align2::LEFT_CENTER,
+            label,
+            FontId::proportional(14.0),
+            theme::E_TEXT,
+        );
+
+        let track_rect = Rect::from_min_size(
+            Pos2::new(box_rect.min.x + 12.0, box_rect.min.y + 30.0),
+            egui::Vec2::new(box_rect.width() - 24.0, 12.0),
+        );
+        ui.painter().rect_filled(track_rect, 6.0, theme::E_BASE);
+        ui.painter().rect_stroke(
+            track_rect,
+            6.0,
+            egui::Stroke::new(1.0, theme::E_BORDER),
+            egui::StrokeKind::Inside,
+        );
+        if frac > 0.0 {
+            let fill_w = (track_rect.width() * frac).max(6.0).min(track_rect.width());
+            ui.painter().rect_filled(
+                Rect::from_min_size(track_rect.min, egui::Vec2::new(fill_w, track_rect.height())),
+                6.0,
+                bar_color,
+            );
+        }
+        ui.allocate_rect(box_rect, egui::Sense::hover());
+        ui.add_space(12.0);
+
         ui.label(
-            egui::RichText::new(phase)
-                .color(theme::E_TEXT)
-                .size(15.0)
+            egui::RichText::new("Log")
+                .color(theme::E_TEXT_DIM)
+                .size(13.0)
                 .strong(),
         );
         ui.add_space(6.0);

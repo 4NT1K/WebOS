@@ -20,8 +20,23 @@ pub const ACCENT_DIM: Color = Color::Rgb(150, 155, 165);
 
 pub const BORDER: Color = Color::Rgb(38, 40, 46);
 pub const URGENT: Color = Color::Rgb(248, 113, 113);
+pub const ORANGE: Color = Color::Rgb(251, 146, 60);
 pub const WARN: Color = Color::Rgb(251, 191, 36);
 pub const GOOD: Color = Color::Rgb(134, 239, 172);
+
+/// Progress/gauge colour: 0-25 red, 26-50 orange, 51-75 yellow, 76-100 green.
+pub fn progress_color(ratio: f64) -> Color {
+    let pct = (ratio * 100.0).round() as i32;
+    if pct <= 25 {
+        URGENT
+    } else if pct <= 50 {
+        ORANGE
+    } else if pct <= 75 {
+        WARN
+    } else {
+        GOOD
+    }
+}
 
 pub fn base() -> Style {
     Style::default().bg(BASE).fg(TEXT)
@@ -95,5 +110,20 @@ pub const E_ACCENT: Color32 = Color32::from_rgb(240, 240, 245);
 
 pub const E_BORDER: Color32 = Color32::from_rgb(38, 40, 46);
 pub const E_URGENT: Color32 = Color32::from_rgb(248, 113, 113);
+pub const E_ORANGE: Color32 = Color32::from_rgb(251, 146, 60);
 pub const E_WARN: Color32 = Color32::from_rgb(251, 191, 36);
 pub const E_GOOD: Color32 = Color32::from_rgb(134, 239, 172);
+
+/// Progress/gauge colour: 0-25 red, 26-50 orange, 51-75 yellow, 76-100 green.
+pub fn e_progress_color(ratio: f32) -> Color32 {
+    let pct = (ratio * 100.0).round() as i32;
+    if pct <= 25 {
+        E_URGENT
+    } else if pct <= 50 {
+        E_ORANGE
+    } else if pct <= 75 {
+        E_WARN
+    } else {
+        E_GOOD
+    }
+}
