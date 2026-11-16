@@ -152,8 +152,6 @@ impl SwapChoice {
 pub enum Profile {
     /// Hyprland, SDDM, the full WebOS rice, the gaming stack.
     Full,
-    /// niri compositor with the WebOS look, SDDM, the gaming stack.
-    Niri,
     /// Hyprland + the Noctalia shell, SDDM, the gaming stack.
     Noctalia,
     /// KDE Plasma instead of the WebOS rice: SDDM, same gaming stack.
@@ -163,9 +161,8 @@ pub enum Profile {
 }
 
 impl Profile {
-    pub const ALL: [Profile; 5] = [
+    pub const ALL: [Profile; 4] = [
         Profile::Full,
-        Profile::Niri,
         Profile::Noctalia,
         Profile::Plasma,
         Profile::Minimal,
@@ -174,7 +171,6 @@ impl Profile {
     pub fn label(self) -> &'static str {
         match self {
             Profile::Full => "WebOS — Hyprland + gaming",
-            Profile::Niri => "WebOS — Niri + gaming",
             Profile::Noctalia => "WebOS — Noctalia shell + gaming",
             Profile::Plasma => "KDE Plasma + gaming",
             Profile::Minimal => "Minimal — TTY only",
@@ -185,9 +181,6 @@ impl Profile {
         match self {
             Profile::Full => {
                 "Hyprland desktop, SDDM login, the WebOS rice and dotfiles, Steam, Proton, MangoHud."
-            }
-            Profile::Niri => {
-                "niri scrollable-tiling Wayland compositor with the WebOS look, SDDM, gaming stack."
             }
             Profile::Noctalia => {
                 "Hyprland + Noctalia: a monochrome Wayland shell (bar, notifications, launcher) with SDDM."
@@ -206,16 +199,15 @@ impl Profile {
         !matches!(self, Profile::Minimal)
     }
 
-    /// Whether this profile uses the WebOS rice/dotfiles (Hyprland or niri).
+    /// Whether this profile uses the WebOS rice/dotfiles.
     pub fn uses_rice(self) -> bool {
-        matches!(self, Profile::Full | Profile::Niri | Profile::Noctalia)
+        matches!(self, Profile::Full | Profile::Noctalia)
     }
 
     /// The SDDM session .desktop name for this profile.
     pub fn session(self) -> &'static str {
         match self {
             Profile::Full => "webos.desktop",
-            Profile::Niri => "webos-niri.desktop",
             Profile::Noctalia => "webos-noctalia.desktop",
             Profile::Plasma => "plasma.desktop",
             Profile::Minimal => "",

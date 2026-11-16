@@ -10,9 +10,8 @@ sys-apps/xdg-desktop-portal-gtk
 gui-libs/xdg-desktop-portal-wlr
 gui-libs/wlroots
 
-# Alternative Wayland compositor (niri) and shell (Noctalia). Both are
-# selectable from the installer's profile list and from SDDM.
-gui-wm/niri
+# Alternative Wayland shell (Noctalia, runs on Hyprland). Selectable from the
+# installer's profile list and from SDDM.
 gui-apps/noctalia
 
 # KDE Plasma (alternative desktop profile; same image, different session)

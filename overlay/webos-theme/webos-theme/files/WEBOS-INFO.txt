@@ -13,10 +13,10 @@ WHAT'S NEW / NOTABLE IN 1.02
 ----------------------------
 - Session reliability: SDDM offers only WebOS sessions (stock Hyprland entry removed). Portals and polkit start via webos-portals on OpenRC; webos-session applies rice before launch; waybar/fastfetch have system-wide fallbacks and reliable autostart.
 - Dotfiles profiles: installer page + `webos-dotfiles --apply ashen|mono|jakoolit|minimal` (default Deep Black, flat monochrome, frosted glass bar, minimal bar).
-- New sessions: WebOS Niri (`webos-niri`, niri compositor) and WebOS Noctalia (`webos-noctalia`, Hyprland + Noctalia shell) preinstalled with seeded configs alongside WebOS Hyprland and KDE Plasma.
-- Installer: desktop profile choices include Hyprland, Niri, Noctalia shell, KDE Plasma and TTY-only; chosen session/dotfiles are seeded for the installed user.
+- New session: WebOS Noctalia (`webos-noctalia`, Hyprland + Noctalia shell) preinstalled with seeded config alongside WebOS Hyprland and KDE Plasma. niri is not included in 1.02 (libdisplay-info slot conflict with Plasma/KWin).
+- Installer: desktop profile choices include Hyprland, Noctalia shell, KDE Plasma and TTY-only; chosen session/dotfiles are seeded for the installed user.
 - Fixed webos-theme merge collisions that could ship an ISO without webos-shell, waybar config, portal prefs or dark-mode defaults; portal overrides live under /etc/xdg-desktop-portal.
-- webos-settings launcher; under Hyprland/Niri use wdisplays and compositor device tools (KDE device panels require a Plasma session).
+- webos-settings launcher; under Hyprland use wdisplays and compositor device tools (KDE device panels require a Plasma session).
 - Theme parity maintained across Hyprland and KDE Plasma (monochrome Deep Black, kitty/fish/fastfetch).
 
 PURPOSE
@@ -28,13 +28,12 @@ KDE Plasma 6.
 SESSIONS
 --------
 - Hyprland  : "WebOS" in SDDM / `webos-session` (Wayland, WebOS rice)
-- Niri      : "WebOS Niri" in SDDM / `webos-session --niri`
 - Noctalia  : "WebOS Noctalia" in SDDM / `webos-session --noctalia` (Hyprland + Noctalia shell)
 - KDE Plasma: "Plasma (Wayland)" in SDDM (`startplasma-wayland`)
 - Gamescope : `webos-session --gamescope`
 
 KDE Plasma in 1.02 is Wayland-only (no `startplasma-x11` / Plasma X11 session in this image).
-Portals: Hyprland uses xdg-desktop-portal-hyprland/gtk, niri uses wlr/gtk; webos-portals starts them on OpenRC with a polkit agent (or Noctalia's own agent in the Noctalia session).
+Portals/polkit: webos-portals starts Hyprland/GTK portals and a polkit agent on OpenRC (or Noctalia's own agent in the Noctalia session).
 
 HYPRLAND KEYBINDS
 -----------------

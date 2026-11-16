@@ -77,23 +77,16 @@ fi
 WALL=/usr/share/webos/wallpaper/webos-wallpaper.png
 if [[ "$SHELL_KIND" == "noctalia" ]]; then
 	note "wallpaper handled by noctalia"
-elif [[ "$COMPOSITOR" == "hyprland" ]]; then
-	if command -v hyprpaper >/dev/null 2>&1; then
-		note "starting hyprpaper"
-		hyprpaper >>"$log" 2>&1 &
-		if [[ -f "$WALL" ]]; then
-			for _ in 1 2 3 4 5; do
-				sleep 1
-				hyprctl hyprpaper preload "$WALL" >/dev/null 2>&1 \
-					&& hyprctl hyprpaper wallpaper ",$WALL" >/dev/null 2>&1 \
-					&& break
-			done
-		fi
-	fi
-elif [[ "$COMPOSITOR" == "niri" ]]; then
-	if command -v swaybg >/dev/null 2>&1 && [[ -f "$WALL" ]]; then
-		note "starting swaybg"
-		swaybg -i "$WALL" -m fill >>"$log" 2>&1 &
+elif command -v hyprpaper >/dev/null 2>&1; then
+	note "starting hyprpaper"
+	hyprpaper >>"$log" 2>&1 &
+	if [[ -f "$WALL" ]]; then
+		for _ in 1 2 3 4 5; do
+			sleep 1
+			hyprctl hyprpaper preload "$WALL" >/dev/null 2>&1 \
+				&& hyprctl hyprpaper wallpaper ",$WALL" >/dev/null 2>&1 \
+				&& break
+		done
 	fi
 fi
 

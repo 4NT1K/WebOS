@@ -44,9 +44,6 @@ net-misc/curl http2 ssl
 
 # --- desktop ----------------------------------------------------------------
 gui-wm/hyprland X
-# niri: screencast needs pipewire + a portal implementation; the xdp-gnome
-# screencast helper pulls in a GNOME portal we do not ship, so keep it off.
-gui-wm/niri -screencast -systemd
 x11-terms/kitty X wayland
 x11-terms/wezterm wayland
 www-client/firefox-bin wayland

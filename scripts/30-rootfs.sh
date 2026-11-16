@@ -196,12 +196,8 @@ chroot_sh "test -x /usr/bin/webos-autostart" \
 	|| die "webos-autostart missing after webos-theme merge"
 chroot_sh "test -x /usr/bin/webos-dotfiles" \
 	|| die "webos-dotfiles missing after webos-theme merge"
-chroot_sh "test -f /usr/share/wayland-sessions/webos-niri.desktop" \
-	|| die "webos-niri.desktop missing after webos-theme merge"
 chroot_sh "test -f /usr/share/wayland-sessions/webos-noctalia.desktop" \
 	|| die "webos-noctalia.desktop missing after webos-theme merge"
-chroot_sh "test -f /usr/share/webos/niri/config.kdl" \
-	|| die "niri seed config missing after webos-theme merge"
 chroot_sh "test -f /usr/share/webos/noctalia/config.toml" \
 	|| die "noctalia seed config missing after webos-theme merge"
 chroot_sh "test -d /usr/share/webos/dotfiles" \
