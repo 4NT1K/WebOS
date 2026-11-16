@@ -25,6 +25,8 @@ RDEPEND="
 	gui-apps/kanshi
 	gui-apps/mako
 	gui-apps/slurp
+	gui-apps/nwg-displays
+	gui-apps/wdisplays
 	gui-apps/swaybg
 	gui-apps/tuigreet
 	gui-apps/waybar

@@ -8,7 +8,7 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 
 | | |
 |---|---|
-| **Version** | 1.01 (Ashen) |
+| **Version** | 1.02 (Ashen) |
 | **Base** | Gentoo (OpenRC + elogind, WebOS overlay/profile) |
 | **Kernel** | `sys-kernel/webos-kernel` — vanilla LTS + gaming-oriented tuning, `-webos` localversion |
 | **Init** | OpenRC (default) |
@@ -17,18 +17,21 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 | **Filesystem** | btrfs (default, subvolumes), ext4, xfs; LUKS2 option |
 | **Bootloader** | GRUB2 (BIOS + UEFI) |
 | **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
-| **ISO** | `webos-1.01-Ashen-amd64.iso` |
+| **ISO** | `webos-1.02-Ashen-amd64.iso` |
 
 WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “Deep Black / frosted glass” look, prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
 
-## What’s in 1.01
+## What’s in 1.02
 
+- **1.02 fix release:** repaired the `webos-theme` package merge (file collisions) that could leave the ISO without `webos-shell`, the waybar config, portal prefs and dark-mode defaults.
+- **Settings/devices:** new `webos-settings` launcher; under Hyprland it offers `nwg-displays`/`wdisplays` and `hyprctl devices` so monitors and input devices are actually visible (KDE device panels require a Plasma session).
+- **Portals/auth:** portal overrides moved to `/etc/xdg-desktop-portal` (no package collisions); Hyprland session restarts portals and starts the polkit agent with fallbacks.
 - **Branding:** white spiderweb WebOS logo, WebOS identity across boot/login/desktop (OpenRC boot branding patched to WebOS), no Gentoo welcome/identity leaks.
-- **Deep Black / monochrome theme parity (Hyprland + KDE Plasma):** pure-black frosted surfaces (~60% opacity, strong blur), monochrome palette (`#000000` bg, `#F2F2F2` fg, `#FFFFFF` labels, `#8C8C8C` dim, greyscale ANSI), white accents/cursor, custom default wallpaper.
-- **Terminal stack:** kitty + fish + fastfetch themed to match; Konsole profile/colorscheme aligned for Plasma. Fastfetch shows the original WebOS ASCII art in a smooth continuous-line box (`┌─┐│└─┘`) with UTF-8/ASCII fallback.
-- **Hyprland UI:** frosted-glass top bar (waybar) with MPRIS/music controls, wallpaper launcher (waypaper / `webos-wallpaper` fallback), smoother animations, reliable wallpaper startup, `Super+I` settings access, portals + polkit agent configured.
+- **Deep Black / monochrome theme parity (Hyprland + KDE Plasma):** pure-black frosted surfaces (~60% opacity, strong blur), monochrome palette (`#000000` bg, `#F2F2F2` fg, `#FFFFFF` labels, `#8C8C8C` dim, greyscale ANSI), white accents/cursor, custom default wallpaper, dark mode enabled by default.
+- **Terminal stack:** kitty + fish + fastfetch themed to match; Konsole profile/colorscheme aligned for Plasma. Fastfetch shows the WebOS cobweb logo image in kitty with themed system info.
+- **Hyprland UI:** frosted-glass top bar (waybar, ArchEclipse-inspired) with workspaces/window/music/system modules, wallpaper launcher, smoother animations, more reliable autostart/wallpaper, `Super+I` settings, and improved portal/auth session wiring.
 - **Desktops/sessions:** Hyprland (xdg-desktop-portal-hyprland/gtk/wlr, hyprpolkitagent + fallbacks) and KDE Plasma (xdg-desktop-portal-kde, polkit-kde-authentication-agent-1), with session separation for menus where appropriate.
-- **Installer customization:** profiles (Hyprland, KDE Plasma, Minimal) plus toggles for features/apps/shells/services (e.g. Firefox, Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, gaming stack, NVIDIA, Bluetooth, SSH, firewall, GRUB).
+- **Installer customization:** separate **System options** and **Extra features** pages with profiles and selectable apps/features/shells/services (Gaming stack, Steam note, Firefox, Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, NVIDIA, Bluetooth, SSH, firewall, GRUB).
 - **Updates & packaging:** `webos-update` for sync/@world/depclean/config/flatpak/rice flow; build-time-only Portage overlays disabled on installed systems to avoid missing-repo warnings.
 
 > UI note: the top bar/music-player experience is an Archeclipse-inspired approximation using **Hyprland + waybar** (not a 1:1 Quickshell clone).
@@ -46,13 +49,13 @@ Download the latest release ISO (split parts + checksums): **[Releases](https://
 
 Reassemble and verify (Linux/macOS):
 ```bash
-cat webos-1.01-Ashen-amd64.iso.part-* > webos-1.01-Ashen-amd64.iso
+cat webos-1.02-Ashen-amd64.iso.part-* > webos-1.01-Ashen-amd64.iso
 sha256sum -c SHA256SUMS.txt
 ```
 
 Windows (PowerShell/CMD):
 ```bat
-copy /b webos-1.01-Ashen-amd64.iso.part-* webos-1.01-Ashen-amd64.iso
+copy /b webos-1.02-Ashen-amd64.iso.part-* webos-1.01-Ashen-amd64.iso
 ```
 
 Flash with Ventoy, Rufus, balenaEtcher, or `dd` (UEFI supported). Boot the live medium and run:
@@ -121,7 +124,7 @@ sudo ./build.sh iso        # squashfs/initramfs/GRUB hybrid ISO
 sudo ./build.sh all
 ```
 
-Output: `build/webos-1.01-Ashen-amd64.iso`
+Output: `build/webos-1.02-Ashen-amd64.iso`
 
 See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details.
 
@@ -134,7 +137,7 @@ See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE
 
 ## Roadmap
 
-Planned work beyond 1.01 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, binhost, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
+Planned work beyond 1.02 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, binhost, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
 
 ## License
 

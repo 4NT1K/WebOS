@@ -167,12 +167,17 @@ install -m 0644 "${WEBOS_ROOT}/branding/issue"      "${CHROOT}/etc/issue"
 install -m 0644 "${WEBOS_ROOT}/branding/issue"      "${CHROOT}/etc/issue.logo"
 install -m 0644 "${WEBOS_ROOT}/branding/lsb-release" "${CHROOT}/etc/lsb-release"
 install -d "${CHROOT}/usr/share/webos"
-cp -a "${WEBOS_ROOT}/branding/logo.svg" "${CHROOT}/usr/share/webos/logo.svg" 2>/dev/null || true
 
 # ---------------------------------------------------------- theming ----------
 step "rootfs: applying the rice (webos-theme)"
-chroot_sh "emerge --quiet-build=y webos-theme/webos-theme && emerge --config webos-theme/webos-theme" \
+chroot_sh "emerge --quiet-build=y webos-theme/webos-theme" \
+	|| die "webos-theme merge failed (rice/session helpers would be missing)"
+chroot_sh "emerge --config webos-theme/webos-theme" \
 	|| warn "webos-theme config hook reported an issue; continuing"
+chroot_sh "test -x /usr/bin/webos-shell" \
+	|| die "webos-shell missing after webos-theme merge"
+chroot_sh "test -f /usr/share/webos/rice/waybar/config.jsonc" \
+	|| die "waybar config missing after webos-theme merge"
 
 # -------------------------------------------------------- debranding ---------
 step "rootfs: applying WebOS branding overrides (remove Gentoo identifiers)"

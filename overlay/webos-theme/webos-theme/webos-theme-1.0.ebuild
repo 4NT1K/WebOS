@@ -16,6 +16,8 @@ RDEPEND="
 	app-misc/jq
 	gui-apps/grim
 	gui-apps/slurp
+	gui-apps/nwg-displays
+	gui-apps/wdisplays
 	gui-apps/swaybg
 	gui-apps/wl-clipboard
 	media-fonts/inter
@@ -72,8 +74,10 @@ src_install() {
 	insinto /usr/share/icons/default
 	newins "${FILESDIR}"/system/icons-default/index.theme index.theme
 
-	# xdg-desktop-portal defaults (Hyprland session)
-	insinto /usr/share/xdg-desktop-portal
+	# xdg-desktop-portal defaults (Hyprland session). Install to /etc so we
+	# do not collide with portals.conf / hyprland-portals.conf owned by the
+	# xdg-desktop-portal and hyprland packages.
+	insinto /etc/xdg-desktop-portal
 	if compgen -G "${FILESDIR}"/system/xdg-desktop-portal/*.conf > /dev/null; then
 		doins "${FILESDIR}"/system/xdg-desktop-portal/*.conf
 	fi
@@ -111,6 +115,7 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-fastfetch webos-fastfetch
 	newexe "${FILESDIR}"/system/webos-update webos-update
 	newexe "${FILESDIR}"/system/webos-plasma-setup webos-plasma-setup
+	newexe "${FILESDIR}"/system/webos-settings webos-settings
 
 	# --- 7. docs ---------------------------------------------------------
 	dodoc "${FILESDIR}"/rice/README.rice

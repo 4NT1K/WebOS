@@ -1,0 +1,51 @@
+#!/bin/sh
+# webos-settings — session-aware settings launcher.
+#
+# KDE Plasma gets the real System Settings. Under Hyprland the KDE device
+# panels cannot see input/output devices (they talk to KWin), so offer the
+# native Wayland tools that actually detect hardware.
+set -u
+
+case "${XDG_CURRENT_DESKTOP:-}" in
+	*KDE*|*Plasma*|*plasma*)
+		exec systemsettings "$@"
+		;;
+esac
+
+case "${1:-}" in
+	--display)
+		exec nwg-displays 2>/dev/null || exec wdisplays 2>/dev/null || exec kitty -e sh -c 'wlr-randr; printf "\nPress Enter to close"; read -r _'
+		;;
+	--input)
+		exec kitty -e sh -c 'hyprctl devices; printf "\nPress Enter to close"; read -r _'
+		;;
+esac
+
+if command -v wofi >/dev/null 2>&1 && [ -n "${WAYLAND_DISPLAY:-}" ]; then
+	choice=$(printf '%s\n' \
+		"Display settings (nwg-displays)" \
+		"Display settings (wdisplays)" \
+		"Input devices (keyboard/mouse)" \
+		"KDE System Settings" \
+		"Audio (pavucontrol)" \
+		"Network (nm-connection-editor)" \
+		"Wallpaper (waypaper)" \
+		"Bluetooth (blueman-manager)" \
+		"Power / session (wlogout)" \
+		| wofi --dmenu --prompt "WebOS Settings" --width 420 --height 360 2>/dev/null)
+
+	case "$choice" in
+		"Display settings (nwg-displays)") exec nwg-displays ;;
+		"Display settings (wdisplays)") exec wdisplays ;;
+		"Input devices (keyboard/mouse)") exec kitty -e sh -c 'hyprctl devices; printf "\nPress Enter to close"; read -r _' ;;
+		"KDE System Settings") exec systemsettings ;;
+		"Audio (pavucontrol)") exec pavucontrol ;;
+		"Network (nm-connection-editor)") exec nm-connection-editor ;;
+		"Wallpaper (waypaper)") exec waypaper ;;
+		"Bluetooth (blueman-manager)") exec blueman-manager ;;
+		"Power / session (wlogout)") exec wlogout ;;
+	esac
+	exit 0
+fi
+
+exec systemsettings "$@"

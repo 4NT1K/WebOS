@@ -1,23 +1,26 @@
-WebOS 1.01 "Ashen" — system information
+WebOS 1.02 "Ashen" — system information
 =======================================
 
 RELEASE
 -------
-- v1.01: WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS, patched in build scripts).
-- Version : WebOS 1.01 "Ashen" (Gentoo/OpenRC, gaming-focused)
-- ISO     : webos-1.01-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
+- v1.02: fixed release — WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS, patched in build scripts).
+- Version : WebOS 1.02 "Ashen" (Gentoo/OpenRC, gaming-focused)
+- ISO     : webos-1.02-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
 - Arch    : amd64, 64-bit only (ABI_X86="64", no multilib)
 
-WHAT'S NEW / NOTABLE IN 1.01
+WHAT'S NEW / NOTABLE IN 1.02
 ----------------------------
-- Fastfetch box rendering fixed with UTF-8/ASCII fallback (prevents `?` on top/bottom in non-UTF8 environments) while keeping the continuous-line box.
+- Fixed webos-theme merge collisions that could ship an ISO without /usr/bin/webos-shell, waybar config, portal prefs or dark-mode defaults.
+- webos-settings launcher added; Hyprland offers nwg-displays/wdisplays and hyprctl devices for real display/input detection.
+- Portal overrides installed under /etc/xdg-desktop-portal to avoid collisions; Hyprland starts/restarts portals and the polkit agent with fallbacks.
+- Terminal fastfetch now shows the WebOS cobweb logo image in kitty (kitty graphics) with themed system info; fastfetch wrapper simplified for reliable rendering.
 - Hyprland wallpaper startup/apply made more reliable (hyprpaper preload/wallpaper + daemon timing).
-- Waybar (top bar) polished: frosted-glass transparency, MPRIS/music player module, wallpaper launcher button (waypaper / `webos-wallpaper` fallback), improved layout.
+- Waybar (top bar) improved: frosted-glass transparency, MPRIS/music module, wallpaper launcher button (waypaper / `webos-wallpaper` fallback), system modules, and more reliable autostart/toggle.
 - Smoother Hyprland animations (windows/layers/workspaces) and refined blur/transparency feel.
-- Installer customization expanded: profile + features/apps/shells/services toggles (including options such as Vesktop, Waypaper, Fish, Zsh, Flatpak alongside existing app/service choices).
+- Installer split into "System options" and "Extra features": profile/swap/services plus selectable apps/features/shells (Gaming stack, Steam note, Firefox, Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, etc.).
 - Theme parity maintained across Hyprland and KDE Plasma (monochrome Deep Black, kitty/fish/fastfetch, Konsole/KWin blur for kitty).
-- xdg-desktop-portal stack and polkit/auth agents included/configured for Hyprland and Plasma (hyprland/gtk/wlr/kde portals; hyprpolkitagent + polkit-kde-authentication-agent-1).
+- Hyprland session wiring improved: dbus/systemd user environment import, portal restart on session start, polkit agent fallbacks, and Hyprland portal preferences to support file pickers/auth prompts.
 
 PURPOSE
 -------
@@ -53,6 +56,8 @@ Print               region screenshot (grim + slurp, saved to ~/Pictures)
 
 THEME / RICE
 ------------
+Dark mode defaults are enabled by default (GTK/Qt/session env and Plasma color scheme where applicable).
+
 Commands:
   webos-rice --user            apply the rice to the current account
   webos-rice --system          apply to /etc/skel, /root and every /home/*
@@ -166,6 +171,7 @@ webos-wallpaper     set/generate/apply wallpaper
 webos-shot          screenshot helper
 webos-gaming        gaming helpers
 webos-plasma-setup  apply Plasma-side Deep Black setup
+webos-settings      session-aware settings launcher
 webos-installer     installer
 
 TROUBLESHOOTING
