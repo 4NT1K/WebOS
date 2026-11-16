@@ -11,6 +11,8 @@ RELEASE
 
 WHAT'S NEW / NOTABLE IN 1.02
 ----------------------------
+- SDDM now offers only the WebOS session; portals + polkit start via webos-portals on OpenRC.
+- Dotfiles profiles: webos-dotfiles --apply ashen|jakoolit|minimal (installer page included).
 - Fixed webos-theme merge collisions that could ship an ISO without /usr/bin/webos-shell, waybar config, portal prefs or dark-mode defaults.
 - webos-settings launcher added; Hyprland offers wdisplays/nwg-displays and hyprctl devices for real display/input detection.
 - Portal overrides installed under /etc/xdg-desktop-portal to avoid collisions; Hyprland starts/restarts portals and the polkit agent with fallbacks.

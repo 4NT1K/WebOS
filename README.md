@@ -23,6 +23,8 @@ WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “De
 
 ## What’s in 1.02
 
+- **1.02 reliability:** SDDM only offers the WebOS session (the stock `Hyprland` entry caused “no bar / no portals / no fastfetch”); portals and a polkit agent start from `webos-portals` on OpenRC; kitty/waybar configs are installed system-wide as fallbacks.
+- **Dotfiles profiles:** installer page + `webos-dotfiles --apply ashen|jakoolit|minimal` (WebOS Ashen, JaKooLit-inspired glass bar, minimal bar).
 - **1.02 fix release:** repaired the `webos-theme` package merge (file collisions) that could leave the ISO without `webos-shell`, the waybar config, portal prefs and dark-mode defaults.
 - **Settings/devices:** new `webos-settings` launcher; under Hyprland it offers `wdisplays`/`nwg-displays` and `hyprctl devices` so monitors and input devices are actually visible (KDE device panels require a Plasma session).
 - **Portals/auth:** portal overrides moved to `/etc/xdg-desktop-portal` (no package collisions); Hyprland session restarts portals and starts the polkit agent with fallbacks.
