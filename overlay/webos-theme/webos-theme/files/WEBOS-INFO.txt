@@ -41,6 +41,46 @@ WHAT'S FIXED IN 1.021
 - Same-version rebuilds could keep a stale installer/theme: the rootfs stage
   now unmerges and rebuilds app-admin/webos-installer and webos-theme.
 
+WHAT SHOULD BE (EXPECTED BEHAVIOUR)
+-----------------------------------
+Boot / installer
+- The live medium banner reads "WebOS 1.021 (Ashen)" and the installer starts
+  on tty1. The progress bar stays inside its box: percentage label on the
+  left, bar after it. Colour is red (0-25%), light red/orange (26-50%),
+  yellow (51-75%), light green (76-100%), and stays coloured on the console.
+- The summary shows the chosen desktop profile and dotfiles profile; nothing
+  is written to disk until the summary is confirmed.
+
+SDDM / sessions
+- The greeter offers exactly ONE session, the one chosen during install:
+  Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma -> "Plasma (Wayland)",
+  Minimal -> no greeter (TTY login).
+- A non-Noctalia install contains no Noctalia binary, no Noctalia session
+  entry and no ~/.config/noctalia. Choosing "mono" only restyles the bar,
+  kitty and mako; it never installs or starts Noctalia.
+- Plasma installs are Wayland-only; there is no Plasma X11 entry.
+
+Hyprland (WebOS / mono / jakoolit / minimal)
+- After login the waybar top bar appears, the wallpaper is set, mako shows
+  notifications, hypridle runs, and portals + a polkit agent are active.
+- Super+Return opens kitty with the WebOS fastfetch card; Super+I opens
+  webos-settings. The card also appears in foot, a TTY, ssh and any
+  interactive bash/zsh/fish shell (exactly once per session).
+- fastfetch never prints "Image logo types are not supported": the cobweb
+  logo is text, so it renders in every terminal and on the console. Failures
+  are written to /tmp/webos-fastfetch.log, not into the shell.
+- Admin actions (mount, package install, settings changes) trigger a polkit
+  password prompt instead of failing with "not authorized".
+- `webos-rice --doctor` run as the user reports every check OK, and
+  ~/.local/state/webos/rice.manifest is owned by that user, not root.
+
+Files / logs
+- /etc/webos-release reports the actual release (1.021), matching
+  /etc/os-release.
+- Session diagnostics: /tmp/webos-autostart.log, /tmp/webos-fastfetch.log,
+  ~/.local/state/webos/rice.manifest.
+- /usr/libexec/dbus-daemon-launch-helper is 4754 root:messagebus.
+
 WHAT'S NEW / NOTABLE IN 1.02
 ----------------------------
 - Session reliability: SDDM offers only WebOS sessions (stock Hyprland entry removed). Portals and polkit start via webos-portals on OpenRC; webos-session applies rice before launch; waybar/fastfetch have system-wide fallbacks and reliable autostart.

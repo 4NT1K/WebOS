@@ -752,6 +752,17 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
 
     // ── profile-specific defaults ────────────────────────────────────────
+    // Noctalia is preinstalled on the live medium so the Noctalia profile can
+    // offer it. The installer copies the whole live rootfs, so without this a
+    // Hyprland/Plasma/Minimal install still shipped the Noctalia package and
+    // its session entry even though the user never selected it.
+    if cfg.profile != Profile::Noctalia {
+        s.push_str(
+            "emerge --quiet --unmerge gui-apps/noctalia >/dev/null 2>&1 || true\n\
+             rm -f /usr/share/wayland-sessions/webos-noctalia.desktop\n\
+             rm -rf /usr/share/webos/noctalia /etc/skel/.config/noctalia /root/.config/noctalia\n",
+        );
+    }
     if cfg.profile == Profile::Minimal {
         s.push_str("cat > /etc/portage/package.mask/20-no-desktop <<'EOF'\n");
         s.push_str("webos-desktop/webos-desktop\nwebos-theme/webos-theme\nEOF\n");
@@ -823,12 +834,13 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         toml::to_string_pretty(cfg).unwrap_or_default()
     ));
     s.push_str("EOF\n");
-    s.push_str(&format!(
+    // The OS version comes from the installed /etc/os-release (written from
+    // branding/os-release), never a hard-coded string that goes stale.
+    s.push_str(
         "chmod 0600 /etc/webos/install.toml\n\
-         printf 'WebOS %s\\n' '{0}' > /etc/webos-release\n\
-         printf 'WebOS %s\\n' '{0}' > /etc/webos-release\n\n",
-        "1.01 (Ashen)"
-    ));
+         _webos_ver=\"$( . /etc/os-release 2>/dev/null; printf '%s' \"${VERSION:-${VERSION_ID:-unknown}}\" )\"\n\
+         printf 'WebOS %s\\n' \"${_webos_ver:-unknown}\" > /etc/webos-release\n\n",
+    );
 
     // ── purge anything machine-specific from the live medium ─────────────
     s.push_str("rm -f /etc/ssh/ssh_host_* || true\n");
