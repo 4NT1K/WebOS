@@ -1,19 +1,51 @@
-WebOS 1.02 "Ashen" — system information
-=======================================
+WebOS 1.021 "Ashen" — system information
+========================================
 
 RELEASE
 -------
-- v1.02: fixed release — WebOS-branded (white spiderweb OS logo, no Gentoo welcome/identity leaks; OpenRC boot branding set to WebOS, patched in build scripts).
-- Version : WebOS 1.02 "Ashen" (Gentoo/OpenRC, gaming-focused)
-- ISO     : webos-1.02-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
+- v1.021: fix release — repairs the installed-system issues reported against
+  1.02 (rice not starting, polkit activation, fastfetch, installer progress
+  bar, rice manifest ownership, duplicate SDDM sessions).
+- Version : WebOS 1.021 "Ashen" (Gentoo/OpenRC, gaming-focused)
+- ISO     : webos-1.021-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
 - Source  : https://github.com/4NT1K/WebOS
 - Arch    : amd64, 64-bit only (ABI_X86="64", no multilib)
+
+WHAT'S FIXED IN 1.021
+---------------------
+- Hyprland loaded the stock ~/.config/hypr/hyprland.lua instead of the WebOS
+  hyprland.conf, silently disabling autostart (waybar, mako, hypridle,
+  portals, hyprpaper). webos-session now moves any lua aside and launches
+  `Hyprland -c ~/.config/hypr/hyprland.conf` explicitly.
+- polkitd could not be D-Bus activated: a `! -gid 0` chown stripped setuid
+  from /usr/libexec/dbus-daemon-launch-helper (4754 root:messagebus) and left
+  it 0110 root:root. Ownership normalisation no longer touches root-owned
+  files, and the helper is restored and verified in the rootfs, live image
+  and installer.
+- fastfetch failed with "Image logo types are not supported" (built without
+  ImageMagick/chafa). The shipped config now uses the text cobweb logo
+  (`file` + webos.txt), which works in every terminal and on the console.
+- fastfetch did not appear in every shell: added /etc/bash/bashrc.d,
+  /etc/zsh/zshrc and /etc/fish/conf.d hooks; foot now uses webos-shell like
+  kitty; WEBOS_FASTFETCH_SHOWN prevents double cards.
+- Installer progress bar lost colour past ~50% and drifted out of its box.
+  It is now a LineGauge inside the Progress panel (label left, bar after)
+  with ANSI colours: 0-25 red, 26-50 light-red/orange, 51-75 yellow,
+  76-100 light-green.
+- /home/*/.local/state/webos/rice.manifest was root-owned and unreadable;
+  webos-rice and webos-dotfiles now hand it back to the home directory
+  owner, and `webos-rice --doctor` no longer references an unset ${home}.
+- Duplicate/stale SDDM entries: webos.desktop is no longer installed into
+  /usr/share/xsessions (Hyprland is Wayland-only); the installer points
+  SDDM at /usr/share/webos/sessions and links only the selected session.
+- Same-version rebuilds could keep a stale installer/theme: the rootfs stage
+  now unmerges and rebuilds app-admin/webos-installer and webos-theme.
 
 WHAT'S NEW / NOTABLE IN 1.02
 ----------------------------
 - Session reliability: SDDM offers only WebOS sessions (stock Hyprland entry removed). Portals and polkit start via webos-portals on OpenRC; webos-session applies rice before launch; waybar/fastfetch have system-wide fallbacks and reliable autostart.
 - Dotfiles profiles: installer page + `webos-dotfiles --apply ashen|mono|jakoolit|minimal` (default Deep Black, flat monochrome, frosted glass bar, minimal bar).
-- New session: WebOS Noctalia (`webos-noctalia`, Hyprland + Noctalia shell) preinstalled with seeded config alongside WebOS Hyprland and KDE Plasma. niri is not included in 1.02 (libdisplay-info slot conflict with Plasma/KWin).
+- New session: WebOS Noctalia (`webos-noctalia`, Hyprland + Noctalia shell) preinstalled with seeded config alongside WebOS Hyprland and KDE Plasma. niri is not included (libdisplay-info slot conflict with Plasma/KWin).
 - Installer: desktop profile choices include Hyprland, Noctalia shell, KDE Plasma and TTY-only; chosen session/dotfiles are seeded for the installed user.
 - Fixed webos-theme merge collisions that could ship an ISO without webos-shell, waybar config, portal prefs or dark-mode defaults; portal overrides live under /etc/xdg-desktop-portal.
 - webos-settings launcher; under Hyprland use wdisplays and compositor device tools (KDE device panels require a Plasma session).
@@ -32,7 +64,7 @@ SESSIONS
 - KDE Plasma: "Plasma (Wayland)" in SDDM (`startplasma-wayland`)
 - Gamescope : `webos-session --gamescope`
 
-KDE Plasma in 1.02 is Wayland-only (no `startplasma-x11` / Plasma X11 session in this image).
+KDE Plasma in 1.021 is Wayland-only (no `startplasma-x11` / Plasma X11 session in this image).
 Portals/polkit: webos-portals starts Hyprland/GTK portals and a polkit agent on OpenRC (or Noctalia's own agent in the Noctalia session).
 
 HYPRLAND KEYBINDS
