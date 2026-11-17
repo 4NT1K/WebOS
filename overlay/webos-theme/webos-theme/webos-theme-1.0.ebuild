@@ -94,16 +94,16 @@ src_install() {
 		doins "${FILESDIR}"/system/xdg-desktop-portal/*.conf
 	fi
 
-	# --- 4. Wayland/X session entries -----------------------------------
+	# --- 4. Wayland session entries --------------------------------------
 	# Named `webos`, not `hyprland`, so we never collide with the upstream
 	# package's own desktop file. The Noctalia session runs Hyprland with
-	# Noctalia as the shell when that package is installed.
+	# Noctalia as the shell when that package is installed. Only Wayland
+	# entries are installed: Hyprland cannot run under X11, and a duplicate
+	# xsessions/webos.desktop made SDDM show the same session twice.
 	insinto /usr/share/wayland-sessions
 	newins "${FILESDIR}"/system/webos.desktop webos.desktop
 	newins "${FILESDIR}"/system/webos-noctalia.desktop webos-noctalia.desktop
 	newins "${FILESDIR}"/system/webos-gamescope.desktop webos-gamescope.desktop
-	insinto /usr/share/xsessions
-	newins "${FILESDIR}"/system/webos.desktop webos.desktop
 
 	# --- 4b. application entries ----------------------------------------
 	insinto /usr/share/applications
@@ -123,6 +123,16 @@ src_install() {
 	# WebOS defaults per-user when none exist.
 	insinto /usr/share/webos/noctalia
 	newins "${FILESDIR}"/system/noctalia-config.toml config.toml
+
+	# Show the fastfetch card in interactive bash/zsh/fish shells that were
+	# not started through webos-shell (TTYs, ssh, other terminals). The
+	# WEBOS_FASTFETCH_SHOWN guard keeps it from printing twice.
+	insinto /etc/bash/bashrc.d
+	newins "${FILESDIR}"/system/bashrc.d-webos-fastfetch.bash 00-webos-fastfetch.bash
+	insinto /etc/zsh
+	newins "${FILESDIR}"/system/zshrc-webos-fastfetch zshrc
+	insinto /etc/fish/conf.d
+	newins "${FILESDIR}"/system/fish-conf-webos.fish 00-webos-fastfetch.fish
 
 	# --- 6. helper binaries ---------------------------------------------
 	exeinto /usr/bin

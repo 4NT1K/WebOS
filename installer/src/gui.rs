@@ -863,7 +863,7 @@ impl InstallerGui {
             Align2::LEFT_CENTER,
             label,
             FontId::proportional(14.0),
-            theme::E_TEXT,
+            bar_color,
         );
 
         let track_rect = Rect::from_min_size(

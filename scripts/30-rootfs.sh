@@ -155,6 +155,10 @@ install -d "${CHROOT}/etc/sddm.conf.d"
 
 # --------------------------------------------------------- installer ---------
 step "rootfs: building the WebOS installer"
+# The ebuild version does not change between fix rounds, so Portage considers
+# the package installed and keeps the stale binary. Unmerge first, then build
+# from the freshly staged tarball.
+chroot_sh "emerge --quiet --unmerge app-admin/webos-installer" >/dev/null 2>&1 || true
 # If an interrupted earlier run left a mismatched distfile/Manifest pair,
 # rebuild the pair and retry rather than failing the whole stage.
 installed=0
@@ -182,6 +186,10 @@ install -d "${CHROOT}/usr/share/webos"
 
 # ---------------------------------------------------------- theming ----------
 step "rootfs: applying the rice (webos-theme)"
+# Same-version ebuild edits are not picked up by a plain emerge, so remove the
+# package first. Without this the ISO keeps the previous rice, session helper
+# and fastfetch wrapper.
+chroot_sh "emerge --quiet --unmerge webos-theme/webos-theme" >/dev/null 2>&1 || true
 chroot_sh "emerge --quiet-build=y webos-theme/webos-theme" \
 	|| die "webos-theme merge failed (rice/session helpers would be missing)"
 chroot_sh "emerge --config webos-theme/webos-theme" \
@@ -202,6 +210,16 @@ chroot_sh "test -f /usr/share/webos/noctalia/config.toml" \
 	|| die "noctalia seed config missing after webos-theme merge"
 chroot_sh "test -d /usr/share/webos/dotfiles" \
 	|| die "dotfiles profiles missing after webos-theme merge"
+chroot_sh "test -f /etc/bash/bashrc.d/00-webos-fastfetch.bash" \
+	|| die "bash fastfetch hook missing after webos-theme merge"
+chroot_sh "test -f /etc/zsh/zshrc" \
+	|| die "zsh fastfetch hook missing after webos-theme merge"
+chroot_sh "test -f /etc/fish/conf.d/00-webos-fastfetch.fish" \
+	|| die "fish fastfetch hook missing after webos-theme merge"
+chroot_sh "grep -q 'type.*file' /usr/share/webos/rice/fastfetch/fastfetch.json" \
+	|| die "fastfetch still uses an image logo after webos-theme merge"
+chroot_sh "grep -q 'Hyprland -c' /usr/bin/webos-session" \
+	|| die "webos-session does not pin hyprland.conf"
 
 # -------------------------------------------------------- debranding ---------
 step "rootfs: applying WebOS branding overrides (remove Gentoo identifiers)"
@@ -260,6 +278,19 @@ rsync -aHAX --delete \
 # rsync protects excluded paths from --delete, so stale build links survive.
 # A dangling /lib/modules/*/build confuses module tooling on the target.
 rm -f "${ROOTFS_DIR}"/lib/modules/*/build
+# dbus-daemon-launch-helper must be setuid root and group messagebus. A
+# root:root 0110 helper makes polkitd impossible to D-Bus activate, so no
+# authentication agent ever appears on the desktop.
+MB_GID="$(awk -F: '$1=="messagebus"{print $3}' "${ROOTFS_DIR}/etc/group" 2>/dev/null || true)"
+[[ -n ${MB_GID} ]] || MB_GID=101
+for _root in "${CHROOT}" "${ROOTFS_DIR}"; do
+	_h="$_root/usr/libexec/dbus-daemon-launch-helper"
+	[[ -e ${_h} ]] || continue
+	chown 0:"${MB_GID}" "${_h}" 2>/dev/null || true
+	chmod 4754 "${_h}"
+done
+[[ "$(stat -c '%a %u' "${ROOTFS_DIR}/usr/libexec/dbus-daemon-launch-helper" 2>/dev/null || true)" == "4754 0" ]] \
+	|| die "dbus-daemon-launch-helper permissions are wrong in the rootfs"
 # webos-theme is not always re-emerged (same version), so make sure the
 # boot-glue script is the current one from the tree.
 install -m 0755 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/local.d-webos.start" \

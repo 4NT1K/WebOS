@@ -78,12 +78,32 @@ else
 
 	# The live tree is the install source: the installer rsyncs it with
 	# --numeric-ids, so every owner here is copied to the target verbatim.
-	# Normalize ownership without stripping setuid/setgid bits.
+	# Normalize only files the build host wrote as its own user; system
+	# accounts (mail, sddm, polkitd, portage, messagebus) keep their owners,
+	# and no chown touches a root-owned file, so setuid/setgid bits survive.
 	chown 0:0 "${LIVE_ROOT}" 2>/dev/null || true
-	find "${LIVE_ROOT}" -xdev \( ! -uid 0 -o ! -gid 0 \) -exec chown 0:0 {} + 2>/dev/null || true
+	# The build runs as root inside Docker, but the bind-mounted source tree
+	# belongs to the invoking user; use that uid, not `id -u`.
+	BUILD_UID="$(stat -c %u "${WEBOS_ROOT}" 2>/dev/null || id -u)"
+	if [[ ${BUILD_UID} -ne 0 ]]; then
+		find "${LIVE_ROOT}" -xdev -uid "${BUILD_UID}" -exec chown 0:0 {} + 2>/dev/null || true
+	fi
+
+	# dbus-daemon-launch-helper must be setuid root and group messagebus.
+	# A mass chown used to strip this to 0110 root:root, which made polkitd
+	# impossible to D-Bus activate (no authentication agent on the desktop).
+	DBUS_HELPER="${LIVE_ROOT}/usr/libexec/dbus-daemon-launch-helper"
+	if [[ -e ${DBUS_HELPER} ]]; then
+		chown 0:messagebus "${DBUS_HELPER}" 2>/dev/null || chown 0:101 "${DBUS_HELPER}" 2>/dev/null || true
+		chmod 4754 "${DBUS_HELPER}"
+	fi
 	[[ "$(stat -c %u "${LIVE_ROOT}")" == 0 ]] || die "live root is not owned by root"
 	[[ "$(stat -c %u "${LIVE_ROOT}/usr")" == 0 ]] || die "live /usr is not owned by root"
 	[[ "$(stat -c %u "${LIVE_ROOT}/etc")" == 0 ]] || die "live /etc is not owned by root"
+	if [[ -e ${DBUS_HELPER} ]]; then
+		[[ "$(stat -c '%a %u' "${DBUS_HELPER}")" == "4754 0" ]] \
+			|| die "dbus-daemon-launch-helper has wrong permissions: $(stat -c '%a %u:%g' "${DBUS_HELPER}")"
+	fi
 
 	# --- live-only autologin -----------------------------------------------------
 	# tty1 logs in as root and runs the live session. Two mechanisms, because a

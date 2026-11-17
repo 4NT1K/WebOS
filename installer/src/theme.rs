@@ -9,7 +9,6 @@ use ratatui::style::{Color, Modifier, Style};
 /// window, because WebOS runs the installer inside foot/kitty. Icons and the
 /// cursor are white on top of that deep black.
 pub const BASE: Color = Color::Rgb(5, 5, 8);   // deep black
-pub const BASE_SOFT: Color = Color::Rgb(8, 8, 11);
 
 pub const TEXT: Color = Color::Rgb(240, 240, 245);   // white
 pub const TEXT_DIM: Color = Color::Rgb(154, 163, 173);
@@ -20,21 +19,25 @@ pub const ACCENT_DIM: Color = Color::Rgb(150, 155, 165);
 
 pub const BORDER: Color = Color::Rgb(38, 40, 46);
 pub const URGENT: Color = Color::Rgb(248, 113, 113);
-pub const ORANGE: Color = Color::Rgb(251, 146, 60);
 pub const WARN: Color = Color::Rgb(251, 191, 36);
 pub const GOOD: Color = Color::Rgb(134, 239, 172);
 
 /// Progress/gauge colour: 0-25 red, 26-50 orange, 51-75 yellow, 76-100 green.
+///
+/// Deliberately ANSI rather than RGB: the TUI also runs on the bare Linux
+/// console (TERM=linux), which only understands the 16 base colours. RGB
+/// values are silently dropped there, which is what made the bar lose its
+/// colour past the halfway mark.
 pub fn progress_color(ratio: f64) -> Color {
     let pct = (ratio * 100.0).round() as i32;
     if pct <= 25 {
-        URGENT
+        Color::Red
     } else if pct <= 50 {
-        ORANGE
+        Color::LightRed // closest ANSI match for orange
     } else if pct <= 75 {
-        WARN
+        Color::Yellow
     } else {
-        GOOD
+        Color::LightGreen
     }
 }
 

@@ -6,7 +6,7 @@
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, Gauge, List, ListItem, Paragraph, Wrap};
+use ratatui::widgets::{Block, Borders, LineGauge, List, ListItem, Paragraph, Wrap};
 use ratatui::Frame;
 
 use crate::app::{App, Step};
@@ -639,20 +639,26 @@ fn draw_install(f: &mut Frame, app: &mut App) {
     draw_header(f, rows[0], app, Some(&app.phase));
 
     let ratio = app.progress.clamp(0.0, 1.0) as f64;
-    let gauge = Gauge::default()
+    let colour = theme::progress_color(ratio);
+    let phase = if app.phase.is_empty() { "starting" } else { &app.phase };
+    let gauge = LineGauge::default()
         .block(panel("Progress"))
         .ratio(ratio)
-        .gauge_style(
+        .line_set(ratatui::symbols::line::THICK)
+        .label(Line::from(Span::styled(
+            format!(" {:>3.0}%  {} ", ratio * 100.0, phase),
             Style::default()
-                .fg(theme::progress_color(ratio))
-                .bg(theme::BASE_SOFT)
+                .fg(colour)
+                .bg(theme::BASE)
+                .add_modifier(Modifier::BOLD),
+        )))
+        .filled_style(
+            Style::default()
+                .fg(colour)
+                .bg(theme::BASE)
                 .add_modifier(Modifier::BOLD),
         )
-        .label(format!(
-            "{:>3.0}%  {}",
-            ratio * 100.0,
-            if app.phase.is_empty() { "starting" } else { &app.phase }
-        ));
+        .unfilled_style(Style::default().fg(theme::BORDER).bg(theme::BASE));
     f.render_widget(gauge, rows[1]);
 
     draw_log(f, rows[2], app);

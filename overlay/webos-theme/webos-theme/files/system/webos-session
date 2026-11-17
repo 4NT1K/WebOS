@@ -91,7 +91,16 @@ case "$MODE" in
 			printf '  emerge webos-desktop/webos-desktop\n' >&2
 			exit 1
 		}
-		exec Hyprland
+		# Hyprland gives ~/.config/hypr/hyprland.lua precedence over
+		# hyprland.conf. The stock package ships an example lua config with no
+		# autostart, so leaving it in place silently disables waybar, mako,
+		# portals and the fastfetch card. WebOS ships hyprland.conf: move any
+		# lua out of the way (keep a backup) and select the conf explicitly.
+		lua="$HOME/.config/hypr/hyprland.lua"
+		if [[ -f "$lua" ]]; then
+			mv -f "$lua" "$lua.webos-disabled" 2>/dev/null || rm -f "$lua" 2>/dev/null || true
+		fi
+		exec Hyprland -c "$HOME/.config/hypr/hyprland.conf"
 		;;
 	hyprland-safe)
 		# Skip the rice: useful when a config change breaks the session.

@@ -154,10 +154,27 @@ apply_home() {
 	local home="$1" force="$2"
 	[[ -d "$home" ]] || return 0
 	note "applying rice to ${home}"
+	# Hyprland prefers ~/.config/hypr/hyprland.lua over hyprland.conf. The
+	# upstream example lua has no autostart, so it silently disables the whole
+	# rice (no waybar, no portals, no fastfetch). WebOS ships the conf; move
+	# any lua aside, keeping a backup.
+	local lua="$home/.config/hypr/hyprland.lua"
+	if [[ -f "$lua" ]]; then
+		mv -f "$lua" "$lua.webos-disabled" 2>/dev/null || true
+	fi
 	apply_tree "$home" "$force"
 	# gtk/plasma defaults live outside the managed tree dirs
 	install_gtk_user "$home" "$force"
 	install_plasma_user "$home" "$force"
+	# When --system runs as root, the state dir and manifest are created by
+	# root. Hand them back to the account that owns the home directory, or
+	# `webos-rice --doctor` cannot read its own manifest as that user.
+	if [[ ${EUID} -eq 0 ]]; then
+		local owner
+		owner="$(stat -c '%u:%g' "$home")"
+		chown -R "$owner" "$(state_dir "$home")" 2>/dev/null || true
+		chown -R "$owner" "$home/.config" 2>/dev/null || true
+	fi
 	done_ "rice applied to ${home}"
 }
 
@@ -333,7 +350,7 @@ doctor() {
 	chk "a terminal present"       "command -v kitty || command -v foot"
 	chk "screenshot tools"         "command -v grim && command -v slurp"
 	chk "wallpaper rendered"       "[[ -f ${WALL_DIR}/webos-wallpaper.png ]]"
-	chk "fastfetch modules"          "[[ -f ${home}/.config/fastfetch/fastfetch.json ]]"
+	chk "fastfetch modules"          "[[ -f \$HOME/.config/fastfetch/fastfetch.json ]]"
 	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"
 	chk "font: Inter"              "fc-list | grep -qi Inter"
 	chk "font: JetBrains Mono NF"  "fc-list | grep -qi 'JetBrainsMono Nerd Font'"

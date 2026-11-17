@@ -77,7 +77,9 @@ apply_home() {
 
 	printf '%s\n' "$profile" > "$home/.config/webos-dotfiles"
 	if [[ $EUID -eq 0 ]]; then
-		chown -R "$(stat -c '%u:%g' "$home")" "$home/.config" 2>/dev/null || true
+		local owner
+		owner="$(stat -c '%u:%g' "$home")"
+		chown -R "$owner" "$home/.config" "$home/.local/state/webos" 2>/dev/null || true
 	fi
 }
 

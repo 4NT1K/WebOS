@@ -1,22 +1,35 @@
 #!/bin/sh
 # webos-fastfetch — WebOS terminal card with the cobweb logo.
-# Tries the configured kitty image logo, then the kitty/file fallbacks, then
-# the text cobweb so the card always renders.
+#
+# Prefers the user's ~/.config/fastfetch/fastfetch.json, then the system
+# fallback. The shipped config uses a plain text logo, because fastfetch is
+# built without ImageMagick/chafa support on WebOS: image logo types fail
+# with "Image logo types are not supported" (exit 221). A text logo always
+# renders, in every terminal and on the bare Linux console.
 set -u
 export LANG="${LANG:-C.UTF-8}"
 export LC_ALL="${LC_ALL:-$LANG}"
 
-CFG=/usr/share/webos/rice/fastfetch/fastfetch.json
-LOGO=/usr/share/webos/webos-logo.png
-TXT=/usr/share/webos/rice/fastfetch/webos.txt
-LOG=/tmp/webos-fastfetch.log
 command -v fastfetch >/dev/null 2>&1 || exit 0
 
-fastfetch --config "$CFG" "$@" && exit 0
-echo "webos-fastfetch: kitty-direct logo failed, trying kitty" >>"$LOG"
-fastfetch --config "$CFG" --logo-type kitty --logo-source "$LOGO" "$@" && exit 0
-echo "webos-fastfetch: kitty logo failed, trying file" >>"$LOG"
-fastfetch --config "$CFG" --logo-type file --logo-source "$LOGO" "$@" && exit 0
-echo "webos-fastfetch: image logos failed, using text cobweb" >>"$LOG"
-[ -f "$TXT" ] && exec fastfetch --config "$CFG" --logo-type file --logo-source "$TXT" "$@"
+CFG_SYS=/usr/share/webos/rice/fastfetch/fastfetch.json
+CFG_USER="${XDG_CONFIG_HOME:-$HOME/.config}/fastfetch/fastfetch.json"
+CFG="$CFG_SYS"
+[ -f "$CFG_USER" ] && CFG="$CFG_USER"
+
+# The text logo lives next to the config when the user copied it; otherwise
+# use the system one.
+TXT="$(dirname "$CFG")/webos.txt"
+[ -f "$TXT" ] || TXT=/usr/share/webos/rice/fastfetch/webos.txt
+LOG=/tmp/webos-fastfetch.log
+
+# First choice: the config as written (text logo). If a user config still
+# points at an image type, fall back to the text logo explicitly.
+fastfetch --config "$CFG" "$@" 2>>"$LOG" && exit 0
+echo "webos-fastfetch: config logo failed, using text cobweb" >>"$LOG"
+if [ -f "$TXT" ]; then
+	fastfetch --config "$CFG" --logo-type file --logo-source "$TXT" "$@" 2>>"$LOG" && exit 0
+fi
+# Last resort: no logo at all, but still show the system card.
+fastfetch --config "$CFG" --logo none "$@" 2>>"$LOG" && exit 0
 exit 1
