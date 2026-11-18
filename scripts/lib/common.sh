@@ -230,9 +230,17 @@ resolve_portage_url() {
 mksquashfs_root() {
 	local src="$1" out="$2" label="${3:-webos}"
 	require_cmd mksquashfs
+	# Prefer zstd: it decompresses fastest on the live medium. Some hosts
+	# build squashfs-tools without the zstd USE flag, so fall back to xz
+	# instead of failing the whole ISO after a 20-minute rootfs build.
+	local comp=(-comp zstd -Xcompression-level 19)
+	if ! mksquashfs -help-section compression 2>&1 | grep -qw zstd; then
+		warn "mksquashfs has no zstd support; compressing with xz"
+		comp=(-comp xz -Xbcj x86)
+	fi
 	info "squashfs: $(du -sh "${src}" | cut -f1) -> ${out}"
 	mksquashfs "${src}" "${out}" \
-		-noappend -comp zstd -Xcompression-level 19 \
+		-noappend "${comp[@]}" \
 		-b 1M -no-progress -wildcards \
 		-e 'var/cache/*' 'var/tmp/*' 'tmp/*' 'usr/src/*' 'proc/*' 'sys/*' 'dev/*'
 }

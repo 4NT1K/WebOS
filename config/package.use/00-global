@@ -30,6 +30,8 @@ media-libs/harfbuzz icu truetype
 sys-apps/util-linux -systemd
 sys-fs/e2fsprogs -static-libs
 sys-fs/btrfs-progs zstd
+# The ISO stage compresses the live filesystem with zstd.
+sys-fs/squashfs-tools zstd
 sys-boot/grub device-mapper
 sys-kernel/dracut -systemd
 sys-apps/gptfdisk -static
