@@ -6,7 +6,11 @@ cd /sanusos
 OUT=/sanusos/build/verify.log
 exec >"$OUT" 2>&1
 echo "== verify $(date -u +'%Y-%m-%dT%H:%M:%SZ') =="
-ISO=$(ls -1 /sanusos/build/webos-*.iso 2>/dev/null | head -1 || ls -1 /sanusos/build/webos-*.iso 2>/dev/null | head -1 || true)
+# Pick this release's ISO, never an older one that happens to sort first.
+ISO="/sanusos/build/${WEBOS_ID:-webos}-${WEBOS_VERSION_FULL:-}-${WEBOS_ARCH:-amd64}.iso"
+if [[ ! -f "$ISO" ]]; then
+  ISO=$(ls -1t /sanusos/build/webos-*.iso 2>/dev/null | head -1 || true)
+fi
 if [[ -z "${ISO}" ]]; then echo "FAIL: no ISO found"; echo rc=1; exit 1; fi
 echo "ISO: ${ISO} $(du -h "$ISO" | cut -f1)"
 ( cd "$(dirname "$ISO")" && sha256sum -c "$(basename "$ISO").sha256" ) && echo "checksum: OK" || echo "checksum: FAIL"
@@ -39,7 +43,8 @@ SQ="${EXTRACT}/webos.squashfs"
 if [[ -f "$SQ" ]]; then
   echo "-- squashfs info --"; unsquashfs -s "$SQ" 2>/dev/null | head -20 || true
   echo "-- key files in squashfs --"
-  unsquashfs -ll "$SQ" 2>/dev/null | grep -E 'usr/bin/webos-installer$|usr/bin/Hyprland$|usr/bin/startplasma-wayland$|usr/bin/plasmashell$|usr/bin/waybar$|etc/os-release$|etc/webos-release$|etc/issue$|usr/local/bin/webos-live-session$' | head -40 || true
+  unsquashfs -ll "$SQ" 2>/dev/null | grep -E 'usr/bin/webos-installer$|usr/bin/Hyprland$|usr/bin/startplasma-wayland$|usr/bin/plasmashell$|usr/bin/waybar$|etc/os-release$|etc/webos-release$|etc/issue$|usr/local/bin/webos-live-session$|usr/share/webos/WEBOS-INFO.txt$|usr/share/webos/logo.svg$' | head -40 || true
+  echo "-- webos info --"; unsquashfs -cat "$SQ" usr/share/webos/WEBOS-INFO.txt 2>/dev/null | head -6 || true
   echo "-- os-release --"; unsquashfs -cat "$SQ" etc/os-release 2>/dev/null | head -20 || true
   echo "-- issue head --"; unsquashfs -cat "$SQ" etc/issue 2>/dev/null | head -8 || true
 fi
