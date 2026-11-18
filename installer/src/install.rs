@@ -744,8 +744,6 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
              SessionDir=/usr/share/webos/sessions/wayland\n\
              [X11]\n\
              SessionDir=/usr/share/webos/sessions/x11\n\
-             [Users]\n\
-             DefaultSession={session}\n\
              EOF\n\n",
             u = cfg.username
         ));

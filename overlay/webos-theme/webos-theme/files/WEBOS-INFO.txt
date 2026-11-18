@@ -1,4 +1,4 @@
-WebOS 1.021 "Ashen" — system information
+WebOS 1.022 "Ashen" — system information
 ========================================
 
 Everything important about this installed system, in one file.
@@ -7,7 +7,7 @@ Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
 RELEASE / IDENTITY
 ------------------
-- Version      : WebOS 1.021 "Ashen"
+- Version      : WebOS 1.022 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
@@ -15,9 +15,9 @@ RELEASE / IDENTITY
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
-- ISO          : webos-1.021-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- ISO          : webos-1.022-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
 - Source       : https://github.com/4NT1K/WebOS
-- Release file : /etc/os-release and /etc/webos-release both report 1.021
+- Release file : /etc/os-release and /etc/webos-release both report 1.022
 
 QUICK START
 -----------
@@ -68,10 +68,35 @@ This is a fix release for the issues reported against 1.02:
   fc-list is unavailable, and no longer fails "greetd configured" on healthy
   SDDM systems.
 
+WHAT WAS FIXED IN 1.022
+-----------------------
+This is a fix release for the issues found in the 1.021 audit:
+- `webos-rice --doctor` reported "font: JetBrains Mono NF" as failed even
+  though the font was installed. The check used `grep -q` under
+  `set -o pipefail`: grep exited at the first match, fc-list died from
+  SIGPIPE and the pipeline returned 141. The font checks now read the whole
+  fc-list stream and use `find ... -print -quit` as the fallback.
+- Session services (waybar, hypridle, hyprpaper, portals, polkit agent) could
+  be missing when the user's ~/.config/hypr/hyprland.conf predated the
+  exec-once lines. webos-session now starts webos-autostart itself once the
+  compositor answers; webos-autostart is locked (flock) and idempotent, so
+  the exec-once copy is a no-op. /tmp/webos-autostart.log and
+  /tmp/webos-portals.log always record the attempt.
+- The stock hyprland.lua could still win when Hyprland was launched outside
+  webos-session. webos-rice --ensure moves it aside at every login, and
+  --doctor now fails if an active hyprland.lua is present.
+- webos-colors.conf used inline "# ..." comments. hyprlang treats everything
+  after a value as part of the value, so Hyprland reported a config error
+  containing "#". All comments are on their own lines now.
+- SDDM: 10-webos.conf no longer sets DisplayServer (Gentoo's 01gentoo.conf
+  selects the greeter backend) and the installer no longer duplicates
+  DefaultSession. The session chosen at install time is still seeded in
+  /var/lib/sddm/state.conf.
+
 EXPECTED BEHAVIOUR
 ------------------
 Boot / live medium
-- The banner reads "WebOS 1.021 (Ashen) — live medium".
+- The banner reads "WebOS 1.022 (Ashen) — live medium".
 - Nothing is written to disk until the summary is confirmed.
 - The installer progress panel stays inside its border, keeps the "%" sign,
   and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow

@@ -26,6 +26,30 @@ log=/tmp/webos-autostart.log
 running() { pgrep -f -- "$1" >/dev/null 2>&1; }
 note() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" >>"$log"; }
 
+note "start (compositor=$COMPOSITOR shell=$SHELL_KIND)"
+
+# webos-session also calls this as a fallback for rice copies that predate the
+# Hyprland exec-once lines. Serialize so only one instance starts services.
+# A directory lock is used instead of flock: the daemons started below would
+# inherit an flock file descriptor and keep the lock held for their lifetime.
+lock=/tmp/webos-autostart.lock.d
+if ! mkdir "$lock" 2>/dev/null; then
+	other="$(cat "$lock/pid" 2>/dev/null || true)"
+	if [[ -n "$other" ]] && kill -0 "$other" 2>/dev/null; then
+		note "another webos-autostart ($other) is running; skipping"
+		exit 0
+	fi
+	# A just-created lock may not have its pid yet; only break old ones.
+	if [[ -z "$other" ]] && (( $(date +%s) - $(stat -c %Y "$lock" 2>/dev/null || echo 0) < 30 )); then
+		note "another webos-autostart is starting; skipping"
+		exit 0
+	fi
+	rm -rf "$lock" 2>/dev/null || true
+	mkdir "$lock" 2>/dev/null || exit 0
+fi
+printf '%s\n' "$$" >"$lock/pid" 2>/dev/null || true
+trap 'rm -rf "$lock" 2>/dev/null || true' EXIT
+
 # ── portals + polkit ────────────────────────────────────────────────────────
 # webos-portals starts the portal implementations and the polkit agent. With
 # Noctalia the shell brings its own polkit agent, so it is told to skip it.
@@ -46,9 +70,10 @@ if [[ "$SHELL_KIND" == "noctalia" ]]; then
 fi
 
 if [[ "$SHELL_KIND" != "noctalia" ]]; then
-	if command -v waybar >/dev/null 2>&1; then
+	if running waybar; then
+		note "waybar already running"
+	elif command -v waybar >/dev/null 2>&1; then
 		note "starting waybar"
-		pkill -x waybar 2>/dev/null || true
 		cfg="$HOME/.config/waybar/config.jsonc"
 		[[ -f "$cfg" ]] || cfg=/usr/share/webos/rice/waybar/config.jsonc
 		[[ -f "$cfg" ]] || cfg=/etc/xdg/waybar/config.jsonc
@@ -63,11 +88,15 @@ if [[ "$SHELL_KIND" != "noctalia" ]]; then
 		done
 		running waybar || note "waybar did not stay running (see $log)"
 	fi
-	if command -v mako >/dev/null 2>&1; then
+	if running mako; then
+		note "mako already running"
+	elif command -v mako >/dev/null 2>&1; then
 		note "starting mako"
 		mako >>"$log" 2>&1 &
 	fi
-	if command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
+	if running hypridle; then
+		note "hypridle already running"
+	elif command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
 		note "starting hypridle"
 		hypridle >>"$log" 2>&1 &
 	fi
@@ -77,6 +106,8 @@ fi
 WALL=/usr/share/webos/wallpaper/webos-wallpaper.png
 if [[ "$SHELL_KIND" == "noctalia" ]]; then
 	note "wallpaper handled by noctalia"
+elif running hyprpaper; then
+	note "hyprpaper already running"
 elif command -v hyprpaper >/dev/null 2>&1; then
 	note "starting hyprpaper"
 	hyprpaper >>"$log" 2>&1 &

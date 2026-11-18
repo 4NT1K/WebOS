@@ -8,6 +8,7 @@
 # script does not start a second one.
 set -u
 log=/tmp/webos-portals.log
+printf '[%s] webos-portals start (shell=%s)\n' "$(date +%H:%M:%S)" "${WEBOS_SHELL:-ashen}" >>"$log"
 
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-Hyprland}"
@@ -43,9 +44,13 @@ if ! running lxqt-policykit-agent && ! running hyprpolkitagent && \
    ! running polkit-gnome-authentication-agent-1; then
 	if command -v lxqt-policykit-agent >/dev/null 2>&1; then
 		lxqt-policykit-agent >>"$log" 2>&1 &
+	elif command -v hyprpolkitagent >/dev/null 2>&1; then
+		hyprpolkitagent >>"$log" 2>&1 &
 	elif [ -x /usr/libexec/hyprpolkitagent ]; then
 		/usr/libexec/hyprpolkitagent >>"$log" 2>&1 &
 	elif [ -x /usr/libexec/polkit-gnome-authentication-agent-1 ]; then
 		/usr/libexec/polkit-gnome-authentication-agent-1 >>"$log" 2>&1 &
+	else
+		printf '[%s] no polkit agent installed\n' "$(date +%H:%M:%S)" >>"$log"
 	fi
 fi

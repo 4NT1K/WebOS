@@ -100,6 +100,20 @@ case "$MODE" in
 		if [[ -f "$lua" ]]; then
 			mv -f "$lua" "$lua.webos-disabled" 2>/dev/null || rm -f "$lua" 2>/dev/null || true
 		fi
+		# A home directory first themed by an older release keeps its
+		# hyprland.conf, which may not have the exec-once lines that start
+		# the bar, portals and wallpaper. Start the services from here too
+		# once the compositor answers; webos-autostart is locked and
+		# idempotent, so the exec-once copy is harmless.
+		if command -v webos-autostart >/dev/null 2>&1; then
+			(
+				for _ in $(seq 1 60); do
+					hyprctl version >/dev/null 2>&1 && break
+					sleep 1
+				done
+				exec webos-autostart hyprland
+			) >/dev/null 2>&1 &
+		fi
 		exec Hyprland -c "$HOME/.config/hypr/hyprland.conf"
 		;;
 	hyprland-safe)

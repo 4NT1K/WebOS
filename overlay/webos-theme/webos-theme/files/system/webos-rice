@@ -344,6 +344,9 @@ doctor() {
 	chk "rice installed"           "[[ -d ${RICE_SRC} ]]"
 	chk "Hyprland present"         "command -v Hyprland"
 	chk "hyprland.conf present"    "[[ -f \$HOME/.config/hypr/hyprland.conf ]]"
+	# Hyprland gives hyprland.lua precedence over hyprland.conf. A stale lua
+	# example (no autostart, different keybinds) must not be active.
+	chk "no hyprland.lua override" "[[ ! -f \$HOME/.config/hypr/hyprland.lua ]]"
 	chk "waybar present"           "command -v waybar"
 	chk "waybar config present"    "[[ -f \$HOME/.config/waybar/config.jsonc && -f \$HOME/.config/waybar/style.css ]]"
 	chk "wofi present"             "command -v wofi"
@@ -352,12 +355,22 @@ doctor() {
 	chk "wallpaper rendered"       "[[ -f ${WALL_DIR}/webos-wallpaper.png ]]"
 	chk "fastfetch modules"          "[[ -f \$HOME/.config/fastfetch/fastfetch.json ]]"
 	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"
-	chk "font: Inter"              "fc-list 2>/dev/null | grep -qi 'Inter' || find /usr/share/fonts -iname 'Inter*' 2>/dev/null | grep -q ."
-	chk "font: JetBrains Mono NF"  "fc-list 2>/dev/null | grep -qi 'JetBrainsMono' || find /usr/share/fonts -iname 'JetBrainsMono*' 2>/dev/null | grep -q ."
+	# Do not use `grep -q` in these pipelines: with `set -o pipefail`, grep
+	# exits as soon as it matches, fc-list gets SIGPIPE and the pipeline
+	# returns 141 — a false failure for fonts that appear early in fc-list.
+	chk "font: Inter"              "fc-list 2>/dev/null | grep -i 'Inter' >/dev/null || [[ -n \$(find /usr/share/fonts -iname 'Inter*' -print -quit 2>/dev/null) ]]"
+	chk "font: JetBrains Mono NF"  "fc-list 2>/dev/null | grep -i 'JetBrainsMono' >/dev/null || [[ -n \$(find /usr/share/fonts -iname 'JetBrainsMono*' -print -quit 2>/dev/null) ]]"
 	# SDDM is the default greeter; greetd is only a fallback. Failing this on a
 	# healthy SDDM system was a false positive.
 	chk "display manager"          "[[ -f /etc/greetd/config.toml ]] || [[ -f /etc/sddm.conf ]] || [[ -d /etc/sddm.conf.d ]] || command -v sddm || command -v greetd"
 	chk "session entry"            "[[ -f /usr/share/wayland-sessions/webos.desktop ]]"
+	# Only meaningful inside a running Wayland session.
+	if [[ -n ${HYPRLAND_INSTANCE_SIGNATURE:-} ]]; then
+		chk "waybar running"       "pgrep -x waybar"
+		chk "hyprpaper running"    "pgrep -x hyprpaper"
+		chk "polkit agent running" "pgrep -f 'lxqt-policykit-agent|hyprpolkitagent|polkit-gnome-authentication-agent'"
+		chk "xdg portals running"  "pgrep -f xdg-desktop-portal"
+	fi
 	say ""
 	say "${ok} ok, ${bad} failed"
 	(( bad == 0 )) || return 1
