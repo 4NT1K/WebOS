@@ -7,7 +7,7 @@
 	</maintainer>
 	<longdescription lang="en">
 		Meta-package for the WebOS desktop: Hyprland on Wayland, waybar, wofi,
-		greetd, the WebOS rice, and the Wayland toolset.
+		SDDM, the WebOS rice, and the Wayland toolset.
 	</longdescription>
 	<use>
 		<flag name="bluetooth">Install the BlueZ stack and blueman.</flag>

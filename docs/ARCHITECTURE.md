@@ -69,7 +69,7 @@ WebOS is four things stacked:
         │  rice        webos-theme  (Hyprland, Waybar…) │
         ├──────────────────────────────────────────────┤
         │  gaming      webos-gaming (Steam, Proton…)    │
-        │  desktop     webos-desktop (Hyprland, greetd) │
+        │  desktop     webos-desktop (Hyprland, SDDM)   │
         │  base        webos-base    (OpenRC, NM, …)    │
         ├──────────────────────────────────────────────┤
         │  kernel      webos-kernel  (LTS + patchset)   │
@@ -260,7 +260,7 @@ subvolid 5 and finds no `/sbin/init`.
 `webos-theme` installs the pristine rice under `/usr/share/webos/rice` and a
 set of helper binaries (`webos-rice`, `webos-session`, `webos-wallpaper`,
 `webos-shot`, `webos-gaming`). Files that another package owns (GTK configs,
-greetd's config, Hyprland's own files) are **not** shipped from the package
+SDDM's config, Hyprland's own files) are **not** shipped from the package
 image; they are written by `webos-rice --system` in `pkg_postinst`, with a
 one-time backup, which keeps the tree free of file collisions.
 
@@ -284,7 +284,7 @@ desktop look like one product.
 
 ### Session
 
-Login is `greetd` + `tuigreet`. The session entries are named `webos` (not
+Login is SDDM. The session entries are named `webos` (not
 `hyprland`) so they never collide with the upstream package. `webos-session`
 exports the environment and starts Hyprland; `webos-gamescope.desktop` is the
 gamescope/SteamOS-style session.
@@ -339,7 +339,7 @@ firmware → GRUB (hybrid) → vmlinuz-webos + initramfs-webos.img
 ```
 firmware → GRUB → vmlinuz-6.12.0-webos + initramfs
         → root=UUID=… [rd.luks.name=…] rootflags=subvol=@
-        → OpenRC → greetd (tuigreet) → webos-session → Hyprland
+        → OpenRC → SDDM → webos-session → Hyprland
 ```
 
 ---

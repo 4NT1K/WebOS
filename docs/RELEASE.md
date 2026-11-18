@@ -164,7 +164,7 @@ A short template:
 
 Kernel: 6.12.0-webos (BORE, fsync, ntsync, BBRv3, AMD P-State EPP, MGLRU)
 Base:   Gentoo <snapshot date>, profile webos:default/linux/amd64/webos
-Desktop: Hyprland (Wayland), greetd + tuigreet
+Desktop: Hyprland (Wayland), SDDM
 Installer: webos-installer 1.0.0
 
 ## Highlights

@@ -847,13 +847,13 @@ impl InstallerGui {
         };
 
         // Progress box: keep the bar and label inside a bordered container.
-        let box_h = 54.0;
+        let box_h = 76.0;
         let box_rect = Rect::from_min_size(ui.cursor().min, egui::Vec2::new(w, box_h));
         ui.painter().rect_filled(box_rect, 8.0, theme::E_BASE_SOFT);
         ui.painter().rect_stroke(
             box_rect,
             8.0,
-            egui::Stroke::new(1.0, theme::E_BORDER),
+            egui::Stroke::new(1.0_f32, theme::E_BORDER),
             egui::StrokeKind::Inside,
         );
 
@@ -865,6 +865,17 @@ impl InstallerGui {
             FontId::proportional(14.0),
             bar_color,
         );
+        ui.painter().text(
+            Pos2::new(box_rect.max.x - 14.0, box_rect.min.y + 14.0),
+            Align2::RIGHT_CENTER,
+            format!(
+                "stage {}/{}",
+                (app.completed.len() + 1).min(app.stage_total()),
+                app.stage_total()
+            ),
+            FontId::proportional(12.0),
+            theme::E_TEXT_DIM,
+        );
 
         let track_rect = Rect::from_min_size(
             Pos2::new(box_rect.min.x + 12.0, box_rect.min.y + 30.0),
@@ -874,7 +885,7 @@ impl InstallerGui {
         ui.painter().rect_stroke(
             track_rect,
             6.0,
-            egui::Stroke::new(1.0, theme::E_BORDER),
+            egui::Stroke::new(1.0_f32, theme::E_BORDER),
             egui::StrokeKind::Inside,
         );
         if frac > 0.0 {
@@ -885,6 +896,28 @@ impl InstallerGui {
                 bar_color,
             );
         }
+
+        // Finished stages, most recent kept when space is short.
+        let done: Vec<String> = app
+            .completed
+            .iter()
+            .rev()
+            .take(4)
+            .rev()
+            .map(|n| format!("✓ {n}"))
+            .collect();
+        let checklist = if done.is_empty() {
+            "waiting for the first stage".to_string()
+        } else {
+            done.join("  ")
+        };
+        ui.painter().text(
+            Pos2::new(box_rect.min.x + 14.0, box_rect.min.y + 58.0),
+            Align2::LEFT_CENTER,
+            checklist,
+            FontId::proportional(12.0),
+            theme::E_TEXT_DIM,
+        );
         ui.allocate_rect(box_rect, egui::Sense::hover());
         ui.add_space(12.0);
 

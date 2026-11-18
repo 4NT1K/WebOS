@@ -6,7 +6,7 @@
 //!   * the UI can show what is happening without the worker knowing about the
 //!     UI.
 
-use std::io::{BufRead, BufReader, Read, Write};
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::mpsc::Sender;
@@ -89,6 +89,29 @@ impl Runner {
 
     /// Run a command, stream its output, and fail on a non-zero exit.
     pub fn run<S: AsRef<str>>(&self, program: &str, args: &[S]) -> Result<()> {
+        self.run_stream(program, args, None)
+    }
+
+    /// Like `run`, but parses `NN%` out of the command's output (rsync's
+    /// `--info=progress2` writes it with carriage returns) and maps it onto
+    /// `[base, base + span]` of the overall progress. Progress lines go to the
+    /// UI only, so a multi-gigabyte copy does not flood the log pane.
+    pub fn run_progress<S: AsRef<str>>(
+        &self,
+        program: &str,
+        args: &[S],
+        base: f32,
+        span: f32,
+    ) -> Result<()> {
+        self.run_stream(program, args, Some((base, span)))
+    }
+
+    fn run_stream<S: AsRef<str>>(
+        &self,
+        program: &str,
+        args: &[S],
+        progress: Option<(f32, f32)>,
+    ) -> Result<()> {
         let rendered = format!(
             "{} {}",
             program,
@@ -129,8 +152,19 @@ impl Runner {
             let tx = self.tx.clone();
             let log_path = self.log_path.clone();
             handles.push(std::thread::spawn(move || {
-                let reader = BufReader::new(pipe);
-                for line in reader.lines().map_while(Result::ok) {
+                let mut last_pct: i32 = -1;
+                stream_lines(pipe, |line| {
+                    if let Some((base, span)) = progress {
+                        if let Some(pct) = parse_percent(&line) {
+                            if pct != last_pct {
+                                last_pct = pct;
+                                let _ = tx.send(Msg::Progress(
+                                    (base + span * (pct as f32 / 100.0)).clamp(0.0, 1.0),
+                                ));
+                            }
+                            return;
+                        }
+                    }
                     let _ = tx.send(Msg::Line(line.clone()));
                     if let Ok(mut f) = std::fs::OpenOptions::new()
                         .create(true)
@@ -139,7 +173,7 @@ impl Runner {
                     {
                         let _ = writeln!(f, "  {line}");
                     }
-                }
+                });
             }));
         }
 
@@ -256,6 +290,52 @@ impl Runner {
         self.write_log(&format!("!! {e:#}"));
         self.emit(Msg::Failed(format!("{e:#}")));
     }
+}
+
+/// Split a byte stream on both `\n` and `\r`, so progress meters that repaint
+/// the same line (rsync's `--info=progress2`) reach the UI as they happen
+/// instead of arriving as one enormous line when the process exits.
+fn stream_lines<R: Read>(mut reader: R, mut on_line: impl FnMut(String)) {
+    let mut buf: Vec<u8> = Vec::with_capacity(256);
+    let mut chunk = [0u8; 8192];
+    loop {
+        let n = match reader.read(&mut chunk) {
+            Ok(0) => break,
+            Ok(n) => n,
+            Err(_) => break,
+        };
+        for &b in &chunk[..n] {
+            if b == b'\n' || b == b'\r' {
+                flush_line(&mut buf, &mut on_line);
+            } else {
+                buf.push(b);
+                // A line that never terminates must not grow without bound.
+                if buf.len() >= 8192 {
+                    flush_line(&mut buf, &mut on_line);
+                }
+            }
+        }
+    }
+    flush_line(&mut buf, &mut on_line);
+}
+
+fn flush_line(buf: &mut Vec<u8>, on_line: &mut impl FnMut(String)) {
+    if buf.is_empty() {
+        return;
+    }
+    let line = String::from_utf8_lossy(buf).trim_end().to_string();
+    buf.clear();
+    if !line.is_empty() {
+        on_line(line);
+    }
+}
+
+/// Find an integer percentage in a progress line ("  1.2G  45%  88MB/s").
+fn parse_percent(line: &str) -> Option<i32> {
+    line.split_whitespace()
+        .find_map(|tok| tok.strip_suffix('%'))
+        .and_then(|n| n.parse::<i32>().ok())
+        .filter(|n| (0..=100).contains(n))
 }
 
 /// Which of these programs are not on PATH?

@@ -377,8 +377,8 @@ fn copy_rootfs(r: &Runner, src: &Source) -> Result<()> {
         Source::Dir(dir) => {
             let from = format!("{}/", dir.display());
             let to = format!("{TARGET}/");
-            r.info("this is the slow part; the progress bar is honest about it");
-            r.run(
+            r.info("this is the slow part; the bar tracks rsync's own progress");
+            r.run_progress(
                 "rsync",
                 &[
                     "-rlptDHAX",
@@ -400,6 +400,8 @@ fn copy_rootfs(r: &Runner, src: &Source) -> Result<()> {
                     &from,
                     &to,
                 ],
+                0.24,
+                0.38,
             )?;
         }
         Source::Tarball(path) => {
@@ -653,7 +655,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     // 40-iso.sh patched /etc/inittab for the live boot and left a backup;
     // the live medium may also have enabled the OpenRC agetty.tty1 service.
     // Restore / undo both BEFORE configuring services or applying the rice,
-    // so the result is a normal login (Minimal) or greetd on tty1 (Full).
+    // so the result is a normal login (Minimal) or SDDM on tty1 (Full).
     s.push_str("# remove the live-medium glue (restore a normal login)\n");
     s.push_str("if [[ -f /etc/inittab.webos-orig ]]; then mv -f /etc/inittab.webos-orig /etc/inittab; fi\n");
     s.push_str("rm -f /etc/webos-live /etc/conf.d/agetty.tty1 \\\n");
@@ -717,10 +719,36 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
     // ── default session ──────────────────────────────────────────────────
     // SDDM remembers the last session; seed it so the profile the user chose
-    // in the installer is the one they land in after logging in. Also keep
-    // only that session available in the greeter.
+    // in the installer is the one they land in after logging in.
+    //
+    // The greeter lists the sessions that are actually installed. Plasma is
+    // part of every GUI image, so hiding it (as an earlier build did) left a
+    // working desktop unreachable. The chosen profile is still the default.
     if cfg.profile.has_gui() {
         let session = cfg.profile.session();
+        let mut offered: Vec<&str> = vec![session];
+        for s in ["webos.desktop", "plasma.desktop", "webos-gamescope.desktop"] {
+            // The Noctalia profile starts its own session; offering plain
+            // WebOS next to it would just be a second, bar-only desktop.
+            if cfg.profile == Profile::Noctalia && s == "webos.desktop" {
+                continue;
+            }
+            if !offered.contains(&s) {
+                offered.push(s);
+            }
+        }
+        let links: String = offered
+            .iter()
+            .map(|s| {
+                format!(
+                    "if [ -f /usr/share/wayland-sessions/{s} ]; then\n\
+                       ln -sfn /usr/share/wayland-sessions/{s} /usr/share/webos/sessions/wayland/{s}\n\
+                     elif [ -f /usr/share/xsessions/{s} ]; then\n\
+                       ln -sfn /usr/share/xsessions/{s} /usr/share/webos/sessions/x11/{s}\n\
+                     fi\n"
+                )
+            })
+            .collect();
         s.push_str(&format!(
             "install -d -m 0755 /var/lib/sddm /etc/sddm.conf.d\n\
              cat > /var/lib/sddm/state.conf <<'EOF'\n\
@@ -729,16 +757,13 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
              User={u}\n\
              EOF\n\
              chown -R sddm:sddm /var/lib/sddm 2>/dev/null || true\n\
-             # Only the session chosen in the installer should be offered by the\n\
-             # greeter. Point SDDM at a WebOS-owned directory and symlink just\n\
-             # that session into it; the upstream .desktop files stay intact.\n\
+             # Offer every desktop that is actually installed, with the profile\n\
+             # chosen in the installer as the default. Point SDDM at a\n\
+             # WebOS-owned directory and symlink those sessions into it; the\n\
+             # upstream .desktop files stay intact.\n\
              install -d -m 0755 /usr/share/webos/sessions/wayland /usr/share/webos/sessions/x11\n\
              rm -f /usr/share/webos/sessions/wayland/*.desktop /usr/share/webos/sessions/x11/*.desktop\n\
-             if [ -f /usr/share/wayland-sessions/{session} ]; then\n\
-               ln -sfn /usr/share/wayland-sessions/{session} /usr/share/webos/sessions/wayland/{session}\n\
-             elif [ -f /usr/share/xsessions/{session} ]; then\n\
-               ln -sfn /usr/share/xsessions/{session} /usr/share/webos/sessions/x11/{session}\n\
-             fi\n\
+             {links}\
              cat > /etc/sddm.conf.d/20-webos-session.conf <<'EOF'\n\
              [Wayland]\n\
              SessionDir=/usr/share/webos/sessions/wayland\n\

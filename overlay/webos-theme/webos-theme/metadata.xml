@@ -8,7 +8,7 @@
 	<longdescription lang="en">
 		The WebOS look: a black, translucent Hyprland desktop with real
 		compositor blur. Ships Hyprland, waybar, wofi, hyprlock, mako, foot,
-		kitty, GTK/Kvantum/Qt theming, greetd configuration, a generated SVG
+		kitty, GTK/Kvantum/Qt theming, SDDM configuration, a generated SVG
 		wallpaper, and the webos-rice tool that applies it all idempotently.
 	</longdescription>
 	<upstream>

@@ -128,6 +128,23 @@ fn on_off(v: bool) -> &'static str {
     }
 }
 
+/// Ordered phase labels the worker emits. Keep in sync with the
+/// `r.phase(...)` calls in install.rs; used for the "stage n/total" indicator.
+pub const INSTALL_STAGES: [&str; 12] = [
+    "Preparing",
+    "Partitioning",
+    "Encrypting",
+    "Creating filesystems",
+    "Mounting",
+    "Copying the system",
+    "Fixing filesystem ownership",
+    "Writing /etc/fstab",
+    "Configuring the system",
+    "Building the initramfs",
+    "Recording the install",
+    "Unmounting",
+];
+
 pub struct App {
     // ── configuration the wizard edits ───────────────────────────────────
     pub cfg: InstallConfig,
@@ -153,6 +170,9 @@ pub struct App {
     pub started: bool,
     pub phase: String,
     pub progress: f32,
+    /// Phases that have finished. The panel lists them as complete, so a new
+    /// phase never appears at the old phase's percentage.
+    pub completed: Vec<String>,
     pub log: Vec<String>,
     pub log_offset: usize,
     pub error: Option<String>,
@@ -168,6 +188,14 @@ pub struct App {
 }
 
 impl App {
+    /// How many phases this install will actually emit. Encryption is skipped
+    /// entirely when it is off, so the denominator follows the plan instead of
+    /// promising a stage that never runs.
+    pub fn stage_total(&self) -> usize {
+        INSTALL_STAGES.len()
+            - usize::from(matches!(self.cfg.encryption, Encryption::None))
+    }
+
     pub fn new(dry_run: bool, yes: bool, log: Option<PathBuf>) -> Result<Self> {
         let disks = disk::enumerate();
         // The firmware we booted from is the best guess for the firmware we
@@ -196,6 +224,7 @@ impl App {
             started: false,
             phase: String::new(),
             progress: 0.0,
+            completed: Vec::new(),
             log: Vec::new(),
             log_offset: 0,
             error: None,
@@ -250,8 +279,28 @@ impl App {
 
     fn handle_msg(&mut self, m: Msg) {
         match m {
-            Msg::Phase(p) => self.phase = p,
-            Msg::Progress(v) => self.progress = v.clamp(0.0, 1.0),
+            Msg::Phase(p) => {
+                if !self.phase.is_empty() && self.phase != p {
+                    // A new phase means the previous one is done. Record it at
+                    // 100% before the label changes, so the panel never shows
+                    // the new stage carrying the old stage's percentage.
+                    let old = std::mem::take(&mut self.phase);
+                    if let Some(line) = self
+                        .log
+                        .iter_mut()
+                        .rev()
+                        .find(|l| **l == format!("── {old}"))
+                    {
+                        *line = format!("✓ {old} — 100%");
+                    }
+                    self.completed.push(old);
+                }
+                self.phase = p;
+            }
+            Msg::Progress(v) => {
+                // Never let a late progress line move the bar backwards.
+                self.progress = self.progress.max(v.clamp(0.0, 1.0));
+            }
             Msg::Line(l) => {
                 self.log.push(l);
                 // Do not let a chatty command grow the log without bound.
@@ -271,6 +320,10 @@ impl App {
         self.error = err;
         self.rx = None;
         self.step = Step::Done;
+        let last = std::mem::take(&mut self.phase);
+        if ok && !last.is_empty() && !self.completed.iter().any(|s| s == &last) {
+            self.completed.push(last);
+        }
         self.phase = if ok { "Finished".into() } else { "Failed".into() };
         if ok {
             self.progress = 1.0;
@@ -293,7 +346,8 @@ impl App {
         self.log.clear();
         self.log_offset = 0;
         self.progress = 0.0;
-        self.phase = "Starting".into();
+        self.completed.clear();
+        self.phase.clear();
         self.error = None;
 
         let (tx, rx) = mpsc::channel();

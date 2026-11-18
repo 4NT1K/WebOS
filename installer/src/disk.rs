@@ -126,11 +126,19 @@ pub fn is_efi() -> bool {
 
 /// Wait for the kernel to notice new partitions.
 pub fn settle() {
+    // stdout/stderr must never reach the terminal: the installer TUI owns it
+    // and udevadm/partprobe chatter would paint over the progress panel.
     let _ = std::process::Command::new("udevadm")
         .args(["settle", "--timeout=10"])
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
         .status();
     let _ = std::process::Command::new("partprobe")
         .arg("-s")
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
         .status();
     std::thread::sleep(std::time::Duration::from_millis(600));
 }

@@ -33,7 +33,7 @@ RDEPEND="
 # Files that another package owns are NOT installed from this package's image;
 # they are written (with a one-time backup) by `webos-rice --system` in
 # pkg_postinst. That keeps the tree free of file collisions with gtk+,
-# gui-libs/greetd, gui-wm/hyprland and friends.
+# gui-apps/sddm, gui-wm/hyprland and friends.
 
 S="${WORKDIR}"
 
@@ -48,7 +48,10 @@ src_install() {
 
 	# --- 2. branding assets ---------------------------------------------
 	insinto /usr/share/webos
-	newins "${FILESDIR}"/rice/wallpapers/webos-wallpaper.svg logo.svg
+	# The logo, not the wallpaper: webos-wallpaper.svg is a 3840x2160 black
+	# rectangle, so using it here made hyprlock and the KDE About page draw an
+	# invisible black square. webos-logo.svg is the real 512x512 mark.
+	newins "${FILESDIR}"/rice/wallpapers/webos-logo.svg logo.svg
 	if [[ -f "${FILESDIR}"/system/webos-logo.png ]]; then
 		newins "${FILESDIR}"/system/webos-logo.png webos-logo.png
 	fi

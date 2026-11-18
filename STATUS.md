@@ -1,10 +1,17 @@
 # WebOS build status
 
-_Last update: 2026-11-15 11:45 UTC — v1.13 (Ashen) rebuilding: rebrand, Spotify, KDE+Hyprland rice, white-box fastfetch_
+_Last update: 2026-11-18 — v1.022 (Ashen) fix release: Hyprland Lua rice, SDDM sessions, installer progress_
 
-## Status: v1.13 building
+## Status: v1.022 ready to build
 
-- Version bumped to 1.13; ISO `webos-1.13-Ashen-amd64.iso`.
+- Version 1.022; ISO `webos-1.022-Ashen-amd64.iso`.
+- Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is now Lua
+  (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.
+- SDDM is the shipped greeter. The installer links the installed desktops
+  (WebOS, Plasma, gamescope) into `/usr/share/webos/sessions` and seeds the
+  chosen profile in `/var/lib/sddm/state.conf`.
+- The installer progress panel lists finished stages, shows the real stage
+  count, and runs helpers with null stdio so nothing paints over the TUI.
 - All `sanus-*` names renamed to `webos-*` (packages, binaries, paths, overlay).
 - Installer toggles: Firefox (firefox-bin), Discord, OpenCode, Spotify — prebuilt.
 - Steam/Wine/winetricks/protontricks/goverlay dropped: image is 64-bit only

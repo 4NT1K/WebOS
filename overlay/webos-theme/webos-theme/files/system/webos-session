@@ -52,17 +52,18 @@ if command -v dbus-update-activation-environment >/dev/null 2>&1; then
 		XDG_RUNTIME_DIR DISPLAY WEBOS_SHELL 2>/dev/null || true
 fi
 
-# GPU hints. WebOS defaults to AMD; the rice's hyprland.conf sets the same
-# values for the compositor itself.
+# GPU hints. Only force a driver when the hardware is unambiguous: setting
+# radeonsi on an Intel or NVIDIA box makes VA-API fail.
 if [[ -z ${LIBVA_DRIVER_NAME:-} ]]; then
 	if [[ -d /sys/module/nvidia || -e /dev/nvidia0 ]]; then
 		export LIBVA_DRIVER_NAME=nvidia
 		export GBM_BACKEND=nvidia-drm
 		export __GLX_VENDOR_LIBRARY_NAME=nvidia
-	else
+	elif [[ -d /sys/module/amdgpu ]]; then
 		export LIBVA_DRIVER_NAME=radeonsi
 		export VDPAU_DRIVER=radeonsi
 	fi
+	# Intel and everything else: leave Mesa's auto-detection alone.
 fi
 
 # ── rice ────────────────────────────────────────────────────────────────────
@@ -91,20 +92,16 @@ case "$MODE" in
 			printf '  emerge webos-desktop/webos-desktop\n' >&2
 			exit 1
 		}
-		# Hyprland gives ~/.config/hypr/hyprland.lua precedence over
-		# hyprland.conf. The stock package ships an example lua config with no
-		# autostart, so leaving it in place silently disables waybar, mako,
-		# portals and the fastfetch card. WebOS ships hyprland.conf: move any
-		# lua out of the way (keep a backup) and select the conf explicitly.
-		lua="$HOME/.config/hypr/hyprland.lua"
-		if [[ -f "$lua" ]]; then
-			mv -f "$lua" "$lua.webos-disabled" 2>/dev/null || rm -f "$lua" 2>/dev/null || true
-		fi
-		# A home directory first themed by an older release keeps its
-		# hyprland.conf, which may not have the exec-once lines that start
-		# the bar, portals and wallpaper. Start the services from here too
-		# once the compositor answers; webos-autostart is locked and
-		# idempotent, so the exec-once copy is harmless.
+		# Hyprland 0.57+ reads ~/.config/hypr/hyprland.lua (and ignores
+		# hyprland.conf entirely). `webos-rice --ensure` above installs ours;
+		# if that failed, let Hyprland use its own defaults instead of dying
+		# on a missing file.
+		cfg="$HOME/.config/hypr/hyprland.lua"
+		[[ -f "$cfg" ]] || cfg=""
+		# A home directory first themed by an older release may have a config
+		# without the start-up lines for the bar, portals and wallpaper.
+		# webos-autostart is locked and idempotent, so running it here as well
+		# is harmless.
 		if command -v webos-autostart >/dev/null 2>&1; then
 			(
 				ready=0
@@ -118,11 +115,13 @@ case "$MODE" in
 				(( ready )) && exec webos-autostart hyprland
 			) >/dev/null 2>&1 &
 		fi
-		exec Hyprland -c "$HOME/.config/hypr/hyprland.conf"
+		if [[ -n "$cfg" ]]; then
+			exec Hyprland -c "$cfg"
+		fi
+		exec Hyprland
 		;;
 	hyprland-safe)
 		# Skip the rice: useful when a config change breaks the session.
-		export HYPRLAND_CONFIG=""
 		exec Hyprland -c /dev/null
 		;;
 	gamescope)

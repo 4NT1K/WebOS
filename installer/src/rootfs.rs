@@ -137,6 +137,9 @@ pub fn ensure_mounted(mountpoint: &str) -> Result<()> {
         if Path::new(image).is_file() {
             let status = std::process::Command::new("mount")
                 .args(["-t", "squashfs", "-o", "loop,ro", image, mountpoint])
+                .stdin(std::process::Stdio::null())
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
                 .status()
                 .context("mounting the live squashfs")?;
             if status.success() {

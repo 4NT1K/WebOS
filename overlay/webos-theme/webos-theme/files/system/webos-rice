@@ -154,14 +154,31 @@ apply_home() {
 	local home="$1" force="$2"
 	[[ -d "$home" ]] || return 0
 	note "applying rice to ${home}"
-	# Hyprland prefers ~/.config/hypr/hyprland.lua over hyprland.conf. The
-	# upstream example lua has no autostart, so it silently disables the whole
-	# rice (no waybar, no portals, no fastfetch). WebOS ships the conf; move
-	# any lua aside, keeping a backup.
-	local lua="$home/.config/hypr/hyprland.lua"
-	if [[ -f "$lua" ]]; then
-		mv -f "$lua" "$lua.webos-disabled" 2>/dev/null || true
+	local mf lua conf rec
+	mf="$(manifest_of "$home")"
+
+	# Hyprland 0.57+ reads ~/.config/hypr/hyprland.lua and ignores
+	# hyprland.conf. A home that was first themed by an older release (or by
+	# the Hyprland package itself) may still have the upstream *example* lua.
+	# That example has no WebOS autostart, so it silently disables the bar,
+	# portals and wallpaper. Replace only that untouched example — a config
+	# the user edited is left alone, exactly like every other rice file.
+	lua="$home/.config/hypr/hyprland.lua"
+	if [[ -f "$lua" ]] && grep -q '^-- This is an example Hyprland Lua config file\.' "$lua" 2>/dev/null; then
+		backup_once "$lua"
+		rm -f "$lua"
 	fi
+
+	# hyprland.conf is dead config on 0.57. Remove our own copy so nobody
+	# edits a file the compositor never reads; keep a user-modified one.
+	conf="$home/.config/hypr/hyprland.conf"
+	if [[ -f "$conf" ]]; then
+		rec="$(recorded_hash "$mf" "$conf" 2>/dev/null || true)"
+		if [[ -n "$rec" && "$(sha "$conf")" == "$rec" ]]; then
+			rm -f "$conf"
+		fi
+	fi
+
 	apply_tree "$home" "$force"
 	# gtk/plasma defaults live outside the managed tree dirs
 	install_gtk_user "$home" "$force"
@@ -212,6 +229,13 @@ system_gtk() {
 }
 
 system_greetd() {
+	# SDDM is the display manager WebOS ships and configures. Only set up
+	# greetd when it is actually the greeter and SDDM is not present; otherwise
+	# both would try to own tty1 and the boot would be a race.
+	if [[ -d /etc/sddm.conf.d ]] || command -v sddm >/dev/null 2>&1; then
+		skip "SDDM is the display manager; leaving greetd alone"
+		return 0
+	fi
 	[[ -d /etc/greetd ]] || { skip "greetd is not installed; skipping login setup"; return 0; }
 
 	backup_once /etc/greetd/config.toml
@@ -343,10 +367,11 @@ doctor() {
 	say ""
 	chk "rice installed"           "[[ -d ${RICE_SRC} ]]"
 	chk "Hyprland present"         "command -v Hyprland"
-	chk "hyprland.conf present"    "[[ -f \$HOME/.config/hypr/hyprland.conf ]]"
-	# Hyprland gives hyprland.lua precedence over hyprland.conf. A stale lua
-	# example (no autostart, different keybinds) must not be active.
-	chk "no hyprland.lua override" "[[ ! -f \$HOME/.config/hypr/hyprland.lua ]]"
+	# Hyprland 0.57+ only reads hyprland.lua. Check the real, active file and
+	# make sure it is the WebOS config, not the upstream example.
+	chk "hyprland.lua present"     "[[ -f \$HOME/.config/hypr/hyprland.lua ]]"
+	chk "hyprland.lua is WebOS"    "grep -q 'webos-rice: Hyprland configuration' \$HOME/.config/hypr/hyprland.lua"
+	chk "palette module present"   "[[ -f \$HOME/.config/hypr/webos-colors.lua ]]"
 	chk "waybar present"           "command -v waybar"
 	chk "waybar config present"    "[[ -f \$HOME/.config/waybar/config.jsonc && -f \$HOME/.config/waybar/style.css ]]"
 	chk "wofi present"             "command -v wofi"
@@ -438,16 +463,61 @@ main() {
 }
 
 set_wallpaper() {
-	local img="${1:-}"
+	local img="${1:-}" conf tmp
 	[[ -n "$img" ]] || die "usage: webos-rice --wallpaper <image>"
-	hyprctl keyword wallpaper "wallpaper:${img}" || skip "hyprctl could not set the wallpaper"
+	[[ -f "$img" ]] || die "no such image: $img"
+	img="$(readlink -f "$img")"
+
+	# Persist the choice so hyprpaper shows it again after a restart.
+	conf="$HOME/.config/hypr/hyprpaper.conf"
+	if [[ -f "$conf" ]]; then
+		tmp="$(mktemp)"
+		if awk -v img="$img" '
+			BEGIN { done = 0 }
+			/^[[:space:]]*wallpaper[[:space:]]*=/ && !done { print "wallpaper = ," img; done = 1; next }
+			{ print }
+			END { if (!done) print "wallpaper = ," img }
+		' "$conf" > "$tmp"; then
+			mv -f "$tmp" "$conf"
+		else
+			rm -f "$tmp"
+		fi
+	fi
+
+	if ! pgrep -x hyprpaper >/dev/null 2>&1 && command -v hyprpaper >/dev/null 2>&1; then
+		( hyprpaper >/dev/null 2>&1 & )
+		sleep 1
+	fi
+
+	if pgrep -x hyprpaper >/dev/null 2>&1; then
+		# hyprpaper's IPC: preload, then assign to every monitor ("" = all).
+		hyprctl hyprpaper preload "$img" >/dev/null 2>&1 || true
+		hyprctl hyprpaper wallpaper ",$img" >/dev/null 2>&1 \
+			|| skip "hyprpaper did not accept the wallpaper"
+	elif command -v swaybg >/dev/null 2>&1; then
+		pkill -x swaybg 2>/dev/null || true
+		( swaybg -i "$img" -m fill >/dev/null 2>&1 & )
+	else
+		skip "no wallpaper daemon (hyprpaper or swaybg) installed"
+	fi
 	note "wallpaper -> ${img}"
 }
 
 wallpaper_menu() {
 	local dir="${WALLPAPER_DIR:-/usr/share/webos/wallpaper}"
-	local img
-	img=$(find "$dir" -maxdepth 1 -type f 		\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.bmp' \) 		-print0 | sort -z | xargs -0 -r -n1 printf '%s\n' | fzf --prompt 'wallpaper> ' --height 40%) || return 0
+	local list img
+	[[ -d "$dir" ]] || die "no wallpaper directory: $dir"
+	list="$(find "$dir" -maxdepth 1 -type f \
+		\( -iname '*.png' -o -iname '*.jpg' -o -iname '*.jpeg' -o -iname '*.webp' -o -iname '*.bmp' \) \
+		-print | sort)"
+	[[ -n "$list" ]] || { skip "no wallpapers in ${dir}"; return 0; }
+	if command -v fzf >/dev/null 2>&1; then
+		img="$(printf '%s\n' "$list" | fzf --prompt 'wallpaper> ' --height 40%)" || return 0
+	elif command -v wofi >/dev/null 2>&1; then
+		img="$(printf '%s\n' "$list" | wofi --dmenu --prompt wallpaper)" || return 0
+	else
+		die "need fzf or wofi for the wallpaper menu"
+	fi
 	[[ -n "$img" ]] || return 0
 	set_wallpaper "$img"
 }

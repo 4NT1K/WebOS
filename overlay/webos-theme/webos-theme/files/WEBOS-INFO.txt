@@ -30,13 +30,13 @@ QUICK START
    the polkit agent start automatically.
 5. Update with `sudo webos-update`.
 
-WHAT WAS FIXED IN 1.021
------------------------
-This is a fix release for the issues reported against 1.02:
+WHAT CHANGED IN 1.021
+---------------------
+This was a fix release for the issues reported against 1.02:
 - Hyprland loaded the stock ~/.config/hypr/hyprland.lua instead of the WebOS
-  hyprland.conf, silently disabling autostart. webos-session now moves any
-  lua to hyprland.lua.webos-disabled and launches
-  `Hyprland -c ~/.config/hypr/hyprland.conf` explicitly.
+  hyprland.conf. 1.021 tried to move the lua aside and pin hyprland.conf.
+  That approach was wrong (Hyprland 0.57 ignores hyprland.conf); 1.022
+  rewrites the rice in Lua instead. See below.
 - polkitd could not be D-Bus activated: an ownership pass had stripped setuid
   from /usr/libexec/dbus-daemon-launch-helper. It is now 4754 root:messagebus
   in the rootfs, live image and installer, and ownership normalisation no
@@ -56,7 +56,10 @@ This is a fix release for the issues reported against 1.02:
   directory owner; `webos-rice --doctor` no longer uses an unset ${home}.
 - Duplicate/stale SDDM entries: webos.desktop is no longer installed into
   /usr/share/xsessions (Hyprland is Wayland-only). The installer points SDDM
-  at /usr/share/webos/sessions and links only the chosen session.
+  at /usr/share/webos/sessions and links every desktop that is actually
+  installed (WebOS, Plasma, gamescope), with the profile chosen in the
+  installer as the default. An earlier build linked only the chosen session,
+  which left an installed Plasma unreachable from the greeter.
 - Non-Noctalia installs no longer ship or start Noctalia. The Hyprland,
   Plasma and Minimal profiles unmerge gui-apps/noctalia and remove its session
   entry and seeded config. "mono" only restyles waybar/kitty/mako.
@@ -71,23 +74,47 @@ This is a fix release for the issues reported against 1.02:
 WHAT WAS FIXED IN 1.022
 -----------------------
 This is a fix release for the issues found in the 1.021 audit:
+- **The rice never actually loaded.** Hyprland 0.57 reads Lua configuration
+  and ignores hyprland.conf completely, so 1.021's "move the lua aside" fix
+  made the compositor fall back to its built-in defaults: no keybinds, no
+  autostart, no blur. The whole rice is now `hyprland.lua` plus a small
+  `webos-colors.lua` palette module; hyprland.conf is gone. Verified with
+  `Hyprland --verify-config`.
+- webos-rice replaces only the untouched upstream lua example (the one with
+  the `This is an example Hyprland Lua config file.` header). A config you
+  edited is still left alone. It also removes its own old hyprland.conf.
+- webos-session launches plain `Hyprland` (which finds hyprland.lua on its
+  own) instead of `-c hyprland.conf`; --safe still uses `-c /dev/null`.
+- `webos-rice --doctor` checks that `~/.config/hypr/hyprland.lua` exists and
+  is the WebOS config, and that `webos-colors.lua` is present.
+- **hyprlock had no logo.** `/usr/share/webos/logo.svg` was installed from
+  the wallpaper SVG, a 3840x2160 black rectangle, so the lock screen drew an
+  invisible black square. It now installs the real 512x512 logo.
+- **hyprsunset was never started** and used `gamma = 90`/`100` where the
+  option is a multiplier (1.0 = 100%). It starts with the session and the
+  profiles use `gamma = 1.0`.
+- hypridle had a 60-second listener that ran a `hyprctl`/`jq` pipeline and
+  could not inhibit anything. Removed: hypridle honours the D-Bus idle
+  inhibitor that games and video players already take.
+- `webos-portals` used `pgrep -f xdg-desktop-portal`, which also matches the
+  `-gtk` and `-hyprland` backends and made the script think the portal it was
+  about to start was already running. It now compares argv[0] exactly.
 - `webos-rice --doctor` reported "font: JetBrains Mono NF" as failed even
   though the font was installed. The check used `grep -q` under
   `set -o pipefail`: grep exited at the first match, fc-list died from
   SIGPIPE and the pipeline returned 141. The font checks now read the whole
   fc-list stream and use `find ... -print -quit` as the fallback.
 - Session services (waybar, hypridle, hyprpaper, portals, polkit agent) could
-  be missing when the user's ~/.config/hypr/hyprland.conf predated the
-  exec-once lines. webos-session now starts webos-autostart itself once the
-  compositor answers; webos-autostart is locked (flock) and idempotent, so
-  the exec-once copy is a no-op. /tmp/webos-autostart.log and
-  /tmp/webos-portals.log always record the attempt.
-- The stock hyprland.lua could still win when Hyprland was launched outside
-  webos-session. webos-rice --ensure moves it aside at every login, and
-  --doctor now fails if an active hyprland.lua is present.
-- webos-colors.conf used inline "# ..." comments. hyprlang treats everything
-  after a value as part of the value, so Hyprland reported a config error
-  containing "#". All comments are on their own lines now.
+  be missing when the user's ~/.config/hypr/ config predated the autostart
+  lines. webos-session now starts webos-autostart itself once the compositor
+  answers; webos-autostart uses a directory lock in $XDG_RUNTIME_DIR and
+  starts only what is not already running, so the copy in the Lua config is a
+  no-op. /tmp/webos-autostart.log and /tmp/webos-portals.log always record
+  the attempt.
+- `webos-rice --wallpaper` called a `hyprctl keyword wallpaper` that does not
+  exist. It now writes hyprpaper.conf, preloads the image over hyprpaper IPC
+  and falls back to swaybg. The wallpaper menu uses fzf when present and
+  wofi otherwise.
 - SDDM: 10-webos.conf no longer sets DisplayServer (Gentoo's 01gentoo.conf
   selects the greeter backend) and the installer no longer duplicates
   DefaultSession. The session chosen at install time is still seeded in
@@ -103,9 +130,11 @@ Boot / live medium
   51-75%, light green 76-100%. ANSI colours survive the Linux console.
 
 SDDM / sessions
-- Exactly ONE graphical session is offered, the one chosen at install:
-  Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma -> "Plasma (Wayland)",
-  Minimal -> no display manager (TTY login).
+- The greeter lists every desktop that is actually installed (WebOS,
+  Noctalia, Plasma, gamescope) and defaults to the profile chosen in the
+  installer: Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma ->
+  "Plasma (Wayland)".
+- Minimal installs no display manager and boots to a TTY login.
 - Plasma is Wayland-only; there is no Plasma X11 entry.
 - A non-Noctalia install has no noctalia binary, session entry or
   ~/.config/noctalia.
@@ -165,8 +194,9 @@ The installer copies the live rootfs, then:
 SESSIONS / LOGIN
 ----------------
 SDDM is the greeter. Its session list comes from
-/usr/share/webos/sessions/{wayland,x11}; the installer symlinks only the
-selected session there, so upstream session files remain intact but hidden.
+/usr/share/webos/sessions/{wayland,x11}; the installer symlinks the desktops
+that are installed (WebOS, Noctalia, Plasma, gamescope) there, so upstream
+session files remain intact and the chosen profile is the default.
 
   webos-session              Hyprland + WebOS rice (default)
   webos-session --noctalia   Hyprland + Noctalia shell
@@ -174,18 +204,21 @@ selected session there, so upstream session files remain intact but hidden.
   webos-session --safe       Hyprland with the rice disabled (debugging)
 
 Session environment: Wayland, XDG_CURRENT_DESKTOP=Hyprland, Breeze_Light
-cursor, dark GTK/Qt defaults. GPU hints are chosen from /sys/module/nvidia.
+cursor, dark GTK/Qt defaults. GPU hints are set only when the hardware is
+unambiguous (NVIDIA or AMD); Intel uses Mesa's auto-detection.
 
 HYPRLAND
 --------
-Config: ~/.config/hypr/hyprland.conf (source of truth:
-/usr/share/webos/rice/hypr/). webos-rice never overwrites a file you edited
-unless you pass --force; edits are tracked by hash in the rice manifest.
+Config: ~/.config/hypr/hyprland.lua (source of truth:
+/usr/share/webos/rice/hypr/). Hyprland 0.57 reads Lua configuration and
+ignores hyprland.conf. webos-rice never overwrites a file you edited unless
+you pass --force; edits are tracked by hash in the rice manifest. Put local
+changes in ~/.config/hypr/local.lua — hyprland.lua loads it if it exists.
 
-Autostart (exec-once): dbus activation environment, `webos-rice --ensure`,
-`webos-autostart hyprland` (portals + polkit + bar/shell + wallpaper),
-nm-applet, blueman-applet, cliphist watchers, Breeze_Light cursor, dark
-GTK defaults.
+Autostart (`hl.on("hyprland.start")`): dbus activation environment,
+`webos-rice --ensure`, `webos-autostart hyprland` (portals + polkit + bar/shell
++ wallpaper + hypridle + hyprsunset), nm-applet, blueman-applet, cliphist
+watchers, Breeze_Light cursor, dark GTK defaults.
 
 Keybinds (SUPER = mod):
   Super+Return        kitty terminal (fastfetch card)
@@ -392,11 +425,14 @@ TROUBLESHOOTING
 - No polkit prompt: check /tmp/webos-portals.log and that
   /usr/libexec/dbus-daemon-launch-helper is 4754 root:messagebus; restart
   the session or run `webos-portals`.
-- Hyprland starts with no bar/autostart: confirm
-  ~/.config/hypr/hyprland.lua is absent (renamed .webos-disabled) and that
-  `Hyprland -c ~/.config/hypr/hyprland.conf` is used.
-- Duplicate sessions in SDDM: only /usr/share/webos/sessions should be
-  listed; check /etc/sddm.conf.d and /usr/share/xsessions.
+- Hyprland starts with no bar/autostart: check
+  ~/.config/hypr/hyprland.lua exists and starts with the WebOS header (not
+  the upstream example), run `webos-rice --doctor`, and look at
+  /tmp/webos-autostart.log. `webos-rice --user --force` restores it.
+- Duplicate sessions in SDDM: the greeter lists /usr/share/webos/sessions,
+  which the installer fills with the desktops that are installed (WebOS,
+  Plasma, gamescope). A second Hyprland entry means a stale .desktop is in
+  /usr/share/wayland-sessions; check /etc/sddm.conf.d as well.
 - Noctalia appears unexpectedly: profile was not Noctalia; remove
   gui-apps/noctalia and its session entry, or reinstall with the right
   profile.

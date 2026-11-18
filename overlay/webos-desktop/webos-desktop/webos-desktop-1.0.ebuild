@@ -27,14 +27,13 @@ RDEPEND="
 	gui-apps/slurp
 	gui-apps/wdisplays
 	gui-apps/swaybg
-	gui-apps/tuigreet
+	gui-apps/sddm
 	gui-apps/waybar
 	gui-apps/wlogout
 	gui-apps/wl-clipboard
 	gui-apps/wlr-randr
 	gui-apps/wofi
 	gui-apps/qt6ct
-	gui-libs/greetd
 	gui-libs/wlroots
 	gui-libs/xdg-desktop-portal-hyprland
 	gui-libs/xdg-desktop-portal-wlr

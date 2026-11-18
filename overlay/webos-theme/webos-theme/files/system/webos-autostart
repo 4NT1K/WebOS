@@ -23,7 +23,7 @@ SHELL_KIND="${WEBOS_SHELL:-ashen}"
 export WEBOS_COMPOSITOR="$COMPOSITOR"
 log=/tmp/webos-autostart.log
 
-running() { pgrep -f -- "$1" >/dev/null 2>&1; }
+running() { pgrep -x -- "$1" >/dev/null 2>&1; }
 note() { printf '[%s] %s\n' "$(date +%H:%M:%S)" "$*" >>"$log"; }
 
 note "start (compositor=$COMPOSITOR shell=$SHELL_KIND)"
@@ -32,7 +32,7 @@ note "start (compositor=$COMPOSITOR shell=$SHELL_KIND)"
 # Hyprland exec-once lines. Serialize so only one instance starts services.
 # A directory lock is used instead of flock: the daemons started below would
 # inherit an flock file descriptor and keep the lock held for their lifetime.
-lock=/tmp/webos-autostart.lock.d
+lock="${XDG_RUNTIME_DIR:-/tmp}/webos-autostart.lock.d"
 if ! mkdir "$lock" 2>/dev/null; then
 	other="$(cat "$lock/pid" 2>/dev/null || true)"
 	if [[ -n "$other" ]] && kill -0 "$other" 2>/dev/null; then
@@ -99,6 +99,15 @@ if [[ "$SHELL_KIND" != "noctalia" ]]; then
 	elif command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
 		note "starting hypridle"
 		hypridle >>"$log" 2>&1 &
+	fi
+	# Night light. hyprsunset reads ~/.config/hypr/hyprsunset.conf and stays
+	# neutral until the first profile time; start it so the evening warm-up
+	# actually happens.
+	if running hyprsunset; then
+		note "hyprsunset already running"
+	elif command -v hyprsunset >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
+		note "starting hyprsunset"
+		hyprsunset >>"$log" 2>&1 &
 	fi
 fi
 

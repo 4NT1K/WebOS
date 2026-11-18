@@ -27,10 +27,17 @@ else bad "os-release ID mismatch"; fi
 
 # 3. kernel patchset is pinned
 # Format: name | url | sha256 | target-series | description
-if grep -qE '^[a-zA-Z0-9_.-]+\|https?://' "${WEBOS_ROOT}/kernel/patchset.conf"; then
-	good "patchset has sources"
+# An empty patchset is valid: WebOS prefers a stock LTS kernel over carrying a
+# patch it cannot explain. What must never happen is an entry that is missing
+# its URL or hash, because fetch-patches.sh would then either fail at build
+# time or silently skip the patch.
+patch_entries="$(grep -vE '^[[:space:]]*(#|$)' "${WEBOS_ROOT}/kernel/patchset.conf" || true)"
+if [[ -z "$patch_entries" ]]; then
+	good "patchset empty (stock LTS, no patches)"
+elif grep -qvE '^[a-zA-Z0-9_.-]+\|https?://[^|]+\|[0-9a-f]{64}\|[^|]+\|.+' <<<"$patch_entries"; then
+	bad "patchset.conf has a malformed entry (name|url|sha256|series|description)"
 else
-	bad "patchset.conf has no sources"
+	good "patchset has sources"
 fi
 
 # 3b. the single-source-of-truth symlinks resolve
@@ -52,13 +59,17 @@ while IFS= read -r s; do
 	else bad "sh syntax ${s#${WEBOS_ROOT}/}"; fi
 done < <(
 	{
-		find "${WEBOS_ROOT}" -path "${WEBOS_ROOT}/build" -prune -o -name '*.sh' -print
+		# installer/vendor is third-party source, checked in verbatim
+		# (some upstreams ship CRLF scripts). It is not ours to rewrite.
+		find "${WEBOS_ROOT}" \
+			\( -path "${WEBOS_ROOT}/build" -o -path "${WEBOS_ROOT}/installer/vendor" \) -prune \
+			-o -name '*.sh' -print
 		printf '%s\n' "${WEBOS_ROOT}/build.sh"
 	} | sort -u
 )
 
 # 6. required rice files exist
-for f in desktop/hypr/hyprland.conf desktop/waybar/config.jsonc desktop/wofi/config; do
+for f in desktop/hypr/hyprland.lua desktop/hypr/webos-colors.lua desktop/waybar/config.jsonc desktop/wofi/config; do
 	[[ -f "${WEBOS_ROOT}/${f}" ]] && good "rice ${f}" || bad "missing rice file ${f}"
 done
 

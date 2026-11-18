@@ -19,14 +19,29 @@ if command -v dbus-update-activation-environment >/dev/null 2>&1; then
 		dbus-update-activation-environment HYPRLAND_INSTANCE_SIGNATURE >>"$log" 2>&1 || true
 fi
 
-running() { pgrep -f -- "$1" >/dev/null 2>&1; }
+running() { # $1 = exact argv[0] basename
+	# `pgrep -f xdg-desktop-portal` also matches the -gtk and -hyprland
+	# implementations, and pgrep -x compares the 15-character comm name,
+	# which they all share. Scan argv[0] instead.
+	want=$1
+	for f in /proc/[0-9]*/cmdline; do
+		[ -r "$f" ] || continue
+		first=$(tr '\0' '\n' <"$f" 2>/dev/null | head -n 1)
+		[ "${first##*/}" = "$want" ] && return 0
+	done
+	return 1
+}
 
 start() { # $1 = process name, rest = command
 	name=$1; shift
 	if running "$name"; then return 0; fi
 	"$@" >>"$log" 2>&1 &
 	sleep 1
-	running "$name"
+	if running "$name"; then
+		return 0
+	fi
+	printf '[%s] %s did not stay running\n' "$(date +%H:%M:%S)" "$name" >>"$log"
+	return 1
 }
 
 # Implementations first, then the portal frontend that talks to them.

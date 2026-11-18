@@ -18,7 +18,12 @@ cd /root 2>/dev/null || cd /
 
 banner() {
 	clear 2>/dev/null || true
-	cat <<'EOF'
+	# Take the version from the medium itself instead of hard-coding it; this
+	# banner used to keep saying "1.021" on every later ISO.
+	local pretty="WebOS"
+	# shellcheck source=/dev/null
+	[[ -r /etc/os-release ]] && . /etc/os-release && pretty="${PRETTY_NAME:-$pretty}"
+	cat <<EOF
 
 ⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤⣤
 ⣿⡿⢯⡉⠱⢾⣇⣶⠋⣀⠾⢁⡰⠞⠁⢰⠋⠉⠀⣀⠾⠉⢀⡰⠞⠁
@@ -36,7 +41,7 @@ banner() {
 ⣿⠉⠀⠀⠀⠀⠀⠀⠉⠉⣿⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠛⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
-   WebOS 1.021 (Ashen) — live medium
+   ${pretty} — live medium
    No data is touched until you confirm the summary in the installer.
 
    1) Install WebOS to a disk

@@ -630,7 +630,7 @@ fn draw_install(f: &mut Frame, app: &mut App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3),
-            Constraint::Length(4),
+            Constraint::Length(5),
             Constraint::Min(5),
             Constraint::Length(2),
         ])
@@ -682,6 +682,10 @@ fn draw_install(f: &mut Frame, app: &mut App) {
 /// bar on one line and starts the bar one column after the label; on narrow or
 /// non-UTF-8 consoles that clipped the "%" and made the two states look like
 /// different widgets.)
+///
+/// The third line lists finished stages. A phase only becomes current after
+/// the previous one has been recorded as complete, so the panel never shows a
+/// new stage at the old stage's percentage.
 fn draw_progress(f: &mut Frame, area: Rect, app: &App) {
     let ratio = app.progress.clamp(0.0, 1.0) as f64;
     let colour = theme::progress_color(ratio);
@@ -712,16 +716,44 @@ fn draw_progress(f: &mut Frame, area: Rect, app: &App) {
         ),
     ]);
 
-    let label = Line::from(Span::styled(
-        format!(" {pct:>3}%  {phase}"),
-        Style::default()
-            .fg(colour)
-            .bg(theme::BASE)
-            .add_modifier(Modifier::BOLD),
-    ));
+    let left = format!(" {pct:>3}%  {phase}");
+    let total = app.stage_total();
+    let stage_no = (app.completed.len() + 1).min(total);
+    let right = format!("stage {stage_no}/{total} ");
+    let gap = (inner.width as usize)
+        .saturating_sub(left.chars().count() + right.chars().count());
+    let label = Line::from(vec![
+        Span::styled(
+            left,
+            Style::default()
+                .fg(colour)
+                .bg(theme::BASE)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(" ".repeat(gap), Style::default().bg(theme::BASE)),
+        Span::styled(right, theme::dim()),
+    ]);
+
+    // Completed stages, keeping the most recent ones when space is short.
+    let mut items: Vec<String> = Vec::new();
+    let mut used = 0usize;
+    for name in app.completed.iter().rev() {
+        let w = name.chars().count() + 2; // "✓ "
+        if used + w + 2 > inner.width as usize {
+            break;
+        }
+        used += w + 2;
+        items.push(format!("✓ {name}"));
+    }
+    items.reverse();
+    let checklist = if items.is_empty() {
+        Line::from(Span::styled(" waiting for the first stage", theme::faint()))
+    } else {
+        Line::from(Span::styled(format!(" {}", items.join("  ")), theme::good()))
+    };
 
     f.render_widget(
-        Paragraph::new(vec![label, bar])
+        Paragraph::new(vec![label, bar, checklist])
             .block(block)
             .style(theme::base()),
         area,

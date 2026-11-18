@@ -192,6 +192,10 @@ step "rootfs: applying the rice (webos-theme)"
 chroot_sh "emerge --quiet --unmerge webos-theme/webos-theme" >/dev/null 2>&1 || true
 chroot_sh "emerge --quiet-build=y webos-theme/webos-theme" \
 	|| die "webos-theme merge failed (rice/session helpers would be missing)"
+# 1.021 shipped hyprland.conf and webos-colors.conf; 1.022 uses hyprland.lua
+# plus webos-colors.lua. The chroot is reused between builds, so remove the
+# dead files from the seeded homes before the config hook applies the rice.
+chroot_sh 'rm -f /root/.config/hypr/hyprland.conf /root/.config/hypr/hyprland.lua.webos-disabled /root/.config/hypr/webos-colors.conf /etc/skel/.config/hypr/hyprland.conf /etc/skel/.config/hypr/hyprland.lua.webos-disabled /etc/skel/.config/hypr/webos-colors.conf' || true
 chroot_sh "emerge --config webos-theme/webos-theme" \
 	|| warn "webos-theme config hook reported an issue; continuing"
 chroot_sh "test -x /usr/bin/webos-shell" \
@@ -218,8 +222,8 @@ chroot_sh "test -f /etc/fish/conf.d/00-webos-fastfetch.fish" \
 	|| die "fish fastfetch hook missing after webos-theme merge"
 chroot_sh "grep -q 'type.*file' /usr/share/webos/rice/fastfetch/fastfetch.json" \
 	|| die "fastfetch still uses an image logo after webos-theme merge"
-chroot_sh "grep -q 'Hyprland -c' /usr/bin/webos-session" \
-	|| die "webos-session does not pin hyprland.conf"
+chroot_sh "grep -q 'hyprland.lua' /usr/bin/webos-session" \
+	|| die "webos-session does not use the Lua Hyprland config"
 
 # -------------------------------------------------------- debranding ---------
 step "rootfs: applying WebOS branding overrides (remove Gentoo identifiers)"
@@ -296,10 +300,10 @@ done
 install -m 0755 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/local.d-webos.start" \
 	"${ROOTFS_DIR}/etc/local.d/webos.start"
 
-# Hyprland 0.57 seeds ~/.config/hypr/hyprland.lua from this upstream example
-# on first run. That example has different keybinds and no WebOS autostart,
-# and hyprland.lua takes precedence over hyprland.conf. WebOS ships the conf,
-# so do not leave the lua example where Hyprland can copy it.
+# Hyprland 0.57 reads Lua configuration (~/.config/hypr/hyprland.lua) and
+# ignores hyprland.conf. It seeds that file from this upstream example on
+# first run; the example has different keybinds and no WebOS autostart, so
+# remove it and let webos-rice install the real config.
 rm -f "${CHROOT}/usr/share/hypr/hyprland.lua" "${ROOTFS_DIR}/usr/share/hypr/hyprland.lua"
 
 # The ::gentoo tree ships with the image so `emerge` works on a fresh install
