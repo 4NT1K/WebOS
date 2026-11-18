@@ -107,11 +107,15 @@ case "$MODE" in
 		# idempotent, so the exec-once copy is harmless.
 		if command -v webos-autostart >/dev/null 2>&1; then
 			(
+				ready=0
 				for _ in $(seq 1 60); do
-					hyprctl version >/dev/null 2>&1 && break
+					if hyprctl version >/dev/null 2>&1; then
+						ready=1
+						break
+					fi
 					sleep 1
 				done
-				exec webos-autostart hyprland
+				(( ready )) && exec webos-autostart hyprland
 			) >/dev/null 2>&1 &
 		fi
 		exec Hyprland -c "$HOME/.config/hypr/hyprland.conf"

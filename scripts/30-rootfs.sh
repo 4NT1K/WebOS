@@ -296,6 +296,12 @@ done
 install -m 0755 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/local.d-webos.start" \
 	"${ROOTFS_DIR}/etc/local.d/webos.start"
 
+# Hyprland 0.57 seeds ~/.config/hypr/hyprland.lua from this upstream example
+# on first run. That example has different keybinds and no WebOS autostart,
+# and hyprland.lua takes precedence over hyprland.conf. WebOS ships the conf,
+# so do not leave the lua example where Hyprland can copy it.
+rm -f "${CHROOT}/usr/share/hypr/hyprland.lua" "${ROOTFS_DIR}/usr/share/hypr/hyprland.lua"
+
 # The ::gentoo tree ships with the image so `emerge` works on a fresh install
 # and in the live session without a network round-trip. The optional overlays
 # are build-time only; disable their (otherwise dangling) repo entries so
