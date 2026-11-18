@@ -162,7 +162,7 @@ A short template:
 ```markdown
 # WebOS 1.0 "Ashen"
 
-Kernel: 6.12.0-webos (BORE, fsync, ntsync, BBRv3, AMD P-State EPP, MGLRU)
+Kernel: 6.12.0-webos (stock LTS + WebOS config fragment)
 Base:   Gentoo <snapshot date>, profile webos:default/linux/amd64/webos
 Desktop: Hyprland (Wayland), SDDM
 Installer: webos-installer 1.0.0

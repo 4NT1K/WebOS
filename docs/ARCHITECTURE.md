@@ -123,8 +123,11 @@ The hash column may be `auto`, in which case the script computes the digest and
 **rewrites `patchset.conf` in place** so the pin is committed. A non-`auto`
 hash is never rewritten; a mismatch aborts the build.
 
-Shipped patches (6.12): BORE scheduler, Wine `fsync`, `ntsync` backport, TCP
-BBRv3, AMD P-State EPP, `i2c-piix4` for OpenRGB, and MGLRU knobs.
+No patches are enabled for 6.12: the BORE, Wine `fsync`/`ntsync` and BBRv3
+entries in `patchset.conf` are commented out because their upstream URLs are
+unavailable, so the image ships a stock 6.12 LTS with the WebOS config
+fragment. The fragment still sets `CONFIG_SCHED_BORE` and
+`CONFIG_TCP_CONG_BBR3`; kconfig drops symbols the tree does not provide.
 
 ### Config fragment
 

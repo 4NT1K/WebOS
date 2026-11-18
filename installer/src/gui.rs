@@ -897,15 +897,20 @@ impl InstallerGui {
             );
         }
 
-        // Finished stages, most recent kept when space is short.
-        let done: Vec<String> = app
-            .completed
-            .iter()
-            .rev()
-            .take(4)
-            .rev()
-            .map(|n| format!("✓ {n}"))
-            .collect();
+        // Finished stages, most recent kept when space is short. The box is
+        // ~76 px tall and the label is a single line, so keep the text inside
+        // the border instead of letting it paint past the edge.
+        let mut done: Vec<String> = Vec::new();
+        let mut used = 0usize;
+        for name in app.completed.iter().rev() {
+            let w = name.chars().count() + 2; // "✓ "
+            if used + w > 64 {
+                break;
+            }
+            used += w + 2; // separator
+            done.push(format!("✓ {name}"));
+        }
+        done.reverse();
         let checklist = if done.is_empty() {
             "waiting for the first stage".to_string()
         } else {

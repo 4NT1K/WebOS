@@ -1,4 +1,9 @@
 # WebOS desktop set — Hyprland/Wayland, black-transparent rice.
+# Display manager. SDDM is the shipped greeter (see webos-desktop RDEPEND);
+# listing it here means a fresh chroot gets it even though the meta package
+# itself is only pulled on demand.
+gui-apps/sddm
+
 # Compositor (Hyprland stack comes from ::hyproverlay)
 gui-wm/hyprland
 gui-apps/hyprpaper
