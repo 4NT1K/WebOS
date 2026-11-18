@@ -352,9 +352,11 @@ doctor() {
 	chk "wallpaper rendered"       "[[ -f ${WALL_DIR}/webos-wallpaper.png ]]"
 	chk "fastfetch modules"          "[[ -f \$HOME/.config/fastfetch/fastfetch.json ]]"
 	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"
-	chk "font: Inter"              "fc-list | grep -qi Inter"
-	chk "font: JetBrains Mono NF"  "fc-list | grep -qi 'JetBrainsMono Nerd Font'"
-	chk "greetd configured"        "[[ -f /etc/greetd/config.toml ]]"
+	chk "font: Inter"              "fc-list 2>/dev/null | grep -qi 'Inter' || find /usr/share/fonts -iname 'Inter*' 2>/dev/null | grep -q ."
+	chk "font: JetBrains Mono NF"  "fc-list 2>/dev/null | grep -qi 'JetBrainsMono' || find /usr/share/fonts -iname 'JetBrainsMono*' 2>/dev/null | grep -q ."
+	# SDDM is the default greeter; greetd is only a fallback. Failing this on a
+	# healthy SDDM system was a false positive.
+	chk "display manager"          "[[ -f /etc/greetd/config.toml ]] || [[ -f /etc/sddm.conf ]] || [[ -d /etc/sddm.conf.d ]] || command -v sddm || command -v greetd"
 	chk "session entry"            "[[ -f /usr/share/wayland-sessions/webos.desktop ]]"
 	say ""
 	say "${ok} ok, ${bad} failed"

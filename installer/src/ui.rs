@@ -6,7 +6,7 @@
 use ratatui::layout::{Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, Borders, LineGauge, List, ListItem, Paragraph, Wrap};
+use ratatui::widgets::{Block, Borders, List, ListItem, Paragraph, Wrap};
 use ratatui::Frame;
 
 use crate::app::{App, Step};
@@ -630,37 +630,14 @@ fn draw_install(f: &mut Frame, app: &mut App) {
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(3),
-            Constraint::Length(3),
+            Constraint::Length(4),
             Constraint::Min(5),
             Constraint::Length(2),
         ])
         .split(area);
 
     draw_header(f, rows[0], app, Some(&app.phase));
-
-    let ratio = app.progress.clamp(0.0, 1.0) as f64;
-    let colour = theme::progress_color(ratio);
-    let phase = if app.phase.is_empty() { "starting" } else { &app.phase };
-    let gauge = LineGauge::default()
-        .block(panel("Progress"))
-        .ratio(ratio)
-        .line_set(ratatui::symbols::line::THICK)
-        .label(Line::from(Span::styled(
-            format!(" {:>3.0}%  {} ", ratio * 100.0, phase),
-            Style::default()
-                .fg(colour)
-                .bg(theme::BASE)
-                .add_modifier(Modifier::BOLD),
-        )))
-        .filled_style(
-            Style::default()
-                .fg(colour)
-                .bg(theme::BASE)
-                .add_modifier(Modifier::BOLD),
-        )
-        .unfilled_style(Style::default().fg(theme::BORDER).bg(theme::BASE));
-    f.render_widget(gauge, rows[1]);
-
+    draw_progress(f, rows[1], app);
     draw_log(f, rows[2], app);
 
     if app.step == Step::Done {
@@ -696,6 +673,59 @@ fn draw_install(f: &mut Frame, app: &mut App) {
             rows[3],
         );
     }
+}
+
+/// Progress panel. The label and the bar are drawn on separate lines and both
+/// are sized from the panel's real inner width, so the bar can never overwrite
+/// the percentage, the fill can never run past the border, and the filled and
+/// empty tracks always use the same glyphs. (LineGauge draws the label and the
+/// bar on one line and starts the bar one column after the label; on narrow or
+/// non-UTF-8 consoles that clipped the "%" and made the two states look like
+/// different widgets.)
+fn draw_progress(f: &mut Frame, area: Rect, app: &App) {
+    let ratio = app.progress.clamp(0.0, 1.0) as f64;
+    let colour = theme::progress_color(ratio);
+    let phase = if app.phase.is_empty() {
+        "starting"
+    } else {
+        app.phase.as_str()
+    };
+    let pct = (ratio * 100.0).round() as i32;
+
+    let block = panel("Progress");
+    let inner = block.inner(area);
+    let bar_w = inner.width.saturating_sub(2) as usize; // one column of padding each side
+    let filled = ((ratio * bar_w as f64).round() as usize).min(bar_w);
+
+    let bar = Line::from(vec![
+        Span::styled(" ", theme::base()),
+        Span::styled(
+            "█".repeat(filled),
+            Style::default()
+                .fg(colour)
+                .bg(theme::BASE)
+                .add_modifier(Modifier::BOLD),
+        ),
+        Span::styled(
+            "░".repeat(bar_w.saturating_sub(filled)),
+            Style::default().fg(theme::BORDER).bg(theme::BASE),
+        ),
+    ]);
+
+    let label = Line::from(Span::styled(
+        format!(" {pct:>3}%  {phase}"),
+        Style::default()
+            .fg(colour)
+            .bg(theme::BASE)
+            .add_modifier(Modifier::BOLD),
+    ));
+
+    f.render_widget(
+        Paragraph::new(vec![label, bar])
+            .block(block)
+            .style(theme::base()),
+        area,
+    );
 }
 
 fn draw_log(f: &mut Frame, area: Rect, app: &mut App) {
