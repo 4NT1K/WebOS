@@ -1,283 +1,403 @@
 WebOS 1.021 "Ashen" — system information
 ========================================
 
-RELEASE
--------
-- v1.021: fix release — repairs the installed-system issues reported against
-  1.02 (rice not starting, polkit activation, fastfetch, installer progress
-  bar, rice manifest ownership, duplicate SDDM sessions).
-- Version : WebOS 1.021 "Ashen" (Gentoo/OpenRC, gaming-focused)
-- ISO     : webos-1.021-Ashen-amd64.iso (split assets + SHA256SUMS.txt on GitHub)
-- Source  : https://github.com/4NT1K/WebOS
-- Arch    : amd64, 64-bit only (ABI_X86="64", no multilib)
+Everything important about this installed system, in one file.
+Installed copy: /usr/share/webos/WEBOS-INFO.txt
+Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
-WHAT'S FIXED IN 1.021
----------------------
+RELEASE / IDENTITY
+------------------
+- Version      : WebOS 1.021 "Ashen"
+- Base         : Gentoo Linux, OpenRC + elogind (no systemd)
+- Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
+- Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
+- Desktops     : Hyprland (default), Noctalia shell, KDE Plasma 6 (Wayland)
+- Installer    : webos-installer (Rust TUI + optional egui GUI)
+- Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
+- Bootloader   : GRUB2 (BIOS and UEFI)
+- ISO          : webos-1.021-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- Source       : https://github.com/4NT1K/WebOS
+- Release file : /etc/os-release and /etc/webos-release both report 1.021
+
+QUICK START
+-----------
+1. Boot the ISO (Ventoy, Rufus, balenaEtcher or dd). The live menu appears on
+   tty1: 1) install, 2) root shell, 3) inspect hardware.
+2. Installer: choose disk, filesystem, swap, profile, dotfiles profile,
+   account, timezone/locale/keymap, then confirm the summary.
+3. Reboot, remove the medium, log in at SDDM (or the console for Minimal).
+4. First login applies the rice; waybar, wallpaper, notifications, portals and
+   the polkit agent start automatically.
+5. Update with `sudo webos-update`.
+
+WHAT WAS FIXED IN 1.021
+-----------------------
+This is a fix release for the issues reported against 1.02:
 - Hyprland loaded the stock ~/.config/hypr/hyprland.lua instead of the WebOS
-  hyprland.conf, silently disabling autostart (waybar, mako, hypridle,
-  portals, hyprpaper). webos-session now moves any lua aside and launches
+  hyprland.conf, silently disabling autostart. webos-session now moves any
+  lua to hyprland.lua.webos-disabled and launches
   `Hyprland -c ~/.config/hypr/hyprland.conf` explicitly.
-- polkitd could not be D-Bus activated: a `! -gid 0` chown stripped setuid
-  from /usr/libexec/dbus-daemon-launch-helper (4754 root:messagebus) and left
-  it 0110 root:root. Ownership normalisation no longer touches root-owned
-  files, and the helper is restored and verified in the rootfs, live image
-  and installer.
+- polkitd could not be D-Bus activated: an ownership pass had stripped setuid
+  from /usr/libexec/dbus-daemon-launch-helper. It is now 4754 root:messagebus
+  in the rootfs, live image and installer, and ownership normalisation no
+  longer chowns root-owned files.
 - fastfetch failed with "Image logo types are not supported" (built without
-  ImageMagick/chafa). The shipped config now uses the text cobweb logo
-  (`file` + webos.txt), which works in every terminal and on the console.
-- fastfetch did not appear in every shell: added /etc/bash/bashrc.d,
-  /etc/zsh/zshrc and /etc/fish/conf.d hooks; foot now uses webos-shell like
-  kitty; WEBOS_FASTFETCH_SHOWN prevents double cards.
-- Installer progress bar lost colour past ~50% and drifted out of its box.
-  It is now a LineGauge inside the Progress panel (label left, bar after)
-  with ANSI colours: 0-25 red, 26-50 light-red/orange, 51-75 yellow,
-  76-100 light-green.
-- /home/*/.local/state/webos/rice.manifest was root-owned and unreadable;
-  webos-rice and webos-dotfiles now hand it back to the home directory
-  owner, and `webos-rice --doctor` no longer references an unset ${home}.
+  ImageMagick/chafa). The shipped config uses the text cobweb logo
+  (`logo.type = file`, webos.txt), which renders everywhere.
+- fastfetch now appears in every interactive shell: bash, zsh and fish hooks
+  are installed, foot uses webos-shell like kitty, and WEBOS_FASTFETCH_SHOWN
+  prevents duplicate cards.
+- The TUI installer progress bar lost its "%" sign, mixed a thin track with a
+  thick fill, drifted out of its panel and ran past the border. It is now a
+  custom two-line widget: percentage/phase on one line, a full-width track of
+  filled/empty cells below, sized from the panel's real inner width.
+- /home/*/.local/state/webos/rice.manifest was root-owned and unreadable.
+  webos-rice and webos-dotfiles now return state/config files to the home
+  directory owner; `webos-rice --doctor` no longer uses an unset ${home}.
 - Duplicate/stale SDDM entries: webos.desktop is no longer installed into
-  /usr/share/xsessions (Hyprland is Wayland-only); the installer points
-  SDDM at /usr/share/webos/sessions and links only the selected session.
-- Same-version rebuilds could keep a stale installer/theme: the rootfs stage
+  /usr/share/xsessions (Hyprland is Wayland-only). The installer points SDDM
+  at /usr/share/webos/sessions and links only the chosen session.
+- Non-Noctalia installs no longer ship or start Noctalia. The Hyprland,
+  Plasma and Minimal profiles unmerge gui-apps/noctalia and remove its session
+  entry and seeded config. "mono" only restyles waybar/kitty/mako.
+- /etc/webos-release was hard-coded to "1.01 (Ashen)" and written twice. It
+  now derives the version from the installed /etc/os-release.
+- Same-version rebuilds could keep a stale installer/theme. The rootfs stage
   now unmerges and rebuilds app-admin/webos-installer and webos-theme.
-- The TUI installer progress bar could lose its "%" sign, drew a thin pale
-  track and a thick red fill at different heights, and ran past the panel
-  border. It is now a custom two-line widget: percentage/phase on its own
-  line, then a full-width track of █ (filled) and ░ (empty) sized from the
-  panel's real inner width.
-- A non-Noctalia install still shipped Noctalia because the installer copies
-  the whole live rootfs. Hyprland, Plasma and Minimal profiles now unmerge
-  gui-apps/noctalia and remove its session entry and seeded config.
-- /etc/webos-release was hard-coded to "1.01 (Ashen)" (and written twice).
-  It now derives the version from the installed /etc/os-release.
-- `webos-rice --doctor` falsely failed the Inter / JetBrains Mono font checks
-  (it now falls back to the font files) and failed "greetd configured" on
-  healthy SDDM systems (it now checks the actual display manager).
+- `webos-rice --doctor` no longer fails the Inter/JetBrains Mono checks when
+  fc-list is unavailable, and no longer fails "greetd configured" on healthy
+  SDDM systems.
 
-WHAT SHOULD BE (EXPECTED BEHAVIOUR)
------------------------------------
-Boot / installer
-- The live medium banner reads "WebOS 1.021 (Ashen)" and the installer starts
-  on tty1. The progress panel shows the percentage/phase on its own line and a
-  full-width bar below it. Colour is red (0-25%), light red/orange (26-50%),
-  yellow (51-75%), light green (76-100%), and stays coloured on the console.
-- The summary shows the chosen desktop profile and dotfiles profile; nothing
-  is written to disk until the summary is confirmed.
+EXPECTED BEHAVIOUR
+------------------
+Boot / live medium
+- The banner reads "WebOS 1.021 (Ashen) — live medium".
+- Nothing is written to disk until the summary is confirmed.
+- The installer progress panel stays inside its border, keeps the "%" sign,
+  and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow
+  51-75%, light green 76-100%. ANSI colours survive the Linux console.
 
 SDDM / sessions
-- The greeter offers exactly ONE session, the one chosen during install:
+- Exactly ONE graphical session is offered, the one chosen at install:
   Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma -> "Plasma (Wayland)",
-  Minimal -> no greeter (TTY login).
-- A non-Noctalia install contains no Noctalia binary, no Noctalia session
-  entry and no ~/.config/noctalia. Choosing "mono" only restyles the bar,
-  kitty and mako; it never installs or starts Noctalia.
-- Plasma installs are Wayland-only; there is no Plasma X11 entry.
+  Minimal -> no display manager (TTY login).
+- Plasma is Wayland-only; there is no Plasma X11 entry.
+- A non-Noctalia install has no noctalia binary, session entry or
+  ~/.config/noctalia.
 
-Hyprland (WebOS / mono / jakoolit / minimal)
-- After login the waybar top bar appears, the wallpaper is set, mako shows
-  notifications, hypridle runs, and portals + a polkit agent are active.
+Hyprland (all rice profiles)
+- waybar appears, wallpaper is set, mako shows notifications, hypridle runs,
+  hyprpaper keeps the wallpaper, and portals + a polkit agent are active.
 - Super+Return opens kitty with the WebOS fastfetch card; Super+I opens
-  webos-settings. The card also appears in foot, a TTY, ssh and any
-  interactive bash/zsh/fish shell (exactly once per session).
-- fastfetch never prints "Image logo types are not supported": the cobweb
-  logo is text, so it renders in every terminal and on the console. Failures
-  are written to /tmp/webos-fastfetch.log, not into the shell.
-- Admin actions (mount, package install, settings changes) trigger a polkit
-  password prompt instead of failing with "not authorized".
-- `webos-rice --doctor` run as the user reports every check OK, and
-  ~/.local/state/webos/rice.manifest is owned by that user, not root.
-
-Files / logs
-- /etc/webos-release reports the actual release (1.021), matching
-  /etc/os-release.
-- Session diagnostics: /tmp/webos-autostart.log, /tmp/webos-fastfetch.log,
-  ~/.local/state/webos/rice.manifest.
-- /usr/libexec/dbus-daemon-launch-helper is 4754 root:messagebus.
-
-WHAT'S NEW / NOTABLE IN 1.02
-----------------------------
-- Session reliability: SDDM offers only WebOS sessions (stock Hyprland entry removed). Portals and polkit start via webos-portals on OpenRC; webos-session applies rice before launch; waybar/fastfetch have system-wide fallbacks and reliable autostart.
-- Dotfiles profiles: installer page + `webos-dotfiles --apply ashen|mono|jakoolit|minimal` (default Deep Black, flat monochrome, frosted glass bar, minimal bar).
-- New session: WebOS Noctalia (`webos-noctalia`, Hyprland + Noctalia shell) preinstalled with seeded config alongside WebOS Hyprland and KDE Plasma. niri is not included (libdisplay-info slot conflict with Plasma/KWin).
-- Installer: desktop profile choices include Hyprland, Noctalia shell, KDE Plasma and TTY-only; chosen session/dotfiles are seeded for the installed user.
-- Fixed webos-theme merge collisions that could ship an ISO without webos-shell, waybar config, portal prefs or dark-mode defaults; portal overrides live under /etc/xdg-desktop-portal.
-- webos-settings launcher; under Hyprland use wdisplays and compositor device tools (KDE device panels require a Plasma session).
-- Theme parity maintained across Hyprland and KDE Plasma (monochrome Deep Black, kitty/fish/fastfetch).
-
-PURPOSE
--------
-WebOS ships a "Deep Black" rice: pure-black surfaces, frosted translucency,
-white accents. Two desktops in one image: Hyprland (Wayland, default) and
-KDE Plasma 6.
-
-SESSIONS
---------
-- Hyprland  : "WebOS" in SDDM / `webos-session` (Wayland, WebOS rice)
-- Noctalia  : "WebOS Noctalia" in SDDM / `webos-session --noctalia` (Hyprland + Noctalia shell)
-- KDE Plasma: "Plasma (Wayland)" in SDDM (`startplasma-wayland`)
-- Gamescope : `webos-session --gamescope`
-
-KDE Plasma in 1.021 is Wayland-only (no `startplasma-x11` / Plasma X11 session in this image).
-Portals/polkit: webos-portals starts Hyprland/GTK portals and a polkit agent on OpenRC (or Noctalia's own agent in the Noctalia session).
-
-HYPRLAND KEYBINDS
------------------
-Super+Return        kitty terminal (shows the WebOS fastfetch card)
-Super+D             wofi application launcher
-Super+E             Dolphin file manager
-Super+I             System Settings (WebOS Settings / systemsettings)
-Super+Q             close window
-Super+V             clipboard history (cliphist + wofi)
-Super+Escape        lock screen (hyprlock)
-Super+P             show/hide waybar
-Super+LMB drag      move window
-Super+RMB drag      resize window
-Super+1..9          switch workspace
-Super+Shift+1..9    move window to workspace
-Print               region screenshot (grim + slurp, saved to ~/Pictures)
-
-THEME / RICE
-------------
-Dark mode defaults are enabled by default (GTK/Qt/session env and Plasma color scheme where applicable).
-
-Commands:
-  webos-rice --user            apply the rice to the current account
-  webos-rice --system          apply to /etc/skel, /root and every /home/*
-  webos-rice --ensure          only fill in missing files (runs at login)
-  webos-rice --check           dry run, report what would change
-  webos-rice --doctor          diagnose missing theme pieces
-  webos-rice --toggle-panel    show/hide waybar
-  webos-rice --wallpaper FILE  set the wallpaper
-  webos-rice --force           overwrite existing files (keeps .webos-orig)
-
-Rice lives in /usr/share/webos/rice (read-only source of truth). Per-user
-copies: ~/.config/{hypr,waybar,wofi,kitty,fish,fastfetch,gtk-3.0,gtk-4.0},
-~/.local/share/color-schemes/DeepBlack.colors, ~/.local/share/konsole, and
-Plasma configs (kdeglobals/kwinrc/kwinrulesrc).
-KDE Plasma: Deep Black scheme, Breeze_Light cursor, custom wallpaper, Konsole
-profile/colorscheme matched to terminal theme, and KWin blur/opacity rule for
-kitty. Hyprland: white borders, Breeze_Light cursor, blurred/frosted translucent
-surfaces, and smoothed animations. Overall palette matches the monochrome
-terminal theme (pure black bg, #F2F2F2 fg, #FFFFFF labels, #8C8C8C dim).
-
-TERMINAL / FASTFETCH
---------------------
-kitty runs /usr/bin/webos-shell, which prints the WebOS fastfetch card (original
-WebOS ASCII art, smooth continuous-line box `┌─┐│└─┘`) then execs $SHELL. Nested
-shells do not repeat it. Modules: display, uptime, cpu, gpu, terminal, memory,
-disk, packages, shell, datetime.
-Theme: pure black (#000000) ~60% opacity with strong blur (frosted glass),
-strictly monochrome (fg #F2F2F2, bold/labels #FFFFFF, dim/secondary #8C8C8C,
-greyscale ANSI 0–15), thin white bar cursor (no blink), white selection ~20%.
-Fish prompt is minimal `~ ❯` in white. Applied to kitty/fish/fastfetch on both
-Hyprland and KDE Plasma (KWin blur rule for kitty). UTF-8/ASCII fallback used
-for box rendering compatibility.
-Manual: `webos-fastfetch`. Config: /usr/share/webos/rice/fastfetch/.
-
-PREINSTALLED / OPTIONAL APPS
-----------------------------
-Common prebuilt apps: Firefox (firefox-bin), Discord, OpenCode (opencode-bin),
-Spotify, Dolphin, KDE System Settings, kitty, waybar, wofi, mako, mpv, imv,
-Lutris, Heroic, gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton.
-Additional options may be included/selectable depending on build/installer choices
-(e.g. Vesktop, Waypaper, Fish, Zsh, Flatpak).
-Wine is NOT included (needs 32-bit). Native Steam is NOT included (see below).
-
-STEAM AND 32-BIT SOFTWARE
--------------------------
-This image is 64-bit only. Steam, Wine (32-bit games), winetricks,
-protontricks and goverlay need a 32-bit multilib runtime and are not shipped.
-The kernel DOES support 32-bit code (CONFIG_IA32_EMULATION=y), so:
-  - Flatpak Steam works (recommended today):
-      sudo emerge flatpak
-      flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-      flatpak install flathub com.valvesoftware.Steam
-  - Distrobox (Fedora/Arch container) is an alternative.
-  - Native Portage Steam requires a multilib rebuild.
-A future WebOS build will ship multilib so Steam can be preinstalled.
-If selected in the installer, note is written to /etc/webos/steam-unavailable.txt.
-
-UPDATES
--------
-`webos-update` (Portage-based updater):
-  sudo webos-update              sync repos, rebuild @world, depclean, config updates, flatpak, rice
-  sudo webos-update --check      dry run
-  sudo webos-update --yes        non-interactive config merges
-  --no-sync | --no-flatpak | --no-depclean | --quiet
-Log: /var/log/webos-update.log. Updates compile from source unless a binhost is configured.
-
-PACKAGE MANAGEMENT
-------------------
-Portage + OpenRC. No binary host configured by default, so `emerge` compiles from source.
-Repos: gentoo, webos (local overlay at /usr/local/portage/webos) and build-time
-third-party overlays as configured; some build-time-only overlays may be disabled
-on installed systems under /etc/portage/repos.conf.disabled.
-  emerge --sync
-  emerge -av <package>
-  emerge -avuDN @world
-  emerge --depclean
-  dispatch-conf
-
-SERVICES (OpenRC)
------------------
-Default runlevel typically includes: dbus, elogind, NetworkManager, syslog-ng,
-acpid, webos (local.d glue), ananicy-cpp, irqbalance, display-manager (SDDM).
-Optional: bluetooth, sshd, nftables (installer toggles).
-  rc-service <name> status|start|stop|restart
-  rc-update add|del <name> default
+  webos-settings. The card appears exactly once per login in kitty, foot,
+  TTY, ssh and any interactive bash/zsh/fish shell.
+- fastfetch never prints "Image logo types are not supported"; failures go to
+  /tmp/webos-fastfetch.log, not into the shell.
+- Admin actions (mounting, package install, settings changes) raise a polkit
+  password prompt instead of "not authorized".
+- `webos-rice --doctor` reports every check OK as the logged-in user, and
+  ~/.local/state/webos/rice.manifest is owned by that user.
 
 INSTALLER
 ---------
-TUI/GUI-capable installer: `webos-installer` (also ISO boot entry).
-Profiles: Hyprland, KDE Plasma, Minimal (console only).
-Customization toggles include: gaming stack, Steam note (64-bit image), Firefox,
-Discord, Vesktop, OpenCode, Spotify, Waypaper, Fish, Zsh, Flatpak, NVIDIA,
-Bluetooth, SSH, firewall, GRUB (subject to image/package availability).
-Unattended: `webos-installer -c /etc/webos/install.toml -y` (dry run: -d).
-Applies rice for desktop profiles and configures display manager/session defaults.
+Command: webos-installer
+  --gui                  windowed egui installer
+  --check                show detected disks, firmware and rootfs, then exit
+  -d, --dry-run          run the wizard, write nothing
+  -c, --config FILE -y   unattended install from a TOML file
+      --unattended       with --config: no TTY, print the log
+Log:   /var/log/webos-installer.log
+Config: /etc/webos/install.toml (template on the live medium)
 
-NVIDIA
-------
-x11-drivers/nvidia-drivers is installed (open modules). nouveau is blacklisted;
-installer adds nvidia-drm.modeset=1 and dracut force_drivers when NVIDIA option
-is chosen. AMD/Intel systems ignore it.
+Profiles:
+  Full      Hyprland + WebOS rice + gaming stack, SDDM
+  Noctalia  Hyprland + Noctalia shell + gaming stack, SDDM
+  Plasma    KDE Plasma 6 (Wayland) + gaming stack, SDDM
+  Minimal   base system only, TTY login, no display manager
+
+Dotfiles profiles (look only):
+  ashen     WebOS Deep Black rice (default)
+  mono      flat monochrome bar, grayscale kitty, square mako
+  jakoolit  JaKooLit-inspired frosted glass top bar
+  minimal   plain low-resource top bar
+
+Installer options and defaults:
+  gaming stack on, Steam note on, Firefox on, fish on, zsh on,
+  Bluetooth on, GRUB on.
+  Discord, OpenCode, Spotify, Vesktop, Waypaper, Flatpak, SSH server,
+  firewall and NVIDIA are opt-in.
+  Filesystem btrfs (or ext4/xfs), swap zram (or partition/none),
+  ESP 512 MiB, LUKS2 optional, UEFI or BIOS.
+
+The installer copies the live rootfs, then:
+- applies the chosen dotfiles profile and rice for the account,
+- enables services and the chosen session,
+- removes Noctalia for non-Noctalia profiles,
+- restores the D-Bus launch helper permissions,
+- writes /etc/webos-release from /etc/os-release,
+- removes the live-medium autologin/menu glue.
+
+SESSIONS / LOGIN
+----------------
+SDDM is the greeter. Its session list comes from
+/usr/share/webos/sessions/{wayland,x11}; the installer symlinks only the
+selected session there, so upstream session files remain intact but hidden.
+
+  webos-session              Hyprland + WebOS rice (default)
+  webos-session --noctalia   Hyprland + Noctalia shell
+  webos-session --gamescope  SteamOS-style gamescope session
+  webos-session --safe       Hyprland with the rice disabled (debugging)
+
+Session environment: Wayland, XDG_CURRENT_DESKTOP=Hyprland, Breeze_Light
+cursor, dark GTK/Qt defaults. GPU hints are chosen from /sys/module/nvidia.
+
+HYPRLAND
+--------
+Config: ~/.config/hypr/hyprland.conf (source of truth:
+/usr/share/webos/rice/hypr/). webos-rice never overwrites a file you edited
+unless you pass --force; edits are tracked by hash in the rice manifest.
+
+Autostart (exec-once): dbus activation environment, `webos-rice --ensure`,
+`webos-autostart hyprland` (portals + polkit + bar/shell + wallpaper),
+nm-applet, blueman-applet, cliphist watchers, Breeze_Light cursor, dark
+GTK defaults.
+
+Keybinds (SUPER = mod):
+  Super+Return        kitty terminal (fastfetch card)
+  Super+Shift+Return  foot terminal
+  Super+D             wofi application launcher
+  Super+R             wofi run launcher
+  Super+E             Dolphin file manager
+  Super+B             Firefox
+  Super+I             WebOS Settings
+  Super+Shift+I       display settings (wdisplays)
+  Super+Q             close window
+  Super+Shift+Q       exit Hyprland
+  Super+V             clipboard history (cliphist + wofi)
+  Super+N             dismiss all notifications
+  Super+Escape        lock screen (hyprlock)
+  Super+P             show/hide waybar
+  Super+F             toggle floating
+  Super+Shift+F       fullscreen (maximised)
+  Super+Space         fullscreen (fullscreen state)
+  Super+Ctrl+J        toggle split
+  Super+S             special workspace
+  Super+Shift+S       move window to special workspace
+  Super+Arrows/HJKL   move focus
+  Super+Shift+Arrows  move window
+  Super+Ctrl+Arrows   resize window
+  Super+1..0          switch workspace 1-10
+  Super+Shift+1..0    move window to workspace 1-10
+  Super+mouse wheel   cycle workspaces
+  Super+Tab           previous workspace
+  Print               region screenshot to clipboard
+  Shift+Print         window screenshot to clipboard
+  Super+Print         output screenshot to clipboard
+  Super+Shift+Print   region screenshot saved to ~/Pictures/Screenshots
+
+Window rules: terminals and file managers are translucent; games (Steam,
+gamescope, wine) are opaque with no blur/shadow/rounding; utilities float;
+picture-in-picture floats and pins; waybar/wofi/notifications are blurred.
+
+SETTINGS
+--------
+`webos-settings` is session-aware:
+- Plasma: launches KDE System Settings.
+- Hyprland: wofi menu for Display (wdisplays), Input devices (hyprctl
+  devices), KDE System Settings, Audio (pavucontrol), Network
+  (nm-connection-editor), Wallpaper (waypaper), Bluetooth (blueman-manager),
+  Power/session (wlogout).
+- `webos-settings --display` and `--input` go straight to the relevant tool.
+
+RICE / THEMING
+--------------
+Source of truth: /usr/share/webos/rice (hypr, waybar, wofi, kitty, foot,
+fish, fastfetch, mako, wlogout, gtk-3.0/4.0, qt5ct/qt6ct, kvantum, plasma,
+konsole, color-schemes, wallpapers).
+Dotfiles profiles: /usr/share/webos/dotfiles/{jakoolit,minimal,mono}.
+Per-user copies: ~/.config/<app>, ~/.local/share/color-schemes/DeepBlack.colors,
+Plasma configs (kdeglobals, kwinrc, kwinrulesrc), ~/.local/share/konsole.
+
+Palette: pure black background, #F2F2F2 foreground, #FFFFFF labels,
+#8C8C8C dim/secondary, greyscale ANSI 0-15, frosted blur, white borders.
+Plasma: Deep Black scheme, Breeze_Light cursor, matching wallpaper and
+Konsole profile, KWin blur/opacity rule for kitty. Hyprland: smoothed
+animations, blurred translucent surfaces, same palette.
+
+Commands:
+  webos-rice --user              apply to $HOME
+  webos-rice --system            apply to /etc/skel, /root and every /home/*
+  webos-rice --ensure            install only missing files (login)
+  webos-rice --check             dry run, report changes
+  webos-rice --doctor            verify the environment
+  webos-rice --toggle-panel      show/hide waybar
+  webos-rice --list              list managed trees
+  webos-rice --wallpaper FILE    set the Hyprland wallpaper
+  webos-rice --force             overwrite edited files (keeps .webos-orig)
+  webos-dotfiles --list
+  webos-dotfiles --apply ashen|mono|jakoolit|minimal [--system] [--force]
+  webos-plasma-setup             apply the Plasma side of the theme
+
+TERMINAL / SHELLS / FASTFETCH
+-----------------------------
+kitty and foot run /usr/bin/webos-shell, which prints the WebOS fastfetch card
+once (WEBOS_FASTFETCH_SHOWN) and then execs $SHELL. bash, zsh and fish print
+the same card on interactive login. Manual: `webos-fastfetch`.
+Config: /usr/share/webos/rice/fastfetch/ (fastfetch.json, webos.txt).
+Logo: text cobweb (no ImageMagick/chafa needed).
+Modules: display, uptime, cpu, gpu, terminal, memory, disk, packages, shell,
+datetime.
+Theme: pure black, monochrome, thin white bar cursor, white selection.
+Failures are logged to /tmp/webos-fastfetch.log.
+
+PREINSTALLED SOFTWARE
+---------------------
+Desktops: Hyprland 0.57, waybar, wofi, mako, hyprpaper, hypridle, hyprlock,
+hyprsunset, Noctalia 5.4 (selectable), KDE Plasma 6.8 (Wayland), SDDM.
+Terminals/editors: kitty, foot, wezterm, alacritty, neovim, zellij, tmux,
+ranger, pcmanfm, Dolphin.
+Apps: Firefox, Discord, OpenCode, Spotify, Vesktop, Waypaper, mpv, imv,
+Lutris, Heroic, btop, fastfetch, pavucontrol, blueman, nm-connection-editor.
+Gaming: gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton, dosbox-staging,
+scummvm, corectrl, ananicy-cpp, earlyoom, preload, irqbalance, thermald,
+RyzenAdj, scx.
+Fonts: Inter, JetBrains Mono (Nerd Font), Noto.
+Tools: Portage, sudo, NetworkManager, nftables/iptables, smartmontools,
+nvme-cli, udisks/udiskie, wl-clipboard/cliphist, grim/slurp, wdisplays,
+wlr-randr, kanshi, PipeWire/ WirePlumber, Vulkan/Mesa tooling.
+Installer can add fish, zsh, Flatpak and the opt-in apps listed above.
+Wine and native Steam are NOT included (32-bit/multilib).
+
+GAMING / PERFORMANCE
+--------------------
+- zram swap: RAM/2 capped at 8 GiB, zstd, priority 100 (local.d webos.start).
+- sysctl tuning: vm.swappiness=100, vfs_cache_pressure=50,
+  vm.max_map_count=2147483642, split_lock_mitigate=0, netdev_max_backlog.
+- gamemode, MangoHud, gamescope, vkBasalt, vkd3d-proton, Lutris, Heroic.
+- `webos-gaming status`            what is running and with what
+  `webos-gaming gamescope [cmd…]` run a command in gamescope
+  `webos-gaming gamescope-session` SteamOS-style session
+  `webos-gaming mangohud-toggle`  flip MangoHud
+  `webos-gaming proton install|list` fetch/list Proton-GE
+  `webos-gaming tune <profile>`   apply an scx/CPU profile
+  `webos-gaming bench <cmd…>`     run with MangoHud + logging
+- Steam and 32-bit Windows games need multilib. Options: Flatpak Steam
+  (recommended), Distrobox, or a future multilib WebOS build. If selected,
+  the installer writes /etc/webos/steam-unavailable.txt.
+- NVIDIA: x11-drivers/nvidia-drivers is installed; nouveau is blacklisted.
+  Choosing NVIDIA in the installer adds nvidia-drm.modeset=1 and dracut
+  force_drivers. AMD/Intel systems ignore it.
+
+UPDATES / PACKAGES
+------------------
+Portage + OpenRC. No binary host by default: emerge compiles from source.
+Repos: gentoo, webos (local overlay /usr/local/portage/webos); build-only
+overlays may be disabled under /etc/portage/repos.conf.disabled.
+
+  sudo webos-update              sync, rebuild @world, depclean, config,
+                                 Flatpak, rice; log /var/log/webos-update.log
+  sudo webos-update --check      show what would change
+  sudo webos-update --yes        non-interactive config merges
+  --no-sync | --no-flatpak | --no-depclean | --quiet
+
+  sudo emerge --sync
+  sudo emerge -av <package>
+  sudo emerge -avuDN @world
+  sudo emerge --depclean
+  sudo dispatch-conf
+
+SERVICES (OpenRC)
+-----------------
+Default: dbus, elogind, NetworkManager, syslog-ng, acpid, local (runs
+/etc/local.d/webos.start: zram, sysctl, wallpaper), ananicy-cpp, irqbalance,
+display-manager (SDDM) for graphical profiles.
+Installer toggles: bluetooth, sshd, nftables.
+  rc-service <name> status|start|stop|restart
+  rc-update add|del <name> default
+Logs: /var/log/rc.log, `rc-status`, `dmesg`.
 
 WEBOS COMMANDS
 --------------
-webos-update        system updater (sync, @world, depclean, flatpak, rice)
-webos-rice          apply/repair/toggle the Deep Black rice
-webos-fastfetch     WebOS ASCII fastfetch card
-webos-shell         kitty launch wrapper (prints card once, then $SHELL)
-webos-session       start a WebOS session (incl. --gamescope)
-webos-wallpaper     set/generate/apply wallpaper
-webos-shot          screenshot helper
-webos-gaming        gaming helpers
-webos-plasma-setup  apply Plasma-side Deep Black setup
+webos-installer     install WebOS (TUI, --gui, --check, --config -y)
+webos-update        system updater
+webos-rice          apply/repair/verify/toggle the rice
+webos-dotfiles      choose the dotfiles profile
+webos-fastfetch     print the WebOS fastfetch card
+webos-shell         terminal wrapper (card once, then $SHELL)
+webos-session       start Hyprland / Noctalia / gamescope / safe session
+webos-autostart     start portals, polkit, bar/shell and wallpaper
+webos-portals       start XDG portals + a polkit agent (OpenRC)
+webos-wallpaper     render/apply/cycle wallpaper, --daemon
+webos-shot          screenshots (region/window/output/full)
+webos-gaming        gaming helpers and status
+webos-plasma-setup  apply the Plasma Deep Black setup
 webos-settings      session-aware settings launcher
-webos-installer     installer
+
+FILES / PATHS / LOGS
+--------------------
+/usr/share/webos/                 branding, rice, dotfiles, this file
+/usr/share/webos/rice/            theme source of truth
+/usr/share/webos/dotfiles/        ashen/mono/jakoolit/minimal trees
+/usr/share/webos/noctalia/        seeded Noctalia config
+/usr/share/webos/sessions/        SDDM-visible session entries
+/etc/webos/                       installer config and notes
+/etc/skel/                        themed skeleton for new accounts
+/etc/local.d/webos.start          zram/sysctl/wallpaper boot glue
+/etc/bash/bashrc.d/00-webos-fastfetch.bash
+/etc/zsh/zshrc
+/etc/fish/conf.d/00-webos-fastfetch.fish
+/etc/sddm.conf.d/10-webos.conf
+/usr/local/portage/webos/         WebOS ebuild overlay
+/var/log/webos-installer.log      installer log
+/var/log/webos-update.log         updater log
+/var/log/rc.log                   OpenRC log
+/tmp/webos-autostart.log          session autostart log
+/tmp/webos-portals.log            portal/polkit log
+/tmp/webos-fastfetch.log          fastfetch failures
+~/.local/state/webos/rice.manifest  managed-file hashes (user-owned)
+~/.local/share/hyprland/hyprland.log  Hyprland log
 
 TROUBLESHOOTING
 ---------------
-- Theme not applied: `webos-rice --user --force`, then log out/in.
-- No waybar: `webos-rice --toggle-panel` or run `waybar`; check `webos-rice --doctor`.
-- wofi does not open: launcher, not a daemon — press Super+D.
-- Wallpaper missing in Hyprland: ensure `hyprpaper` running (`hyprctl monitors`) and rerun `webos-wallpaper` or `webos-rice --ensure`.
-- Portals/auth prompts: confirm session env (Wayland), portal backends installed, and polkit agent running for the session.
-- Installer log: /var/log/webos-installer.log. Install config: /etc/webos/install.toml.
-- Hyprland log: ~/.local/share/hyprland/hyprland.log
+- Rice missing/odd: `webos-rice --user --force`, then log out and in.
+- No waybar: `webos-rice --toggle-panel` or run `waybar`; check
+  `webos-rice --doctor` and /tmp/webos-autostart.log.
+- fastfetch blank: run `webos-fastfetch`; read /tmp/webos-fastfetch.log.
+  Remove WEBOS_FASTFETCH_SHOWN to force it in the current shell.
+- No polkit prompt: check /tmp/webos-portals.log and that
+  /usr/libexec/dbus-daemon-launch-helper is 4754 root:messagebus; restart
+  the session or run `webos-portals`.
+- Hyprland starts with no bar/autostart: confirm
+  ~/.config/hypr/hyprland.lua is absent (renamed .webos-disabled) and that
+  `Hyprland -c ~/.config/hypr/hyprland.conf` is used.
+- Duplicate sessions in SDDM: only /usr/share/webos/sessions should be
+  listed; check /etc/sddm.conf.d and /usr/share/xsessions.
+- Noctalia appears unexpectedly: profile was not Noctalia; remove
+  gui-apps/noctalia and its session entry, or reinstall with the right
+  profile.
+- No sound: `rc-service elogind status`, `pavucontrol`; PipeWire runs per
+  user (wireplumber).
+- Installer log: /var/log/webos-installer.log; install config
+  /etc/webos/install.toml.
+- Hyprland log: ~/.local/share/hyprland/hyprland.log.
 
-PATHS
------
-/usr/share/webos/            branding, rice, wallpaper, this file
-/usr/share/webos/rice/       theme source (hypr, waybar, wofi, kitty, fish, ...)
-/etc/webos/                  installer config and notes
-/etc/skel/                   themed skeleton for new accounts
-/usr/local/portage/webos/    WebOS ebuild overlay
-/var/log/webos-update.log    update log
+KNOWN LIMITATIONS / NOTES
+-------------------------
+- 64-bit only image: no Wine, native Steam, winetricks, protontricks or
+  goverlay. Use Flatpak Steam or Distrobox.
+- KDE Plasma 6.8.3 is Wayland-only in this image (no startplasma-x11).
+- niri is not included: it needs libdisplay-info < 0.4, which conflicts with
+  the 0.4 slot required by Plasma/KWin 6.8.3.
+- /usr/share/xsessions/Xsession.desktop is the standard xinit entry; SDDM
+  does not offer it because WebOS points SessionDir at
+  /usr/share/webos/sessions.
+- No binary package host by default; updates compile from source.
+- GitHub social preview cannot be set from the CLI.
 
 LINKS
 -----
 Source and releases : https://github.com/4NT1K/WebOS
 Roadmap             : ROADMAP.md
-Installed copy      : /usr/share/webos/WEBOS-INFO.txt
-Repo copy           : overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
+Architecture        : docs/ARCHITECTURE.md
+Build guide         : docs/BUILD.md
+Release guide       : docs/RELEASE.md
