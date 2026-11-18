@@ -76,6 +76,13 @@ else
 	cp -a "${WEBOS_ROOT}/livecd/." "${LIVE_ROOT}/" 2>/dev/null || true
 	chmod +x "${LIVE_ROOT}/usr/local/bin/webos-live-session" 2>/dev/null || true
 
+	# The system reference must exist on every medium, even if the theme
+	# package was skipped or its merge failed. Keep it in sync with the repo
+	# copy rather than trusting whatever the last emerge left behind.
+	install -Dm0644 \
+		"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt" \
+		"${LIVE_ROOT}/usr/share/webos/WEBOS-INFO.txt"
+
 	# The live tree is the install source: the installer rsyncs it with
 	# --numeric-ids, so every owner here is copied to the target verbatim.
 	# Normalize only files the build host wrote as its own user; system
