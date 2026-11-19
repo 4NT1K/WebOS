@@ -34,6 +34,13 @@ chroot_sh 'for p in sys-kernel/webos-kernel-sources sys-kernel/webos-kernel; do
 done' || warn "manifest refresh reported problems"
 
 step "kernel: emerging sources + kernel"
+# The WebOS fragment can change without an ebuild revision, so Portage would
+# otherwise keep the old kernel (and its old config). Rebuild when the image
+# in /boot does not match the fragment we are about to ship.
+if ! chroot_sh "grep -q '^CONFIG_ZRAM_BACKEND_ZSTD=y$' /boot/config-* 2>/dev/null"; then
+	step "kernel: fragment changed, forcing a rebuild"
+	chroot_sh "emerge --quiet --unmerge sys-kernel/webos-kernel >/dev/null 2>&1 || true"
+fi
 chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} \
 	sys-kernel/webos-kernel-sources sys-kernel/webos-kernel" \
 	|| die "kernel emerge failed"

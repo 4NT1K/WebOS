@@ -141,6 +141,11 @@ chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_J
 	@base @desktop @gaming @webos-installer" \
 	|| warn "WebOS set emerge had failures (continuing; review if critical packages missing)"
 
+# A reused chroot can still hold Plasma from before it moved into @plasma.
+# Strip it from the live rootfs so the image itself has no Plasma session;
+# keep systemsettings, which webos-settings uses under Hyprland.
+chroot_sh 'pkgs="$(qlist -I 2>/dev/null | grep "^kde-plasma/" | grep -v "^kde-plasma/systemsettings-" || true)"; if [ -n "$pkgs" ]; then emerge --quiet --unmerge $pkgs >/dev/null 2>&1 || true; fi; rm -f /usr/share/wayland-sessions/plasma.desktop' || true
+
 # The bar must be built with the WebOS USE flags (mpris/tray/logind). The
 # plain set emerge above does not rebuild for USE changes on an existing
 # chroot, so force it explicitly.
