@@ -803,9 +803,34 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
              emerge --quiet --unmerge gui-apps/qt6ct >/dev/null 2>&1 || true\n\
              if command -v webos-plasma-setup >/dev/null 2>&1; then\n\
                webos-plasma-setup >/dev/null 2>&1 || true\n\
+             fi\n\
+             # @plasma was installed after the session block ran, so link its\n\
+             # entry now; otherwise the greeter would show no session at all.\n\
+             if [ -f /usr/share/wayland-sessions/plasma.desktop ]; then\n\
+               ln -sfn /usr/share/wayland-sessions/plasma.desktop /usr/share/webos/sessions/wayland/plasma.desktop\n\
              fi\n",
         );
     }
+    // ── assertion: Plasma presence must match the selected profile ────────
+    // An earlier image shipped Plasma into every install and the greeter
+    // offered it even for Full/Noctalia/Minimal. Fail loudly if that regresses.
+    let plasma_assert = if cfg.profile == Profile::Plasma {
+        "if [ ! -e /usr/share/webos/sessions/wayland/plasma.desktop ] || [ -z \"$plasma_meta\" ]; then\n\
+           echo 'assertion failed: Plasma profile but no Plasma session/package' >&2\n\
+           exit 1\n\
+         fi\n"
+    } else {
+        "if [ -e /usr/share/webos/sessions/wayland/plasma.desktop ] || [ -n \"$plasma_meta\" ]; then\n\
+           echo 'assertion failed: non-Plasma profile has a Plasma session/package' >&2\n\
+           exit 1\n\
+         fi\n"
+    };
+    s.push_str("if command -v qlist >/dev/null 2>&1; then\n\
+                  plasma_meta=\"$(qlist -I 2>/dev/null | grep '^kde-plasma/plasma-meta' || true)\"\n\
+                else\n\
+                  plasma_meta=\"$(find /var/db/pkg/kde-plasma -maxdepth 1 -type d -name 'plasma-meta-*' -print -quit 2>/dev/null)\"\n\
+                fi\n");
+    s.push_str(plasma_assert);
     if cfg.profile == Profile::Minimal {
         s.push_str("cat > /etc/portage/package.mask/20-no-desktop <<'EOF'\n");
         s.push_str("webos-desktop/webos-desktop\nwebos-theme/webos-theme\nEOF\n");
