@@ -318,7 +318,7 @@ Commands:
   webos-rice --wallpaper FILE    set the Hyprland wallpaper
   webos-rice --force             overwrite edited files (keeps .webos-orig)
   webos-dotfiles --list
-  webos-dotfiles --apply ashen|mono|jakoolit|minimal [--system] [--force]
+  webos-dotfiles --apply mono|ashen|jakoolit|minimal [--system] [--force]
   webos-plasma-setup             apply the Plasma side of the theme
 
 TERMINAL / SHELLS / FASTFETCH

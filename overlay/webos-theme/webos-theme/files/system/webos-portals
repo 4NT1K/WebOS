@@ -6,7 +6,7 @@
 #
 set -u
 log=/tmp/webos-portals.log
-printf '[%s] webos-portals start (shell=%s)\n' "$(date +%H:%M:%S)" "${WEBOS_SHELL:-ashen}" >>"$log"
+printf '[%s] webos-portals start (shell=%s)\n' "$(date +%H:%M:%S)" "${WEBOS_SHELL:-mono}" >>"$log"
 
 export XDG_SESSION_TYPE=wayland
 export XDG_CURRENT_DESKTOP="${XDG_CURRENT_DESKTOP:-Hyprland}"

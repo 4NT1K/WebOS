@@ -2,12 +2,12 @@
 # webos-dotfiles — choose the desktop look (dotfiles profile).
 #
 #   webos-dotfiles --list
-#   webos-dotfiles --apply ashen|jakoolit|minimal|mono [--system] [--force]
+#   webos-dotfiles --apply mono|ashen|jakoolit|minimal [--system] [--force]
 #
-# ashen     the full WebOS Deep Black rice (default)
+# mono      floating rounded monochrome pills + grayscale kitty + mako (default)
+# ashen     the base WebOS rice (legacy look)
 # jakoolit  JaKooLit-inspired frosted glass top bar
 # minimal   a plain, low-resource top bar
-# mono      floating rounded monochrome pills + grayscale kitty + square mako
 #
 # A profile may ship any of these trees, which are copied over the matching
 # ~/.config/<name> directory:
@@ -26,14 +26,14 @@ FORCE=0
 say() { printf '%s\n' "$*"; }
 die() { printf 'webos-dotfiles: %s\n' "$*" >&2; exit 1; }
 
-profiles() { printf 'ashen\njakoolit\nminimal\nmono\n'; }
+profiles() { printf 'mono\nashen\njakoolit\nminimal\n'; }
 
 describe() {
 	case "$1" in
-		ashen)    printf 'WebOS Deep Black rice (default)' ;;
+		mono)     printf 'floating rounded monochrome pills, grayscale kitty and mako (default)' ;;
+		ashen)    printf 'base WebOS rice (legacy look)' ;;
 		jakoolit) printf 'JaKooLit-inspired frosted top bar' ;;
 		minimal)  printf 'plain low-resource top bar' ;;
-		mono)     printf 'floating rounded monochrome pills, grayscale kitty and mako' ;;
 	esac
 }
 
@@ -90,7 +90,7 @@ case "${1:-}" in
 		;;
 	--apply) PROFILE="${2:-}"; shift 2 || true ;;
 	-h|--help) sed -n '2,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
-	*) die "usage: webos-dotfiles --apply ashen|jakoolit|minimal|mono [--system] [--force]" ;;
+	*) die "usage: webos-dotfiles --apply mono|ashen|jakoolit|minimal [--system] [--force]" ;;
 esac
 
 case "$PROFILE" in ashen|jakoolit|minimal|mono) ;; *) die "unknown profile: ${PROFILE:-<empty>}" ;; esac

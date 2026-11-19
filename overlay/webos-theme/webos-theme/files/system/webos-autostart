@@ -12,7 +12,7 @@
 set -u
 
 COMPOSITOR="${1:-hyprland}"
-SHELL_KIND="${WEBOS_SHELL:-ashen}"
+SHELL_KIND="${WEBOS_SHELL:-mono}"
 export WEBOS_COMPOSITOR="$COMPOSITOR"
 log=/tmp/webos-autostart.log
 
