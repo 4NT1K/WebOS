@@ -5,6 +5,13 @@
 # local.d scripts are executed directly by OpenRC's `local` service, so this
 # must be a plain shell script (not an openrc-run service script).
 # Everything here is idempotent and safe to run on every boot.
+set -u
+
+log_fail() {
+	# OpenRC captures stderr in /var/log/rc.log; also send it to syslog.
+	printf 'webos: %s\n' "$*" >&2
+	logger -t webos-start -- "$*" 2>/dev/null || true
+}
 
 # 1. zram: a compressed swap device sized to RAM/2, capped at 8 GiB.
 #    Cheaper than a swapfile on a desktop that mostly runs games.
@@ -15,16 +22,30 @@ if ! swapon --show=NAME --noheadings 2>/dev/null | grep -q zram; then
 		[ -n "$mem_kb" ] || mem_kb=4194304
 		size=$(( mem_kb / 2 ))
 		[ "$size" -gt 8388608 ] && size=8388608
+
 		if [ -b /dev/zram0 ]; then
 			zram_dev=/dev/zram0
 		else
 			zram_dev="$(zramctl --find --size "${size}K" --algorithm zstd 2>/dev/null || true)"
 		fi
+
 		if [ -n "$zram_dev" ] && [ -b "$zram_dev" ]; then
-			zramctl "$zram_dev" --size "${size}K" --algorithm zstd 2>/dev/null || true
-			mkswap "$zram_dev" >/dev/null 2>&1 || true
-			swapon --priority 100 "$zram_dev" 2>/dev/null || true
+			# Older kernels built without CONFIG_ZRAM_BACKEND_ZSTD cannot take
+			# zstd here; fall back to the always-available lzo-rle backend
+			# instead of failing silently (that left /proc/swaps empty).
+			for alg in zstd lzo-rle lzo; do
+				zramctl "$zram_dev" --size "${size}K" --algorithm "$alg" >/dev/null 2>&1 || continue
+				if mkswap "$zram_dev" >/dev/null 2>&1 && swapon --priority 100 "$zram_dev" >/dev/null 2>&1; then
+					break
+				fi
+			done
 		fi
+
+		if ! swapon --show=NAME --noheadings 2>/dev/null | grep -q zram; then
+			log_fail "zram swap was not enabled (device=${zram_dev:-none}, size=${size}K) — check zramctl, mkswap and the kernel zram backends"
+		fi
+	else
+		log_fail "zramctl not found; zram swap disabled"
 	fi
 fi
 

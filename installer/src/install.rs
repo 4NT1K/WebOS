@@ -675,7 +675,6 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         "syslog-ng",
         "acpid",
         "webos",
-        "ananicy-cpp",
         "irqbalance",
     ];
     if cfg.enable_bluetooth {
@@ -697,6 +696,18 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push_str("for svc in ");
     s.push_str(&services.join(" "));
     s.push_str("; do\n  if [[ -x /etc/init.d/$svc ]]; then rc-update add \"$svc\" default >/dev/null 2>&1 || true; fi\ndone\n");
+    // app-admin/ananicy-cpp installs its OpenRC script as ananicy-cpp.initd on
+    // Gentoo. The short name silently does nothing, so probe both and start it
+    // now as well as enabling it for the next boot.
+    s.push_str(
+        "for svc in ananicy-cpp.initd ananicy-cpp; do\n\
+           if [[ -x /etc/init.d/$svc ]]; then\n\
+             rc-update add \"$svc\" default >/dev/null 2>&1 || true\n\
+             rc-service \"$svc\" start >/dev/null 2>&1 || true\n\
+             break\n\
+           fi\n\
+         done\n",
+    );
     // A minimal install keeps the console getty; no display manager.
     if cfg.profile == Profile::Minimal {
         s.push_str("rc-update del display-manager default >/dev/null 2>&1 || true\n");
@@ -718,37 +729,20 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         ));
     }
     // ── default session ──────────────────────────────────────────────────
-    // SDDM remembers the last session; seed it so the profile the user chose
-    // in the installer is the one they land in after logging in.
-    //
-    // The greeter lists the sessions that are actually installed. Plasma is
-    // part of every GUI image, so hiding it (as an earlier build did) left a
-    // working desktop unreachable. The chosen profile is still the default.
+    // SDDM must offer exactly ONE session: the profile chosen in the wizard.
+    // An earlier build symlinked every installed desktop (WebOS, Plasma,
+    // gamescope) into the greeter, which left a confusing list at login. The
+    // chosen session is also seeded in state.conf so it is the default.
     if cfg.profile.has_gui() {
         let session = cfg.profile.session();
-        let mut offered: Vec<&str> = vec![session];
-        for s in ["webos.desktop", "plasma.desktop", "webos-gamescope.desktop"] {
-            // The Noctalia profile starts its own session; offering plain
-            // WebOS next to it would just be a second, bar-only desktop.
-            if cfg.profile == Profile::Noctalia && s == "webos.desktop" {
-                continue;
-            }
-            if !offered.contains(&s) {
-                offered.push(s);
-            }
-        }
-        let links: String = offered
-            .iter()
-            .map(|s| {
-                format!(
-                    "if [ -f /usr/share/wayland-sessions/{s} ]; then\n\
-                       ln -sfn /usr/share/wayland-sessions/{s} /usr/share/webos/sessions/wayland/{s}\n\
-                     elif [ -f /usr/share/xsessions/{s} ]; then\n\
-                       ln -sfn /usr/share/xsessions/{s} /usr/share/webos/sessions/x11/{s}\n\
-                     fi\n"
-                )
-            })
-            .collect();
+        let link = format!(
+            "if [ -f /usr/share/wayland-sessions/{s} ]; then\n\
+               ln -sfn /usr/share/wayland-sessions/{s} /usr/share/webos/sessions/wayland/{s}\n\
+             elif [ -f /usr/share/xsessions/{s} ]; then\n\
+               ln -sfn /usr/share/xsessions/{s} /usr/share/webos/sessions/x11/{s}\n\
+             fi\n",
+            s = session
+        );
         s.push_str(&format!(
             "install -d -m 0755 /var/lib/sddm /etc/sddm.conf.d\n\
              cat > /var/lib/sddm/state.conf <<'EOF'\n\
@@ -757,13 +751,11 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
              User={u}\n\
              EOF\n\
              chown -R sddm:sddm /var/lib/sddm 2>/dev/null || true\n\
-             # Offer every desktop that is actually installed, with the profile\n\
-             # chosen in the installer as the default. Point SDDM at a\n\
-             # WebOS-owned directory and symlink those sessions into it; the\n\
-             # upstream .desktop files stay intact.\n\
+             # WebOS-owned session directory: only the chosen desktop is linked,\n\
+             # so the greeter shows one session instead of every installed one.\n\
              install -d -m 0755 /usr/share/webos/sessions/wayland /usr/share/webos/sessions/x11\n\
              rm -f /usr/share/webos/sessions/wayland/*.desktop /usr/share/webos/sessions/x11/*.desktop\n\
-             {links}\
+             {link}\
              cat > /etc/sddm.conf.d/20-webos-session.conf <<'EOF'\n\
              [Wayland]\n\
              SessionDir=/usr/share/webos/sessions/wayland\n\
@@ -775,15 +767,43 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
 
     // ── profile-specific defaults ────────────────────────────────────────
-    // Noctalia is preinstalled on the live medium so the Noctalia profile can
-    // offer it. The installer copies the whole live rootfs, so without this a
-    // Hyprland/Plasma/Minimal install still shipped the Noctalia package and
-    // its session entry even though the user never selected it.
+    // The installer copies the live rootfs, so a profile that is NOT selected
+    // must be actively removed. Otherwise a Full/Noctalia install inherits
+    // the other desktop and SDDM shows sessions the user never asked for.
     if cfg.profile != Profile::Noctalia {
         s.push_str(
             "emerge --quiet --unmerge gui-apps/noctalia >/dev/null 2>&1 || true\n\
              rm -f /usr/share/wayland-sessions/webos-noctalia.desktop\n\
              rm -rf /usr/share/webos/noctalia /etc/skel/.config/noctalia /root/.config/noctalia\n",
+        );
+    }
+    // Plasma lives in its own @plasma set and is not part of @desktop. Remove
+    // any Plasma desktop that came from an older live image, but keep
+    // kde-plasma/systemsettings: the Hyprland settings menu uses it.
+    if cfg.profile != Profile::Plasma {
+        s.push_str(
+            "if command -v qlist >/dev/null 2>&1; then\n\
+               plasma_pkgs=\"$(qlist -I | grep '^kde-plasma/' | grep -v '^kde-plasma/systemsettings-' || true)\"\n\
+             else\n\
+               plasma_pkgs=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -v '^=systemsettings-' || true)\"\n\
+             fi\n\
+             if [[ -n \"$plasma_pkgs\" ]]; then\n\
+               emerge --quiet --unmerge $plasma_pkgs >/dev/null 2>&1 || true\n\
+             fi\n\
+             rm -f /usr/share/wayland-sessions/plasma.desktop\n\
+             rm -f /usr/share/webos/sessions/wayland/plasma.desktop\n",
+        );
+    } else {
+        // Plasma is opt-in: install the desktop set and theme it like WebOS.
+        // qt6ct conflicts with plasma-meta, so let Plasma own Qt theming.
+        s.push_str(
+            "if [[ -f /etc/portage/sets/plasma ]]; then\n\
+               emerge --quiet --noreplace @plasma >/dev/null 2>&1 || true\n\
+             fi\n\
+             emerge --quiet --unmerge gui-apps/qt6ct >/dev/null 2>&1 || true\n\
+             if command -v webos-plasma-setup >/dev/null 2>&1; then\n\
+               webos-plasma-setup >/dev/null 2>&1 || true\n\
+             fi\n",
         );
     }
     if cfg.profile == Profile::Minimal {

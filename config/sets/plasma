@@ -1,0 +1,6 @@
+# WebOS Plasma profile only — installed on demand by the installer.
+# Kept out of @desktop so the default Hyprland image has no Plasma desktop and
+# SDDM never offers a "Plasma (Wayland)" session the user did not choose.
+kde-plasma/plasma-meta
+kde-plasma/plasma-workspace
+kde-plasma/plasma-desktop

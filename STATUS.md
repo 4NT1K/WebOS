@@ -1,15 +1,26 @@
 # WebOS build status
 
-_Last update: 2026-11-18 — v1.022 (Ashen) fix release: Hyprland Lua rice, SDDM sessions, installer progress_
+_Last update: 2026-11-19 — v1.0 (Ashen): first stable release; Plasma, sessions, keys, zram and updater fixes._
 
-## Status: v1.022 ready to build
+## Status: v1.0 ready to build
 
-- Version 1.022; ISO `webos-1.022-Ashen-amd64.iso`.
-- Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is now Lua
+- Version 1.0; ISO `webos-1.0-Ashen-amd64.iso`.
+- Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
   (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.
-- SDDM is the shipped greeter. The installer links the installed desktops
-  (WebOS, Plasma, gamescope) into `/usr/share/webos/sessions` and seeds the
-  chosen profile in `/var/lib/sddm/state.conf`.
+- SDDM is the shipped greeter and offers exactly the session chosen in the
+  installer; that session is also seeded in `/var/lib/sddm/state.conf`.
+- Plasma lives in the opt-in `@plasma` set. Non-Plasma profiles unmerge it and
+  remove its session entry, so the greeter never shows a desktop you did not
+  choose.
+- Keys: `Super+Q` terminal, `Super+C` close window, `Super+Shift+S` screenshot
+  snip, `Super+Shift+Escape` exit Hyprland.
+- zram swap starts at boot with priority 100 (zstd with lzo-rle fallback), and
+  `ananicy-cpp.initd` is enabled and started by the installer.
+- `webos-update` now updates the kernel and regenerates GRUB, not just @world.
+- Kitty transparency is restored (kitty owns alpha; no stacked compositor
+  opacity) and the fastfetch card is framed in a box again.
+- The mono bar hides the LAN IPv4 address and battery percentage but keeps the
+  power menu.
 - The installer progress panel lists finished stages, shows the real stage
   count, and runs helpers with null stdio so nothing paints over the TUI.
 - All `sanus-*` names renamed to `webos-*` (packages, binaries, paths, overlay).

@@ -215,7 +215,10 @@ hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "s
 
 -- ── Per-window polish ───────────────────────────────────────────────────────
 -- Terminals and anything that opts in get the translucent treatment.
-hl.window_rule({ match = { class = "^(kitty)$" },                    opacity = "0.60 0.55" })
+-- kitty owns its own alpha (background_opacity). Do not stack a compositor
+-- opacity on top of it or the two values multiply and the terminal looks
+-- either opaque or almost invisible.
+hl.window_rule({ match = { class = "^(kitty)$" },                    opacity = "1.0 1.0" })
 hl.window_rule({ match = { class = "^(foot)$" },                     opacity = "0.86 0.80" })
 hl.window_rule({ match = { class = "^(Alacritty)$" },                opacity = "0.90 0.85" })
 hl.window_rule({ match = { class = "^(wezterm)$" },                  opacity = "0.92 0.88" })
@@ -273,10 +276,10 @@ hl.layer_rule({ match = { namespace = "^selection$" },    blur = true, ignore_al
 -- ── Binds ───────────────────────────────────────────────────────────────────
 local mod = "SUPER"
 
-hl.bind(mod .. " + Return",       hl.dsp.exec_cmd(terminal))
+hl.bind(mod .. " + Q",            hl.dsp.exec_cmd(terminal))
 hl.bind(mod .. " + SHIFT + Return", hl.dsp.exec_cmd(terminal2))
-hl.bind(mod .. " + Q",            hl.dsp.window.close())
-hl.bind(mod .. " + SHIFT + Q",    hl.dsp.exit())
+hl.bind(mod .. " + C",            hl.dsp.window.close())
+hl.bind(mod .. " + SHIFT + Escape", hl.dsp.exit())
 hl.bind(mod .. " + E",            hl.dsp.exec_cmd(fileman))
 hl.bind(mod .. " + B",            hl.dsp.exec_cmd(browser))
 hl.bind(mod .. " + D",            hl.dsp.exec_cmd(menu))
@@ -292,7 +295,7 @@ hl.bind(mod .. " + SHIFT + F",    hl.dsp.window.fullscreen({ mode = "maximized" 
 hl.bind(mod .. " + Space",        hl.dsp.window.fullscreen({ mode = "fullscreen" }))
 hl.bind(mod .. " + CTRL + J",     hl.dsp.layout("togglesplit"))
 hl.bind(mod .. " + S",            hl.dsp.workspace.toggle_special("magic"))
-hl.bind(mod .. " + SHIFT + S",    hl.dsp.window.move({ workspace = "special:magic" }))
+hl.bind(mod .. " + CTRL + S",     hl.dsp.window.move({ workspace = "special:magic" }))
 
 -- Move focus
 hl.bind(mod .. " + left",  hl.dsp.focus({ direction = "left" }))
@@ -344,9 +347,12 @@ hl.bind("XF86MonBrightnessUp",  hl.dsp.exec_cmd("brightnessctl set 5%+"),       
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl set 5%-"),                          { locked = true, repeating = true })
 
 -- Screenshots (webos-shot wraps grim/slurp; no extra package needed)
-hl.bind("Print",         hl.dsp.exec_cmd("webos-shot region --clipboard"))
-hl.bind("SHIFT + Print", hl.dsp.exec_cmd("webos-shot window --clipboard"))
-hl.bind(mod .. " + Print", hl.dsp.exec_cmd("webos-shot output --clipboard"))
+-- Super+Shift+S is the snip key: drag a region, saved to
+-- ~/Pictures/Screenshots and copied to the clipboard.
+hl.bind(mod .. " + SHIFT + S", hl.dsp.exec_cmd("webos-shot region"))
+hl.bind("Print",               hl.dsp.exec_cmd("webos-shot region --clipboard"))
+hl.bind("SHIFT + Print",       hl.dsp.exec_cmd("webos-shot window --clipboard"))
+hl.bind(mod .. " + Print",     hl.dsp.exec_cmd("webos-shot output --clipboard"))
 hl.bind(mod .. " + SHIFT + Print", hl.dsp.exec_cmd("webos-shot region --save"))
 
 -- Gaming helpers

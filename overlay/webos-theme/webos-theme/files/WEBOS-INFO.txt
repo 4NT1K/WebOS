@@ -1,4 +1,4 @@
-WebOS 1.022 "Ashen" — system information
+WebOS 1.0 "Ashen" — system information
 ========================================
 
 Everything important about this installed system, in one file.
@@ -7,17 +7,18 @@ Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
 RELEASE / IDENTITY
 ------------------
-- Version      : WebOS 1.022 "Ashen"
+- Version      : WebOS 1.0 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
-- Desktops     : Hyprland (default), Noctalia shell, KDE Plasma 6 (Wayland)
+- Desktops     : Hyprland (default); Noctalia shell and regular Plasma are
+                 opt-in profiles, never installed into a Full/Minimal image
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
-- ISO          : webos-1.022-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- ISO          : webos-1.0-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
 - Source       : https://github.com/4NT1K/WebOS
-- Release file : /etc/os-release and /etc/webos-release both report 1.022
+- Release file : /etc/os-release and /etc/webos-release both report 1.0
 
 QUICK START
 -----------
@@ -83,8 +84,9 @@ This is a fix release for the issues found in the 1.021 audit:
 - webos-rice replaces only the untouched upstream lua example (the one with
   the `This is an example Hyprland Lua config file.` header). A config you
   edited is still left alone. It also removes its own old hyprland.conf.
-- webos-session launches plain `Hyprland` (which finds hyprland.lua on its
-  own) instead of `-c hyprland.conf`; --safe still uses `-c /dev/null`.
+- webos-session launches `Hyprland -c ~/.config/hypr/hyprland.lua`, which loads
+  the WebOS mono rice, keybinds and autostart from that file. --safe still uses
+  `-c /dev/null` for debugging.
 - `webos-rice --doctor` checks that `~/.config/hypr/hyprland.lua` exists and
   is the WebOS config, and that `webos-colors.lua` is present.
 - **hyprlock had no logo.** `/usr/share/webos/logo.svg` was installed from
@@ -120,31 +122,59 @@ This is a fix release for the issues found in the 1.021 audit:
   DefaultSession. The session chosen at install time is still seeded in
   /var/lib/sddm/state.conf.
 
+WHAT CHANGED IN 1.0
+-------------------
+First stable release, rebuilt from the 1.022 tree with the final audit fixes:
+- Only the desktop chosen in the installer is linked into SDDM, so the login
+  screen shows one session instead of a list of every installed desktop.
+- regular Plasma was in the default @desktop set and leaked into every image.
+  It now lives in the opt-in @plasma set; non-Plasma installs unmerge it and
+  remove its session entry. The Plasma profile still installs and themes it.
+- Keybinds: Super+Q opens kitty, Super+C closes the window, Super+Shift+S is
+  the screenshot snip, and exit moved to Super+Shift+Escape so Q no longer
+  means two different things.
+- zram now comes up at boot: the kernel fragment enables the zstd backend
+  (the old CONFIG_ZRAM_DEF_COMP_ZSTD symbol was ignored), the boot glue falls
+  back to lzo-rle and logs failures, and the doctor checks swap is active.
+- ananicy-cpp is enabled under its real OpenRC name, ananicy-cpp.initd, and
+  started at install time.
+- The mono bar no longer prints the LAN IPv4 address or a battery percentage;
+  its power menu is unchanged. The default bar no longer prints an IP either.
+- kitty transparency is restored: kitty owns the alpha value (0.80-0.82) and
+  the compositor no longer multiplies a second opacity over it; the framed
+  fastfetch card is back.
+- webos-update now updates sys-kernel/webos-kernel explicitly (it is not in
+  @world) and regenerates /boot/grub/grub.cfg when a new kernel lands.
+- The installer log path in this document now matches the real file,
+  /var/log/webos-install.log, and stale rice-manifest entries are pruned.
+
 EXPECTED BEHAVIOUR
 ------------------
 Boot / live medium
-- The banner reads "WebOS 1.022 (Ashen) — live medium".
+- The banner reads "WebOS 1.0 (Ashen) — live medium".
 - Nothing is written to disk until the summary is confirmed.
 - The installer progress panel stays inside its border, keeps the "%" sign,
   and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow
   51-75%, light green 76-100%. ANSI colours survive the Linux console.
 
 SDDM / sessions
-- The greeter lists every desktop that is actually installed (WebOS,
-  Noctalia, Plasma, gamescope) and defaults to the profile chosen in the
-  installer: Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma ->
-  "Plasma (Wayland)".
+- The greeter lists exactly one session: the profile chosen in the installer.
+  Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma -> "Plasma (Wayland)".
+  No extra Plasma or gamescope entry is offered.
 - Minimal installs no display manager and boots to a TTY login.
-- Plasma is Wayland-only; there is no Plasma X11 entry.
+- regular Plasma is opt-in and Wayland-only; there is no Plasma X11 entry, and
+  a non-Plasma install has no Plasma desktop packages.
 - A non-Noctalia install has no noctalia binary, session entry or
   ~/.config/noctalia.
 
 Hyprland (all rice profiles)
 - waybar appears, wallpaper is set, mako shows notifications, hypridle runs,
   hyprpaper keeps the wallpaper, and portals + a polkit agent are active.
-- Super+Return opens kitty with the WebOS fastfetch card; Super+I opens
+- Super+Q opens kitty with the framed WebOS fastfetch card; Super+I opens
   webos-settings. The card appears exactly once per login in kitty, foot,
-  TTY, ssh and any interactive bash/zsh/fish shell.
+  TTY, ssh and any interactive bash/zsh/fish shell. kitty is translucent.
+- Super+Shift+S snips a screen region to ~/Pictures/Screenshots and the
+  clipboard.
 - fastfetch never prints "Image logo types are not supported"; failures go to
   /tmp/webos-fastfetch.log, not into the shell.
 - Admin actions (mounting, package install, settings changes) raise a polkit
@@ -160,13 +190,13 @@ Command: webos-installer
   -d, --dry-run          run the wizard, write nothing
   -c, --config FILE -y   unattended install from a TOML file
       --unattended       with --config: no TTY, print the log
-Log:   /var/log/webos-installer.log
+Log:   /var/log/webos-install.log
 Config: /etc/webos/install.toml (template on the live medium)
 
 Profiles:
   Full      Hyprland + WebOS rice + gaming stack, SDDM
   Noctalia  Hyprland + Noctalia shell + gaming stack, SDDM
-  Plasma    KDE Plasma 6 (Wayland) + gaming stack, SDDM
+  Plasma    regular Plasma (Wayland) + gaming stack, SDDM (opt-in @plasma set)
   Minimal   base system only, TTY login, no display manager
 
 Dotfiles profiles (look only):
@@ -194,9 +224,10 @@ The installer copies the live rootfs, then:
 SESSIONS / LOGIN
 ----------------
 SDDM is the greeter. Its session list comes from
-/usr/share/webos/sessions/{wayland,x11}; the installer symlinks the desktops
-that are installed (WebOS, Noctalia, Plasma, gamescope) there, so upstream
-session files remain intact and the chosen profile is the default.
+/usr/share/webos/sessions/{wayland,x11}. The installer clears that directory
+and symlinks only the .desktop file for the chosen profile, so the greeter
+shows one session rather than every desktop installed on the image. Upstream
+session files under /usr/share/wayland-sessions remain intact.
 
   webos-session              Hyprland + WebOS rice (default)
   webos-session --noctalia   Hyprland + Noctalia shell
@@ -221,7 +252,7 @@ Autostart (`hl.on("hyprland.start")`): dbus activation environment,
 watchers, Breeze_Light cursor, dark GTK defaults.
 
 Keybinds (SUPER = mod):
-  Super+Return        kitty terminal (fastfetch card)
+  Super+Q             kitty terminal (framed fastfetch card)
   Super+Shift+Return  foot terminal
   Super+D             wofi application launcher
   Super+R             wofi run launcher
@@ -229,8 +260,8 @@ Keybinds (SUPER = mod):
   Super+B             Firefox
   Super+I             WebOS Settings
   Super+Shift+I       display settings (wdisplays)
-  Super+Q             close window
-  Super+Shift+Q       exit Hyprland
+  Super+C             close window
+  Super+Shift+Escape  exit Hyprland
   Super+V             clipboard history (cliphist + wofi)
   Super+N             dismiss all notifications
   Super+Escape        lock screen (hyprlock)
@@ -240,7 +271,7 @@ Keybinds (SUPER = mod):
   Super+Space         fullscreen (fullscreen state)
   Super+Ctrl+J        toggle split
   Super+S             special workspace
-  Super+Shift+S       move window to special workspace
+  Super+CTRL+S        move window to special workspace
   Super+Arrows/HJKL   move focus
   Super+Shift+Arrows  move window
   Super+Ctrl+Arrows   resize window
@@ -248,6 +279,7 @@ Keybinds (SUPER = mod):
   Super+Shift+1..0    move window to workspace 1-10
   Super+mouse wheel   cycle workspaces
   Super+Tab           previous workspace
+  Super+Shift+S       screenshot/snip: region to file + clipboard
   Print               region screenshot to clipboard
   Shift+Print         window screenshot to clipboard
   Super+Print         output screenshot to clipboard
@@ -311,19 +343,24 @@ Failures are logged to /tmp/webos-fastfetch.log.
 PREINSTALLED SOFTWARE
 ---------------------
 Desktops: Hyprland 0.57, waybar, wofi, mako, hyprpaper, hypridle, hyprlock,
-hyprsunset, Noctalia 5.4 (selectable), KDE Plasma 6.8 (Wayland), SDDM.
+hyprsunset, SDDM. Noctalia 5.4 and regular Plasma 6.8 (Wayland) are opt-in
+profiles installed only when selected.
 Terminals/editors: kitty, foot, wezterm, alacritty, neovim, zellij, tmux,
 ranger, pcmanfm, Dolphin.
-Apps: Firefox, Discord, OpenCode, Spotify, Vesktop, Waypaper, mpv, imv,
-Lutris, Heroic, btop, fastfetch, pavucontrol, blueman, nm-connection-editor.
-Gaming: gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton, dosbox-staging,
-scummvm, corectrl, ananicy-cpp, earlyoom, preload, irqbalance, thermald,
-RyzenAdj, scx.
+Apps: Firefox, Discord, OpenCode, Spotify, Vesktop (binary `vesktop-bin`),
+Waypaper, mpv, imv, Lutris, Heroic, btop, fastfetch, pavucontrol, blueman,
+nm-connection-editor.
+Gaming: gamescope, gamemode (`gamemoderun` / `gamemoded`), MangoHud, vkBasalt
+(library only, no launcher), vkd3d-proton, dosbox-staging, scummvm, corectrl,
+ananicy-cpp (`ananicy-cpp.initd` service), earlyoom, preload, irqbalance,
+thermald, RyzenAdj, scx.
 Fonts: Inter, JetBrains Mono (Nerd Font), Noto.
 Tools: Portage, sudo, NetworkManager, nftables/iptables, smartmontools,
 nvme-cli, udisks/udiskie, wl-clipboard/cliphist, grim/slurp, wdisplays,
 wlr-randr, kanshi, PipeWire/ WirePlumber, Vulkan/Mesa tooling.
-Installer can add fish, zsh, Flatpak and the opt-in apps listed above.
+Installer can add fish, zsh and the opt-in apps listed above. Flatpak is
+opt-in and is not installed by default; there is no `flatpak` command until
+you select it or `emerge app-emulation/flatpak`.
 Wine and native Steam are NOT included (32-bit/multilib).
 
 GAMING / PERFORMANCE
@@ -353,10 +390,16 @@ Repos: gentoo, webos (local overlay /usr/local/portage/webos); build-only
 overlays may be disabled under /etc/portage/repos.conf.disabled.
 
   sudo webos-update              sync, rebuild @world, depclean, config,
-                                 Flatpak, rice; log /var/log/webos-update.log
+                                 kernel + GRUB, Flatpak, rice; log
+                                 /var/log/webos-update.log
   sudo webos-update --check      show what would change
   sudo webos-update --yes        non-interactive config merges
-  --no-sync | --no-flatpak | --no-depclean | --quiet
+  --no-sync | --no-flatpak | --no-depclean | --no-kernel | --quiet
+
+  You do NOT have to update the kernel or software by hand. webos-update
+  rebuilds @world and explicitly updates sys-kernel/webos-kernel (it is not in
+  @world), regenerates /boot/grub/grub.cfg when a new kernel image lands, and
+  tells you to reboot. Manual Portage commands remain available below.
 
   sudo emerge --sync
   sudo emerge -av <package>
@@ -367,8 +410,9 @@ overlays may be disabled under /etc/portage/repos.conf.disabled.
 SERVICES (OpenRC)
 -----------------
 Default: dbus, elogind, NetworkManager, syslog-ng, acpid, local (runs
-/etc/local.d/webos.start: zram, sysctl, wallpaper), ananicy-cpp, irqbalance,
-display-manager (SDDM) for graphical profiles.
+/etc/local.d/webos.start: zram with zstd/lzo-rle, sysctl, wallpaper),
+ananicy-cpp.initd (the real OpenRC service name), irqbalance, display-manager
+(SDDM) for graphical profiles.
 Installer toggles: bluetooth, sshd, nftables.
   rc-service <name> status|start|stop|restart
   rc-update add|del <name> default
@@ -386,7 +430,7 @@ webos-session       start Hyprland / Noctalia / gamescope / safe session
 webos-autostart     start portals, polkit, bar/shell and wallpaper
 webos-portals       start XDG portals + a polkit agent (OpenRC)
 webos-wallpaper     render/apply/cycle wallpaper, --daemon
-webos-shot          screenshots (region/window/output/full)
+webos-shot          screenshots (region/window/output/full); Super+Shift+S snips
 webos-gaming        gaming helpers and status
 webos-plasma-setup  apply the Plasma Deep Black setup
 webos-settings      session-aware settings launcher
@@ -406,7 +450,7 @@ FILES / PATHS / LOGS
 /etc/fish/conf.d/00-webos-fastfetch.fish
 /etc/sddm.conf.d/10-webos.conf
 /usr/local/portage/webos/         WebOS ebuild overlay
-/var/log/webos-installer.log      installer log
+/var/log/webos-install.log      installer log
 /var/log/webos-update.log         updater log
 /var/log/rc.log                   OpenRC log
 /tmp/webos-autostart.log          session autostart log
@@ -429,16 +473,17 @@ TROUBLESHOOTING
   ~/.config/hypr/hyprland.lua exists and starts with the WebOS header (not
   the upstream example), run `webos-rice --doctor`, and look at
   /tmp/webos-autostart.log. `webos-rice --user --force` restores it.
-- Duplicate sessions in SDDM: the greeter lists /usr/share/webos/sessions,
-  which the installer fills with the desktops that are installed (WebOS,
-  Plasma, gamescope). A second Hyprland entry means a stale .desktop is in
-  /usr/share/wayland-sessions; check /etc/sddm.conf.d as well.
+- More than one session in SDDM: the greeter lists /usr/share/webos/sessions,
+  which the installer fills with only the chosen profile. A second entry means
+  a stale .desktop was left in that directory; remove it and check
+  /etc/sddm.conf.d/20-webos-session.conf. Plasma should not be there unless
+  the Plasma profile was chosen.
 - Noctalia appears unexpectedly: profile was not Noctalia; remove
   gui-apps/noctalia and its session entry, or reinstall with the right
   profile.
 - No sound: `rc-service elogind status`, `pavucontrol`; PipeWire runs per
   user (wireplumber).
-- Installer log: /var/log/webos-installer.log; install config
+- Installer log: /var/log/webos-install.log; install config
   /etc/webos/install.toml.
 - Hyprland log: ~/.local/share/hyprland/hyprland.log.
 
@@ -446,7 +491,7 @@ KNOWN LIMITATIONS / NOTES
 -------------------------
 - 64-bit only image: no Wine, native Steam, winetricks, protontricks or
   goverlay. Use Flatpak Steam or Distrobox.
-- KDE Plasma 6.8.3 is Wayland-only in this image (no startplasma-x11).
+- regular Plasma 6.8.3 (opt-in profile) is Wayland-only here (no startplasma-x11).
 - niri is not included: it needs libdisplay-info < 0.4, which conflicts with
   the 0.4 slot required by Plasma/KWin 6.8.3.
 - /usr/share/xsessions/Xsession.desktop is the standard xinit entry; SDDM

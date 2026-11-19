@@ -51,8 +51,6 @@ tooltip label {
 #cpu,
 #memory,
 #pulseaudio,
-#network,
-#battery,
 #tray,
 #custom-power {
     background: transparent;
@@ -118,28 +116,15 @@ tooltip label {
 
 #cpu,
 #memory,
-#pulseaudio,
-#network,
-#battery {
+#pulseaudio {
     color: @dim;
 }
 
 #cpu:hover,
 #memory:hover,
 #pulseaudio:hover,
-#network:hover,
-#battery:hover,
 #custom-power:hover {
     color: @accent;
-}
-
-#battery.warning {
-    color: @text;
-}
-
-#battery.critical {
-    color: @accent;
-    border-bottom: 1px solid @accent;
 }
 
 #tray {

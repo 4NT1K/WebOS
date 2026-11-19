@@ -288,9 +288,12 @@ desktop look like one product.
 ### Session
 
 Login is SDDM. The session entries are named `webos` (not
-`hyprland`) so they never collide with the upstream package. `webos-session`
-exports the environment and starts Hyprland; `webos-gamescope.desktop` is the
-gamescope/SteamOS-style session.
+`hyprland`) so they never collide with the upstream package. The installer
+links only the session for the chosen profile into
+`/usr/share/webos/sessions`, so the greeter shows one option; `webos-session`
+exports the environment and starts Hyprland with the WebOS Lua rice.
+`webos-gamescope.desktop` exists for manual gamescope launches but is not
+offered at login.
 
 ---
 

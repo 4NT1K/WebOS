@@ -19,10 +19,8 @@ gui-libs/wlroots
 # installer's profile list and from SDDM.
 gui-apps/noctalia
 
-# KDE Plasma (alternative desktop profile; same image, different session)
-kde-plasma/plasma-meta
-kde-plasma/plasma-workspace
-kde-plasma/plasma-desktop
+# KDE Plasma is deliberately NOT here. It is in the separate @plasma set so a
+# Full/Noctalia/Minimal image never inherits Plasma or its login session.
 
 # Panels / launchers / notifications
 gui-apps/waybar

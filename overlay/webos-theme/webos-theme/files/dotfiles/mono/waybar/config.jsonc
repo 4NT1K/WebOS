@@ -26,12 +26,12 @@
     "modules-center": [
         "mpris"
     ],
+    // No network module: the mono bar never displays the LAN IPv4 address.
+    // No battery module either (desktop PC); the power menu stays available.
     "modules-right": [
         "cpu",
         "memory",
         "pulseaudio",
-        "network",
-        "battery",
         "clock",
         "tray",
         "custom/power"
@@ -85,25 +85,6 @@
         "on-click": "pavucontrol",
         "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "tooltip-format": "{desc}"
-    },
-
-    "network": {
-        "interval": 3,
-        "format-wifi": "wifi {signalStrength}%",
-        "format-ethernet": "lan {ipaddr}",
-        "format-linked": "lan {ifname}",
-        "format-disconnected": "offline",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%)\n{ipaddr}",
-        "on-click": "nm-connection-editor"
-    },
-
-    "battery": {
-        "interval": 30,
-        "states": { "warning": 25, "critical": 12 },
-        "format": "bat {capacity}%",
-        "format-charging": "bat {capacity}% +",
-        "format-plugged": "bat {capacity}% ac",
-        "tooltip": true
     },
 
     "clock": {

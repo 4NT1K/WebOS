@@ -86,6 +86,22 @@ record() {
 	mv -f "$tmp" "$mf"
 }
 
+prune_manifest() {
+	# 1.021 shipped hyprland.conf/webos-colors.conf; their hashes stayed in
+	# rice.manifest forever. Drop those obsolete entries on every apply so
+	# --doctor and --check do not report files that no longer exist.
+	local mf="$1" tmp
+	[[ -f "$mf" ]] || return 0
+	tmp="$(mktemp)"
+	awk 'NF >= 2 && $2 !~ /(hyprland\.conf|webos-colors\.conf)$/ { print }' "$mf" > "$tmp"
+	if ! cmp -s "$mf" "$tmp"; then
+		mv -f "$tmp" "$mf"
+		note "pruned obsolete rice manifest entries"
+	else
+		rm -f "$tmp"
+	fi
+}
+
 backup_once() {
 	local f="$1"
 	[[ -f "$f" ]] || return 0
@@ -156,6 +172,7 @@ apply_home() {
 	note "applying rice to ${home}"
 	local mf lua conf rec
 	mf="$(manifest_of "$home")"
+	prune_manifest "$mf"
 
 	# Hyprland 0.57+ reads ~/.config/hypr/hyprland.lua and ignores
 	# hyprland.conf. A home that was first themed by an older release (or by
@@ -354,6 +371,22 @@ system_all() {
 }
 
 # ── doctor ──────────────────────────────────────────────────────────────────
+# No pipelines with `grep -q` here: with pipefail the producer gets SIGPIPE
+# and a healthy system reports a false failure.
+zram_ok() {
+	command -v swapon >/dev/null 2>&1 || return 0
+	local swaps
+	swaps="$(swapon --show=NAME --noheadings 2>/dev/null || true)"
+	case "$swaps" in *zram*) return 0 ;; *) return 1 ;; esac
+}
+
+ananicy_ok() {
+	command -v rc-update >/dev/null 2>&1 || return 0
+	local list
+	list="$(rc-update show default 2>/dev/null || true)"
+	case "$list" in *ananicy-cpp*) return 0 ;; *) return 1 ;; esac
+}
+
 doctor() {
 	local ok=0 bad=0
 	chk() {
@@ -377,6 +410,8 @@ doctor() {
 	chk "wofi present"             "command -v wofi"
 	chk "a terminal present"       "command -v kitty || command -v foot"
 	chk "screenshot tools"         "command -v grim && command -v slurp"
+	chk "zram swap active"         "zram_ok"      "run /etc/local.d/webos.start as root"
+	chk "ananicy-cpp enabled"      "ananicy_ok"   "rc-update add ananicy-cpp.initd default"
 	chk "wallpaper rendered"       "[[ -f ${WALL_DIR}/webos-wallpaper.png ]]"
 	chk "fastfetch modules"          "[[ -f \$HOME/.config/fastfetch/fastfetch.json ]]"
 	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"

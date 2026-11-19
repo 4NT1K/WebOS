@@ -4,41 +4,41 @@
 
 # WebOS
 
-A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC), with its own kernel, installer, and Deep Black desktop experience for **Hyprland** and **KDE Plasma**.
+A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC), with its own kernel, installer, and Deep Black desktop experience for **Hyprland** and **regular Plasma**.
 
 | | |
 |---|---|
-| **Version** | 1.022 (Ashen) |
+| **Version** | 1.0 (Ashen) |
 | **Base** | Gentoo (OpenRC + elogind, WebOS overlay/profile) |
 | **Kernel** | `sys-kernel/webos-kernel` — vanilla LTS + gaming-oriented tuning, `-webos` localversion |
 | **Init** | OpenRC (default) |
-| **Desktops** | Hyprland (default), Noctalia shell, KDE Plasma 6 (Wayland) |
+| **Desktops** | Hyprland (default); Noctalia shell and regular Plasma (Wayland) are opt-in profiles |
 | **Installer** | `webos-installer` — custom Rust TUI/GUI wizard with session profiles, dotfiles and feature/app/shell customization |
 | **Filesystem** | btrfs (default, subvolumes), ext4, xfs; LUKS2 option |
 | **Bootloader** | GRUB2 (BIOS + UEFI) |
 | **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
-| **ISO** | `webos-1.022-Ashen-amd64.iso` |
+| **ISO** | `webos-1.0-Ashen-amd64.iso` |
 
 WebOS aims for a fast, gaming-focused desktop with a consistent monochrome “Deep Black / frosted glass” look, prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
 
-## What’s in 1.022
+## What’s in 1.0
 
 - **Hyprland config that actually loads:** Hyprland 0.57 reads `~/.config/hypr/hyprland.lua` and ignores `hyprland.conf`. The rice is now a Lua config plus a `webos-colors.lua` palette module, with `~/.config/hypr/local.lua` loaded for personal tweaks.
-- **Session reliability:** SDDM lists every installed desktop (WebOS, Plasma, gamescope) and defaults to the profile chosen in the installer. Portals and a polkit agent start from `webos-portals` on OpenRC; `webos-session` applies the rice before launch; waybar and fastfetch have system-wide fallbacks and reliable autostart.
+- **Session reliability:** SDDM shows exactly the one session chosen in the installer (WebOS, WebOS Noctalia or regular Plasma), seeded in `/var/lib/sddm/state.conf`. Portals and a polkit agent start from `webos-portals` on OpenRC; `webos-session` applies the rice before launch; waybar and fastfetch have system-wide fallbacks and reliable autostart.
 - **Dotfiles profiles:** installer page + `webos-dotfiles --apply ashen|mono|jakoolit|minimal` — Deep Black default, flat **Mono** (monochrome bar/kitty/mako), JaKooLit-inspired glass bar, and a minimal bar.
-- **Noctalia session:** **WebOS Noctalia** (`gui-apps/noctalia`, native Wayland shell on Hyprland) ships on the live image with seeded dark/monochrome config. Choosing another profile removes it, so a WebOS/Plasma install never carries an unused shell. (niri is not included due to a `libdisplay-info` slot conflict with the shipped Plasma/KWin stack.)
-- **Installer:** desktop profile choices include Hyprland, Noctalia shell, KDE Plasma and TTY-only; the chosen session and dotfiles are seeded for the installed user. The progress panel lists finished stages at 100%, shows the real stage count, and no helper command can paint over the TUI.
+- **Noctalia session:** **WebOS Noctalia** (`gui-apps/noctalia`, native Wayland shell on Hyprland) ships on the live image with seeded dark/monochrome config. Choosing another profile removes it, so a WebOS/Plasma install never carries an unused shell. (niri is not included due to a `libdisplay-info` slot conflict with the Plasma/KWin stack used by the opt-in profile.)
+- **Installer:** desktop profile choices include Hyprland, Noctalia shell, regular Plasma and TTY-only; the chosen session and dotfiles are seeded for the installed user. Plasma comes from the opt-in `@plasma` set and is removed from non-Plasma installs. The progress panel lists finished stages at 100%, shows the real stage count, and no helper command can paint over the TUI.
 - **Fixes:** repaired `webos-theme` merge collisions that could leave an ISO without `webos-shell`, waybar config, portal prefs or dark-mode defaults; portal overrides live under `/etc/xdg-desktop-portal`.
 - **Settings/devices:** `webos-settings` launcher; under Hyprland use `wdisplays` and compositor device tools (KDE device panels require a Plasma session).
-- **Branding & theme:** white spiderweb WebOS logo and WebOS identity (no Gentoo welcome/identity leaks). Deep Black / monochrome parity across Hyprland and KDE Plasma; kitty + fish + fastfetch themed (WebOS cobweb fastfetch in kitty).
+- **Branding & theme:** white spiderweb WebOS logo and WebOS identity (no Gentoo welcome/identity leaks). Deep Black / monochrome parity across Hyprland and regular Plasma; translucent kitty with a framed WebOS cobweb fastfetch card, and `Super+Shift+S` screenshot snips.
 - **Hyprland UI:** frosted-glass top bar (waybar) with workspaces/music/system modules, wallpaper launcher, smoother animations, improved portal/auth wiring.
-- **Updates & packaging:** `webos-update` sync/@world/depclean/config/flatpak/rice flow; build-time-only Portage overlays disabled on installed systems.
+- **Updates & packaging:** `webos-update` sync/@world/depclean/config/kernel+GRUB/flatpak/rice flow — no manual kernel or software updates needed; build-time-only Portage overlays disabled on installed systems.
 
-> **KDE Plasma & X11:** Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.022 without adding X11 session packages.
+> **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.0 without adding X11 session packages.
 
 ## Key features
 
-- **Two desktop experiences:** Hyprland (Wayland) and KDE Plasma 6 on one image.
+- **Two desktop experiences:** Hyprland (Wayland) by default, with regular Plasma available through the opt-in profile.
 - **Gaming-oriented stack:** gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton, Lutris, Heroic, PipeWire/WirePlumber, Vulkan/Mesa tooling (and NVIDIA driver support option).
 - **Prebuilt essentials:** Firefox, Discord, OpenCode, Spotify, Dolphin, kitty, waybar, wofi, mako, mpv/imv and more (no compile during install for included apps).
 - **WebOS tooling:** `webos-installer`, `webos-update`, `webos-rice`, `webos-fastfetch`, `webos-shell`, `webos-session`, `webos-wallpaper`, `webos-shot`, `webos-gaming`, `webos-plasma-setup`, `webos-settings`.
@@ -49,13 +49,13 @@ Download the latest release ISO (split parts + checksums): **[Releases](https://
 
 Reassemble and verify (Linux/macOS):
 ```bash
-cat webos-1.022-Ashen-amd64.iso.part-* > webos-1.022-Ashen-amd64.iso
+cat webos-1.0-Ashen-amd64.iso.part-* > webos-1.0-Ashen-amd64.iso
 sha256sum -c SHA256SUMS.txt
 ```
 
 Windows (PowerShell/CMD):
 ```bat
-copy /b webos-1.022-Ashen-amd64.iso.part-* webos-1.022-Ashen-amd64.iso
+copy /b webos-1.0-Ashen-amd64.iso.part-* webos-1.0-Ashen-amd64.iso
 ```
 
 Flash with Ventoy, Rufus, balenaEtcher, or `dd` (UEFI supported). Boot the live medium and run:
@@ -124,7 +124,7 @@ sudo ./build.sh iso        # squashfs/initramfs/GRUB hybrid ISO
 sudo ./build.sh all
 ```
 
-Output: `build/webos-1.022-Ashen-amd64.iso`
+Output: `build/webos-1.0-Ashen-amd64.iso`
 
 See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details.
 
@@ -137,7 +137,7 @@ See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE
 
 ## Roadmap
 
-Planned work beyond 1.022 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, binhost, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
+Planned work beyond 1.0 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, binhost, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
 
 ## License
 
