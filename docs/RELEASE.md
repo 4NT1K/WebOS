@@ -245,8 +245,8 @@ enough to verify a download, not to reproduce it.
 The tree is not a git repository in this sandbox; on the real project:
 
 ```bash
-git tag -s v1.0-Ashen -m "WebOS 1.0 (Ashen)"
-git push origin v1.0-Ashen
+git tag -s v1.0 -m "WebOS 1.0 (Ashen)"
+git push origin v1.0
 ```
 
 Then upload the artefacts from §7 to the release page, and update:
