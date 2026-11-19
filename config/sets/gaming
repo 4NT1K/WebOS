@@ -18,7 +18,7 @@ app-arch/cabextract
 app-arch/innoextract
 app-arch/unrar
 # osu-winello / Prism Launcher helpers (GUI picker + Flatpak runtime).
-sys-apps/zenity
+gnome-extra/zenity
 
 # --- Performance ------------------------------------------------------------
 # sys-apps/lact — pins libdisplay-info:0/3, conflicts with installed KWin (0/4)
