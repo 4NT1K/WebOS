@@ -126,7 +126,7 @@ sudo ./build.sh all
 
 Output: `build/webos-1.0-Ashen-amd64.iso`
 
-See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details.
+See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details. If you are maintaining WebOS or pushing out updates, start with [`docs/MAINTENANCE.txt`](docs/MAINTENANCE.txt).
 
 ## Design rules
 

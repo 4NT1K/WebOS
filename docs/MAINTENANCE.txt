@@ -1,0 +1,196 @@
+================================================================================
+WEBOS 1.0 "ASHEN" - MAINTENANCE / UPDATE HANDOFF
+================================================================================
+
+Audience: a future AI assistant (or the maintainer) tasked with changing the
+installer, shipping updates, or cutting a release. Read this before editing.
+
+--------------------------------------------------------------------------------
+0. CRITICAL NAMING FACT - READ FIRST
+--------------------------------------------------------------------------------
+The kernel package is NOT named sanus-kernel.
+
+  Current and correct names:
+    sys-kernel/webos-kernel
+    sys-kernel/webos-kernel-sources
+    kernel release string: 6.12-webos
+    installed image:      /boot/vmlinuz-6.12-webos
+    installed modules:    /usr/src/linux-6.12 (source dir)
+
+  "sanus-kernel" / "sanus-kernel-sources" are the OLD pre-rebrand names. They
+  appear in exactly one place: the legacy-cleanup lines in
+  scripts/20-kernel.sh and scripts/30-rootfs.sh, whose JOB is to unmerge those
+  stale packages from a reused build chroot. They MUST keep the old spelling or
+  the cleanup breaks and the new kernel hits a file collision on /boot/vmlinuz-*
+  and /usr/src/linux-6.12. Do not "modernize" those strings.
+
+  There is no package called "web-kernel" either. It is webos-kernel.
+
+  A clean build has zero sanus-* packages installed. The shipped ISO, overlay,
+  installer source, branding and config contain NO sanus references at all.
+
+--------------------------------------------------------------------------------
+1. REPO FACTS
+--------------------------------------------------------------------------------
+  Local source:   /home/brah/sanusos   (container mount inside builds: /sanusos)
+  Git remote:     https://github.com/4NT1K/WebOS.git  (branch main)
+  Build container: webos-build  (Docker, /home/brah/sanusos mounted at /sanusos)
+  Version source of truth: branding/version
+  Current release: WebOS 1.0 "Ashen", ISO build/webos-1.0-Ashen-amd64.iso
+
+  NOTE: the local folder is still named "sanusos" for historical reasons. It is
+  only a local path, not part of the product. Rename it to /home/brah/webos (and
+  the container mount to /webos) only when no build is running, updating every
+  path reference in docs/ and the helper scripts. Do not do it mid-build.
+
+--------------------------------------------------------------------------------
+2. THE TWO UPDATE CHANNELS
+--------------------------------------------------------------------------------
+Everything hinges on this distinction.
+
+  CHANNEL A - reaches installed machines through `sudo webos-update`
+  ---------------------------------------------------------------
+  `webos-update` first downloads the latest overlay tarball from
+  https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and swaps it
+  into /usr/local/portage/webos (the local repo is auto-sync = no, so plain
+  `emerge --sync` never sees new WebOS ebuilds). It then rebuilds @world,
+  explicitly emerges sys-kernel/webos-kernel (NOT in @world), regenerates GRUB
+  when a new /boot/vmlinuz-* appears, and re-applies the rice.
+
+  RULE: any change under overlay/ reaches users this way, but ONLY after you
+  bump the relevant ebuild revision AND push to main. Same-version ebuild edits
+  are invisible to Portage.
+
+  CHANNEL B - requires a NEW ISO (existing installs cannot receive these)
+  ---------------------------------------------------------------------
+  installer/, config/, branding/, livecd/, scripts/. The installer is packaged
+  into the live medium and deliberately unmerged from the target rootfs
+  (scripts/30-rootfs.sh), so installer fixes only matter in a fresh ISO.
+
+--------------------------------------------------------------------------------
+3. WHERE TO EDIT WHAT (CHANNEL A)
+--------------------------------------------------------------------------------
+  Keybinds, waybar modules/CSS, fastfetch card, hyprland rules, transparency,
+  zram boot glue, SDDM seeding, WEBOS-INFO.txt
+      -> overlay/webos-theme/webos-theme/files/
+      -> bump revision of overlay/webos-theme/webos-theme/webos-theme-1.0.ebuild
+         (e.g. webos-theme-1.0-r1.ebuild), regenerate Manifest if files changed.
+
+  webos-update, webos-rice, webos-fastfetch, system helpers
+      -> overlay/webos-theme/webos-theme/files/system/
+      -> same webos-theme revision bump.
+
+  Kernel security fix / config fragment change
+      -> overlay/sys-kernel/webos-kernel/ and webos-kernel-sources/
+      -> add patched sources/patch, bump ebuild revision (e.g. 6.12-r1),
+         regenerate Manifest with `ebuild ... manifest`.
+      -> fragment lives at files/webos-fragment.config (symlinked from
+         kernel/webos-fragment.config). Verify the built kernel has
+         CONFIG_ZRAM_BACKEND_ZSTD=y and CONFIG_ZRAM_DEF_COMP="zstd".
+      -> NOTE: the kernel is not in @world; webos-update emerges it explicitly.
+
+  New WebOS-only application
+      -> new directory under overlay/, add to the appropriate config/ set for
+         fresh installs, commit, push.
+
+  Ordinary app updates (Firefox, gaming stack, etc.)
+      -> nothing to do. Gentoo's repo supplies ebuilds; webos-update compiles.
+
+--------------------------------------------------------------------------------
+4. WHERE TO EDIT WHAT (CHANNEL B - NEW ISO REQUIRED)
+--------------------------------------------------------------------------------
+  Installer UI, progress bar, SDDM session logic, disk code
+      -> installer/src/*.rs  (install.rs, app.rs, exec.rs, disk.rs, ...)
+      -> bump installer/Cargo.toml version (currently 1.0.0) when changed.
+
+  Default app sets, profile, desktop/plasma profiles
+      -> config/sets/desktop , config/sets/plasma , config/
+
+  Version, os-release, issue, logos
+      -> branding/version (single source of truth), then config/make.conf,
+         overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt, docs.
+
+  Live environment, GRUB, squashfs, initramfs
+      -> livecd/ and scripts/40-iso.sh
+
+  Build pipeline itself
+      -> scripts/00-fetch.sh ... 50-check.sh
+
+--------------------------------------------------------------------------------
+5. STANDARD WORKFLOW
+--------------------------------------------------------------------------------
+  a) Make the edit in the source tree.
+
+  b) Validate BEFORE committing:
+       cd installer && cargo check --offline && cd ..
+       bash -n scripts/*.sh overlay/webos-theme/webos-theme/files/system/*
+       ./scripts/50-check.sh                       # must print 0 problem(s)
+       # for rice/keybind edits, on a test install:
+       webos-rice --doctor
+       hyprctl binds
+
+  c) Commit and push to main:
+       git add -A && git commit -m "..." && git push origin HEAD
+
+  d) For Channel A changes, on the target machine: sudo webos-update
+     (it pulls main, so push first). Check /var/log/webos-update.log.
+
+  e) For Channel B changes, rebuild inside the container:
+       docker exec -w /sanusos webos-build ./build.sh rootfs
+       docker exec -w /sanusos webos-build ./build.sh iso
+     or the full pipeline: ./build.sh all
+     Stages: fetch, bootstrap, kernel, rootfs, iso. Output is
+     build/webos-1.0-Ashen-amd64.iso.
+
+--------------------------------------------------------------------------------
+6. CUTTING A NEW RELEASE VERSION
+--------------------------------------------------------------------------------
+  Follow docs/RELEASE.md. Short version:
+    1. Bump branding/version (WEBOS_VERSION, WEBOS_VERSION_FULL, etc.).
+    2. Update WEBOS-INFO.txt, README.md, STATUS.md, and write
+       docs/releases/vX.md.
+    3. Build + run scripts/50-check.sh + smoke-test the ISO.
+    4. Compute SHA256, split the ISO into parts, write SHA256SUMS.txt + README.txt.
+    5. Tag and publish on GitHub with gh release create vX --title ... --notes ...
+       mark it Latest.
+  Full checklist: docs/RELEASE.md sections 1-11. Section 11 documents shipping
+  kernel security updates to already-installed machines.
+
+--------------------------------------------------------------------------------
+7. GOTCHAS / THINGS ALREADY FIXED (do not regress)
+--------------------------------------------------------------------------------
+  * Kernel fragment change needs a forced kernel rebuild; 20-kernel.sh checks
+    the installed image against the fragment.
+  * Reused chroots must have legacy sanus-* kernel packages removed first or
+    webos-kernel collides on /boot/vmlinuz-* (fixed in 20-kernel.sh).
+  * webos-kernel-sources Manifest BLAKE2B must be HEX, not base64, or Portage
+    renames the distfile and unpack fails. webos-kernel/Manifest is fine.
+  * Plasma is opt-in (config/sets/plasma). Non-Plasma profiles unmerge it and
+    remove plasma.desktop. SDDM must expose exactly ONE session: the one chosen
+    in the installer, seeded in /var/lib/sddm/state.conf.
+  * Do NOT switch the session to plain Hyprland. The intended command is
+    `Hyprland -c /home/brodie/.config/hypr/hyprland.lua` which loads the WebOS
+    mono rice. Only reword misleading docs.
+  * Keybinds: Super+Q kitty, Super+C close, Super+Shift+Return foot,
+    Super+Shift+Escape exit, Super+Shift+S webos-shot region,
+    Super+Ctrl+S move window to special.
+  * Mono waybar: no network module, no battery module, keep custom/power.
+  * Pointer: accel_profile = flat, force_no_accel = true.
+  * Kitty owns terminal alpha (background_opacity 0.80 mono / 0.82 default,
+    dynamic_background_opacity no, background_blur 16/24); Hyprland kitty rule
+    is opacity = "1.0 1.0" to avoid multiplied alpha.
+  * Installer progress must stay monotonic; completed stages show 100%.
+  * webos-rice prunes stale hyprland.conf / webos-colors.conf manifest entries.
+
+--------------------------------------------------------------------------------
+8. USER-FACING UPDATE COMMAND (for reference)
+--------------------------------------------------------------------------------
+  sudo webos-update                 # full update
+  sudo webos-update --check         # dry run
+  sudo webos-update --yes           # non-interactive config merges
+  sudo webos-update --no-sync       # skip repo + overlay refresh (offline)
+  sudo webos-update --no-kernel     # skip the kernel step
+  sudo webos-update --no-flatpak / --no-depclean / --quiet
+
+  Log: /var/log/webos-update.log
+================================================================================
