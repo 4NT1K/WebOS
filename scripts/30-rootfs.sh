@@ -200,6 +200,8 @@ chroot_sh 'rm -rf /usr/share/webos/noctalia /usr/share/noctalia \
 	/etc/skel/.config/noctalia /root/.config/noctalia /home/*/.config/noctalia \
 	/usr/share/wayland-sessions/webos-noctalia.desktop \
 	/usr/share/wayland-sessions/webos-niri.desktop' || true
+chroot_sh 'find /usr /etc /var /root /home /opt -xdev \
+	\( -iname "*noctalia*" -o -iname "*niri*" \) -print -delete' || true
 
 # ---------------------------------------------------------- theming ----------
 step "rootfs: applying the rice (webos-theme)"
