@@ -201,7 +201,7 @@ Profiles:
 
 Dotfiles profiles (look only):
   ashen     WebOS Deep Black rice (default)
-  mono      flat monochrome bar, grayscale kitty, square mako
+  mono      floating rounded monochrome pills, grayscale kitty, square mako
   jakoolit  JaKooLit-inspired frosted glass top bar
   minimal   plain low-resource top bar
 
@@ -359,9 +359,11 @@ Tools: Portage, sudo, NetworkManager, nftables/iptables, smartmontools,
 nvme-cli, udisks/udiskie, wl-clipboard/cliphist, grim/slurp, wdisplays,
 wlr-randr, kanshi, PipeWire/ WirePlumber, Vulkan/Mesa tooling.
 Installer can add fish, zsh and the opt-in apps listed above. Flatpak is
-opt-in and is not installed by default; there is no `flatpak` command until
-you select it or `emerge app-emulation/flatpak`.
-Wine and native Steam are NOT included (32-bit/multilib).
+installed by default with the Flathub remote, so Prism Launcher (Minecraft)
+and Sober (Roblox) install straight from Flathub.
+Wine and native Steam are NOT included (32-bit/multilib); osu! stable runs
+through osu-winello, which bundles its own patched wine-osu and Steam runtime
+(only zenity is needed from the host).
 
 GAMING / PERFORMANCE
 --------------------

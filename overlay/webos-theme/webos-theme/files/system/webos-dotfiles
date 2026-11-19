@@ -7,7 +7,7 @@
 # ashen     the full WebOS Deep Black rice (default)
 # jakoolit  JaKooLit-inspired frosted glass top bar
 # minimal   a plain, low-resource top bar
-# mono      flat monochrome bar + grayscale kitty + square mako
+# mono      floating rounded monochrome pills + grayscale kitty + square mako
 #
 # A profile may ship any of these trees, which are copied over the matching
 # ~/.config/<name> directory:
@@ -33,7 +33,7 @@ describe() {
 		ashen)    printf 'WebOS Deep Black rice (default)' ;;
 		jakoolit) printf 'JaKooLit-inspired frosted top bar' ;;
 		minimal)  printf 'plain low-resource top bar' ;;
-		mono)     printf 'flat monochrome bar, grayscale kitty and mako' ;;
+		mono)     printf 'floating rounded monochrome pills, grayscale kitty and mako' ;;
 	esac
 }
 

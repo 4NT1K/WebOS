@@ -83,7 +83,7 @@ impl Dotfiles {
         match self {
             Dotfiles::Ashen => "Deep Black rice: frosted top bar, music, wallpaper, portals.",
             Dotfiles::Jakoolit => "JaKooLit-inspired frosted top bar with player, workspaces and tray.",
-            Dotfiles::Mono => "Flat monochrome bar, grayscale kitty and square mako. Light and fast.",
+            Dotfiles::Mono => "Floating rounded monochrome pills, grayscale kitty, square mako. Light and fast.",
             Dotfiles::Minimal => "Plain low-resource top bar; no extra modules or scripts.",
         }
     }
@@ -319,7 +319,7 @@ impl Default for InstallConfig {
             install_waypaper: false,
             install_fish: true,
             install_zsh: true,
-            install_flatpak: false,
+            install_flatpak: true,
             nvidia: false,
             enable_bluetooth: true,
             enable_sshd: false,

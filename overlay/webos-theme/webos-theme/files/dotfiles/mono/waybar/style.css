@@ -1,6 +1,9 @@
 /* ──────────────────────────────────────────────────────────────────────────
- *  WebOS mono — flat monochrome bar.
- *  Transparent, bold Meslo, square corners. One accent: white.
+ *  WebOS mono — floating monochrome pills on a transparent top bar.
+ *  Same idea as the reference rice: a top bar with each module in its own
+ *  rounded, translucent capsule. No colour — white, grey and black only.
+ *  Hyprland blurs behind the bar via the waybar layer rule, so the surface
+ *  alpha stays in one place: @surface.
  * ────────────────────────────────────────────────────────────────────────── */
 
 @define-color text      #eeeeee;
@@ -12,7 +15,6 @@
 
 * {
     border: none;
-    border-radius: 0;
     font-family: "MesloLGM Nerd Font Mono", "JetBrainsMono Nerd Font", monospace;
     font-size: 14px;
     font-weight: bold;
@@ -26,17 +28,18 @@ window#waybar {
     color: @text;
 }
 
+/* No full-width slab. Every module floats as its own rounded pill. */
 window#waybar > box {
-    background: @surface;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-    padding: 0 10px;
+    background: transparent;
+    border: none;
+    padding: 0;
     margin: 0;
 }
 
 tooltip {
     background: rgba(10, 10, 10, 0.95);
     border: 1px solid @border;
-    border-radius: 0;
+    border-radius: 10px;
     padding: 4px;
 }
 tooltip label {
@@ -44,6 +47,7 @@ tooltip label {
     padding: 4px 8px;
 }
 
+/* ── shared pill ───────────────────────────────────────────────────────── */
 #workspaces,
 #window,
 #clock,
@@ -53,22 +57,29 @@ tooltip label {
 #pulseaudio,
 #tray,
 #custom-power {
-    background: transparent;
+    background: @surface;
+    border: 1px solid @border;
+    border-radius: 12px;
     color: @text;
-    padding: 0 8px;
-    margin: 0;
+    padding: 0 10px;
+    margin: 6px 3px;
 }
 
-/* ── workspaces: numbers, thin white outline when focused ────────────────── */
+/* ── workspaces: rounded keys, white when focused ──────────────────────── */
+#workspaces {
+    padding: 0 4px;
+}
+
 #workspaces button {
     color: @dim;
     background: transparent;
     border: 1px solid transparent;
-    border-radius: 0;
+    border-radius: 10px;
     padding: 0 9px;
-    margin: 9px 2px;
+    margin: 5px 2px;
     min-width: 14px;
-    transition: color 120ms linear, border-color 120ms linear;
+    transition: color 120ms linear, background-color 120ms linear,
+                border-color 120ms linear;
 }
 
 #workspaces button.empty {
@@ -76,13 +87,16 @@ tooltip label {
 }
 
 #workspaces button.active {
-    color: @accent;
-    border: 1px solid @accent;
+    color: #000000;
+    background: @accent;
+    border-color: @accent;
 }
 
 #workspaces button.urgent {
-    color: @accent;
-    border: 1px dashed @accent;
+    color: #000000;
+    background: @accent;
+    border-color: @accent;
+    border-style: dashed;
 }
 
 #workspaces button:hover {
@@ -100,7 +114,6 @@ tooltip label {
 
 /* ── centre: media player ───────────────────────────────────────────────── */
 #mpris {
-    color: @text;
     padding: 0 12px;
 }
 
@@ -111,7 +124,7 @@ tooltip label {
 /* ── right cluster ──────────────────────────────────────────────────────── */
 #clock {
     color: @accent;
-    padding: 0 10px;
+    padding: 0 12px;
 }
 
 #cpu,
@@ -125,13 +138,14 @@ tooltip label {
 #pulseaudio:hover,
 #custom-power:hover {
     color: @accent;
+    border-color: rgba(255, 255, 255, 0.45);
 }
 
 #tray {
-    padding: 0 6px;
+    padding: 0 8px;
 }
 
 #custom-power {
     color: @dim;
-    padding: 0 10px;
+    padding: 0 12px;
 }
