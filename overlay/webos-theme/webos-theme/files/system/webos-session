@@ -3,7 +3,6 @@
 #  webos-session — start a WebOS Wayland session.
 #
 #    webos-session              Hyprland + the WebOS rice (default)
-#    webos-session --noctalia   Hyprland + the Noctalia shell
 #    webos-session --gamescope  a SteamOS-style gamescope session
 #    webos-session --safe       Hyprland with the rice disabled (debugging)
 #
@@ -16,10 +15,9 @@ set -Eeuo pipefail
 MODE="hyprland"
 for arg in "$@"; do
 	case "$arg" in
-		--noctalia)  MODE="noctalia" ;;
 		--gamescope) MODE="gamescope" ;;
 		--safe)      MODE="hyprland-safe" ;;
-		--help|-h)   sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+		--help|-h)   sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
 	esac
 done
 
@@ -28,9 +26,6 @@ export XDG_SESSION_TYPE=wayland
 export XDG_SESSION_CLASS=user
 export XDG_SESSION_DESKTOP="Hyprland"
 export XDG_CURRENT_DESKTOP="Hyprland"
-if [[ "$MODE" == "noctalia" ]]; then
-	export WEBOS_SHELL="noctalia"
-fi
 
 export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
 if [[ ! -d "$XDG_RUNTIME_DIR" ]]; then
@@ -73,20 +68,9 @@ if command -v webos-rice >/dev/null 2>&1; then
 	webos-rice --ensure >/dev/null 2>&1 || true
 fi
 
-# ── noctalia config ─────────────────────────────────────────────────────────
-# Noctalia only reads $XDG_CONFIG_HOME/noctalia/*.toml, so seed the WebOS
-# defaults (dark, pure black, monochrome) when the account has none.
-if [[ "${WEBOS_SHELL:-}" == "noctalia" ]]; then
-	ndir="$HOME/.config/noctalia"
-	mkdir -p "$ndir"
-	if ! compgen -G "$ndir/*.toml" >/dev/null 2>&1 && [[ -f /usr/share/webos/noctalia/config.toml ]]; then
-		install -m 0644 /usr/share/webos/noctalia/config.toml "$ndir/config.toml"
-	fi
-fi
-
 # ── run ─────────────────────────────────────────────────────────────────────
 case "$MODE" in
-	hyprland|noctalia)
+	hyprland)
 		command -v Hyprland >/dev/null 2>&1 || {
 			printf 'webos-session: Hyprland is not installed\n' >&2
 			printf '  emerge webos-desktop/webos-desktop\n' >&2

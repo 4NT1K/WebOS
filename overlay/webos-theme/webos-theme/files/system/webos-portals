@@ -4,8 +4,6 @@
 # OpenRC has no `systemctl --user`, so the portals must be started directly.
 # Everything here is idempotent; the log lives in /tmp/webos-portals.log.
 #
-# With WEBOS_SHELL=noctalia the shell runs its own polkit agent, so this
-# script does not start a second one.
 set -u
 log=/tmp/webos-portals.log
 printf '[%s] webos-portals start (shell=%s)\n' "$(date +%H:%M:%S)" "${WEBOS_SHELL:-ashen}" >>"$log"
@@ -49,12 +47,7 @@ start xdg-desktop-portal-hyprland /usr/libexec/xdg-desktop-portal-hyprland
 start xdg-desktop-portal-gtk      /usr/libexec/xdg-desktop-portal-gtk
 start xdg-desktop-portal          /usr/libexec/xdg-desktop-portal
 
-# Polkit agent. Noctalia provides its own when WEBOS_SHELL=noctalia.
-if [ "${WEBOS_SHELL:-}" = noctalia ]; then
-	printf '[%s] polkit agent handled by noctalia\n' "$(date +%H:%M:%S)" >>"$log"
-	exit 0
-fi
-
+# Polkit agent.
 if ! running lxqt-policykit-agent && ! running hyprpolkitagent && \
    ! running polkit-gnome-authentication-agent-1; then
 	if command -v lxqt-policykit-agent >/dev/null 2>&1; then

@@ -27,9 +27,8 @@ local settings  = "webos-settings"
 hl.on("hyprland.start", function()
 	hl.exec_cmd("dbus-update-activation-environment --all 2>/dev/null || true")
 	hl.exec_cmd("webos-rice --ensure >/dev/null 2>&1 || true")
-	-- Portals, polkit, the shell (waybar+mako or Noctalia) and the wallpaper
-	-- all start from one helper so the Hyprland and niri sessions behave the
-	-- same. Set WEBOS_SHELL=noctalia to use the Noctalia shell instead.
+	-- Portals, polkit, the mono shell (waybar+mako) and the wallpaper all
+	-- start from one helper, so every WebOS session behaves the same.
 	hl.exec_cmd("webos-autostart hyprland")
 	hl.exec_cmd("nm-applet --indicator")
 	hl.exec_cmd("blueman-applet")

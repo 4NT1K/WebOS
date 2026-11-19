@@ -11,8 +11,8 @@ RELEASE / IDENTITY
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
-- Desktops     : Hyprland (default); Noctalia shell and regular Plasma are
-                 opt-in profiles, never installed into a Full/Minimal image
+- Desktops     : Hyprland with the monochrome rice (default); regular Plasma
+                 is an opt-in profile, never installed into a Full/Minimal image
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
@@ -61,9 +61,8 @@ This was a fix release for the issues reported against 1.02:
   installed (WebOS, Plasma, gamescope), with the profile chosen in the
   installer as the default. An earlier build linked only the chosen session,
   which left an installed Plasma unreachable from the greeter.
-- Non-Noctalia installs no longer ship or start Noctalia. The Hyprland,
-  Plasma and Minimal profiles unmerge gui-apps/noctalia and remove its session
-  entry and seeded config. "mono" only restyles waybar/kitty/mako.
+- The monochrome rice is the only WebOS look. Every install applies it; there
+  is no appearance page in the installer and no alternate shell to choose.
 - /etc/webos-release was hard-coded to "1.01 (Ashen)" and written twice. It
   now derives the version from the installed /etc/os-release.
 - Same-version rebuilds could keep a stale installer/theme. The rootfs stage
@@ -159,13 +158,12 @@ Boot / live medium
 
 SDDM / sessions
 - The greeter lists exactly one session: the profile chosen in the installer.
-  Full -> "WebOS", Noctalia -> "WebOS Noctalia", Plasma -> "Plasma (Wayland)".
-  No extra Plasma or gamescope entry is offered.
+  Full -> "WebOS", Plasma -> "Plasma (Wayland)". No extra session is offered.
 - Minimal installs no display manager and boots to a TTY login.
 - regular Plasma is opt-in and Wayland-only; there is no Plasma X11 entry, and
   a non-Plasma install has no Plasma desktop packages.
-- A non-Noctalia install has no noctalia binary, session entry or
-  ~/.config/noctalia.
+- The installer removes any leftover alternate shell from the live image, so
+  the installed system has only the chosen profile's session.
 
 Hyprland (all rice profiles)
 - waybar appears, wallpaper is set, mako shows notifications, hypridle runs,
@@ -194,29 +192,25 @@ Log:   /var/log/webos-install.log
 Config: /etc/webos/install.toml (template on the live medium)
 
 Profiles:
-  Full      Hyprland + WebOS rice + gaming stack, SDDM
-  Noctalia  Hyprland + Noctalia shell + gaming stack, SDDM
+  Full      Hyprland + WebOS mono rice + gaming stack, SDDM
   Plasma    regular Plasma (Wayland) + gaming stack, SDDM (opt-in @plasma set)
   Minimal   base system only, TTY login, no display manager
 
-Dotfiles profiles (look only):
-  ashen     WebOS Deep Black rice (default)
-  mono      floating rounded monochrome pills, grayscale kitty, square mako
-  jakoolit  JaKooLit-inspired frosted glass top bar
-  minimal   plain low-resource top bar
+Appearance: one look only — the monochrome rice (floating rounded top-bar
+pills, grayscale kitty, square mako). No appearance page in the installer.
 
 Installer options and defaults:
-  gaming stack on, Steam note on, Firefox on, fish on, zsh on,
+  gaming stack on, Steam note on, Firefox on, fish on, zsh on, Flatpak on,
   Bluetooth on, GRUB on.
-  Discord, OpenCode, Spotify, Vesktop, Waypaper, Flatpak, SSH server,
+  Discord, OpenCode, Spotify, Vesktop, Waypaper, SSH server,
   firewall and NVIDIA are opt-in.
   Filesystem btrfs (or ext4/xfs), swap zram (or partition/none),
   ESP 512 MiB, LUKS2 optional, UEFI or BIOS.
 
 The installer copies the live rootfs, then:
-- applies the chosen dotfiles profile and rice for the account,
+- applies the monochrome rice and dotfiles for the account,
 - enables services and the chosen session,
-- removes Noctalia for non-Noctalia profiles,
+- strips any alternate shell from the live image,
 - restores the D-Bus launch helper permissions,
 - writes /etc/webos-release from /etc/os-release,
 - removes the live-medium autologin/menu glue.
@@ -229,8 +223,7 @@ and symlinks only the .desktop file for the chosen profile, so the greeter
 shows one session rather than every desktop installed on the image. Upstream
 session files under /usr/share/wayland-sessions remain intact.
 
-  webos-session              Hyprland + WebOS rice (default)
-  webos-session --noctalia   Hyprland + Noctalia shell
+  webos-session              Hyprland + WebOS mono rice (default)
   webos-session --gamescope  SteamOS-style gamescope session
   webos-session --safe       Hyprland with the rice disabled (debugging)
 
@@ -343,8 +336,8 @@ Failures are logged to /tmp/webos-fastfetch.log.
 PREINSTALLED SOFTWARE
 ---------------------
 Desktops: Hyprland 0.57, waybar, wofi, mako, hyprpaper, hypridle, hyprlock,
-hyprsunset, SDDM. Noctalia 5.4 and regular Plasma 6.8 (Wayland) are opt-in
-profiles installed only when selected.
+hyprsunset, SDDM. regular Plasma 6.8 (Wayland) is an opt-in profile installed
+only when selected.
 Terminals/editors: kitty, foot, wezterm, alacritty, neovim, zellij, tmux,
 ranger, pcmanfm, Dolphin.
 Apps: Firefox, Discord, OpenCode, Spotify, Vesktop (binary `vesktop-bin`),
@@ -432,7 +425,7 @@ webos-rice          apply/repair/verify/toggle the rice
 webos-dotfiles      choose the dotfiles profile
 webos-fastfetch     print the WebOS fastfetch card
 webos-shell         terminal wrapper (card once, then $SHELL)
-webos-session       start Hyprland / Noctalia / gamescope / safe session
+webos-session       start Hyprland / gamescope / safe session
 webos-autostart     start portals, polkit, bar/shell and wallpaper
 webos-portals       start XDG portals + a polkit agent (OpenRC)
 webos-wallpaper     render/apply/cycle wallpaper, --daemon
@@ -445,8 +438,7 @@ FILES / PATHS / LOGS
 --------------------
 /usr/share/webos/                 branding, rice, dotfiles, this file
 /usr/share/webos/rice/            theme source of truth
-/usr/share/webos/dotfiles/        ashen/mono/jakoolit/minimal trees
-/usr/share/webos/noctalia/        seeded Noctalia config
+/usr/share/webos/dotfiles/        monochrome rice tree
 /usr/share/webos/sessions/        SDDM-visible session entries
 /etc/webos/                       installer config and notes
 /etc/skel/                        themed skeleton for new accounts
@@ -484,9 +476,6 @@ TROUBLESHOOTING
   a stale .desktop was left in that directory; remove it and check
   /etc/sddm.conf.d/20-webos-session.conf. Plasma should not be there unless
   the Plasma profile was chosen.
-- Noctalia appears unexpectedly: profile was not Noctalia; remove
-  gui-apps/noctalia and its session entry, or reinstall with the right
-  profile.
 - No sound: `rc-service elogind status`, `pavucontrol`; PipeWire runs per
   user (wireplumber).
 - Installer log: /var/log/webos-install.log; install config
@@ -498,8 +487,6 @@ KNOWN LIMITATIONS / NOTES
 - 64-bit only image: no Wine, native Steam, winetricks, protontricks or
   goverlay. Use Flatpak Steam or Distrobox.
 - regular Plasma 6.8.3 (opt-in profile) is Wayland-only here (no startplasma-x11).
-- niri is not included: it needs libdisplay-info < 0.4, which conflicts with
-  the 0.4 slot required by Plasma/KWin 6.8.3.
 - /usr/share/xsessions/Xsession.desktop is the standard xinit entry; SDDM
   does not offer it because WebOS points SessionDir at
   /usr/share/webos/sessions.

@@ -15,7 +15,7 @@ use anyhow::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::config::{
-    Dotfiles, Encryption, Filesystem, Firmware, InstallConfig, Profile, SwapChoice,
+    Encryption, Filesystem, Firmware, InstallConfig, Profile, SwapChoice,
 };
 use crate::disk::{self, Disk};
 use crate::exec::{Msg, Runner};
@@ -32,7 +32,6 @@ pub enum Step {
     User,
     Options,
     Extras,
-    Dotfiles,
     Summary,
     Install,
     Done,
@@ -49,7 +48,6 @@ impl Step {
             Step::User => "Account",
             Step::Options => "System options",
             Step::Extras => "Extra features",
-            Step::Dotfiles => "Desktop dotfiles",
             Step::Summary => "Summary",
             Step::Install => "Installing",
             Step::Done => "Finished",
@@ -66,15 +64,14 @@ impl Step {
             Step::User => 5,
             Step::Options => 6,
             Step::Extras => 7,
-            Step::Dotfiles => 8,
-            Step::Summary => 9,
-            Step::Install => 10,
-            Step::Done => 11,
+            Step::Summary => 8,
+            Step::Install => 9,
+            Step::Done => 10,
         }
     }
 
     /// How many pages come before the install starts (used for the sidebar).
-    pub const STEPS: [Step; 10] = [
+    pub const STEPS: [Step; 9] = [
         Step::Welcome,
         Step::Disk,
         Step::Filesystem,
@@ -83,7 +80,6 @@ impl Step {
         Step::User,
         Step::Options,
         Step::Extras,
-        Step::Dotfiles,
         Step::Summary,
     ];
 
@@ -96,8 +92,7 @@ impl Step {
             Step::Locale => Step::User,
             Step::User => Step::Options,
             Step::Options => Step::Extras,
-            Step::Extras => Step::Dotfiles,
-            Step::Dotfiles => Step::Summary,
+            Step::Extras => Step::Summary,
             Step::Summary => Step::Install,
             Step::Install | Step::Done => self,
         }
@@ -113,8 +108,7 @@ impl Step {
             Step::User => Step::Locale,
             Step::Options => Step::User,
             Step::Extras => Step::Options,
-            Step::Dotfiles => Step::Extras,
-            Step::Summary => Step::Dotfiles,
+            Step::Summary => Step::Extras,
             Step::Install | Step::Done => self,
         }
     }
@@ -593,19 +587,6 @@ impl App {
         }
     }
 
-    pub fn dotfiles(&self) -> Vec<(String, String)> {
-        Dotfiles::ALL
-            .iter()
-            .map(|d| (d.label().to_string(), if *d == self.cfg.dotfiles { "selected" } else { "" }.to_string()))
-            .collect()
-    }
-
-    fn select_dotfiles(&mut self, i: usize) {
-        if let Some(d) = Dotfiles::ALL.get(i) {
-            self.cfg.dotfiles = *d;
-        }
-    }
-
     fn toggle_firmware(&mut self) {
         self.cfg.firmware = match self.cfg.firmware {
             Firmware::Uefi => Firmware::Bios,
@@ -634,7 +615,6 @@ impl App {
             Step::Encryption => Encryption::ALL.len(),
             Step::Options => self.options().len(),
             Step::Extras => self.extras().len(),
-            Step::Dotfiles => Dotfiles::ALL.len(),
             Step::Locale | Step::User => self.field_count(self.step),
             _ => 0,
         }
@@ -722,7 +702,6 @@ impl App {
             Step::Locale | Step::User => self.key_text(key),
             Step::Options => self.key_options(key),
             Step::Extras => self.key_extras(key),
-            Step::Dotfiles => self.key_dotfiles(key),
             Step::Summary => self.key_summary(key),
             Step::Install | Step::Done => {}
         }
@@ -889,32 +868,8 @@ impl App {
                 let i = self.cursor;
                 self.toggle_extra(i);
             }
-            KeyCode::Tab => self.goto(Step::Dotfiles),
-            KeyCode::Esc => self.goto(Step::Options),
-            _ => {}
-        }
-    }
-
-    fn key_dotfiles(&mut self, key: KeyEvent) {
-        let n = Dotfiles::ALL.len();
-        match key.code {
-            KeyCode::Up | KeyCode::Char('k') => self.cursor = self.cursor.saturating_sub(1),
-            KeyCode::Down | KeyCode::Char('j') => {
-                if self.cursor + 1 < n {
-                    self.cursor += 1;
-                }
-            }
-            KeyCode::Enter => {
-                let i = self.cursor;
-                self.select_dotfiles(i);
-                self.goto(Step::Summary);
-            }
-            KeyCode::Char(' ') | KeyCode::Left | KeyCode::Right => {
-                let i = self.cursor;
-                self.select_dotfiles(i);
-            }
             KeyCode::Tab => self.goto(Step::Summary),
-            KeyCode::Esc => self.goto(Step::Extras),
+            KeyCode::Esc => self.goto(Step::Options),
             _ => {}
         }
     }
@@ -929,7 +884,7 @@ impl App {
                     self.start_install();
                 }
             }
-            KeyCode::Esc => self.goto(Step::Dotfiles),
+            KeyCode::Esc => self.goto(Step::Extras),
             _ => {}
         }
     }

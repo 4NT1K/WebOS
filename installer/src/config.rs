@@ -52,48 +52,24 @@ impl Filesystem {
     }
 }
 
-/// Desktop dotfiles/look applied to the installed account.
+/// The WebOS look. The monochrome rice is the only appearance: the installer
+/// no longer exposes an appearance page, and every install applies this.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum Dotfiles {
-    Ashen,
-    Jakoolit,
     Mono,
-    Minimal,
 }
 
 impl Dotfiles {
-    pub const ALL: [Dotfiles; 4] = [
-        Dotfiles::Ashen,
-        Dotfiles::Mono,
-        Dotfiles::Jakoolit,
-        Dotfiles::Minimal,
-    ];
-
     pub fn label(self) -> &'static str {
         match self {
-            Dotfiles::Ashen => "Ashen (WebOS default)",
-            Dotfiles::Jakoolit => "JaKooLit glass",
             Dotfiles::Mono => "Mono (monochrome)",
-            Dotfiles::Minimal => "Minimal bar",
-        }
-    }
-
-    pub fn note(self) -> &'static str {
-        match self {
-            Dotfiles::Ashen => "Deep Black rice: frosted top bar, music, wallpaper, portals.",
-            Dotfiles::Jakoolit => "JaKooLit-inspired frosted top bar with player, workspaces and tray.",
-            Dotfiles::Mono => "Floating rounded monochrome pills, grayscale kitty, square mako. Light and fast.",
-            Dotfiles::Minimal => "Plain low-resource top bar; no extra modules or scripts.",
         }
     }
 
     pub fn id(self) -> &'static str {
         match self {
-            Dotfiles::Ashen => "ashen",
-            Dotfiles::Jakoolit => "jakoolit",
             Dotfiles::Mono => "mono",
-            Dotfiles::Minimal => "minimal",
         }
     }
 }
@@ -152,8 +128,6 @@ impl SwapChoice {
 pub enum Profile {
     /// Hyprland, SDDM, the full WebOS rice, the gaming stack.
     Full,
-    /// Hyprland + the Noctalia shell, SDDM, the gaming stack.
-    Noctalia,
     /// KDE Plasma instead of the WebOS rice: SDDM, same gaming stack.
     Plasma,
     /// No graphical session: a TTY login and the base system.
@@ -161,17 +135,11 @@ pub enum Profile {
 }
 
 impl Profile {
-    pub const ALL: [Profile; 4] = [
-        Profile::Full,
-        Profile::Noctalia,
-        Profile::Plasma,
-        Profile::Minimal,
-    ];
+    pub const ALL: [Profile; 3] = [Profile::Full, Profile::Plasma, Profile::Minimal];
 
     pub fn label(self) -> &'static str {
         match self {
             Profile::Full => "WebOS — Hyprland + gaming",
-            Profile::Noctalia => "WebOS — Noctalia shell + gaming",
             Profile::Plasma => "KDE Plasma + gaming",
             Profile::Minimal => "Minimal — TTY only",
         }
@@ -181,9 +149,6 @@ impl Profile {
         match self {
             Profile::Full => {
                 "Hyprland desktop, SDDM login, the WebOS rice and dotfiles, Steam, Proton, MangoHud."
-            }
-            Profile::Noctalia => {
-                "Hyprland + Noctalia: a monochrome Wayland shell (bar, notifications, launcher) with SDDM."
             }
             Profile::Plasma => {
                 "KDE Plasma (Wayland) desktop, SDDM login, Steam, Proton, MangoHud."
@@ -201,14 +166,13 @@ impl Profile {
 
     /// Whether this profile uses the WebOS rice/dotfiles.
     pub fn uses_rice(self) -> bool {
-        matches!(self, Profile::Full | Profile::Noctalia)
+        matches!(self, Profile::Full)
     }
 
     /// The SDDM session .desktop name for this profile.
     pub fn session(self) -> &'static str {
         match self {
             Profile::Full => "webos.desktop",
-            Profile::Noctalia => "webos-noctalia.desktop",
             Profile::Plasma => "plasma.desktop",
             Profile::Minimal => "",
         }
@@ -216,7 +180,7 @@ impl Profile {
 }
 
 fn default_dotfiles() -> Dotfiles {
-    Dotfiles::Ashen
+    Dotfiles::Mono
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -308,7 +272,7 @@ impl Default for InstallConfig {
             keymap: "us".into(),
 
             profile: Profile::Full,
-            dotfiles: Dotfiles::Ashen,
+            dotfiles: Dotfiles::Mono,
             install_gaming: true,
             install_steam: true,
             install_firefox: true,

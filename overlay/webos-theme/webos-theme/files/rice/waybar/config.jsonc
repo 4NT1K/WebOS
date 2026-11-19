@@ -1,14 +1,16 @@
 // ────────────────────────────────────────────────────────────────────────────
-//  WebOS waybar — frosted glass top bar (ArchEclipse-inspired layout).
+//  WebOS mono — a flat, transparent, monochrome top bar.
+//  Inspired by the MHD "Monochrome" rice: no capsules, no colour, thin white
+//  outline on the focused workspace, bold Meslo text.
 // ────────────────────────────────────────────────────────────────────────────
 {
     "layer": "top",
     "position": "top",
-    "height": 40,
+    "height": 46,
     "margin-top": 8,
-    "margin-left": 10,
-    "margin-right": 10,
-    "spacing": 6,
+    "margin-left": 12,
+    "margin-right": 12,
+    "spacing": 10,
     "fixed-center": true,
     "passthrough": false,
     "mode": "dock",
@@ -18,85 +20,76 @@
     "reload_style_on_change": true,
 
     "modules-left": [
-        "custom/logo",
         "hyprland/workspaces",
         "hyprland/window"
     ],
     "modules-center": [
-        "mpris",
-        "clock"
+        "mpris"
     ],
+    // No network module: the mono bar never displays the LAN IPv4 address.
+    // No battery module either (desktop PC); the power menu stays available.
     "modules-right": [
-        "custom/wallpaper",
-        "custom/gamemode",
-        "custom/updates",
-        "pulseaudio",
-        "network",
         "cpu",
         "memory",
-        "battery",
+        "pulseaudio",
+        "clock",
         "tray",
         "custom/power"
     ],
 
     "hyprland/workspaces": {
-        "format": "{icon}",
+        "format": "{name}",
         "on-click": "activate",
         "all-outputs": true,
-        "format-icons": {
-            "1": "1", "2": "2", "3": "3", "4": "4", "5": "5",
-            "6": "6", "7": "7", "8": "8", "9": "9", "10": "10",
-            "urgent": "",
-            "active": "",
-            "default": ""
-        },
         "persistent-workspaces": { "*": 5 }
     },
 
     "hyprland/window": {
         "format": "{title}",
-        "max-length": 50,
-        "separate-outputs": true,
-        "rewrite": {
-            "(.*) — Mozilla Firefox": "󰈹  $1",
-            "(.*) - Discord": "󰙯  $1",
-            "(.*) — kitty": "  $1",
-            "(.*)": "󰣆  $1"
-        }
-    },
-
-    "custom/logo": {
-        "format": " 󰣇 ",
-        "tooltip": "Applications (WebOS)",
-        "on-click": "wofi --show drun",
-        "on-click-right": "wlogout"
-    },
-
-    "custom/wallpaper": {
-        "format": "󰸉",
-        "tooltip": "Wallpapers",
-        "on-click": "sh -c 'command -v waypaper >/dev/null 2>&1 && exec waypaper || exec webos-wallpaper --next'",
-        "on-click-right": "webos-wallpaper --next 2>/dev/null || true"
+        "max-length": 48,
+        "separate-outputs": true
     },
 
     "mpris": {
         "format": "{player_icon} {dynamic}",
         "format-paused": "{status_icon} <i>{dynamic}</i>",
-        "dynamic-len": 28,
+        "dynamic-len": 30,
         "player-icons": {
-            "default": "▶",
-            "spotify": "",
-            "firefox": "󰈹",
-            "mpv": "󰎆"
+            "default": ">",
+            "spotify": ">",
+            "firefox": ">",
+            "mpv": ">"
         },
-        "status-icons": { "paused": "⏸" },
-        "ignored-players": [],
+        "status-icons": { "paused": "||" },
         "tooltip-format": "{player} — {title}\n{artist}"
     },
 
+    "cpu": {
+        "interval": 3,
+        "format": "cpu {usage}%",
+        "tooltip": false,
+        "on-click": "kitty -e btop"
+    },
+
+    "memory": {
+        "interval": 5,
+        "format": "mem {percentage}%",
+        "tooltip-format": "RAM {used:0.1f}/{total:0.1f} GiB",
+        "on-click": "kitty -e btop"
+    },
+
+    "pulseaudio": {
+        "scroll-step": 5,
+        "format": "vol {volume}%",
+        "format-muted": "muted",
+        "on-click": "pavucontrol",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
+        "tooltip-format": "{desc}"
+    },
+
     "clock": {
-        "format": "  {:%H:%M}",
-        "format-alt": "  {:%a %d %b  %H:%M}",
+        "format": "{:%H:%M}",
+        "format-alt": "{:%a %d %b  %H:%M}",
         "tooltip-format": "<tt><small>{calendar}</small></tt>",
         "calendar": {
             "mode": "month",
@@ -106,74 +99,14 @@
         }
     },
 
-    "pulseaudio": {
-        "scroll-step": 5,
-        "format": "{icon} {volume}%",
-        "format-muted": "󰝟 muted",
-        "format-icons": { "default": ["󰕿", "󰖀", "󰕾"] },
-        "on-click": "pavucontrol",
-        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-        "tooltip-format": "{desc}"
-    },
-
-    "network": {
-        "interval": 3,
-        "format-wifi": "󰖩 {signalStrength}%",
-        "format-ethernet": "󰈀 wired",
-        "format-linked": "󰈀 linked",
-        "format-disconnected": "󰖪 offline",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
-        "tooltip-format-ethernet": "wired connection",
-        "on-click": "nm-connection-editor"
-    },
-
-    "cpu": {
-        "interval": 3,
-        "format": " {usage}%",
-        "tooltip": true,
-        "on-click": "kitty -e btop"
-    },
-
-    "memory": {
-        "interval": 5,
-        "format": " {percentage}%",
-        "tooltip-format": "RAM {used:0.1f}/{total:0.1f} GiB",
-        "on-click": "kitty -e btop"
-    },
-
-    "battery": {
-        "interval": 30,
-        "states": { "warning": 25, "critical": 12 },
-        "format": "{icon} {capacity}%",
-        "format-charging": "󰂄 {capacity}%",
-        "format-plugged": " {capacity}%",
-        "format-icons": ["󰁺", "󰁼", "󰁾", "󰂀", "󰁹"]
-    },
-
     "tray": {
         "icon-size": 15,
         "spacing": 8,
         "show-passive-items": true
     },
 
-    "custom/updates": {
-        "exec": "sh -c '$HOME/.config/waybar/scripts/updates.sh 2>/dev/null || echo \"\"'",
-        "interval": 3600,
-        "return-type": "json",
-        "format": "{}",
-        "tooltip": true,
-        "on-click": "kitty -e sudo webos-update --check"
-    },
-
-    "custom/gamemode": {
-        "exec": "sh -c '$HOME/.config/waybar/scripts/gamemode.sh 2>/dev/null || echo \"\"'",
-        "interval": 5,
-        "format": "{}",
-        "tooltip": true
-    },
-
     "custom/power": {
-        "format": " ⏻ ",
+        "format": "power",
         "tooltip": "Power menu",
         "on-click": "wlogout"
     }

@@ -15,12 +15,8 @@ sys-apps/xdg-desktop-portal-gtk
 gui-libs/xdg-desktop-portal-wlr
 gui-libs/wlroots
 
-# Alternative Wayland shell (Noctalia, runs on Hyprland). Selectable from the
-# installer's profile list and from SDDM.
-gui-apps/noctalia
-
 # KDE Plasma is deliberately NOT here. It is in the separate @plasma set so a
-# Full/Noctalia/Minimal image never inherits Plasma or its login session.
+# Full/Minimal image never inherits Plasma or its login session.
 
 # Panels / launchers / notifications
 gui-apps/waybar

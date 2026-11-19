@@ -767,16 +767,14 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
 
     // ── profile-specific defaults ────────────────────────────────────────
-    // The installer copies the live rootfs, so a profile that is NOT selected
-    // must be actively removed. Otherwise a Full/Noctalia install inherits
-    // the other desktop and SDDM shows sessions the user never asked for.
-    if cfg.profile != Profile::Noctalia {
-        s.push_str(
-            "emerge --quiet --unmerge gui-apps/noctalia >/dev/null 2>&1 || true\n\
-             rm -f /usr/share/wayland-sessions/webos-noctalia.desktop\n\
-             rm -rf /usr/share/webos/noctalia /etc/skel/.config/noctalia /root/.config/noctalia\n",
-        );
-    }
+    // The installer copies the live rootfs. Noctalia is no longer a selectable
+    // shell, so always strip it from the installed system along with its
+    // session and config, regardless of profile.
+    s.push_str(
+        "emerge --quiet --unmerge gui-apps/noctalia >/dev/null 2>&1 || true\n\
+         rm -f /usr/share/wayland-sessions/webos-noctalia.desktop\n\
+         rm -rf /usr/share/webos/noctalia /etc/skel/.config/noctalia /root/.config/noctalia\n",
+    );
     // Plasma lives in its own @plasma set and is not part of @desktop. Remove
     // any Plasma desktop that came from an older live image, but keep
     // kde-plasma/systemsettings: the Hyprland settings menu uses it.
@@ -813,7 +811,7 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     }
     // ── assertion: Plasma presence must match the selected profile ────────
     // An earlier image shipped Plasma into every install and the greeter
-    // offered it even for Full/Noctalia/Minimal. Fail loudly if that regresses.
+    // offered it even for Full/Minimal. Fail loudly if that regresses.
     let plasma_assert = if cfg.profile == Profile::Plasma {
         "if [ ! -e /usr/share/webos/sessions/wayland/plasma.desktop ] || [ -z \"$plasma_meta\" ]; then\n\
            echo 'assertion failed: Plasma profile but no Plasma session/package' >&2\n\

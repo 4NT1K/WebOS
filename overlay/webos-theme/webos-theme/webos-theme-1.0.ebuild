@@ -99,13 +99,11 @@ src_install() {
 
 	# --- 4. Wayland session entries --------------------------------------
 	# Named `webos`, not `hyprland`, so we never collide with the upstream
-	# package's own desktop file. The Noctalia session runs Hyprland with
-	# Noctalia as the shell when that package is installed. Only Wayland
-	# entries are installed: Hyprland cannot run under X11, and a duplicate
-	# xsessions/webos.desktop made SDDM show the same session twice.
+	# package's own desktop file. Only Wayland entries are installed: Hyprland
+	# cannot run under X11, and a duplicate xsessions/webos.desktop made SDDM
+	# show the same session twice. The mono rice is the only WebOS look.
 	insinto /usr/share/wayland-sessions
 	newins "${FILESDIR}"/system/webos.desktop webos.desktop
-	newins "${FILESDIR}"/system/webos-noctalia.desktop webos-noctalia.desktop
 	newins "${FILESDIR}"/system/webos-gamescope.desktop webos-gamescope.desktop
 
 	# --- 4b. application entries ----------------------------------------
@@ -120,12 +118,6 @@ src_install() {
 	insinto /etc/xdg/autostart
 	newins "${FILESDIR}"/system/webos-rice-autostart.desktop webos-rice.desktop
 	newins "${FILESDIR}"/system/webos-plasma-setup.desktop webos-plasma-setup.desktop
-
-	# --- 5c. shell config seeds -----------------------------------------
-	# Noctalia reads ~/.config/noctalia/*.toml. webos-session seeds the
-	# WebOS defaults per-user when none exist.
-	insinto /usr/share/webos/noctalia
-	newins "${FILESDIR}"/system/noctalia-config.toml config.toml
 
 	# Show the fastfetch card in interactive bash/zsh/fish shells that were
 	# not started through webos-shell (TTYs, ssh, other terminals). The

@@ -121,7 +121,6 @@ fn draw_page(f: &mut Frame, area: Rect, app: &mut App) {
         Step::Locale | Step::User => page_text(f, area, app),
         Step::Options => page_options(f, area, app),
         Step::Extras => page_extras(f, area, app),
-        Step::Dotfiles => page_dotfiles(f, area, app),
         Step::Summary => page_summary(f, area, app),
         Step::Install | Step::Done => {}
     }
@@ -447,43 +446,6 @@ fn page_extras(f: &mut Frame, area: Rect, app: &mut App) {
     let help = "Choose apps, shells and features (Discord, Spotify, Firefox, Vesktop, Waypaper, etc.). Enter/Space to toggle.";
     f.render_widget(
         Paragraph::new(Line::from(Span::styled(help.to_string(), theme::faint()))).wrap(Wrap { trim: true }),
-        rows[1],
-    );
-}
-
-fn page_dotfiles(f: &mut Frame, area: Rect, app: &mut App) {
-    let block = panel("Desktop dotfiles");
-    let inner = block.inner(area);
-    f.render_widget(block, area);
-
-    let rows = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([Constraint::Min(4), Constraint::Length(3)])
-        .split(inner);
-
-    app.list_area = Some(rows[0]);
-
-    let items: Vec<ListItem> = app
-        .dotfiles()
-        .iter()
-        .enumerate()
-        .map(|(i, (label, selected))| {
-            let mark = if selected.is_empty() { "  " } else { "● " };
-            let line = Line::from(vec![
-                Span::styled(format!("{mark}{label}"), theme::base()),
-            ]);
-            let item = ListItem::new(line);
-            if i == app.cursor { item.style(theme::selected()) } else { item }
-        })
-        .collect();
-    f.render_widget(List::new(items), rows[0]);
-
-    let note = crate::config::Dotfiles::ALL
-        .get(app.cursor)
-        .map(|d| d.note())
-        .unwrap_or("Choose the desktop look applied to the new account.");
-    f.render_widget(
-        Paragraph::new(Line::from(Span::styled(note, theme::faint()))).wrap(Wrap { trim: true }),
         rows[1],
     );
 }
@@ -825,8 +787,7 @@ fn footer_keys(step: Step) -> &'static str {
             "↑↓ field    Enter edit    Tab next    Esc back    Ctrl-C quit"
         }
         Step::Options => "↑↓ choose    Enter/Space cycle    Tab extras    Esc back",
-        Step::Extras => "↑↓ choose    Enter/Space cycle    Tab dotfiles    Esc back",
-        Step::Dotfiles => "↑↓ choose    Enter select    Tab summary    Esc back",
+        Step::Extras => "↑↓ choose    Enter/Space cycle    Tab summary    Esc back",
         Step::Summary => "Enter install    Esc back    Ctrl-C quit",
         Step::Install | Step::Done => "↑↓ scroll    Ctrl-C quit",
     }

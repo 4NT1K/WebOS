@@ -3,16 +3,9 @@
 #  webos-autostart — start the session services for a WebOS Wayland session.
 #
 #    webos-autostart hyprland
-#    webos-autostart niri
 #
-#  Which shell runs is chosen by WEBOS_SHELL:
-#
-#    ashen (default)  waybar + mako + hypridle
-#    mono/jakoolit/minimal  the same bar stack (the dotfiles profile only
-#                     changes its look, not what runs)
-#    noctalia         Noctalia (bar, notifications, wallpaper, lock, polkit);
-#                     waybar, mako, hypridle and the wallpaper daemons are
-#                     skipped because Noctalia provides all of them.
+#  The WebOS mono rice is the only shell: waybar + mako + hypridle + hyprpaper.
+#  WEBOS_SHELL is still read for compatibility but only selects the same stack.
 #
 #  Log: /tmp/webos-autostart.log
 # ─────────────────────────────────────────────────────────────────────────────
@@ -51,71 +44,56 @@ printf '%s\n' "$$" >"$lock/pid" 2>/dev/null || true
 trap 'rm -rf "$lock" 2>/dev/null || true' EXIT
 
 # ── portals + polkit ────────────────────────────────────────────────────────
-# webos-portals starts the portal implementations and the polkit agent. With
-# Noctalia the shell brings its own polkit agent, so it is told to skip it.
+# webos-portals starts the portal implementations and the polkit agent.
 if command -v webos-portals >/dev/null 2>&1; then
 	note "starting webos-portals (shell=$SHELL_KIND)"
 	webos-portals >>"$log" 2>&1 || note "webos-portals failed"
 fi
 
 # ── shell ───────────────────────────────────────────────────────────────────
-if [[ "$SHELL_KIND" == "noctalia" ]]; then
-	if command -v noctalia >/dev/null 2>&1; then
-		note "starting noctalia"
-		noctalia --daemon >>"$log" 2>&1 || note "noctalia failed to start"
-	else
-		note "noctalia requested but not installed; falling back to waybar"
-		SHELL_KIND=ashen
-	fi
+if running waybar; then
+	note "waybar already running"
+elif command -v waybar >/dev/null 2>&1; then
+	note "starting waybar"
+	cfg="$HOME/.config/waybar/config.jsonc"
+	[[ -f "$cfg" ]] || cfg=/usr/share/webos/rice/waybar/config.jsonc
+	[[ -f "$cfg" ]] || cfg=/etc/xdg/waybar/config.jsonc
+	st="$HOME/.config/waybar/style.css"
+	[[ -f "$st" ]] || st=/usr/share/webos/rice/waybar/style.css
+	[[ -f "$st" ]] || st=/etc/xdg/waybar/style.css
+	for _ in 1 2 3 4 5; do
+		waybar -c "$cfg" -s "$st" >>"$log" 2>&1 &
+		sleep 2
+		running waybar && break
+		sleep 1
+	done
+	running waybar || note "waybar did not stay running (see $log)"
 fi
-
-if [[ "$SHELL_KIND" != "noctalia" ]]; then
-	if running waybar; then
-		note "waybar already running"
-	elif command -v waybar >/dev/null 2>&1; then
-		note "starting waybar"
-		cfg="$HOME/.config/waybar/config.jsonc"
-		[[ -f "$cfg" ]] || cfg=/usr/share/webos/rice/waybar/config.jsonc
-		[[ -f "$cfg" ]] || cfg=/etc/xdg/waybar/config.jsonc
-		st="$HOME/.config/waybar/style.css"
-		[[ -f "$st" ]] || st=/usr/share/webos/rice/waybar/style.css
-		[[ -f "$st" ]] || st=/etc/xdg/waybar/style.css
-		for _ in 1 2 3 4 5; do
-			waybar -c "$cfg" -s "$st" >>"$log" 2>&1 &
-			sleep 2
-			running waybar && break
-			sleep 1
-		done
-		running waybar || note "waybar did not stay running (see $log)"
-	fi
-	if running mako; then
-		note "mako already running"
-	elif command -v mako >/dev/null 2>&1; then
-		note "starting mako"
-		mako >>"$log" 2>&1 &
-	fi
-	if running hypridle; then
-		note "hypridle already running"
-	elif command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
-		note "starting hypridle"
-		hypridle >>"$log" 2>&1 &
-	fi
-	# Night light. hyprsunset reads ~/.config/hypr/hyprsunset.conf and stays
-	# neutral until the first profile time; start it so the evening warm-up
-	# actually happens.
-	if running hyprsunset; then
-		note "hyprsunset already running"
-	elif command -v hyprsunset >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
-		note "starting hyprsunset"
-		hyprsunset >>"$log" 2>&1 &
-	fi
+if running mako; then
+	note "mako already running"
+elif command -v mako >/dev/null 2>&1; then
+	note "starting mako"
+	mako >>"$log" 2>&1 &
+fi
+if running hypridle; then
+	note "hypridle already running"
+elif command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
+	note "starting hypridle"
+	hypridle >>"$log" 2>&1 &
+fi
+# Night light. hyprsunset reads ~/.config/hypr/hyprsunset.conf and stays
+# neutral until the first profile time; start it so the evening warm-up
+# actually happens.
+if running hyprsunset; then
+	note "hyprsunset already running"
+elif command -v hyprsunset >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then
+	note "starting hyprsunset"
+	hyprsunset >>"$log" 2>&1 &
 fi
 
 # ── wallpaper ───────────────────────────────────────────────────────────────
 WALL=/usr/share/webos/wallpaper/webos-wallpaper.png
-if [[ "$SHELL_KIND" == "noctalia" ]]; then
-	note "wallpaper handled by noctalia"
-elif running hyprpaper; then
+if running hyprpaper; then
 	note "hyprpaper already running"
 elif command -v hyprpaper >/dev/null 2>&1; then
 	note "starting hyprpaper"

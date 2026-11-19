@@ -172,7 +172,6 @@ impl InstallerGui {
                     Step::Locale | Step::User => self.page_text(ui, &app),
                     Step::Options => self.page_options(ui, &app),
                     Step::Extras => self.page_extras(ui, &app),
-                    Step::Dotfiles => self.page_dotfiles(ui, &app),
                     Step::Summary => self.page_summary(ui, &app),
                     Step::Install => self.page_install(ui, &app),
                     Step::Done => self.page_done(ui, &app),
@@ -228,7 +227,6 @@ impl InstallerGui {
             Step::Locale | Step::User => "Tab  next field · Enter  edit · Esc  back",
             Step::Options => "click / ↑↓  toggle · Enter  continue · Esc  back",
             Step::Extras => "click / ↑↓  toggle · Enter  continue · Esc  back",
-            Step::Dotfiles => "click / ↑↓  choose dotfiles · Enter  continue · Esc  back",
             Step::Summary => "Enter  install · Esc  back",
             Step::Install => "installing — the disk is being written",
             Step::Done => "installation finished",
@@ -689,52 +687,6 @@ impl InstallerGui {
                 FontId::proportional(15.0),
                 theme::E_TEXT_DIM,
             );
-        }
-    }
-
-    fn page_dotfiles(&self, ui: &mut Ui, app: &App) {
-        let w = ui.available_width();
-        let row_h = 56.0;
-        let options = app.dotfiles();
-        let n = options.len();
-
-        let list_rect = Rect::from_min_size(ui.cursor().min, egui::Vec2::new(w, row_h * n as f32));
-        *self.list.borrow_mut() = Some(ListHit {
-            rect: list_rect,
-            rows: n,
-            row_h,
-        });
-
-        for (i, (label, selected)) in options.iter().enumerate() {
-            let rect = Rect::from_min_size(
-                ui.cursor().min + egui::Vec2::new(0.0, i as f32 * row_h),
-                egui::Vec2::new(w, row_h - 6.0),
-            );
-            let sel = i == app.cursor;
-            ui.allocate_rect(rect, Sense::click());
-            ui.painter().rect(
-                rect,
-                8.0,
-                if sel { theme::E_ROW_SEL } else { theme::E_BASE_SOFT },
-                Stroke::new(if sel { 2.0 } else { 1.0_f32 }, if sel { theme::E_TEXT } else { theme::E_BORDER }),
-                StrokeKind::Inside,
-            );
-            ui.painter().text(
-                Pos2::new(rect.min.x + 14.0, rect.min.y + rect.height() / 2.0),
-                Align2::LEFT_CENTER,
-                label,
-                FontId::proportional(15.0),
-                theme::E_TEXT,
-            );
-            if !selected.is_empty() {
-                ui.painter().text(
-                    Pos2::new(rect.max.x - 14.0, rect.min.y + rect.height() / 2.0),
-                    Align2::RIGHT_CENTER,
-                    "selected",
-                    FontId::proportional(13.0),
-                    theme::E_TEXT_DIM,
-                );
-            }
         }
     }
 
