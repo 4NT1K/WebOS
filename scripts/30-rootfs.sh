@@ -189,6 +189,18 @@ install -m 0644 "${WEBOS_ROOT}/branding/issue"      "${CHROOT}/etc/issue.logo"
 install -m 0644 "${WEBOS_ROOT}/branding/lsb-release" "${CHROOT}/etc/lsb-release"
 install -d "${CHROOT}/usr/share/webos"
 
+# ----------------------------------------------------- legacy shells ---------
+# The build chroot is reused across releases. Older trees installed Noctalia
+# (and its niri template) even though 1.0 ships only the mono rice. Remove the
+# package and every seed/session file before the rootfs is exported.
+step "rootfs: stripping legacy shells"
+chroot_sh "emerge --quiet --deselect gui-apps/noctalia >/dev/null 2>&1 || true"
+chroot_sh "emerge --quiet --unmerge gui-apps/noctalia >/dev/null 2>&1 || true"
+chroot_sh 'rm -rf /usr/share/webos/noctalia /usr/share/noctalia \
+	/etc/skel/.config/noctalia /root/.config/noctalia /home/*/.config/noctalia \
+	/usr/share/wayland-sessions/webos-noctalia.desktop \
+	/usr/share/wayland-sessions/webos-niri.desktop' || true
+
 # ---------------------------------------------------------- theming ----------
 step "rootfs: applying the rice (webos-theme)"
 # Same-version ebuild edits are not picked up by a plain emerge, so remove the
