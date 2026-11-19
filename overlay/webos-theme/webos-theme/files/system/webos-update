@@ -49,6 +49,40 @@ need_root() {
 	[ "$(id -u)" -eq 0 ] || die "webos-update must run as root (try: sudo webos-update)"
 }
 
+# The WebOS overlay is installed as a plain local repo (auto-sync = no), so
+# `emerge --sync` never refreshes it. New ebuilds — including kernel security
+# revisions — are published in the GitHub repo. Fetch the overlay directory
+# from main and swap it in before resolving updates. A failed/offline fetch
+# keeps the existing local copy and only produces a warning.
+OVERLAY_URL="https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz"
+sync_webos_overlay() {
+	local tmp ov
+	tmp="$(mktemp -d)" || return 1
+	if command -v curl >/dev/null 2>&1; then
+		curl -fsSL --max-time 120 "$OVERLAY_URL" -o "$tmp/src.tar.gz" || { rm -rf "$tmp"; return 1; }
+	elif command -v wget >/dev/null 2>&1; then
+		wget -q -O "$tmp/src.tar.gz" "$OVERLAY_URL" || { rm -rf "$tmp"; return 1; }
+	else
+		rm -rf "$tmp"; return 1
+	fi
+	tar -xzf "$tmp/src.tar.gz" -C "$tmp" 2>/dev/null || { rm -rf "$tmp"; return 1; }
+	ov="$(find "$tmp" -type d -name overlay -print -quit 2>/dev/null)"
+	[ -n "$ov" ] && [ -f "$ov/profiles/categories" ] || { rm -rf "$tmp"; return 1; }
+
+	mkdir -p /var/lib/webos
+	rm -rf /var/lib/webos/overlay.bak /usr/local/portage/webos.new
+	cp -a "$ov" /usr/local/portage/webos.new || { rm -rf "$tmp"; return 1; }
+	if [ -d /usr/local/portage/webos ]; then
+		mv -f /usr/local/portage/webos /var/lib/webos/overlay.bak
+	fi
+	if ! mv -f /usr/local/portage/webos.new /usr/local/portage/webos; then
+		[ -d /var/lib/webos/overlay.bak ] && mv -f /var/lib/webos/overlay.bak /usr/local/portage/webos
+		rm -rf "$tmp"; return 1
+	fi
+	rm -rf /var/lib/webos/overlay.bak "$tmp"
+	return 0
+}
+
 # ------------------------------------------------------------------ args ----
 while [ $# -gt 0 ]; do
 	case "$1" in
@@ -82,12 +116,20 @@ note "log: $LOG"
 if [ "$DO_SYNC" -eq 1 ] && [ "$CHECK" -eq 0 ]; then
 	say "[1/8] Syncing repositories"
 	if emerge --sync --quiet; then
-		ok "repositories up to date"
+		ok "Gentoo repository up to date"
 	else
 		step_fail "emerge --sync failed (network or a stale mirror); continuing with the local tree"
 	fi
+	# Refresh the WebOS overlay too: this is where new kernel revisions and
+	# WebOS-only app ebuilds live. It is auto-sync=no, so emerge --sync alone
+	# never sees them.
+	if sync_webos_overlay; then
+		ok "WebOS overlay up to date (new ebuilds visible)"
+	else
+		step_fail "could not refresh the WebOS overlay — using the local copy"
+	fi
 else
-	say "[1/8] Sync skipped"
+	say "[1/8] Sync skipped (WebOS overlay not refreshed)"
 fi
 
 # ---------------------------------------------------------- 2. world ----

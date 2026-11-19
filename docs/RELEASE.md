@@ -263,3 +263,27 @@ Then upload the artefacts from §7 to the release page, and update:
 * Re-pin the kernel patchset if upstream moved (`kernel/fetch-patches.sh`).
 * Refresh the Gentoo snapshot for the next `fetch`.
 * File anything the smoke test only *worked around* as a bug, not a note.
+
+## 11. Shipping kernel security updates to installed machines
+
+Installed systems keep the WebOS overlay as a plain local repo at
+`/usr/local/portage/webos` with `auto-sync = no`, so `emerge --sync` alone never
+sees new WebOS ebuilds. `webos-update` fixes that by refreshing the overlay
+from `https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz` before it
+resolves updates. To ship a kernel security fix:
+
+1. Add the patched tarball/patch to `overlay/sys-kernel/webos-kernel/files/`
+   and bump the ebuild revision (e.g. `webos-kernel-6.12-r1.ebuild`). Update
+   the `Manifest` with `ebuild ... manifest`.
+2. Commit and push to `main`. No ISO rebuild is required for existing users.
+3. Users run `sudo webos-update`. It pulls the new overlay, emerges the new
+   kernel revision (the kernel is intentionally not in `@world`, so it is
+   updated explicitly), regenerates `/boot/grub/grub.cfg` when a new
+   `/boot/vmlinuz-*` appears, and asks for a reboot. Old kernels stay in the
+   GRUB menu as a fallback.
+4. Users who are offline or behind a firewall keep the last local overlay;
+   the updater warns instead of failing. `--no-sync` skips both repo and
+   overlay refresh.
+
+The same path delivers new WebOS-only app ebuilds and theme updates — anything
+committed under `overlay/` reaches installed machines on the next update.

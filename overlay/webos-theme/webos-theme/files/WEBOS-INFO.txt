@@ -389,17 +389,21 @@ Portage + OpenRC. No binary host by default: emerge compiles from source.
 Repos: gentoo, webos (local overlay /usr/local/portage/webos); build-only
 overlays may be disabled under /etc/portage/repos.conf.disabled.
 
-  sudo webos-update              sync, rebuild @world, depclean, config,
-                                 kernel + GRUB, Flatpak, rice; log
-                                 /var/log/webos-update.log
+  sudo webos-update              refresh WebOS overlay, sync repos, rebuild
+                                 @world, depclean, config, kernel + GRUB,
+                                 Flatpak, rice; log /var/log/webos-update.log
   sudo webos-update --check      show what would change
   sudo webos-update --yes        non-interactive config merges
   --no-sync | --no-flatpak | --no-depclean | --no-kernel | --quiet
 
-  You do NOT have to update the kernel or software by hand. webos-update
-  rebuilds @world and explicitly updates sys-kernel/webos-kernel (it is not in
-  @world), regenerates /boot/grub/grub.cfg when a new kernel image lands, and
-  tells you to reboot. Manual Portage commands remain available below.
+  You do NOT have to update the kernel or software by hand. webos-update first
+  refreshes the local WebOS overlay from GitHub (auto-sync=no, so emerge --sync
+  alone would never see new WebOS ebuilds), rebuilds @world, and explicitly
+  updates sys-kernel/webos-kernel (it is not in @world). It regenerates
+  /boot/grub/grub.cfg when a new kernel image lands and tells you to reboot.
+  Kernel security fixes are shipped as a new ebuild revision in the WebOS repo;
+  one `webos-update` on each machine picks them up. Manual Portage commands
+  remain available below.
 
   sudo emerge --sync
   sudo emerge -av <package>
