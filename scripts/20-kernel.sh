@@ -33,6 +33,13 @@ chroot_sh 'for p in sys-kernel/webos-kernel-sources sys-kernel/webos-kernel; do
 	[[ -n "$e" ]] && ebuild "$e" manifest >/dev/null 2>&1 || true
 done' || warn "manifest refresh reported problems"
 
+# A reused chroot still carries the pre-rename sanus-* kernel packages. They
+# own /usr/src/linux-6.12 and /boot/vmlinuz-* with the OLD config, so the new
+# webos-kernel collides on install. Remove them before emerging the replacement
+# (the earlier build skipped this because it never rebuilt the kernel).
+step "kernel: removing legacy sanus kernel packages"
+chroot_sh "emerge --quiet --unmerge sys-kernel/sanus-kernel sys-kernel/sanus-kernel-sources >/dev/null 2>&1 || true"
+
 step "kernel: emerging sources + kernel"
 # The WebOS fragment can change without an ebuild revision, so Portage would
 # otherwise keep the old kernel (and its old config). Rebuild when the image
