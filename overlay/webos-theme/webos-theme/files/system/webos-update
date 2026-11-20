@@ -135,7 +135,8 @@ fi
 # ---------------------------------------------------------- 2. world ----
 if [ "$CHECK" -eq 1 ]; then
 	say "[2/8] Pending updates (dry run)"
-	emerge --pretend --verbose --update --deep --newuse @world
+	emerge --pretend --verbose --update --deep --newuse --backtrack=100 \
+		--autounmask-backtrack=y @world
 	rc=$?
 	[ "$rc" -eq 0 ] || step_fail "dependency calculation failed (rc=$rc)"
 	if [ "$DO_KERNEL" -eq 1 ]; then
@@ -149,7 +150,8 @@ if [ "$CHECK" -eq 1 ]; then
 fi
 
 say "[2/8] Updating @world (this is the long part; it compiles from source)"
-if emerge --verbose --update --deep --newuse --autounmask-write=y @world; then
+if emerge --verbose --update --deep --newuse --backtrack=100 \
+	--autounmask-backtrack=y --autounmask-write=y @world; then
 	ok "world updated"
 else
 	step_fail "emerge @world reported an error — see $LOG"

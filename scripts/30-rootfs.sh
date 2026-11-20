@@ -58,6 +58,14 @@ for d in package.use package.license package.accept_keywords package.mask packag
 	rm -f "${CHROOT}/etc/portage/${d}"/* 2>/dev/null || true
 	cp -a "${WEBOS_ROOT}/config/${d}/." "${CHROOT}/etc/portage/${d}/"
 done
+# Rebuild packages whose compiled code follows CPU_FLAGS_X86. A reused chroot
+# keeps binaries built with the old AVX-512 flags even after make.conf is
+# corrected; NumPy in particular then SIGILLs waypaper on AVX2-only CPUs.
+chroot_sh "emerge --quiet-build=y --changed-use --oneshot \
+	dev-python/numpy dev-cpp/eigen dev-libs/libgcrypt \
+	media-libs/libde265 media-libs/svt-av1 sys-libs/zlib-ng" \
+	|| warn "CPU_FLAGS-sensitive rebuild had failures (review before release)"
+
 # The theme ebuild changed with the 1.01 rebuild (-r1 adds the new helpers).
 # SRC_URI is empty, so there is no Manifest to regenerate; force a reinstall
 # to guarantee the new files land.
@@ -302,9 +310,6 @@ rsync -aHAX --delete \
 	--exclude='/proc/*' --exclude='/sys/*' --exclude='/dev/*' \
 	--exclude='/tmp/*' --exclude='/var/tmp/*' --exclude='/var/cache/*' \
 	--exclude='/usr/src/*' \
-	--exclude='/var/db/repos/guru' \
-	--exclude='/var/db/repos/hyproverlay' \
-	--exclude='/var/db/repos/steam-overlay' \
 	--exclude='/lib/modules/*/build' \
 	"${CHROOT}/" "${ROOTFS_DIR}/" || die "rootfs export failed"
 
@@ -335,16 +340,12 @@ install -m 0755 "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/loca
 # remove it and let webos-rice install the real config.
 rm -f "${CHROOT}/usr/share/hypr/hyprland.lua" "${ROOTFS_DIR}/usr/share/hypr/hyprland.lua"
 
-# The ::gentoo tree ships with the image so `emerge` works on a fresh install
-# and in the live session without a network round-trip. The optional overlays
-# are build-time only; disable their (otherwise dangling) repo entries so
-# Portage does not warn about them on every invocation.
-install -d "${ROOTFS_DIR}/etc/portage/repos.conf.disabled"
-for _repo in guru hyproverlay steam-overlay; do
-	if [[ -f "${ROOTFS_DIR}/etc/portage/repos.conf/${_repo}.conf" ]]; then
-		mv -f "${ROOTFS_DIR}/etc/portage/repos.conf/${_repo}.conf" \
-		      "${ROOTFS_DIR}/etc/portage/repos.conf.disabled/${_repo}.conf"
-	fi
-done
+# The ::gentoo tree and the three third-party overlays ship with the image so
+# `emerge` works on a fresh install without a network round-trip. The overlays
+# are NOT build-time-only: packages from them (waypaper, vesktop-bin,
+# ananicy-cpp, opencode-bin, hyprpolkitagent) are in world, so hiding the repos
+# makes `emerge @world` fail with "no available ebuilds" and an invalid world
+# file. Keep their repos.conf entries enabled and their .git metadata intact
+# so `webos-update` can sync them later.
 
 ok "rootfs exported to ${ROOTFS_DIR} ($(du -sh "${ROOTFS_DIR}" | cut -f1))"

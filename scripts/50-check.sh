@@ -77,5 +77,16 @@ for f in desktop/hypr/hyprland.lua desktop/hypr/webos-colors.lua desktop/waybar/
 	[[ -f "${WEBOS_ROOT}/${f}" ]] && good "rice ${f}" || bad "missing rice file ${f}"
 done
 
+# 7. regressions that broke the 1.01 release: CPU-FLAGS binaries and overlays
+if grep -q 'dev-python/numpy dev-cpp/eigen' "${WEBOS_ROOT}/scripts/30-rootfs.sh"; then
+	good "CPU_FLAGS-sensitive packages rebuilt"
+else bad "no CPU_FLAGS-sensitive rebuild in 30-rootfs.sh"; fi
+if grep -q "exclude='/var/db/repos/guru'" "${WEBOS_ROOT}/scripts/30-rootfs.sh"; then
+	bad "third-party overlays excluded from rootfs (breaks @world)"
+else good "third-party overlays shipped in rootfs"; fi
+if grep -q 'kde-frameworks/kconfig-6.32.0 qml' "${WEBOS_ROOT}/config/package.use/gaming"; then
+	good "kconfig qml USE preset"
+else bad "kconfig qml USE missing"; fi
+
 step "check: ${fail} problem(s)"
 exit "$((fail > 0))"
