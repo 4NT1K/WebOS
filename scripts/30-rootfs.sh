@@ -149,7 +149,9 @@ chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_J
 # A reused chroot can still hold Plasma from before it moved into @plasma.
 # Strip it from the live rootfs so the image itself has no Plasma session;
 # keep systemsettings (used by webos-settings) and breeze (the cursor theme).
-chroot_sh 'pkgs="$(qlist -I 2>/dev/null | grep "^kde-plasma/" | grep -Ev "^kde-plasma/(systemsettings|breeze)-" || true)"; if [ -n "$pkgs" ]; then emerge --quiet --unmerge $pkgs >/dev/null 2>&1 || true; fi; rm -f /usr/share/wayland-sessions/plasma.desktop' || true
+# qlist -I prints "category/package" here (no version), while the find fallback
+# prints "=package-version", so the keep-list must match both forms.
+chroot_sh 'pkgs="$(qlist -I 2>/dev/null | grep "^kde-plasma/" | grep -Ev "^kde-plasma/(systemsettings|breeze)(-[0-9]|$)" || true)"; if [ -n "$pkgs" ]; then emerge --quiet --unmerge $pkgs >/dev/null 2>&1 || true; fi; rm -f /usr/share/wayland-sessions/plasma.desktop' || true
 
 # The bar must be built with the WebOS USE flags (mpris/tray/logind). The
 # plain set emerge above does not rebuild for USE changes on an existing

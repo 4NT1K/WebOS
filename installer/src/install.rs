@@ -790,9 +790,9 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     if cfg.profile != Profile::Plasma {
         s.push_str(
             "if command -v qlist >/dev/null 2>&1; then\n\
-               plasma_pkgs=\"$(qlist -I | grep '^kde-plasma/' | grep -Ev '^kde-plasma/(systemsettings|breeze)-' || true)\"\n\
+               plasma_pkgs=\"$(qlist -I | grep '^kde-plasma/' | grep -Ev '^kde-plasma/(systemsettings|breeze)(-[0-9]|$)' || true)\"\n\
              else\n\
-               plasma_pkgs=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -Ev '^=(systemsettings|breeze)-' || true)\"\n\
+               plasma_pkgs=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -Ev '^=(systemsettings|breeze)(-[0-9]|$)' || true)\"\n\
              fi\n\
              if [[ -n \"$plasma_pkgs\" ]]; then\n\
                emerge --quiet --unmerge $plasma_pkgs >/dev/null 2>&1 || true\n\
@@ -837,10 +837,10 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     };
     s.push_str("if command -v qlist >/dev/null 2>&1; then\n\
                   plasma_meta=\"$(qlist -I 2>/dev/null | grep '^kde-plasma/plasma-meta' || true)\"\n\
-                  remaining_plasma=\"$(qlist -I 2>/dev/null | grep '^kde-plasma/' | grep -Ev '^kde-plasma/(systemsettings|breeze)-' || true)\"\n\
+                  remaining_plasma=\"$(qlist -I 2>/dev/null | grep '^kde-plasma/' | grep -Ev '^kde-plasma/(systemsettings|breeze)(-[0-9]|$)' || true)\"\n\
                 else\n\
                   plasma_meta=\"$(find /var/db/pkg/kde-plasma -maxdepth 1 -type d -name 'plasma-meta-*' -print -quit 2>/dev/null)\"\n\
-                  remaining_plasma=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -Ev '^=(systemsettings|breeze)-' || true)\"\n\
+                  remaining_plasma=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -Ev '^=(systemsettings|breeze)(-[0-9]|$)' || true)\"\n\
                 fi\n");
     s.push_str(plasma_assert);
     if cfg.profile == Profile::Minimal {
