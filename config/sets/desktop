@@ -50,12 +50,21 @@ x11-misc/xdg-user-dirs
 gnome-base/gvfs
 app-misc/ranger
 
+# Flatpak runtime and Flathub support (installed on every profile).
+sys-apps/flatpak
+
+# Breeze cursor, Qt6 theming and Konsole for KIO Terminal=true handlers.
+kde-plasma/breeze
+gui-apps/qt6ct
+kde-apps/konsole
+
 # Theming
 x11-themes/adwaita-icon-theme
 x11-themes/papirus-icon-theme
 x11-themes/arc-theme
 x11-themes/kvantum
-# gui-apps/qt6ct conflicts with kde-plasma/plasma-meta; Plasma provides its own Qt theming.
+# gui-apps/qt6ct conflicts with kde-plasma/plasma-meta; the Plasma profile
+# unmerges qt6ct after installing @plasma, so Plasma keeps its own Qt theming.
 x11-libs/gtk+:3
 gui-libs/gtk:4
 media-fonts/inter
@@ -74,6 +83,7 @@ media-sound/cava
 media-video/mpv
 media-video/ffmpeg
 media-sound/playerctl
+media-gfx/chafa
 media-gfx/imv
 media-gfx/swayimg
 

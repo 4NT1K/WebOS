@@ -99,13 +99,18 @@ case "$MODE" in
 				(( ready )) && exec webos-autostart hyprland
 			) >/dev/null 2>&1 &
 		fi
+		command -v start-hyprland >/dev/null 2>&1 || {
+			printf 'webos-session: start-hyprland is not installed\n' >&2
+			exit 1
+		}
 		if [[ -n "$cfg" ]]; then
-			exec Hyprland -c "$cfg"
+			exec start-hyprland -- -c "$cfg"
 		fi
-		exec Hyprland
+		exec start-hyprland
 		;;
 	hyprland-safe)
 		# Skip the rice: useful when a config change breaks the session.
+		# The safe path bypasses the watchdog and calls Hyprland directly.
 		exec Hyprland -c /dev/null
 		;;
 	gamescope)

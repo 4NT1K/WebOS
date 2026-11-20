@@ -1,7 +1,7 @@
 // ────────────────────────────────────────────────────────────────────────────
-//  WebOS mono — a flat, transparent, monochrome top bar.
-//  Inspired by the MHD "Monochrome" rice: no capsules, no colour, thin white
-//  outline on the focused workspace, bold Meslo text.
+//  WebOS mono — a flat, near-opaque monochrome top bar.
+//  Inspired by the MHD "Monochrome" rice: rounded, translucent capsules,
+//  no colour, thin soft-white outline on the focused workspace, bold Mono text.
 // ────────────────────────────────────────────────────────────────────────────
 {
     "layer": "top",
@@ -23,19 +23,10 @@
         "hyprland/workspaces",
         "hyprland/window"
     ],
-    "modules-center": [
-        "mpris"
-    ],
+    "modules-center": ["mpris"],
     // No network module: the mono bar never displays the LAN IPv4 address.
     // No battery module either (desktop PC); the power menu stays available.
-    "modules-right": [
-        "cpu",
-        "memory",
-        "pulseaudio",
-        "clock",
-        "tray",
-        "custom/power"
-    ],
+    "modules-right": ["custom/waypaper", "clock", "tray", "custom/perf"],
 
     "hyprland/workspaces": {
         "format": "{name}",
@@ -55,36 +46,15 @@
         "format-paused": "{status_icon} <i>{dynamic}</i>",
         "dynamic-len": 30,
         "player-icons": {
-            "default": ">",
-            "spotify": ">",
-            "firefox": ">",
-            "mpv": ">"
+            "default": "▶",
+            "spotify": "▶",
+            "firefox": "▶",
+            "mpv": "▶"
         },
-        "status-icons": { "paused": "||" },
-        "tooltip-format": "{player} — {title}\n{artist}"
-    },
-
-    "cpu": {
-        "interval": 3,
-        "format": "cpu {usage}%",
-        "tooltip": false,
-        "on-click": "kitty -e btop"
-    },
-
-    "memory": {
-        "interval": 5,
-        "format": "mem {percentage}%",
-        "tooltip-format": "RAM {used:0.1f}/{total:0.1f} GiB",
-        "on-click": "kitty -e btop"
-    },
-
-    "pulseaudio": {
-        "scroll-step": 5,
-        "format": "vol {volume}%",
-        "format-muted": "muted",
-        "on-click": "pavucontrol",
-        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
-        "tooltip-format": "{desc}"
+        "status-icons": { "paused": "❚❚" },
+        "tooltip": "{player} — {title}\n{artist}",
+        "on-click": "webos-music --toggle",
+        "on-right-click": "webos-music --toggle"
     },
 
     "clock": {
@@ -94,7 +64,7 @@
         "calendar": {
             "mode": "month",
             "format": {
-                "today": "<span color='#ffffff'><b><u>{}</u></b></span>"
+                "today": "<span color='#E8E8E8'><b><u>{}</u></b></span>"
             }
         }
     },
@@ -105,9 +75,15 @@
         "show-passive-items": true
     },
 
-    "custom/power": {
-        "format": "power",
-        "tooltip": "Power menu",
-        "on-click": "wlogout"
+    "custom/waypaper": {
+        "format": "▧",
+        "tooltip": "Waypaper — choose wallpaper",
+        "on-click": "waypaper"
+    },
+
+    "custom/perf": {
+        "format": "▾",
+        "tooltip": "Performance — CPU, GPU, VRAM, RAM, disk, temp",
+        "on-click": "webos-stats --toggle"
     }
 }

@@ -1,23 +1,23 @@
-/* WebOS GTK4 overrides — Ashen palette on top of Adwaita-dark.
+/* WebOS GTK4 overrides — Ashen greyscale on top of Adwaita-dark.
  * GTK4 renamed most of the CSS; keep this to colours and radii only. */
 
-@define-color accent_color        #7dd3fc;
-@define-color accent_bg_color     #7dd3fc;
-@define-color accent_fg_color     #050508;
-@define-color window_bg_color     #050508;
-@define-color window_fg_color     #f0f0f5;
-@define-color view_bg_color       #0a0a0c;
-@define-color view_fg_color       #f0f0f5;
-@define-color headerbar_bg_color  #08080a;
-@define-color headerbar_fg_color  #f0f0f5;
-@define-color sidebar_bg_color    #0a0a0c;
-@define-color card_bg_color       #101014;
-@define-color popover_bg_color    #0c0c10;
-@define-color dialog_bg_color     #0a0a0c;
-@define-color borders             rgba(255, 255, 255, 0.08);
+@define-color accent_color        #E8E8E8;
+@define-color accent_bg_color     #E8E8E8;
+@define-color accent_fg_color     #000000;
+@define-color window_bg_color     #000000;
+@define-color window_fg_color     #D8D8D8;
+@define-color view_bg_color       #000000;
+@define-color view_fg_color       #D8D8D8;
+@define-color headerbar_bg_color  #000000;
+@define-color headerbar_fg_color  #D8D8D8;
+@define-color sidebar_bg_color    #000000;
+@define-color card_bg_color       #0a0a0a;
+@define-color popover_bg_color    #000000;
+@define-color dialog_bg_color     #000000;
+@define-color borders             rgba(232, 232, 232, 0.20);
 @define-color warning_color       #fbbf24;
 @define-color error_color         #f87171;
-@define-color success_color       #86efac;
+@define-color success_color       #c2c2c2;
 
 window, .background { background-color: @window_bg_color; color: @window_fg_color; }
 
@@ -34,17 +34,17 @@ button {
     border: 1px solid @borders;
     transition: all 140ms ease;
 }
-button:hover { background-color: rgba(255, 255, 255, 0.08); }
+button:hover { background-color: rgba(232, 232, 232, 0.10); }
 button:checked, button:active {
-    background-color: rgba(125, 211, 252, 0.18);
-    border-color: rgba(125, 211, 252, 0.45);
+    background-color: rgba(232, 232, 232, 0.20);
+    border-color: rgba(232, 232, 232, 0.35);
 }
 button.suggested-action { background-color: @accent_bg_color; color: @accent_fg_color; }
 
 entry, textview { border-radius: 9px; border: 1px solid @borders; caret-color: @accent_color; }
-entry:focus, textview:focus { border-color: rgba(125, 211, 252, 0.5); }
+entry:focus, textview:focus { border-color: rgba(232, 232, 232, 0.35); }
 
-selection { background-color: rgba(125, 211, 252, 0.25); color: #eaf7ff; }
+selection { background-color: rgba(232, 232, 232, 0.20); color: #E8E8E8; }
 popover, popover > contents { border-radius: 12px; border: 1px solid @borders; }
 tooltip { border-radius: 8px; }
 switch:checked > slider { background-color: @accent_fg_color; }

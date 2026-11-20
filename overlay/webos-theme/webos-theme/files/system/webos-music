@@ -1,0 +1,455 @@
+#!/usr/bin/env python3
+"""WebOS now-playing overlay (GTK3 + gtk-layer-shell, no eww/ags/hyprwave).
+
+Modes:
+  --start          launch the hidden daemon if it is not already running
+  --toggle         toggle the overlay via SIGUSR1 (start it if necessary)
+  --run-hidden     internal: run the daemon with the window hidden
+  --run-visible    internal: run the daemon with the window visible
+"""
+
+import atexit
+import hashlib
+import io
+import json
+import os
+import signal
+import subprocess
+import sys
+import tempfile
+import urllib.parse
+import urllib.request
+
+
+def runtime_dir():
+    path = os.environ.get("XDG_RUNTIME_DIR")
+    if not path:
+        path = os.path.join(tempfile.gettempdir(), "webos-" + str(os.getuid()))
+    try:
+        os.makedirs(path, mode=0o700, exist_ok=True)
+    except OSError:
+        pass
+    return path
+
+
+RUNTIME = runtime_dir()
+PIDFILE = os.path.join(RUNTIME, "webos-music.pid")
+ART_DIR = os.path.join(RUNTIME, "webos-music-art")
+
+META_FORMAT = "{{title}}\t{{artist}}\t{{mpris:length}}\t{{mpris:artUrl}}"
+
+
+# ---------------------------------------------------------------------------
+# process management (uses only the standard library)
+# ---------------------------------------------------------------------------
+
+def read_pid():
+    try:
+        with open(PIDFILE, "r", encoding="utf-8") as handle:
+            pid = int(handle.read().strip())
+        return pid if pid > 0 else None
+    except (OSError, ValueError):
+        return None
+
+
+def pid_alive(pid):
+    if not pid:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def daemon_running():
+    pid = read_pid()
+    if pid_alive(pid):
+        return pid
+    if pid:
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+    return None
+
+
+def write_pidfile():
+    with open(PIDFILE, "w", encoding="utf-8") as handle:
+        handle.write(str(os.getpid()) + "\n")
+
+
+def remove_pidfile():
+    if read_pid() == os.getpid():
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+
+
+def spawn(visible):
+    flag = "--run-visible" if visible else "--run-hidden"
+    devnull = open(os.devnull, "rb")
+    try:
+        subprocess.Popen(
+            [sys.executable, os.path.realpath(__file__), flag],
+            stdin=devnull,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            close_fds=True,
+        )
+    finally:
+        devnull.close()
+
+
+# ---------------------------------------------------------------------------
+# playerctl / artwork (standard library + Pillow)
+# ---------------------------------------------------------------------------
+
+def playerctl(*args):
+    try:
+        proc = subprocess.run(
+            ["playerctl", *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout.decode("utf-8", "replace").strip()
+
+
+def to_float(value, default=0.0):
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def read_state():
+    status = playerctl("status").lower()
+    fields = playerctl("metadata", "--format", META_FORMAT).split("\t")
+    fields += [""] * (4 - len(fields))
+    title, artist, length_raw, art_url = fields[:4]
+    length = to_float(length_raw) / 1000000.0 if length_raw else 0.0
+    position = to_float(playerctl("position"))
+    return {
+        "status": status if status in ("playing", "paused") else "stopped",
+        "title": title,
+        "artist": artist,
+        "length": length,
+        "position": position,
+        "art_url": art_url,
+    }
+
+
+def prepare_art(url):
+    """Fetch/convert/cache album art and return the cached PNG path."""
+    if not url or not url.startswith(("file://", "http://", "https://")):
+        return None
+    try:
+        os.makedirs(ART_DIR, mode=0o700, exist_ok=True)
+        key = hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
+        cached = os.path.join(ART_DIR, key + ".png")
+        if os.path.isfile(cached):
+            return cached
+
+        from PIL import Image, ImageEnhance, ImageFilter
+
+        if url.startswith("file://"):
+            parsed = urllib.parse.urlparse(url)
+            source = urllib.parse.unquote(parsed.path)
+            with open(source, "rb") as handle:
+                raw = handle.read()
+        else:
+            with urllib.request.urlopen(url, timeout=2) as response:
+                raw = response.read()
+
+        image = Image.open(io.BytesIO(raw))
+        image = image.convert("L")
+        image = ImageEnhance.Brightness(image).enhance(0.42)
+        image = image.filter(ImageFilter.GaussianBlur(radius=1.2))
+
+        target = (640, 280)
+        resample = getattr(getattr(Image, "Resampling", Image), "LANCZOS")
+        image.thumbnail(target, resample)
+        canvas = Image.new("L", target, 0)
+        canvas.paste(image, ((target[0] - image.width) // 2,
+                             (target[1] - image.height) // 2))
+        canvas.save(cached, format="PNG")
+        return cached
+    except Exception:
+        return None
+
+
+def format_time(seconds):
+    seconds = max(0, int(to_float(seconds)))
+    hours, remainder = divmod(seconds, 3600)
+    minutes, secs = divmod(remainder, 60)
+    if hours:
+        return "%d:%02d:%02d" % (hours, minutes, secs)
+    return "%d:%02d" % (minutes, secs)
+
+
+# ---------------------------------------------------------------------------
+# GTK overlay
+# ---------------------------------------------------------------------------
+
+def run_app(visible):
+    import gi
+
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("Gdk", "3.0")
+    from gi.repository import Gdk, GLib, Gtk
+
+    try:
+        gi.require_version("GtkLayerShell", "1.0")
+        from gi.repository import GtkLayerShell
+    except (ImportError, ValueError):
+        GtkLayerShell = None
+
+    write_pidfile()
+    atexit.register(remove_pidfile)
+
+    CSS = b"""
+    #music-card {
+        background-color: rgba(0, 0, 0, 0.92);
+        border: 1px solid rgba(232, 232, 232, 0.20);
+        border-radius: 18px;
+        color: #D8D8D8;
+        padding: 10px;
+    }
+    #music-art {
+        background-color: #000000;
+        border-radius: 12px;
+        min-width: 640px;
+        min-height: 280px;
+    }
+    .webos-status {
+        color: #D8D8D8;
+        font: bold 12px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+        letter-spacing: 2px;
+    }
+    .webos-title {
+        color: #D8D8D8;
+        font: bold 17px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+    }
+    .webos-dim {
+        color: #7A7A7A;
+        font: 12px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+    }
+    button {
+        color: #D8D8D8;
+        background-color: rgba(232, 232, 232, 0.04);
+        border: 1px solid rgba(232, 232, 232, 0.20);
+        border-radius: 9px;
+        padding: 4px 10px;
+    }
+    scale, scale trough, scale progress {
+        background-color: rgba(232, 232, 232, 0.08);
+        border-radius: 4px;
+    }
+    scale progress {
+        background-color: #E8E8E8;
+    }
+    """
+
+    provider = Gtk.CssProvider()
+    provider.load_from_data(CSS)
+    screen = Gdk.Screen.get_default()
+    Gtk.StyleContext.add_provider_for_screen(
+        screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
+    window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+    window.set_title("webos-music")
+    window.set_decorated(False)
+    window.set_resizable(False)
+    window.set_skip_taskbar_hint(True)
+    window.set_skip_pager_hint(True)
+    window.set_default_size(640, 440)
+    window.set_app_paintable(True)
+
+    if GtkLayerShell is not None:
+        GtkLayerShell.init_for_window(window)
+        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+        for edge in ("LEFT", "RIGHT", "BOTTOM"):
+            GtkLayerShell.set_anchor(window, getattr(GtkLayerShell.Edge, edge), False)
+        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 42)
+        GtkLayerShell.set_exclusive_zone(window, -1)
+
+    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+    card.set_name("music-card")
+    window.add(card)
+
+    status_label = Gtk.Label(label="STOPPED")
+    status_label.set_name("music-status")
+    status_label.set_halign(Gtk.Align.START)
+    status_label.get_style_context().add_class("webos-status")
+    card.pack_start(status_label, False, False, 0)
+
+    art = Gtk.EventBox()
+    art.set_name("music-art")
+    art.set_size_request(640, 280)
+    card.pack_start(art, False, False, 0)
+
+    title_label = Gtk.Label(label="No track")
+    title_label.set_halign(Gtk.Align.START)
+    title_label.set_ellipsize(3)  # Pango.EllipsizeMode.END
+    title_label.set_max_width_chars(60)
+    title_label.get_style_context().add_class("webos-title")
+    card.pack_start(title_label, False, False, 0)
+
+    artist_label = Gtk.Label(label="")
+    artist_label.set_halign(Gtk.Align.START)
+    artist_label.set_ellipsize(3)
+    artist_label.set_max_width_chars(60)
+    artist_label.get_style_context().add_class("webos-dim")
+    card.pack_start(artist_label, False, False, 0)
+
+    controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+    controls.set_halign(Gtk.Align.CENTER)
+    card.pack_start(controls, False, False, 0)
+
+    def control(icon, command):
+        button = Gtk.Button.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
+        button.connect("clicked", lambda *_: playerctl(command))
+        controls.pack_start(button, False, False, 0)
+        return button
+
+    control("media-skip-backward-symbolic", "previous")
+    play_button = control("media-playback-start-symbolic", "play-pause")
+    control("media-skip-forward-symbolic", "next")
+
+    timeline = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+    card.pack_start(timeline, False, False, 0)
+
+    elapsed_label = Gtk.Label(label="0:00")
+    elapsed_label.get_style_context().add_class("webos-dim")
+    timeline.pack_start(elapsed_label, False, False, 0)
+
+    scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0.0, 1.0, 0.01)
+    scale.set_draw_value(False)
+    scale.set_sensitive(False)
+    timeline.pack_start(scale, True, True, 0)
+
+    total_label = Gtk.Label(label="0:00")
+    total_label.get_style_context().add_class("webos-dim")
+    timeline.pack_start(total_label, False, False, 0)
+
+    art_provider = [None]
+    last_art = [None]
+    updating = [False]
+
+    def set_art(path):
+        if art_provider[0] is not None:
+            Gtk.StyleContext.remove_provider_for_screen(screen, art_provider[0])
+        css = "#music-art { background-image: url(%s); background-size: 640px 280px; }" % json.dumps(path)
+        new_provider = Gtk.CssProvider()
+        new_provider.load_from_data(css.encode("utf-8"))
+        Gtk.StyleContext.add_provider_for_screen(
+            screen, new_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
+        art_provider[0] = new_provider
+
+    def on_seek(_widget):
+        if updating[0]:
+            return
+        playerctl("position", "%.2f" % scale.get_value())
+
+    scale.connect("value-changed", on_seek)
+
+    def poll():
+        state = read_state()
+        status = state["status"]
+        status_label.set_text(
+            "PLAYING" if status == "playing" else "PAUSED" if status == "paused" else "STOPPED"
+        )
+        title_label.set_text(state["title"] or "No track")
+        artist_label.set_text(state["artist"] or "")
+        elapsed_label.set_text(format_time(state["position"]))
+        total_label.set_text(format_time(state["length"]))
+
+        length = state["length"]
+        scale.set_sensitive(length > 0)
+        if length > 0:
+            updating[0] = True
+            scale.set_range(0.0, length)
+            scale.set_value(min(max(state["position"], 0.0), length))
+            updating[0] = False
+
+        play_icon = "media-pause-symbolic" if status == "playing" else "media-playback-start-symbolic"
+        if play_button.get_image():
+            play_button.get_image().set_from_icon_name(play_icon, Gtk.IconSize.BUTTON)
+
+        url = state["art_url"]
+        if url and url != last_art[0]:
+            last_art[0] = url
+            path = prepare_art(url)
+            if path:
+                set_art(path)
+        return True
+
+    def toggle_visibility():
+        if window.get_visible():
+            window.hide()
+        else:
+            window.show_all()
+        return False
+
+    def on_sigusr1(_signum, _frame):
+        GLib.idle_add(toggle_visibility)
+
+    def on_stop(_signum, _frame):
+        GLib.idle_add(Gtk.main_quit)
+
+    signal.signal(signal.SIGUSR1, on_sigusr1)
+    signal.signal(signal.SIGTERM, on_stop)
+    signal.signal(signal.SIGINT, on_stop)
+
+    poll()
+    GLib.timeout_add(1000, poll)
+
+    if visible:
+        window.show_all()
+    window.connect("destroy", Gtk.main_quit)
+    Gtk.main()
+    return 0
+
+
+def main(argv):
+    options = set(arg for arg in argv if arg.startswith("--"))
+    if len(options) != 1 or not options <= {"--start", "--toggle", "--run-hidden", "--run-visible"}:
+        print("usage: webos-music {--start|--toggle|--run-hidden|--run-visible}", file=sys.stderr)
+        return 2
+    mode = next(iter(options))
+
+    if mode == "--run-hidden":
+        return run_app(False)
+    if mode == "--run-visible":
+        return run_app(True)
+
+    pid = daemon_running()
+    if mode == "--start":
+        if pid is None:
+            spawn(False)
+        return 0
+
+    # --toggle
+    if pid is None:
+        spawn(True)
+    else:
+        try:
+            os.kill(pid, signal.SIGUSR1)
+        except OSError:
+            spawn(False)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

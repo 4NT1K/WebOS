@@ -1,9 +1,9 @@
 # WebOS amd64 profile defaults.
-# The parent is Gentoo's stock amd64/17.1 profile. Everything below is what
-# makes WebOS different.
+# The parent is Gentoo's stock amd64/23.0 merged-usr profile (merged-/usr is
+# the default in 23.0). Everything below is what makes WebOS different.
 
 WEBOS_OS="1"
-WEBOS_VERSION="1.0"
+WEBOS_VERSION="1.01"
 
 # Init and session. OpenRC + elogind; systemd is masked by use.mask.
 USE="elogind -systemd"
@@ -31,8 +31,8 @@ USE="${USE} -dist-kernel"
 # WebOS defaults to the testing keyword for the desktop/gaming layer only.
 ACCEPT_KEYWORDS="amd64"
 
-# Multilib is required for Steam.
-ABI_X86="64 32"
+# 64-bit only: this image does not ship a multilib runtime (no 32-bit Steam).
+ABI_X86="64"
 
 # Bootloader and live-medium defaults.
 GRUB_PLATFORMS="efi-64 pc"

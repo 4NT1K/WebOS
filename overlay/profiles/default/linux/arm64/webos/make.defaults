@@ -1,6 +1,6 @@
 # WebOS arm64 profile defaults (experimental).
 WEBOS_OS="1"
-WEBOS_VERSION="1.0"
+WEBOS_VERSION="1.01"
 USE="elogind -systemd wayland X vulkan opengl gbm pipewire alsa udisks policykit dbus udev bluetooth networkmanager threads"
 USE="${USE} -gnome -kde -doc -test -debug -cups -samba"
 ACCEPT_LICENSE="@FREE @BINARY-REDISTRIBUTABLE"

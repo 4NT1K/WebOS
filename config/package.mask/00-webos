@@ -7,12 +7,11 @@ sys-kernel/gentoo-kernel
 sys-kernel/gentoo-kernel-bin
 sys-kernel/vanilla-kernel
 # Desktop environments we do not ship by default (keep the image light).
-# KDE Plasma is provided as an alternative profile via @desktop; unmask meta/apps.
+# KDE Plasma is provided as an alternative profile via @plasma; keep it out of @desktop.
 gnome-base/gnome
 gnome-base/gnome-shell
 xfce-base/xfce4-meta
 lxde-base/lxde-meta
-# Package managers from other distros.
-sys-apps/flatpak
+# Flatpak is supported on every profile and installed by default.
 # mailutils 3.21 collides with itself under merged-/usr (/bin/mail vs /usr/bin/mail)
 net-mail/mailutils

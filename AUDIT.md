@@ -1,5 +1,12 @@
 # WebOS Audit - 2026-11-11
 
+> **Post-audit status:** this is the historical 2026-11-11 audit of the 1.0
+> tree. The production rebuild is **WebOS 1.01 "Ashen"**
+> (ISO `webos-1.01-Ashen-amd64.iso`). Palette, module-count, waybar and
+> documentation claims recorded below were superseded by the 1.01 fixes; the
+> corrected values are called out inline. The installer's `theme.rs`
+> red-to-green progress colours are intentionally unchanged.
+
 ## Status
 Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (host incompatible).
 
@@ -26,9 +33,11 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 - Kernel config fragment: COMPLETE (378 lines, all gaming features enabled)
 
 **Phase 4: Theme and Rice** ✓
-- Color palette: CONSISTENT (#050508 background, #f0f0f5 white)
+- Color palette: CONSISTENT (1.01 refined greyscale: #000000 base, #D8D8D8
+  text, #E8E8E8 accent, #7A7A7A dim, rgba(0,0,0,0.92) panels)
 - Fixed kitty.conf color mismatches
-- fastfetch: 8 modules (correct)
+- fastfetch: 10 modules (correct in 1.01: display, uptime, cpu, gpu, terminal,
+  memory, disk, packages, shell, datetime; chafa command-raw logo)
 - webos-rice: --wallpaper and --wallpaper-menu implemented
 
 **Phase 5: Taskbar** ✓
@@ -37,8 +46,8 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 - Hyprland integration: WORKING
 
 **Phase 6: Documentation** ✓
-- README.md: ACCURATE
-- docs/: COMPLETE (BUILD.md, ARCHITECTURE.md, RELEASE.md)
+- README.md: ACCURATE (refreshed for 1.01)
+- docs/: COMPLETE (BUILD.md, ARCHITECTURE.md, RELEASE.md; MAINTENANCE.txt)
 - All claims verified against actual code
 
 ### ❌ INCOMPLETE PHASE (1/7)
@@ -52,7 +61,8 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 ---
 
 ## What Was Fixed
-✅ **kitty.conf color palette** - Aligned with theme standard (#050508 bg, #f0f0f5 white)
+✅ **kitty.conf color palette** - Aligned with the final 1.01 Ashen greyscale
+(#000000 bg, #D8D8D8 text, #E8E8E8 accent, #7A7A7A dim, opacity 0.82)
 
 ## What Cannot Be Done
 ❌ **ISO rebuild** - Requires Gentoo host + root access + missing tools
@@ -127,20 +137,21 @@ Issues:
 Status: COMPLETE ✓
 
 Checked:
-- installer/src/theme.rs: CORRECT (#050508 background, #f0f0f5 white)
-- hypr/webos-colors.conf: CORRECT (matches theme.rs)
-- waybar/style.css: CORRECT (matches theme.rs)
-- kitty/kitty.conf: FIXED (corrected to #050508 bg, #f0f0f5 white)
-- fastfetch: CORRECT (exactly 8 modules)
+- installer/src/theme.rs: intentionally separate (red-to-green progress colours;
+  not the desktop palette)
+- hypr/webos-colors.lua: CORRECT (1.01 refined Ashen greyscale)
+- waybar/style.css: CORRECT (floating near-opaque capsules, matching palette)
+- kitty/kitty.conf: FIXED (#000000 bg, #D8D8D8 text, #E8E8E8 accent, opacity 0.82)
+- fastfetch: CORRECT (exactly 10 modules, command-raw chafa logo)
 - webos-rice script: COMPLETE (--wallpaper and --wallpaper-menu implemented)
 
 Fixed:
-- kitty.conf colors (background #000000 -> #050508, foreground variants aligned)
-- kitty.conf cursor/selection colors (aligned with accent #f0f0f5)
-- kitty.conf tab colors (aligned with base palette)
+- kitty.conf colors (pure black base, greyscale ANSI ramp, soft-white cursor)
+- kitty.conf cursor/selection colors (aligned with accent #E8E8E8)
+- kitty.conf tab colors (aligned with base palette); bold/italic `auto`
 
 Issues:
-- None (all colors now consistent)
+- None (all colors now consistent across the 1.01 rice)
 
 ## Phase 5: Taskbar
 Status: COMPLETE ✓
@@ -148,9 +159,12 @@ Status: COMPLETE ✓
 Checked:
 - Taskbar implementation: waybar (not a custom bar, standard Wayland bar)
 - waybar config: /overlay/webos-theme/webos-theme/files/rice/waybar/
-- Hyprland integration: exec-once = waybar in hyprland.conf
+- Hyprland integration: on Hyprland 0.57 `webos-autostart` starts waybar from
+  the Lua `hyprland.lua` (the compositor's `hyprland.start` hook); there is no
+  `hyprland.conf` and no `exec-once = waybar` line.
 - Layerrules: blur and ignorealpha configured for waybar
-- Palette consistency: waybar/style.css matches theme.rs
+- Palette consistency: waybar/style.css matches the refined Ashen rice palette
+  (the installer's `theme.rs` progress colours are intentionally separate)
 - webos-rice integration: waybar config managed by webos-rice script
 
 Fixed:
@@ -163,7 +177,7 @@ Issues:
 Status: COMPLETE ✓
 
 Checked:
-- README.md: ACCURATE (matches actual structure, build system, features)
+- README.md: ACCURATE (refreshed for 1.01; matches structure, build and features)
 - docs/: EXISTS (ARCHITECTURE.md, BUILD.md, RELEASE.md present)
 - Repository layout: MATCHES (overlay, installer, kernel, config, scripts, desktop all exist)
 - Build instructions: ACCURATE (./build.sh stages documented)
@@ -281,11 +295,12 @@ Other fixes from the same pass:
 - Regenerated **all** overlay `Manifest` files; the committed EBUILD hashes were
   stale for every package (only the kernel ones were refreshed at build time).
   This could have made `webos-theme` silently fail its `|| warn` emerge.
-- Rice palette aligned to the canonical Ashen values used by
-  `hypr/webos-colors.conf`, `waybar/style.css` and `installer/src/theme.rs`:
-  base `#050508`, text `#f0f0f5`, accent white, ice-blue `#7dd3fc` as glow.
-  Updated `foot`, `gtk-3.0`, `gtk-4.0`, `mako`, `wofi`, `waybar` calendar,
-  `hyprlock`, `docs/ARCHITECTURE.md`, `README.rice`.
+- Rice palette at this audit stage used the old near-black base and light-grey
+  text with an ice-blue accent glow. This was later replaced in 1.01 by the refined greyscale
+  (base `#000000`, text `#D8D8D8`, accent `#E8E8E8`, dim `#7A7A7A`, panels
+  `rgba(0,0,0,0.92)`) across `hypr/webos-colors.lua`, `waybar`, `foot`, `kitty`,
+  `gtk-3.0/4.0`, `mako`, `wofi`, `wlogout`, `konsole`, `hyprlock`,
+  `docs/ARCHITECTURE.md` and `README.rice`.
 - Installer re-verified: clippy `-D warnings`, release build, tests, `--gui`,
   Ashen palette, vendored crates — all pass.
 - `scripts/50-check.sh` still reports the two known non-blocking items:
@@ -365,5 +380,5 @@ the chroot.
   `www-client/firefox` excluded from this corrective pass to unblock resolution.
 
 ## Final build
-- ISO built and verified: 2026-11-12 20:01 UTC
+- ISO built and verified: 2026-11-12 20:01 UTC — `webos-1.01-Ashen-amd64.iso`
 - See build/verify.log and build/iso-build.log

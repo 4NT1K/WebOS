@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+"""Render the WebOS cobweb logo as a fixed 16x16 chafa symbol grid.
+
+fastfetch's image logo support is disabled on WebOS, so the terminal card uses
+a plain text logo. When chafa is available this helper produces a small,
+ANSI-coloured symbol logo with a guaranteed visible width of 16 cells per row,
+which keeps the surrounding fastfetch box aligned.
+
+If chafa or the logo is missing we exit successfully with no output; the
+caller (webos-fastfetch) then falls back to its shipped text logo.
+"""
+
+import io
+import os
+import re
+import shutil
+import subprocess
+import sys
+import unicodedata
+
+LOGO = "/usr/share/webos/rice/fastfetch/webos-logo.png"
+WIDTH = 16
+
+# chafa emits these around the image when it thinks stdout is a terminal.
+CURSOR_HIDE = b"\x1b[?25l"
+CURSOR_SHOW = b"\x1b[?25h"
+
+# CSI: ESC [ parameter bytes intermediate bytes final byte.
+CSI_RE = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]")
+# A trailing run of SGR sequences (colours/reset) at the end of a row.
+TRAILING_SGR_RE = re.compile(rb"((?:\x1b\[[0-9;]*m)+)$")
+
+
+def visible_width(line: bytes) -> int:
+    """Width of a byte row in terminal cells, ignoring colour control codes."""
+    plain = CSI_RE.sub(b"", line).decode("utf-8", "replace")
+    cells = 0
+    for ch in plain:
+        if unicodedata.combining(ch):
+            continue
+        cells += 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+    return cells
+
+
+def render_line(line: bytes) -> bytes:
+    """Pad a single chafa row to exactly WIDTH visible cells.
+
+    Colour bytes are left untouched; padding is inserted before any trailing
+    reset sequences so the pad inherits the row's last colour instead of the
+    terminal default.
+    """
+    match = TRAILING_SGR_RE.search(line)
+    if match:
+        body, tail = line[: match.start()], match.group(1)
+    else:
+        body, tail = line, b""
+
+    pad = WIDTH - visible_width(body + tail)
+    if pad > 0:
+        body += b" " * pad
+    return body + tail
+
+
+def main() -> int:
+    if shutil.which("chafa") is None or not os.path.isfile(LOGO):
+        return 0
+
+    try:
+        proc = subprocess.run(
+            ["chafa", "--format", "symbols", "--size", "16x16", "--colors", "full", LOGO],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=10,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return 0
+
+    if proc.returncode != 0 or not proc.stdout:
+        return 0
+
+    data = proc.stdout.replace(CURSOR_HIDE, b"").replace(CURSOR_SHOW, b"")
+    lines = data.split(b"\n")
+    while lines and not lines[-1].strip(b"\r"):
+        lines.pop()
+    if not lines:
+        return 0
+
+    out = io.BytesIO()
+    for line in lines:
+        out.write(render_line(line.rstrip(b"\r")))
+        out.write(b"\n")
+    sys.stdout.buffer.write(out.getvalue())
+    sys.stdout.buffer.flush()
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except BrokenPipeError:
+        sys.exit(0)

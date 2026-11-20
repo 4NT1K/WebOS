@@ -1,0 +1,98 @@
+#!/bin/sh
+# webos-menu — curated wofi application launcher for the WebOS rice.
+#
+# wofi's built-in drun source shows far too much (CLI tools, Qt/KDE internals,
+# helpers marked NoDisplay, debuggers, ...) for a HTPC-style desktop. This
+# wrapper reads the .desktop files itself, keeps only real GUI applications,
+# and hands the chosen desktop id to gtk-launch.
+#
+# Super+D and Super+R in the Hyprland config call this helper.
+set -u
+
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LANG:-C.UTF-8}"
+
+command -v wofi >/dev/null 2>&1 || exit 0
+command -v gtk-launch >/dev/null 2>&1 || exit 0
+
+# Application directories, most specific first.
+DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+DATA_DIRS="$DATA_DIRS:/usr/local/share/applications:/usr/share/applications"
+
+work=$(mktemp -d "${TMPDIR:-/tmp}/webos-menu.XXXXXX") || exit 1
+trap 'rm -rf "$work"' EXIT HUP INT TERM
+map="$work/apps"
+
+# Collect "desktop-id<TAB>Name" for every acceptable entry.
+printf '%s\n' "$DATA_DIRS" | tr ':' '\n' | while IFS= read -r dir; do
+	[ -d "$dir" ] || continue
+	for file in "$dir"/*.desktop; do
+		[ -f "$file" ] || continue
+		id=${file##*/}
+		id=${id%.desktop}
+		awk -v id="$id" '
+			/^[[:space:]]*\[/ { group = $0; next }
+			group != "[Desktop Entry]" { next }
+			/^[[:space:]]*(#|$)/ { next }
+			{
+				eq = index($0, "=")
+				if (!eq) next
+				key = substr($0, 1, eq - 1)
+				gsub(/[[:space:]]/, "", key)
+				val = substr($0, eq + 1)
+				gsub(/^[[:space:]]+|[[:space:]]+$/, "", val)
+
+				if (key == "NoDisplay" && tolower(val) == "true") nodisplay = 1
+				if (key == "Hidden" && tolower(val) == "true") hidden = 1
+				if (key == "Terminal" && tolower(val) == "true") terminal = 1
+				if (key == "Type") type = val
+				if (key == "Exec" && val != "") has_exec = 1
+				if (key == "Name" && name == "") name = val
+
+				if (key == "Categories") {
+					n = split(val, cat, ";")
+					for (i = 1; i <= n; i++) {
+						if (cat[i] == "ConsoleOnly" || cat[i] == "Debugger") badcat = 1
+						if (cat[i] ~ /^(AudioVideo|Audio|Video|Development|Education|Game|Graphics|Network|Office|Science|Settings|System|Utility|Web)$/) guicat = 1
+					}
+				}
+			}
+			END {
+				# An absent Type defaults to Application in the spec.
+				if (type == "") type = "Application"
+				if (nodisplay || hidden || terminal || badcat) exit 0
+				if (type != "Application" || !has_exec || !guicat) exit 0
+				if (name == "") exit 0
+				printf "%s\t%s\n", id, name
+			}
+		' "$file"
+	done
+done >"$map"
+
+# Directories were searched most-specific first, so the first occurrence of a
+# desktop id wins. Drop later copies of the same id (e.g. /usr/share overriding
+# /usr/local/share) before building the menu.
+awk -F'\t' '!seen[$1]++' "$map" >"$work/unique"
+
+[ -s "$work/unique" ] || exit 0
+
+# Make displayed names unique so the selection can always be mapped back to
+# exactly one desktop id, even when two vendors ship the same Name.
+awk -F'\t' '
+	NR == FNR { count[$2]++; next }
+	{
+		display = $2
+		if (count[$2] > 1) display = display " [" $1 "]"
+		printf "%s\t%s\n", $1, display
+	}
+' "$work/unique" "$work/unique" >"$work/list"
+
+cut -f2 "$work/list" | LC_ALL=C sort -u >"$work/menu"
+
+choice=$(wofi --dmenu --prompt "Applications" <"$work/menu") || exit 0
+[ -n "$choice" ] || exit 0
+
+id=$(awk -F'\t' -v s="$choice" '$2 == s { print $1; exit }' "$work/list")
+[ -n "$id" ] || exit 0
+
+exec gtk-launch "$id"

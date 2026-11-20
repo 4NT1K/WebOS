@@ -43,11 +43,46 @@ fi
 printf '%s\n' "$$" >"$lock/pid" 2>/dev/null || true
 trap 'rm -rf "$lock" 2>/dev/null || true' EXIT
 
+# ── saved refresh rate ──────────────────────────────────────────────────────
+# Restore the exact monitor modes saved by webos-refresh, then watch live
+# changes from wdisplays/wlr-randr so they persist across logout.
+if command -v webos-refresh >/dev/null 2>&1; then
+	note "restoring saved refresh rate"
+	webos-refresh --restore >>"$log" 2>&1 || note "refresh restore failed"
+	note "watching for refresh-rate changes"
+	webos-refresh --watch >>"$log" 2>&1 &
+fi
+
 # ── portals + polkit ────────────────────────────────────────────────────────
 # webos-portals starts the portal implementations and the polkit agent.
 if command -v webos-portals >/dev/null 2>&1; then
 	note "starting webos-portals (shell=$SHELL_KIND)"
 	webos-portals >>"$log" 2>&1 || note "webos-portals failed"
+fi
+
+# ── audio (per-user PipeWire stack) ─────────────────────────────────────────
+# Order matters: the session manager needs Pipewire, and the PulseAudio
+# shim needs both. Give each daemon a second to appear before starting the
+# next one.
+if running pipewire; then
+	note "pipewire already running"
+elif command -v pipewire >/dev/null 2>&1; then
+	note "starting pipewire"
+	pipewire >>"$log" 2>&1 &
+	sleep 1
+fi
+if running wireplumber; then
+	note "wireplumber already running"
+elif command -v wireplumber >/dev/null 2>&1; then
+	note "starting wireplumber"
+	wireplumber >>"$log" 2>&1 &
+	sleep 1
+fi
+if running pipewire-pulse; then
+	note "pipewire-pulse already running"
+elif command -v pipewire-pulse >/dev/null 2>&1; then
+	note "starting pipewire-pulse"
+	pipewire-pulse >>"$log" 2>&1 &
 fi
 
 # ── shell ───────────────────────────────────────────────────────────────────
@@ -81,9 +116,18 @@ elif command -v hypridle >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; t
 	note "starting hypridle"
 	hypridle >>"$log" 2>&1 &
 fi
-# Night light. hyprsunset reads ~/.config/hypr/hyprsunset.conf and stays
-# neutral until the first profile time; start it so the evening warm-up
-# actually happens.
+# Start the custom dropdown daemons hidden. waybar/keybindings toggle them
+# later with --toggle; they do not draw a layer until asked to.
+if command -v webos-music >/dev/null 2>&1; then
+	note "starting webos-music (hidden)"
+	webos-music --start >>"$log" 2>&1 &
+fi
+if command -v webos-stats >/dev/null 2>&1; then
+	note "starting webos-stats (hidden)"
+	webos-stats --start >>"$log" 2>&1 &
+fi
+# hyprsunset reads ~/.config/hypr/hyprsunset.conf; start it so any configured
+# colour-temperature profile is applied by the daemon itself.
 if running hyprsunset; then
 	note "hyprsunset already running"
 elif command -v hyprsunset >/dev/null 2>&1 && [[ "$COMPOSITOR" == "hyprland" ]]; then

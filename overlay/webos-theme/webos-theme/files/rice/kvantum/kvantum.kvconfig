@@ -27,8 +27,8 @@ animate_states=false
 
 [KvArcDark]
 # Ashen overrides on top of the base theme.
-active_tab_highlight=7dd3fc
-inactive_tab_highlight=5b6470
+active_tab_highlight=e8e8e8
+inactive_tab_highlight=7a7a7a
 tooltip_delay=0
 click_behavior=0
 scroll_width=10

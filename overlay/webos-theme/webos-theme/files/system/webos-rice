@@ -20,11 +20,12 @@ set -Eeuo pipefail
 
 readonly RICE_SRC="/usr/share/webos/rice"
 readonly WALL_DIR="/usr/share/webos/wallpaper"
-readonly VERSION="1.0"
+readonly VERSION="1.01"
 
 MODE="user"
 FORCE=0
 QUIET=0
+DRY_RUN=0
 WALLPAPER=""
 WALLPAPER_DIR="/usr/share/webos/wallpaper"
 
@@ -77,6 +78,7 @@ recorded_hash() {
 record() {
 	# $1 = manifest file, $2 = absolute path, $3 = hash
 	local mf="$1" path="$2" hash="$3" tmp
+	(( DRY_RUN )) && return 0
 	mkdir -p "$(dirname "$mf")"
 	tmp="$(mktemp)"
 	if [[ -f "$mf" ]]; then
@@ -91,6 +93,7 @@ prune_manifest() {
 	# rice.manifest forever. Drop those obsolete entries on every apply so
 	# --doctor and --check do not report files that no longer exist.
 	local mf="$1" tmp
+	(( DRY_RUN )) && return 0
 	[[ -f "$mf" ]] || return 0
 	tmp="$(mktemp)"
 	awk 'NF >= 2 && $2 !~ /(hyprland\.conf|webos-colors\.conf)$/ { print }' "$mf" > "$tmp"
@@ -104,6 +107,7 @@ prune_manifest() {
 
 backup_once() {
 	local f="$1"
+	(( DRY_RUN )) && return 0
 	[[ -f "$f" ]] || return 0
 	[[ -f "$f.webos-orig" ]] && return 0
 	cp -a "$f" "$f.webos-orig"
@@ -111,14 +115,19 @@ backup_once() {
 }
 
 install_file() {
-	# $1 = source, $2 = destination, $3 = manifest, $4 = force
-	local src="$1" dst="$2" mf="$3" force="$4"
-	local new old rec mode
+	# $1 = source, $2 = destination, $3 = manifest, $4 = force, $5 = dry-run
+	local src="$1" dst="$2" mf="$3" force="$4" dry="${5:-$DRY_RUN}"
+	local new old rec mode label
+	label="${dst/#$HOME/~}"
 
 	new="$(sha "$src")"
-	mkdir -p "$(dirname "$dst")"
+	(( dry )) || mkdir -p "$(dirname "$dst")"
 
 	if [[ ! -e "$dst" ]]; then
+		if (( dry )); then
+			say "would install ${label}"
+			return 0
+		fi
 		mode="$(stat -c '%a' "$src")"
 		install -m "$mode" "$src" "$dst"
 		record "$mf" "$dst" "$new"
@@ -127,12 +136,16 @@ install_file() {
 
 	old="$(sha "$dst")"
 	if [[ "$old" == "$new" ]]; then
-		record "$mf" "$dst" "$new"
+		(( dry )) || record "$mf" "$dst" "$new"
 		return 0
 	fi
 
 	if rec="$(recorded_hash "$mf" "$dst")" && [[ "$old" == "$rec" ]]; then
 		# Ours, untouched by the user: update it.
+		if (( dry )); then
+			say "would update ${label}"
+			return 0
+		fi
 		mode="$(stat -c '%a' "$src")"
 		install -m "$mode" "$src" "$dst"
 		record "$mf" "$dst" "$new"
@@ -140,6 +153,10 @@ install_file() {
 	fi
 
 	if (( force )); then
+		if (( dry )); then
+			say "would update (force) ${label}"
+			return 0
+		fi
 		backup_once "$dst"
 		mode="$(stat -c '%a' "$src")"
 		install -m "$mode" "$src" "$dst"
@@ -147,13 +164,13 @@ install_file() {
 		return 0
 	fi
 
-	skip "kept your version: ${dst/#$HOME/~}"
+	skip "kept your version: ${label}"
 	return 0
 }
 
 apply_tree() {
-	# $1 = home, $2 = force
-	local home="$1" force="$2" mf sub src dst f rel
+	# $1 = home, $2 = force, $3 = dry-run
+	local home="$1" force="$2" dry="$3" mf sub src dst f rel
 	mf="$(manifest_of "$home")"
 	for sub in "${!TREES[@]}"; do
 		src="${RICE_SRC}/${sub}"
@@ -161,15 +178,20 @@ apply_tree() {
 		dst="${home}/${TREES[$sub]}"
 		while IFS= read -r -d '' f; do
 			rel="${f#"$src"/}"
-			install_file "$f" "${dst}/${rel}" "$mf" "$force"
+			install_file "$f" "${dst}/${rel}" "$mf" "$force" "$dry"
 		done < <(find "$src" -type f -print0)
 	done
 }
 
 apply_home() {
-	local home="$1" force="$2"
+	# $1 = home, $2 = force, $3 = dry-run
+	local home="$1" force="$2" dry="$3"
 	[[ -d "$home" ]] || return 0
-	note "applying rice to ${home}"
+	if (( dry )); then
+		note "dry run for ${home}"
+	else
+		note "applying rice to ${home}"
+	fi
 	local mf lua conf rec
 	mf="$(manifest_of "$home")"
 	prune_manifest "$mf"
@@ -182,8 +204,12 @@ apply_home() {
 	# the user edited is left alone, exactly like every other rice file.
 	lua="$home/.config/hypr/hyprland.lua"
 	if [[ -f "$lua" ]] && grep -q '^-- This is an example Hyprland Lua config file\.' "$lua" 2>/dev/null; then
-		backup_once "$lua"
-		rm -f "$lua"
+		if (( dry )); then
+			say "would remove upstream example ${lua/#$HOME/~}"
+		else
+			backup_once "$lua"
+			rm -f "$lua"
+		fi
 	fi
 
 	# hyprland.conf is dead config on 0.57. Remove our own copy so nobody
@@ -192,45 +218,53 @@ apply_home() {
 	if [[ -f "$conf" ]]; then
 		rec="$(recorded_hash "$mf" "$conf" 2>/dev/null || true)"
 		if [[ -n "$rec" && "$(sha "$conf")" == "$rec" ]]; then
-			rm -f "$conf"
+			if (( dry )); then
+				say "would remove obsolete ${conf/#$HOME/~}"
+			else
+				rm -f "$conf"
+			fi
 		fi
 	fi
 
-	apply_tree "$home" "$force"
+	apply_tree "$home" "$force" "$dry"
 	# gtk/plasma defaults live outside the managed tree dirs
-	install_gtk_user "$home" "$force"
-	install_plasma_user "$home" "$force"
+	install_gtk_user "$home" "$force" "$dry"
+	install_plasma_user "$home" "$force" "$dry"
 	# When --system runs as root, the state dir and manifest are created by
 	# root. Hand them back to the account that owns the home directory, or
 	# `webos-rice --doctor` cannot read its own manifest as that user.
-	if [[ ${EUID} -eq 0 ]]; then
+	if [[ ${EUID} -eq 0 && ${dry} -eq 0 ]]; then
 		local owner
 		owner="$(stat -c '%u:%g' "$home")"
 		chown -R "$owner" "$(state_dir "$home")" 2>/dev/null || true
 		chown -R "$owner" "$home/.config" 2>/dev/null || true
 	fi
-	done_ "rice applied to ${home}"
+	if (( dry )); then
+		say "dry run complete for ${home} (no files written)"
+	else
+		done_ "rice applied to ${home}"
+	fi
 }
 
 install_gtk_user() {
-	local home="$1" force="$2" mf
+	local home="$1" force="$2" dry="$3" mf
 	mf="$(manifest_of "$home")"
-	install_file "${RICE_SRC}/gtk-3.0/settings.ini" "${home}/.config/gtk-3.0/settings.ini" "$mf" "$force"
-	install_file "${RICE_SRC}/gtk-4.0/settings.ini" "${home}/.config/gtk-4.0/settings.ini" "$mf" "$force"
-	install_file "${RICE_SRC}/fastfetch/fastfetch.json" "${home}/.config/fastfetch/fastfetch.json" "$mf" "$force"
-	[[ -f "${RICE_SRC}/fastfetch/webos.txt" ]] && install_file "${RICE_SRC}/fastfetch/webos.txt" "${home}/.config/fastfetch/webos.txt" "$mf" "$force"
+	install_file "${RICE_SRC}/gtk-3.0/settings.ini" "${home}/.config/gtk-3.0/settings.ini" "$mf" "$force" "$dry"
+	install_file "${RICE_SRC}/gtk-4.0/settings.ini" "${home}/.config/gtk-4.0/settings.ini" "$mf" "$force" "$dry"
+	install_file "${RICE_SRC}/fastfetch/fastfetch.json" "${home}/.config/fastfetch/fastfetch.json" "$mf" "$force" "$dry"
+	[[ -f "${RICE_SRC}/fastfetch/webos.txt" ]] && install_file "${RICE_SRC}/fastfetch/webos.txt" "${home}/.config/fastfetch/webos.txt" "$mf" "$force" "$dry"
 }
 
 install_plasma_user() {
-	local home="$1" force="$2" mf
+	local home="$1" force="$2" dry="$3" mf
 	mf="$(manifest_of "$home")"
 	[[ -d "${RICE_SRC}/plasma" ]] || return 0
-	[[ -f "${RICE_SRC}/plasma/kdeglobals" ]] && install_file "${RICE_SRC}/plasma/kdeglobals" "${home}/.config/kdeglobals" "$mf" "$force"
-	[[ -f "${RICE_SRC}/plasma/kcminputrc" ]] && install_file "${RICE_SRC}/plasma/kcminputrc" "${home}/.config/kcminputrc" "$mf" "$force"
-	[[ -f "${RICE_SRC}/plasma/kwinrc" ]] && install_file "${RICE_SRC}/plasma/kwinrc" "${home}/.config/kwinrc" "$mf" "$force"
-	[[ -f "${RICE_SRC}/plasma/kwinrulesrc" ]] && install_file "${RICE_SRC}/plasma/kwinrulesrc" "${home}/.config/kwinrulesrc" "$mf" "$force"
-	[[ -f "${RICE_SRC}/konsolerc/konsolerc" ]] && install_file "${RICE_SRC}/konsolerc/konsolerc" "${home}/.config/konsolerc" "$mf" "$force"
-	mkdir -p "${home}/.config/autostart" 2>/dev/null || true
+	[[ -f "${RICE_SRC}/plasma/kdeglobals" ]] && install_file "${RICE_SRC}/plasma/kdeglobals" "${home}/.config/kdeglobals" "$mf" "$force" "$dry"
+	[[ -f "${RICE_SRC}/plasma/kcminputrc" ]] && install_file "${RICE_SRC}/plasma/kcminputrc" "${home}/.config/kcminputrc" "$mf" "$force" "$dry"
+	[[ -f "${RICE_SRC}/plasma/kwinrc" ]] && install_file "${RICE_SRC}/plasma/kwinrc" "${home}/.config/kwinrc" "$mf" "$force" "$dry"
+	[[ -f "${RICE_SRC}/plasma/kwinrulesrc" ]] && install_file "${RICE_SRC}/plasma/kwinrulesrc" "${home}/.config/kwinrulesrc" "$mf" "$force" "$dry"
+	[[ -f "${RICE_SRC}/konsolerc/konsolerc" ]] && install_file "${RICE_SRC}/konsolerc/konsolerc" "${home}/.config/konsolerc" "$mf" "$force" "$dry"
+	(( dry )) || mkdir -p "${home}/.config/autostart" 2>/dev/null || true
 }
 
 # ── system-wide bits (run as root) ──────────────────────────────────────────
@@ -325,9 +359,9 @@ ensure_home() {
 	local home="$1"
 	[[ -d "$home" ]] || return 0
 	if [[ -f "$(manifest_of "$home")" ]]; then
-		apply_home "$home" 0
+		apply_home "$home" 0 0
 	else
-		apply_home "$home" 1
+		apply_home "$home" 1 0
 	fi
 }
 
@@ -354,8 +388,8 @@ system_all() {
 
 	# /etc/skel gets the rice so new accounts are themed on creation.
 	mkdir -p /etc/skel
-	apply_home /etc/skel "$force"
-	apply_home /root "$force"
+	apply_home /etc/skel "$force" 0
+	apply_home /root "$force" 0
 
 	# Existing accounts.
 	local d
@@ -363,7 +397,7 @@ system_all() {
 		[[ -d "$d" ]] || continue
 		u="$(basename "$d")"
 		id "$u" >/dev/null 2>&1 || continue
-		apply_home "$d" "$force"
+		apply_home "$d" "$force" 0
 		chown -R "${u}:${u}" "$d/.config" "$d/.local/state/webos" 2>/dev/null || true
 	done
 
@@ -413,6 +447,10 @@ doctor() {
 	chk "zram swap active"         "zram_ok"      "run /etc/local.d/webos.start as root"
 	chk "ananicy-cpp enabled"      "ananicy_ok"   "rc-update add ananicy-cpp.initd default"
 	chk "wallpaper rendered"       "[[ -f ${WALL_DIR}/webos-wallpaper.png ]]"
+	chk "Breeze_Light cursor"      "[[ -d /usr/share/icons/Breeze_Light/cursors ]]"
+	chk "Qt6 platform theme plugin" "[[ -f /usr/lib64/qt6/plugins/platformthemes/libqt6ct.so ]]"
+	chk "qt6ct colour scheme"      "[[ -f /usr/share/qt6ct/colors/darker.conf ]]"
+	chk "hyprlock Pango colour"    "! grep -q '##' \$HOME/.config/hypr/hyprlock.conf"
 	chk "fastfetch modules"          "[[ -f \$HOME/.config/fastfetch/fastfetch.json ]]"
 	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"
 	# Do not use `grep -q` in these pipelines: with `set -o pipefail`, grep
@@ -429,7 +467,7 @@ doctor() {
 		chk "waybar running"       "pgrep -x waybar"
 		chk "hyprpaper running"    "pgrep -x hyprpaper"
 		chk "polkit agent running" "pgrep -f 'lxqt-policykit-agent|hyprpolkitagent|polkit-gnome-authentication-agent'"
-		chk "xdg portals running"  "pgrep -f xdg-desktop-portal"
+		chk "xdg portals running"  "pgrep -f '^/usr/libexec/xdg-desktop-portal$'"
 	fi
 	say ""
 	say "${ok} ok, ${bad} failed"
@@ -484,15 +522,16 @@ main() {
 			wallpaper_menu "$WALLPAPER_DIR"
 			;;
 		user)
-			apply_home "$HOME" "$FORCE"
+			apply_home "$HOME" "$FORCE" 0
 			note "restart the compositor or run: hyprctl reload"
 			;;
 		system) system_all "$FORCE" ;;
 		ensure) ensure_all ;;
 		check)
 			FORCE=0
+			DRY_RUN=1
 			say "dry run: no files will be written"
-			apply_home "$HOME" 0
+			apply_home "$HOME" 0 1
 			;;
 	esac
 }

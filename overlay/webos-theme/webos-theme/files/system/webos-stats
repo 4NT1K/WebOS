@@ -1,0 +1,397 @@
+#!/usr/bin/env python3
+"""WebOS system-monitor overlay (GTK3 + gtk-layer-shell).
+
+Modes:
+  --start          launch the hidden daemon if it is not already running
+  --toggle         toggle the overlay via SIGUSR1 (start it if necessary)
+  --run-hidden     internal: run the daemon with the window hidden
+  --run-visible    internal: run the daemon with the window visible
+
+Six progress bars show CPU, GPU, VRAM, RAM, DISK and TEMP. GPU/VRAM use
+nvidia-smi when it is present; without it those rows read "n/a".
+"""
+
+import atexit
+import glob
+import os
+import signal
+import subprocess
+import sys
+import tempfile
+
+
+def runtime_dir():
+    path = os.environ.get("XDG_RUNTIME_DIR")
+    if not path:
+        path = os.path.join(tempfile.gettempdir(), "webos-" + str(os.getuid()))
+    try:
+        os.makedirs(path, mode=0o700, exist_ok=True)
+    except OSError:
+        pass
+    return path
+
+
+RUNTIME = runtime_dir()
+PIDFILE = os.path.join(RUNTIME, "webos-stats.pid")
+
+LABELS = ("CPU", "GPU", "VRAM", "RAM", "DISK", "TEMP")
+
+
+# ---------------------------------------------------------------------------
+# process management
+# ---------------------------------------------------------------------------
+
+def read_pid():
+    try:
+        with open(PIDFILE, "r", encoding="utf-8") as handle:
+            pid = int(handle.read().strip())
+        return pid if pid > 0 else None
+    except (OSError, ValueError):
+        return None
+
+
+def pid_alive(pid):
+    if not pid:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def daemon_running():
+    pid = read_pid()
+    if pid_alive(pid):
+        return pid
+    if pid:
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+    return None
+
+
+def write_pidfile():
+    with open(PIDFILE, "w", encoding="utf-8") as handle:
+        handle.write(str(os.getpid()) + "\n")
+
+
+def remove_pidfile():
+    if read_pid() == os.getpid():
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+
+
+def spawn(visible):
+    flag = "--run-visible" if visible else "--run-hidden"
+    devnull = open(os.devnull, "rb")
+    try:
+        subprocess.Popen(
+            [sys.executable, os.path.realpath(__file__), flag],
+            stdin=devnull,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+            close_fds=True,
+        )
+    finally:
+        devnull.close()
+
+
+# ---------------------------------------------------------------------------
+# metric collectors
+# ---------------------------------------------------------------------------
+
+def clamp(value):
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return 0.0
+    if value != value:  # NaN
+        return 0.0
+    return min(1.0, max(0.0, value))
+
+
+def read_cpu():
+    try:
+        with open("/proc/stat", "r", encoding="utf-8") as handle:
+            fields = handle.readline().split()
+        values = [int(x) for x in fields[1:]]
+        total = sum(values)
+        idle = values[3] + (values[4] if len(values) > 4 else 0)
+        return total, idle
+    except (OSError, ValueError, IndexError):
+        return None
+
+
+def cpu_fraction(previous, current):
+    if not previous or not current:
+        return 0.0
+    total_delta = current[0] - previous[0]
+    idle_delta = current[1] - previous[1]
+    if total_delta <= 0:
+        return 0.0
+    return clamp(1.0 - idle_delta / total_delta)
+
+
+def nvidia_smi():
+    """Return (gpu_fraction, vram_fraction, gpu_temp_c) or None."""
+    try:
+        proc = subprocess.run(
+            [
+                "nvidia-smi",
+                "--query-gpu=utilization.gpu,memory.used,memory.total,temperature.gpu",
+                "--format=csv,noheader,nounits",
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    line = proc.stdout.decode("utf-8", "replace").splitlines()
+    if not line or not line[0].strip():
+        return None
+    parts = [p.strip() for p in line[0].split(",")]
+    if len(parts) < 3:
+        return None
+    try:
+        gpu = float(parts[0]) / 100.0
+        used = float(parts[1])
+        total = float(parts[2])
+        temp = float(parts[3]) if len(parts) > 3 and parts[3] else None
+    except ValueError:
+        return None
+    vram = used / total if total > 0 else 0.0
+    return clamp(gpu), clamp(vram), temp
+
+
+def ram_fraction():
+    mem = {}
+    try:
+        with open("/proc/meminfo", "r", encoding="utf-8") as handle:
+            for line in handle:
+                key, _, rest = line.partition(":")
+                mem[key] = float(rest.strip().split()[0])
+        total = mem["MemTotal"]
+        available = mem.get("MemAvailable", mem.get("MemFree", 0.0))
+        if total <= 0:
+            return 0.0
+        return clamp((total - available) / total)
+    except (OSError, ValueError, IndexError, KeyError):
+        return 0.0
+
+
+def disk_fraction():
+    try:
+        stat = os.statvfs("/")
+        total = stat.f_blocks * stat.f_frsize
+        available = stat.f_bavail * stat.f_frsize
+        if total <= 0:
+            return 0.0
+        return clamp(1.0 - available / total)
+    except OSError:
+        return 0.0
+
+
+def thermal_temp():
+    hottest = None
+    for path in glob.glob("/sys/class/thermal/thermal_zone*/temp"):
+        try:
+            with open(path, "r", encoding="utf-8") as handle:
+                value = int(handle.read().strip()) / 1000.0
+        except (OSError, ValueError):
+            continue
+        if hottest is None or value > hottest:
+            hottest = value
+    return hottest
+
+
+def temp_fraction(temp_c):
+    if temp_c is None:
+        return 0.0
+    return clamp(temp_c / 100.0)
+
+
+# ---------------------------------------------------------------------------
+# GTK overlay
+# ---------------------------------------------------------------------------
+
+def run_app(visible):
+    import gi
+
+    gi.require_version("Gtk", "3.0")
+    gi.require_version("Gdk", "3.0")
+    from gi.repository import Gdk, GLib, Gtk
+
+    try:
+        gi.require_version("GtkLayerShell", "1.0")
+        from gi.repository import GtkLayerShell
+    except (ImportError, ValueError):
+        GtkLayerShell = None
+
+    write_pidfile()
+    atexit.register(remove_pidfile)
+
+    CSS = b"""
+    #stats-card {
+        background-color: rgba(0, 0, 0, 0.92);
+        border: 1px solid rgba(232, 232, 232, 0.20);
+        border-radius: 18px;
+        color: #D8D8D8;
+        padding: 12px;
+    }
+    progressbar, progressbar trough {
+        background-color: rgba(232, 232, 232, 0.08);
+        border-radius: 6px;
+        min-height: 12px;
+    }
+    progressbar progress {
+        background-color: #E8E8E8;
+        border-radius: 6px;
+    }
+    progressbar {
+        font: 11px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+        color: #D8D8D8;
+    }
+    """
+
+    provider = Gtk.CssProvider()
+    provider.load_from_data(CSS)
+    Gtk.StyleContext.add_provider_for_screen(
+        Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+
+    window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+    window.set_title("webos-stats")
+    window.set_decorated(False)
+    window.set_resizable(False)
+    window.set_skip_taskbar_hint(True)
+    window.set_skip_pager_hint(True)
+    window.set_default_size(230, 210)
+    window.set_app_paintable(True)
+
+    if GtkLayerShell is not None:
+        GtkLayerShell.init_for_window(window)
+        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, False)
+        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.LEFT, False)
+        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
+        GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.RIGHT, True)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 42)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.RIGHT, 12)
+        GtkLayerShell.set_exclusive_zone(window, -1)
+
+    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+    card.set_name("stats-card")
+    window.add(card)
+
+    bars = {}
+    for label in LABELS:
+        bar = Gtk.ProgressBar()
+        bar.set_show_text(True)
+        bar.set_text("%s   n/a" % label)
+        bar.set_fraction(0.0)
+        card.pack_start(bar, False, False, 0)
+        bars[label] = bar
+
+    cpu_previous = [read_cpu()]
+    nvidia_present = [True]
+
+    def poll():
+        nvidia = nvidia_smi() if nvidia_present[0] else None
+        if nvidia_present[0] and nvidia is None:
+            nvidia_present[0] = False
+
+        current = read_cpu()
+        values = {
+            "CPU": cpu_fraction(cpu_previous[0], current),
+            "GPU": nvidia[0] if nvidia else None,
+            "VRAM": nvidia[1] if nvidia else None,
+            "RAM": ram_fraction(),
+            "DISK": disk_fraction(),
+        }
+        cpu_previous[0] = current or cpu_previous[0]
+
+        zone_temp = thermal_temp()
+        temp_c = zone_temp if zone_temp is not None else (nvidia[2] if nvidia else None)
+        values["TEMP"] = temp_fraction(temp_c)
+
+        for label in LABELS:
+            value = values[label]
+            bar = bars[label]
+            if value is None:
+                bar.set_fraction(0.0)
+                bar.set_text("%s   n/a" % label)
+            else:
+                fraction = clamp(value)
+                bar.set_fraction(fraction)
+                suffix = "%d%%" % round(fraction * 100)
+                if label == "TEMP" and temp_c is not None:
+                    suffix = "%dC" % int(round(temp_c))
+                bar.set_text("%s   %s" % (label, suffix))
+        return True
+
+    def toggle_visibility():
+        if window.get_visible():
+            window.hide()
+        else:
+            window.show_all()
+        return False
+
+    def on_sigusr1(_signum, _frame):
+        GLib.idle_add(toggle_visibility)
+
+    def on_stop(_signum, _frame):
+        GLib.idle_add(Gtk.main_quit)
+
+    signal.signal(signal.SIGUSR1, on_sigusr1)
+    signal.signal(signal.SIGTERM, on_stop)
+    signal.signal(signal.SIGINT, on_stop)
+
+    poll()
+    GLib.timeout_add(2000, poll)
+
+    if visible:
+        window.show_all()
+    window.connect("destroy", Gtk.main_quit)
+    Gtk.main()
+    return 0
+
+
+def main(argv):
+    options = set(arg for arg in argv if arg.startswith("--"))
+    if len(options) != 1 or not options <= {"--start", "--toggle", "--run-hidden", "--run-visible"}:
+        print("usage: webos-stats {--start|--toggle|--run-hidden|--run-visible}", file=sys.stderr)
+        return 2
+    mode = next(iter(options))
+
+    if mode == "--run-hidden":
+        return run_app(False)
+    if mode == "--run-visible":
+        return run_app(True)
+
+    pid = daemon_running()
+    if mode == "--start":
+        if pid is None:
+            spawn(False)
+        return 0
+
+    if pid is None:
+        spawn(True)
+    else:
+        try:
+            os.kill(pid, signal.SIGUSR1)
+        except OSError:
+            spawn(False)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

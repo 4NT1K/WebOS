@@ -24,7 +24,6 @@ esac
 if command -v wofi >/dev/null 2>&1 && [ -n "${WAYLAND_DISPLAY:-}" ]; then
 	choice=$(printf '%s\n' \
 		"Display settings (wdisplays)" \
-		"Display settings (nwg-displays)" \
 		"Input devices (keyboard/mouse)" \
 		"KDE System Settings" \
 		"Audio (pavucontrol)" \
@@ -35,8 +34,6 @@ if command -v wofi >/dev/null 2>&1 && [ -n "${WAYLAND_DISPLAY:-}" ]; then
 		| wofi --dmenu --prompt "WebOS Settings" --width 420 --height 360 2>/dev/null)
 
 	case "$choice" in
-		"Display settings (wdisplays)") exec wdisplays ;;
-		"Display settings (nwg-displays)") exec nwg-displays ;;
 		"Display settings (wdisplays)") exec wdisplays ;;
 		"Input devices (keyboard/mouse)") exec kitty -e sh -c 'hyprctl devices; printf "\nPress Enter to close"; read -r _' ;;
 		"KDE System Settings") exec systemsettings ;;

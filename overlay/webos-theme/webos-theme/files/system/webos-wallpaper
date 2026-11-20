@@ -4,7 +4,7 @@
 #
 #    webos-wallpaper              render + apply
 #    webos-wallpaper --dark       render the lock-screen variant
-#    webos-wallpaper --next       cycle to a different accent hue
+#    webos-wallpaper --next       cycle to a different greyscale accent
 #    webos-wallpaper --daemon     render (if needed) then keep hyprpaper/swaybg fed
 #    webos-wallpaper --quiet      no chatter
 # ─────────────────────────────────────────────────────────────────────────────
@@ -63,7 +63,7 @@ render() {
 }
 
 # ── accent cycling ──────────────────────────────────────────────────────────
-ACCENTS=("#7dd3fc" "#a5b4fc" "#c4b5fd" "#86efac" "#fbbf24" "#f0abfc" "#5eead4")
+ACCENTS=("#E8E8E8" "#C2C2C2" "#A6A6A6" "#8C8C8C" "#D8D8D8" "#B8B8B8" "#9A9A9A")
 next_accent() {
 	local idx_file="/var/lib/webos/.accent-index" idx=0
 	mkdir -p "$(dirname "$idx_file")" 2>/dev/null || idx_file="/tmp/.webos-accent-index"
@@ -105,7 +105,7 @@ render_dark() {
 	tmp="$(mktemp -d)"
 	cp "$SRC_SVG" "$tmp/dark.svg"
 	sed -i \
-		-e 's/stop-color="#7dd3fc" stop-opacity="0.20"/stop-color="#7dd3fc" stop-opacity="0.10"/' \
+		-e 's/stop-color="#E8E8E8" stop-opacity="0.20"/stop-color="#E8E8E8" stop-opacity="0.10"/' \
 		-e 's/stop-opacity="0.55" stop-opacity="0.30"/stop-opacity="0.55" stop-opacity="0.16"/' \
 		"$tmp/dark.svg"
 	render "$tmp/dark.svg" "$PNG_DARK" "2560x1440"
@@ -134,7 +134,7 @@ case "$ACTION" in
 	next)
 		accent="$(next_accent)"
 		tmp="$(mktemp -d)"
-		sed "s/#7dd3fc/${accent}/g" "$SRC_SVG" > "$tmp/accent.svg"
+		sed "s/#E8E8E8/${accent}/g" "$SRC_SVG" > "$tmp/accent.svg"
 		render "$tmp/accent.svg" "$PNG" "2560x1440"
 		rm -rf "$tmp"
 		say "accent is now ${accent}"

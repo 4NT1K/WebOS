@@ -17,7 +17,7 @@
 #   webos-update --quiet         only warnings and the summary
 set -uo pipefail
 
-VERSION="1.0"
+VERSION="1.01"
 LOG="/var/log/webos-update.log"
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
@@ -202,10 +202,10 @@ fi
 # ----------------------------------------------------------------- 6. rice --
 say "[6/8] Re-applying the Deep Black rice"
 if command -v webos-rice >/dev/null 2>&1; then
-	if webos-rice --system --ensure >/dev/null 2>&1; then
+	if webos-rice --system >/dev/null 2>&1; then
 		ok "rice intact"
 	else
-		step_fail "webos-rice --system --ensure reported an error"
+		step_fail "webos-rice --system reported an error"
 	fi
 else
 	note "webos-rice not installed; skipped"

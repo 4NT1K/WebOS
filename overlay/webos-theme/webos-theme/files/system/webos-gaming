@@ -167,7 +167,7 @@ bench() {
 	local log="${STATE_DIR}/bench-$(date +%Y%m%d-%H%M%S).csv"
 	MANGOHUD=1 MANGOHUD_CONFIG="output_folder=${log%/*},log_duration=0,fps_only=0" \
 		gamemoderun "$@"
-	echo "Log: $log"
+	echo "Log directory: ${log%/*}"
 }
 
 case "$CMD" in

@@ -667,6 +667,14 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push_str("  rc-update del agetty.tty1 default >/dev/null 2>&1 || true\n");
     s.push_str("fi\n\n");
 
+    // ── package helpers (all profiles) ──────────────────────────────────
+    // Defined before the profile branch below: Flatpak and the baseline
+    // theming stack are installed on Minimal too, not just GUI profiles.
+    s.push_str(
+        "emerge_app() { emerge --quiet --noreplace \"$@\" >/dev/null 2>&1 || echo \"warning: could not emerge $*\" >&2; }\n\
+         remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || echo \"warning: could not unmerge $*\" >&2; }\n\n",
+    );
+
     // ── services (OpenRC) ────────────────────────────────────────────────
     let mut services = vec![
         "dbus",
@@ -776,20 +784,24 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
          rm -rf /usr/share/webos/noctalia /etc/skel/.config/noctalia /root/.config/noctalia\n",
     );
     // Plasma lives in its own @plasma set and is not part of @desktop. Remove
-    // any Plasma desktop that came from an older live image, but keep
-    // kde-plasma/systemsettings: the Hyprland settings menu uses it.
+    // any Plasma desktop that came from an older live image, but keep the
+    // allowed apps: systemsettings for the Hyprland menu and breeze for the
+    // cursor theme the rice uses. The keep-list is {systemsettings, breeze}.
     if cfg.profile != Profile::Plasma {
         s.push_str(
             "if command -v qlist >/dev/null 2>&1; then\n\
-               plasma_pkgs=\"$(qlist -I | grep '^kde-plasma/' | grep -v '^kde-plasma/systemsettings-' || true)\"\n\
+               plasma_pkgs=\"$(qlist -I | grep '^kde-plasma/' | grep -Ev '^kde-plasma/(systemsettings|breeze)-' || true)\"\n\
              else\n\
-               plasma_pkgs=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -v '^=systemsettings-' || true)\"\n\
+               plasma_pkgs=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -Ev '^=(systemsettings|breeze)-' || true)\"\n\
              fi\n\
              if [[ -n \"$plasma_pkgs\" ]]; then\n\
                emerge --quiet --unmerge $plasma_pkgs >/dev/null 2>&1 || true\n\
              fi\n\
              rm -f /usr/share/wayland-sessions/plasma.desktop\n\
-             rm -f /usr/share/webos/sessions/wayland/plasma.desktop\n",
+             rm -f /usr/share/webos/sessions/wayland/plasma.desktop\n\
+             # Baseline apps for every non-Plasma profile. qt6ct conflicts with\n\
+             # plasma-meta; it is only unmerged in the Plasma branch below.\n\
+             emerge_app gui-apps/qt6ct kde-plasma/breeze kde-apps/konsole\n",
         );
     } else {
         // Plasma is opt-in: install the desktop set and theme it like WebOS.
@@ -818,15 +830,17 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
            exit 1\n\
          fi\n"
     } else {
-        "if [ -e /usr/share/webos/sessions/wayland/plasma.desktop ] || [ -n \"$plasma_meta\" ]; then\n\
-           echo 'assertion failed: non-Plasma profile has a Plasma session/package' >&2\n\
+        "if [ -e /usr/share/webos/sessions/wayland/plasma.desktop ] || [ -n \"$plasma_meta\" ] || [ -n \"$remaining_plasma\" ]; then\n\
+           echo 'assertion failed: non-Plasma profile has a Plasma session or a package outside the {systemsettings, breeze} keep-list' >&2\n\
            exit 1\n\
          fi\n"
     };
     s.push_str("if command -v qlist >/dev/null 2>&1; then\n\
                   plasma_meta=\"$(qlist -I 2>/dev/null | grep '^kde-plasma/plasma-meta' || true)\"\n\
+                  remaining_plasma=\"$(qlist -I 2>/dev/null | grep '^kde-plasma/' | grep -Ev '^kde-plasma/(systemsettings|breeze)-' || true)\"\n\
                 else\n\
                   plasma_meta=\"$(find /var/db/pkg/kde-plasma -maxdepth 1 -type d -name 'plasma-meta-*' -print -quit 2>/dev/null)\"\n\
+                  remaining_plasma=\"$(find /var/db/pkg/kde-plasma -mindepth 1 -maxdepth 1 -type d -printf '=%f\\n' 2>/dev/null | grep -Ev '^=(systemsettings|breeze)-' || true)\"\n\
                 fi\n");
     s.push_str(plasma_assert);
     if cfg.profile == Profile::Minimal {
@@ -844,8 +858,6 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
 
     // ── optional applications / shells / features (best-effort) ──────────
     if cfg.profile.has_gui() {
-        s.push_str("emerge_app() { emerge --quiet --noreplace \"$@\" >/dev/null 2>&1 || true; }\n");
-        s.push_str("remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || true; }\n");
         if cfg.install_firefox {
             s.push_str("emerge_app www-client/firefox-bin\n");
         } else {
@@ -883,10 +895,34 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         if cfg.install_zsh {
             s.push_str("emerge_app app-shells/zsh app-shells/zsh-completions\n");
         }
-        if cfg.install_flatpak {
-            s.push_str("emerge_app sys-apps/flatpak\n");
-            s.push_str("if command -v flatpak >/dev/null 2>&1; then flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 || true; fi\n");
-        }
+    }
+
+    // Flatpak is a default-on system feature, independent of the selected
+    // profile. Minimal needs it too, so this block stays outside `has_gui()`.
+    if cfg.install_flatpak {
+        s.push_str(
+            "# Flatpak + Flathub for every profile.\n\
+             install -d -m 0755 /etc/portage/package.mask /etc/portage/package.unmask\n\
+             if grep -RqsE '^[[:space:]]*(>=)?sys-apps/flatpak' /etc/portage/package.mask 2>/dev/null; then\n\
+               for f in /etc/portage/package.mask/*; do\n\
+                 [ -f \"$f\" ] || continue\n\
+                 if grep -qE '^[[:space:]]*(>=)?sys-apps/flatpak' \"$f\"; then\n\
+                   tmp=$(mktemp)\n\
+                   grep -vE '^[[:space:]]*(>=)?sys-apps/flatpak' \"$f\" > \"$tmp\" || true\n\
+                   mv -f \"$tmp\" \"$f\"\n\
+                   echo \"warning: removed stale sys-apps/flatpak mask from $f\" >&2\n\
+                 fi\n\
+               done\n\
+             fi\n\
+             printf 'sys-apps/flatpak\\n' > /etc/portage/package.unmask/00-webos-flatpak\n\
+             emerge_app sys-apps/flatpak\n\
+             if command -v flatpak >/dev/null 2>&1; then\n\
+               flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo >/dev/null 2>&1 \\\n\
+                 || echo 'warning: could not add the Flathub remote' >&2\n\
+             else\n\
+               echo 'warning: flatpak is unavailable; Flathub remote not added' >&2\n\
+             fi\n",
+        );
     }
 
     // ── record the install choices ───────────────────────────────────────

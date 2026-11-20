@@ -1,4 +1,4 @@
-WebOS 1.0 "Ashen" — system information
+WebOS 1.01 "Ashen" — system information
 ========================================
 
 Everything important about this installed system, in one file.
@@ -7,18 +7,19 @@ Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
 RELEASE / IDENTITY
 ------------------
-- Version      : WebOS 1.0 "Ashen"
+- Version      : WebOS 1.01 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
 - Desktops     : Hyprland with the monochrome rice (default); regular Plasma
-                 is an opt-in profile, never installed into a Full/Minimal image
+                 6.8.3 (Wayland) is an opt-in profile, never installed into a
+                 Full/Minimal image
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
-- ISO          : webos-1.0-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- ISO          : webos-1.01-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
 - Source       : https://github.com/4NT1K/WebOS
-- Release file : /etc/os-release and /etc/webos-release both report 1.0
+- Release file : /etc/os-release and /etc/webos-release both report 1.01
 
 QUICK START
 -----------
@@ -30,6 +31,28 @@ QUICK START
 4. First login applies the rice; waybar, wallpaper, notifications, portals and
    the polkit agent start automatically.
 5. Update with `sudo webos-update`.
+
+WHAT CHANGED IN 1.01
+--------------------
+The 1.01 maintenance rebuild carries these fixes into a fresh install:
+- The refined Ashen greyscale is applied everywhere: #000000 base, #D8D8D8
+  text, #E8E8E8 accents, #7A7A7A dim, near-opaque rgba(0,0,0,0.92) panels.
+  The old ice-blue and light-grey tokens are gone from the rice.
+- The right cluster is waypaper (▧), clock, tray and performance (▾) only;
+  the cpu, memory, pulseaudio and power pills were removed and no aliases
+  were added. `webos-menu` replaces the raw wofi launchers for Super+D and
+  Super+R, and Super+M toggles the music dropdown.
+- `webos-music` (MPRIS artwork, controls and seek bar), `webos-stats` (CPU,
+  GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop panels.
+  Clicking the mpris pill toggles the dropdown; it no longer pauses playback.
+- `webos-refresh` restores exact saved monitor modes at login and watches live
+  changes. Only modes advertised in `availableModes` can be persisted.
+- Audio autostart order is PipeWire, WirePlumber, then pipewire-pulse.
+- mako is square (radius 0) and anchored bottom-right; the fastfetch card uses
+  chafa symbol art from `webos-chafa-logo`.
+- Flatpak and Flathub, the Breeze_Light cursor and Qt6 theming are really
+  installed, not just referenced in config.
+- SDDM still shows exactly one session: the profile chosen in the installer.
 
 WHAT CHANGED IN 1.021
 ---------------------
@@ -43,8 +66,9 @@ This was a fix release for the issues reported against 1.02:
   in the rootfs, live image and installer, and ownership normalisation no
   longer chowns root-owned files.
 - fastfetch failed with "Image logo types are not supported" (built without
-  ImageMagick/chafa). The shipped config uses the text cobweb logo
-  (`logo.type = file`, webos.txt), which renders everywhere.
+  native image/chafa support). At the time the shipped config used the text
+  cobweb logo (`logo.type = file`, webos.txt), which renders everywhere. 1.01
+  replaces that with chafa symbol art; see the FASTFETCH section below.
 - fastfetch now appears in every interactive shell: bash, zsh and fish hooks
   are installed, foot uses webos-shell like kitty, and WEBOS_FASTFETCH_SHOWN
   prevents duplicate cards.
@@ -56,24 +80,27 @@ This was a fix release for the issues reported against 1.02:
   webos-rice and webos-dotfiles now return state/config files to the home
   directory owner; `webos-rice --doctor` no longer uses an unset ${home}.
 - Duplicate/stale SDDM entries: webos.desktop is no longer installed into
-  /usr/share/xsessions (Hyprland is Wayland-only). The installer points SDDM
-  at /usr/share/webos/sessions and links every desktop that is actually
-  installed (WebOS, Plasma, gamescope), with the profile chosen in the
-  installer as the default. An earlier build linked only the chosen session,
-  which left an installed Plasma unreachable from the greeter.
+  /usr/share/xsessions (Hyprland is Wayland-only). webos.desktop was reused for
+  the WebOS Wayland session; a later 1.022 note claimed the installer linked
+  every installed desktop. That claim is obsolete: the final rule is one
+  session only (see SESSIONS / LOGIN).
 - The monochrome rice is the only WebOS look. Every install applies it; there
   is no appearance page in the installer and no alternate shell to choose.
+  Advanced dotfiles profiles remain expert CLI options.
 - /etc/webos-release was hard-coded to "1.01 (Ashen)" and written twice. It
-  now derives the version from the installed /etc/os-release.
+  now derives the version from the installed /etc/os-release. The current
+  release is 1.01 "Ashen".
 - Same-version rebuilds could keep a stale installer/theme. The rootfs stage
   now unmerges and rebuilds app-admin/webos-installer and webos-theme.
 - `webos-rice --doctor` no longer fails the Inter/JetBrains Mono checks when
   fc-list is unavailable, and no longer fails "greetd configured" on healthy
   SDDM systems.
 
-WHAT WAS FIXED IN 1.022
------------------------
-This is a fix release for the issues found in the 1.021 audit:
+WHAT WAS FIXED IN 1.022 (HISTORICAL — SUPERSEDED BY 1.01)
+---------------------------------------------------------
+This section is retained for history. 1.022 was a fix release for the issues
+found in the 1.021 audit; its SDDM "all installed desktops" note below was
+later reversed and is not the behaviour of 1.01:
 - **The rice never actually loaded.** Hyprland 0.57 reads Lua configuration
   and ignores hyprland.conf completely, so 1.021's "move the lua aside" fix
   made the compositor fall back to its built-in defaults: no keybinds, no
@@ -92,8 +119,9 @@ This is a fix release for the issues found in the 1.021 audit:
   the wallpaper SVG, a 3840x2160 black rectangle, so the lock screen drew an
   invisible black square. It now installs the real 512x512 logo.
 - **hyprsunset was never started** and used `gamma = 90`/`100` where the
-  option is a multiplier (1.0 = 100%). It starts with the session and the
-  profiles use `gamma = 1.0`.
+  option is a multiplier (1.0 = 100%). It starts with the session. In 1.01 the
+  single neutral profile uses `time = 00:00`, `identity = true`,
+  `temperature = 6500` and `gamma = 1.0`; there is no evening warm-up.
 - hypridle had a 60-second listener that ran a `hyprctl`/`jq` pipeline and
   could not inhibit anything. Removed: hypridle honours the D-Bus idle
   inhibitor that games and video players already take.
@@ -138,10 +166,12 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 - ananicy-cpp is enabled under its real OpenRC name, ananicy-cpp.initd, and
   started at install time.
 - The mono bar no longer prints the LAN IPv4 address or a battery percentage;
-  its power menu is unchanged. The default bar no longer prints an IP either.
-- kitty transparency is restored: kitty owns the alpha value (0.80-0.82) and
-  the compositor no longer multiplies a second opacity over it; the framed
-  fastfetch card is back.
+  its power pill is also gone (removed in 1.01 along with cpu, memory and
+  pulseaudio). The right cluster is waypaper, clock, tray and performance.
+- kitty transparency is restored: kitty owns the alpha value (0.82) and the
+  compositor no longer multiplies a second opacity over it; the framed
+  fastfetch card is back. 1.01 uses `auto` for bold/italic fonts and a refined
+  greyscale ANSI ramp.
 - webos-update now updates sys-kernel/webos-kernel explicitly (it is not in
   @world) and regenerates /boot/grub/grub.cfg when a new kernel lands.
 - The installer log path in this document now matches the real file,
@@ -150,7 +180,7 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 EXPECTED BEHAVIOUR
 ------------------
 Boot / live medium
-- The banner reads "WebOS 1.0 (Ashen) — live medium".
+- The banner reads "WebOS 1.01 (Ashen) — live medium".
 - Nothing is written to disk until the summary is confirmed.
 - The installer progress panel stays inside its border, keeps the "%" sign,
   and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow
@@ -158,10 +188,12 @@ Boot / live medium
 
 SDDM / sessions
 - The greeter lists exactly one session: the profile chosen in the installer.
-  Full -> "WebOS", Plasma -> "Plasma (Wayland)". No extra session is offered.
+  Full -> "WebOS", Plasma -> regular Plasma 6.8.3 (Wayland, opt-in profile).
+  No extra session is offered. The chosen session is also written to
+  /var/lib/sddm/state.conf as the default.
 - Minimal installs no display manager and boots to a TTY login.
-- regular Plasma is opt-in and Wayland-only; there is no Plasma X11 entry, and
-  a non-Plasma install has no Plasma desktop packages.
+- regular Plasma 6.8.3 is opt-in and Wayland-only; there is no Plasma X11 entry,
+  and a non-Plasma install has no Plasma desktop packages.
 - The installer removes any leftover alternate shell from the live image, so
   the installed system has only the chosen profile's session.
 
@@ -193,11 +225,12 @@ Config: /etc/webos/install.toml (template on the live medium)
 
 Profiles:
   Full      Hyprland + WebOS mono rice + gaming stack, SDDM
-  Plasma    regular Plasma (Wayland) + gaming stack, SDDM (opt-in @plasma set)
+  Plasma    regular Plasma 6.8.3 (Wayland, opt-in @plasma set) + gaming stack, SDDM
   Minimal   base system only, TTY login, no display manager
 
 Appearance: one look only — the monochrome rice (floating rounded top-bar
-pills, grayscale kitty, square mako). No appearance page in the installer.
+capsules on a near-opaque bar, greyscale kitty, square mako). No appearance page
+in the installer. `webos-dotfiles --apply` remains an expert CLI option.
 
 Installer options and defaults:
   gaming stack on, Steam note on, Firefox on, fish on, zsh on, Flatpak on,
@@ -219,9 +252,11 @@ SESSIONS / LOGIN
 ----------------
 SDDM is the greeter. Its session list comes from
 /usr/share/webos/sessions/{wayland,x11}. The installer clears that directory
-and symlinks only the .desktop file for the chosen profile, so the greeter
-shows one session rather than every desktop installed on the image. Upstream
-session files under /usr/share/wayland-sessions remain intact.
+and symlinks ONLY the .desktop file for the profile chosen in the installer, so
+the greeter shows one session rather than every desktop installed on the image.
+That session is also recorded as the default in /var/lib/sddm/state.conf.
+Upstream session files under /usr/share/wayland-sessions remain intact. The
+older 1.022 "link every installed desktop" behaviour is not used in 1.01.
 
   webos-session              Hyprland + WebOS mono rice (default)
   webos-session --gamescope  SteamOS-style gamescope session
@@ -247,10 +282,11 @@ watchers, Breeze_Light cursor, dark GTK defaults.
 Keybinds (SUPER = mod):
   Super+Q             kitty terminal (framed fastfetch card)
   Super+Shift+Return  foot terminal
-  Super+D             wofi application launcher
-  Super+R             wofi run launcher
+  Super+D             webos-menu (curated application launcher)
+  Super+R             webos-menu (curated application launcher)
+  Super+M             toggle the webos-music dropdown
   Super+E             Dolphin file manager
-  Super+B             Firefox
+  Super+B             Firefox (firefox-bin)
   Super+I             WebOS Settings
   Super+Shift+I       display settings (wdisplays)
   Super+C             close window
@@ -285,9 +321,9 @@ picture-in-picture floats and pins; waybar/wofi/notifications are blurred.
 SETTINGS
 --------
 `webos-settings` is session-aware:
-- Plasma: launches KDE System Settings.
-- Hyprland: wofi menu for Display (wdisplays), Input devices (hyprctl
-  devices), KDE System Settings, Audio (pavucontrol), Network
+- Plasma: launches KDE System Settings (regular Plasma 6.8.3, Wayland opt-in).
+- Hyprland: webos-menu (curated wofi launcher) for Display (wdisplays), Input
+  devices (hyprctl devices), KDE System Settings, Audio (pavucontrol), Network
   (nm-connection-editor), Wallpaper (waypaper), Bluetooth (blueman-manager),
   Power/session (wlogout).
 - `webos-settings --display` and `--input` go straight to the relevant tool.
@@ -297,15 +333,22 @@ RICE / THEMING
 Source of truth: /usr/share/webos/rice (hypr, waybar, wofi, kitty, foot,
 fish, fastfetch, mako, wlogout, gtk-3.0/4.0, qt5ct/qt6ct, kvantum, plasma,
 konsole, color-schemes, wallpapers).
-Dotfiles profiles: /usr/share/webos/dotfiles/{jakoolit,minimal,mono}.
+Dotfiles profiles: /usr/share/webos/dotfiles/{jakoolit,minimal,mono}. These are
+expert CLI options for advanced users; the installer has no appearance page.
 Per-user copies: ~/.config/<app>, ~/.local/share/color-schemes/DeepBlack.colors,
 Plasma configs (kdeglobals, kwinrc, kwinrulesrc), ~/.local/share/konsole.
 
-Palette: pure black background, #F2F2F2 foreground, #FFFFFF labels,
-#8C8C8C dim/secondary, greyscale ANSI 0-15, frosted blur, white borders.
+Palette (refined Ashen greyscale): #000000 base, rgba(0,0,0,0.92) panels,
+#D8D8D8 text, #E8E8E8 accents/cursor/url, #7A7A7A dim, #4A4A4A faint,
+rgba(232,232,232,0.20) borders and rgba(232,232,232,0.35) on hover. The grey
+ramp is #a6a6a6, #c2c2c2, #d8d8d8, #e8e8e8; where a plain RGB triplet is needed
+(fastfetch, Konsole, Plasma colour scheme) use 216,216,216 for text and
+122,122,122 for dim. Greyscale ANSI 0-15 runs through kitty, foot and Konsole.
+kitty uses JetBrainsMono Nerd Font with `auto` bold/italic faces and
+background_opacity 0.82; Hyprland leaves kitty's alpha alone.
 Plasma: Deep Black scheme, Breeze_Light cursor, matching wallpaper and
 Konsole profile, KWin blur/opacity rule for kitty. Hyprland: smoothed
-animations, blurred translucent surfaces, same palette.
+animations, blurred near-opaque surfaces, same palette.
 
 Commands:
   webos-rice --user              apply to $HOME
@@ -326,17 +369,53 @@ TERMINAL / SHELLS / FASTFETCH
 kitty and foot run /usr/bin/webos-shell, which prints the WebOS fastfetch card
 once (WEBOS_FASTFETCH_SHOWN) and then execs $SHELL. bash, zsh and fish print
 the same card on interactive login. Manual: `webos-fastfetch`.
-Config: /usr/share/webos/rice/fastfetch/ (fastfetch.json, webos.txt).
-Logo: text cobweb (no ImageMagick/chafa needed).
-Modules: display, uptime, cpu, gpu, terminal, memory, disk, packages, shell,
-datetime.
-Theme: pure black, monochrome, thin white bar cursor, white selection.
-Failures are logged to /tmp/webos-fastfetch.log.
+Config: /usr/share/webos/rice/fastfetch/fastfetch.json (plus the shipped PNG
+and the webos.txt fallback). Ten modules: display, uptime, cpu, gpu, terminal,
+memory, disk, packages, shell, datetime.
+
+Logo: this fastfetch build has NO native image, kitty graphics, sixel or
+ImageMagick logo support — those logo types fail with "Image logo types are not
+supported". The shipped PNG is therefore rendered as coloured chafa **symbol
+art** (not a terminal image) via `logo.type = "command-raw"` and
+`logo.source = "webos-chafa-logo"`, which emits a fixed-width 16x16 grid.
+`webos.txt` is a fallback only, used automatically when chafa is absent or the
+command-raw logo fails. Failures are logged to /tmp/webos-fastfetch.log.
+
+Theme: pure black, greyscale, thin soft-white bar cursor, soft-white selection,
+output 38;2;216;216;216 and separators 38;2;122;122;122.
+
+DESKTOP PANELS / REFRESH
+------------------------
+Waybar (top, rounded translucent capsules, surface rgba(0,0,0,0.92)):
+  left   workspaces and focused window title
+  centre mpris pill — click it or press Super+M to toggle the music dropdown
+  right  ▧ waypaper, clock, tray, ▾ performance  (in that order)
+The cpu, memory, pulseaudio and custom/power pills, and any aliases for them,
+are gone; there is still no network or battery module.
+
+- Music (`webos-music`): a GTK3 layer-shell dropdown under the bar showing the
+  current track's MPRIS album art as a darkened greyscale background, title,
+  artist, PLAYING/PAUSED status, previous/play-pause/next controls and a
+  seekable elapsed/total bar. No extra widget framework is required.
+- Performance (`webos-stats`): the ▾ pill opens a small corner dropdown with
+  CPU, GPU, VRAM, RAM, DISK and TEMP bars. GPU and VRAM show `n/a` without
+  `nvidia-smi`.
+- Waypaper (`▧`): the pill launches `waypaper` directly to choose a wallpaper.
+- Refresh (`webos-refresh`): saves and restores exact monitor modes at login and
+  watches live changes from wdisplays/wlr-randr.
+    webos-refresh status        compare current and saved modes
+    webos-refresh set <hz>      choose a rate from the mode's advertised modes
+  The saved default is exactly `1920x1080@60.00000` (60 Hz). The "119.98 Hz"
+  mode seen during testing was one exact mode, `1920x1080@119.98`, used to
+  prove that the watcher saves live changes — it is not a range. Only modes
+  advertised in `availableModes` can be persisted; an arbitrary value cannot.
+- Palette: see RICE / THEMING above. The same greyscale is repeated across the
+  rice files and the accent-cycling scripts, not generated from a template.
 
 PREINSTALLED SOFTWARE
 ---------------------
 Desktops: Hyprland 0.57, waybar, wofi, mako, hyprpaper, hypridle, hyprlock,
-hyprsunset, SDDM. regular Plasma 6.8 (Wayland) is an opt-in profile installed
+hyprsunset, SDDM. regular Plasma 6.8.3 (Wayland) is an opt-in profile installed
 only when selected.
 Terminals/editors: kitty, foot, wezterm, alacritty, neovim, zellij, tmux,
 ranger, pcmanfm, Dolphin.
@@ -422,12 +501,17 @@ WEBOS COMMANDS
 webos-installer     install WebOS (TUI, --gui, --check, --config -y)
 webos-update        system updater
 webos-rice          apply/repair/verify/toggle the rice
-webos-dotfiles      choose the dotfiles profile
+webos-dotfiles      expert CLI option for advanced dotfiles profiles
 webos-fastfetch     print the WebOS fastfetch card
+webos-chafa-logo    render the chafa symbol logo used by fastfetch
 webos-shell         terminal wrapper (card once, then $SHELL)
 webos-session       start Hyprland / gamescope / safe session
 webos-autostart     start portals, polkit, bar/shell and wallpaper
 webos-portals       start XDG portals + a polkit agent (OpenRC)
+webos-menu          curated wofi application launcher (Super+D / Super+R)
+webos-music         MPRIS music dropdown (Super+M; also the mpris pill)
+webos-stats         CPU/GPU/VRAM/RAM/disk/temp dropdown (the ▾ pill)
+webos-refresh       save/restore and watch exact monitor refresh modes
 webos-wallpaper     render/apply/cycle wallpaper, --daemon
 webos-shot          screenshots (region/window/output/full); Super+Shift+S snips
 webos-gaming        gaming helpers and status
@@ -455,7 +539,6 @@ FILES / PATHS / LOGS
 /tmp/webos-portals.log            portal/polkit log
 /tmp/webos-fastfetch.log          fastfetch failures
 ~/.local/state/webos/rice.manifest  managed-file hashes (user-owned)
-~/.local/share/hyprland/hyprland.log  Hyprland log
 
 TROUBLESHOOTING
 ---------------
@@ -480,7 +563,9 @@ TROUBLESHOOTING
   user (wireplumber).
 - Installer log: /var/log/webos-install.log; install config
   /etc/webos/install.toml.
-- Hyprland log: ~/.local/share/hyprland/hyprland.log.
+- Compositor problems: check `webos-rice --doctor`, /tmp/webos-autostart.log
+  and `journalctl --user -b`; Hyprland logs to stdout and WebOS does not
+  configure a dedicated Hyprland log file.
 
 KNOWN LIMITATIONS / NOTES
 -------------------------

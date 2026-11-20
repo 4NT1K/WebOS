@@ -51,6 +51,7 @@ x11-terms/wezterm wayland
 www-client/firefox-bin wayland
 media-video/mpv vaapi vdpau lua vulkan wayland
 gui-apps/waybar pulseaudio network upower mpris tray logind
+gui-libs/gtk-layer-shell introspection
 media-gfx/swayimg gif webp
 
 # --- misc -------------------------------------------------------------------

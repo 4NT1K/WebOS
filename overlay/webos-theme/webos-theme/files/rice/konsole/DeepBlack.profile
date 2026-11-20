@@ -3,7 +3,7 @@ ColorScheme=DeepBlack
 
 [Cursor Options]
 CursorShape=1
-CustomCursorColor=255,255,255
+CustomCursorColor=232,232,232
 CustomCursorTextColor=0,0,0
 UseCustomCursorColor=true
 BlinkingCursorEnabled=false

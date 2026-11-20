@@ -53,7 +53,11 @@ case "$TARGET" in
 		grim -g "$GEOM" "$FILE"
 		;;
 	output)
-		grim "$FILE"
+		need jq
+		need hyprctl
+		out=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name' | head -n 1)
+		[[ -n "$out" ]] || { notify dialog-warning "No focused monitor"; exit 1; }
+		grim -o "$out" "$FILE"
 		;;
 	full)
 		grim "$FILE"

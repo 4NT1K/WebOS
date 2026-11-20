@@ -56,9 +56,9 @@ for d in package.use package.license package.accept_keywords package.mask packag
 	rm -f "${CHROOT}/etc/portage/${d}"/* 2>/dev/null || true
 	cp -a "${WEBOS_ROOT}/config/${d}/." "${CHROOT}/etc/portage/${d}/"
 done
-# The theme ebuild changes between builds but keeps version 1.0, so refresh
-# its Manifest and force a reinstall to guarantee the new files land.
-chroot_sh "cd /usr/local/portage/webos/webos-theme/webos-theme && ebuild webos-theme-1.0.ebuild manifest >/dev/null 2>&1 || true"
+# The theme ebuild changed with the 1.01 rebuild (-r1 adds the new helpers).
+# SRC_URI is empty, so there is no Manifest to regenerate; force a reinstall
+# to guarantee the new files land.
 chroot_sh "emerge --quiet --unmerge webos-theme/webos-theme 2>/dev/null || true"
 chroot_sh "egencache --repo=webos --update --jobs=${WEBOS_JOBS} >/dev/null 2>&1 || true"
 
@@ -143,8 +143,8 @@ chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_J
 
 # A reused chroot can still hold Plasma from before it moved into @plasma.
 # Strip it from the live rootfs so the image itself has no Plasma session;
-# keep systemsettings, which webos-settings uses under Hyprland.
-chroot_sh 'pkgs="$(qlist -I 2>/dev/null | grep "^kde-plasma/" | grep -v "^kde-plasma/systemsettings-" || true)"; if [ -n "$pkgs" ]; then emerge --quiet --unmerge $pkgs >/dev/null 2>&1 || true; fi; rm -f /usr/share/wayland-sessions/plasma.desktop' || true
+# keep systemsettings (used by webos-settings) and breeze (the cursor theme).
+chroot_sh 'pkgs="$(qlist -I 2>/dev/null | grep "^kde-plasma/" | grep -Ev "^kde-plasma/(systemsettings|breeze)-" || true)"; if [ -n "$pkgs" ]; then emerge --quiet --unmerge $pkgs >/dev/null 2>&1 || true; fi; rm -f /usr/share/wayland-sessions/plasma.desktop' || true
 
 # The bar must be built with the WebOS USE flags (mpris/tray/logind). The
 # plain set emerge above does not rebuild for USE changes on an existing
@@ -205,7 +205,10 @@ chroot_sh 'rm -rf /var/log/portage/elog/*noctalia* /var/log/portage/elog/*niri* 
 
 # ---------------------------------------------------------- theming ----------
 step "rootfs: applying the rice (webos-theme)"
-# Same-version ebuild edits are not picked up by a plain emerge, so remove the
+THEME_EBUILD="webos-theme-1.0-r1.ebuild"
+chroot_sh "test -f /usr/local/portage/webos/webos-theme/webos-theme/${THEME_EBUILD}" \
+	|| die "${THEME_EBUILD} missing from the copied overlay"
+# Same-package-version edits are not picked up by a plain emerge, so remove the
 # package first. Without this the ISO keeps the previous rice, session helper
 # and fastfetch wrapper.
 chroot_sh "emerge --quiet --unmerge webos-theme/webos-theme" >/dev/null 2>&1 || true
@@ -235,10 +238,14 @@ chroot_sh "test -f /etc/zsh/zshrc" \
 	|| die "zsh fastfetch hook missing after webos-theme merge"
 chroot_sh "test -f /etc/fish/conf.d/00-webos-fastfetch.fish" \
 	|| die "fish fastfetch hook missing after webos-theme merge"
-chroot_sh "grep -q 'type.*file' /usr/share/webos/rice/fastfetch/fastfetch.json" \
-	|| die "fastfetch still uses an image logo after webos-theme merge"
+chroot_sh "grep -q 'command-raw' /usr/share/webos/rice/fastfetch/fastfetch.json" \
+	|| die "fastfetch config does not use the command-raw chafa logo"
 chroot_sh "grep -q 'hyprland.lua' /usr/bin/webos-session" \
 	|| die "webos-session does not use the Lua Hyprland config"
+for helper in webos-menu webos-chafa-logo webos-music webos-refresh webos-stats; do
+	chroot_sh "test -x /usr/bin/${helper}" \
+		|| die "${helper} missing after webos-theme merge"
+done
 
 # -------------------------------------------------------- debranding ---------
 step "rootfs: applying WebOS branding overrides (remove Gentoo identifiers)"

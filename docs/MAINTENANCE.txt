@@ -1,5 +1,5 @@
 ================================================================================
-WEBOS 1.0 "ASHEN" - MAINTENANCE / UPDATE HANDOFF
+WEBOS 1.01 "ASHEN" - MAINTENANCE / UPDATE HANDOFF
 ================================================================================
 
 Audience: a future AI assistant (or the maintainer) tasked with changing the
@@ -36,7 +36,7 @@ The kernel package is NOT named sanus-kernel.
   Git remote:     https://github.com/4NT1K/WebOS.git  (branch main)
   Build container: webos-build  (Docker, /home/brah/sanusos mounted at /sanusos)
   Version source of truth: branding/version
-  Current release: WebOS 1.0 "Ashen", ISO build/webos-1.0-Ashen-amd64.iso
+  Current release: WebOS 1.01 "Ashen", ISO build/webos-1.01-Ashen-amd64.iso
 
   NOTE: the local folder is still named "sanusos" for historical reasons. It is
   only a local path, not part of the product. Rename it to /home/brah/webos (and
@@ -73,8 +73,8 @@ Everything hinges on this distinction.
   Keybinds, waybar modules/CSS, fastfetch card, hyprland rules, transparency,
   zram boot glue, SDDM seeding, WEBOS-INFO.txt
       -> overlay/webos-theme/webos-theme/files/
-      -> bump revision of overlay/webos-theme/webos-theme/webos-theme-1.0.ebuild
-         (e.g. webos-theme-1.0-r1.ebuild), regenerate Manifest if files changed.
+      -> bump revision of overlay/webos-theme/webos-theme/webos-theme-1.01.ebuild
+         (e.g. webos-theme-1.01-r1.ebuild), regenerate Manifest if files changed.
 
   webos-update, webos-rice, webos-fastfetch, system helpers
       -> overlay/webos-theme/webos-theme/files/system/
@@ -140,7 +140,7 @@ Everything hinges on this distinction.
        docker exec -w /sanusos webos-build ./build.sh iso
      or the full pipeline: ./build.sh all
      Stages: fetch, bootstrap, kernel, rootfs, iso. Output is
-     build/webos-1.0-Ashen-amd64.iso.
+     build/webos-1.01-Ashen-amd64.iso.
 
 --------------------------------------------------------------------------------
 6. CUTTING A NEW RELEASE VERSION
@@ -171,14 +171,18 @@ Everything hinges on this distinction.
   * Do NOT switch the session to plain Hyprland. The intended command is
     `Hyprland -c /home/brodie/.config/hypr/hyprland.lua` which loads the WebOS
     mono rice. Only reword misleading docs.
-  * Keybinds: Super+Q kitty, Super+C close, Super+Shift+Return foot,
+  * Keybinds: Super+Q kitty, Super+Shift+Return foot, Super+C close,
+    Super+D / Super+R webos-menu, Super+M webos-music --toggle,
     Super+Shift+Escape exit, Super+Shift+S webos-shot region,
     Super+Ctrl+S move window to special.
-  * Mono waybar: no network module, no battery module, keep custom/power.
+  * Mono waybar: no network or battery module; the cpu, memory, pulseaudio and
+    custom/power pills (and their aliases) are removed. Right cluster is
+    ▧ waypaper, clock, tray, ▾ performance. Music and performance are the
+    webos-music / webos-stats dropdowns, toggled from the mpris pill and ▾.
   * Pointer: accel_profile = flat, force_no_accel = true.
-  * Kitty owns terminal alpha (background_opacity 0.80 mono / 0.82 default,
-    dynamic_background_opacity no, background_blur 16/24); Hyprland kitty rule
-    is opacity = "1.0 1.0" to avoid multiplied alpha.
+  * Kitty owns terminal alpha in BOTH configs (background_opacity 0.82,
+    dynamic_background_opacity no, background_blur 24, bold/italic `auto`);
+    Hyprland kitty rule is opacity = "1.0 1.0" to avoid multiplied alpha.
   * Installer progress must stay monotonic; completed stages show 100%.
   * webos-rice prunes stale hyprland.conf / webos-colors.conf manifest entries.
 

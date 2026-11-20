@@ -1,19 +1,19 @@
-# WebOS mono — mako, square and monochrome.
+# WebOS mono — mako, square, near-opaque, monochrome notifications.
 # ~/.config/mako/config
 
-font=MesloLGM Nerd Font Mono 11
-background-color=#1a1a1aee
-text-color=#ffffff
-border-color=#ffffffcc
+font=JetBrainsMono Nerd Font 11
+background-color=#000000eb
+text-color=#D8D8D8
+border-color=#e8e8e833
 border-size=1
 border-radius=0
-progress-color=over #ffffff
+progress-color=over #E8E8E8
 padding=12
 margin=10
-width=300
-height=100
-max-visible=5
-anchor=top-right
+width=340
+height=120
+max-visible=4
+anchor=bottom-right
 default-timeout=6000
 group-by=app-name
 icons=1
@@ -25,9 +25,10 @@ on-button-middle=dismiss-group
 on-button-right=dismiss
 
 [urgency=low]
-border-color=#ffffff55
+border-color=#e8e8e81a
 default-timeout=4000
 
 [urgency=critical]
-border-color=#ffffff
+border-color=#f87171
 default-timeout=0
+background-color=#1a0b0bdd

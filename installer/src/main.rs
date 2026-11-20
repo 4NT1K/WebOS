@@ -43,7 +43,9 @@ use ratatui::Terminal;
 use app::App;
 use config::InstallConfig;
 
-const VERSION: &str = env!("CARGO_PKG_VERSION");
+// The WebOS release version is the user-facing installer version. Keep the
+// crate version in Cargo.toml for dependency bookkeeping only.
+const VERSION: &str = "1.01";
 
 const USAGE: &str = "\
 WebOS installer

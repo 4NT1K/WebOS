@@ -16,6 +16,10 @@ while IFS= read -r e; do
 	d="$(dirname -- "$e")"
 	rel="${d#${WEBOS_ROOT}/}"
 	if [[ -f "${d}/Manifest" ]]; then good "Manifest ${rel}"
+	elif grep -qE '^SRC_URI=""' "$e" 2>/dev/null; then
+		# A no-distfile ebuild (SRC_URI="") needs no Manifest: there is nothing
+		# to checksum. The webos-theme package installs only in-tree files.
+		good "Manifest not required (no SRC_URI) ${rel}"
 	else bad "missing Manifest in ${rel}"; fi
 	if [[ -f "${d}/metadata.xml" ]]; then good "metadata ${rel}"
 	else bad "missing metadata.xml in ${rel}"; fi

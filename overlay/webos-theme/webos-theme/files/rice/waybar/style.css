@@ -1,21 +1,22 @@
 /* ──────────────────────────────────────────────────────────────────────────
- *  WebOS mono — floating monochrome pills on a transparent top bar.
- *  Same idea as the reference rice: a top bar with each module in its own
- *  rounded, translucent capsule. No colour — white, grey and black only.
- *  Hyprland blurs behind the bar via the waybar layer rule, so the surface
- *  alpha stays in one place: @surface.
+ *  WebOS mono — floating monochrome pills on a near-opaque top bar.
+ *  Each module sits in its own rounded, translucent capsule. No colour —
+ *  soft white, greys and black only. Hyprland blurs behind the bar via the
+ *  waybar layer rule, so the surface alpha stays in one place: @surface.
  * ────────────────────────────────────────────────────────────────────────── */
 
-@define-color text      #eeeeee;
-@define-color dim       #aaaaaa;
-@define-color faint     #666666;
-@define-color accent    #ffffff;
-@define-color surface   rgba(18, 18, 18, 0.55);
-@define-color border    rgba(255, 255, 255, 0.22);
+@define-color base        #000000;
+@define-color text        #D8D8D8;
+@define-color dim         #7A7A7A;
+@define-color faint       #4A4A4A;
+@define-color accent      #E8E8E8;
+@define-color surface     rgba(0, 0, 0, 0.92);
+@define-color border      rgba(232, 232, 232, 0.20);
+@define-color border-hover rgba(232, 232, 232, 0.35);
 
 * {
     border: none;
-    font-family: "MesloLGM Nerd Font Mono", "JetBrainsMono Nerd Font", monospace;
+    font-family: "JetBrainsMono Nerd Font", monospace;
     font-size: 14px;
     font-weight: bold;
     min-height: 0;
@@ -37,7 +38,7 @@ window#waybar > box {
 }
 
 tooltip {
-    background: rgba(10, 10, 10, 0.95);
+    background: @surface;
     border: 1px solid @border;
     border-radius: 10px;
     padding: 4px;
@@ -52,11 +53,9 @@ tooltip label {
 #window,
 #clock,
 #mpris,
-#cpu,
-#memory,
-#pulseaudio,
 #tray,
-#custom-power {
+#custom-waypaper,
+#custom-perf {
     background: @surface;
     border: 1px solid @border;
     border-radius: 12px;
@@ -65,7 +64,7 @@ tooltip label {
     margin: 6px 3px;
 }
 
-/* ── workspaces: rounded keys, white when focused ──────────────────────── */
+/* ── workspaces: rounded keys, soft white when focused ─────────────────── */
 #workspaces {
     padding: 0 4px;
 }
@@ -87,13 +86,13 @@ tooltip label {
 }
 
 #workspaces button.active {
-    color: #000000;
+    color: @base;
     background: @accent;
     border-color: @accent;
 }
 
 #workspaces button.urgent {
-    color: #000000;
+    color: @base;
     background: @accent;
     border-color: @accent;
     border-style: dashed;
@@ -101,7 +100,7 @@ tooltip label {
 
 #workspaces button:hover {
     color: @accent;
-    border-color: rgba(255, 255, 255, 0.45);
+    border-color: @border-hover;
     box-shadow: none;
     text-shadow: none;
 }
@@ -112,13 +111,18 @@ tooltip label {
     font-weight: normal;
 }
 
-/* ── centre: media player ───────────────────────────────────────────────── */
+/* ── centre: media player (click toggles the dropdown) ─────────────────── */
 #mpris {
     padding: 0 12px;
 }
 
+#mpris.playing {
+    color: @accent;
+}
+
 #mpris.paused {
     color: @dim;
+    font-style: italic;
 }
 
 /* ── right cluster ──────────────────────────────────────────────────────── */
@@ -127,25 +131,19 @@ tooltip label {
     padding: 0 12px;
 }
 
-#cpu,
-#memory,
-#pulseaudio {
-    color: @dim;
-}
-
-#cpu:hover,
-#memory:hover,
-#pulseaudio:hover,
-#custom-power:hover {
-    color: @accent;
-    border-color: rgba(255, 255, 255, 0.45);
-}
-
 #tray {
     padding: 0 8px;
 }
 
-#custom-power {
+#custom-waypaper,
+#custom-perf {
     color: @dim;
     padding: 0 12px;
+}
+
+#custom-waypaper:hover,
+#custom-perf:hover,
+#mpris:hover {
+    color: @accent;
+    border-color: @border-hover;
 }

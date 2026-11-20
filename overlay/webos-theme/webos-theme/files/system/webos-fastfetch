@@ -2,10 +2,10 @@
 # webos-fastfetch — WebOS terminal card with the cobweb logo in a framed box.
 #
 # Prefers the user's ~/.config/fastfetch/fastfetch.json, then the system
-# fallback. The shipped config uses a plain text logo, because fastfetch is
-# built without ImageMagick/chafa support on WebOS: image logo types fail
-# with "Image logo types are not supported" (exit 221). A text logo always
-# renders, in every terminal and on the bare Linux console.
+# fallback. The shipped config uses a `command-raw` logo: webos-chafa-logo
+# renders the cobweb PNG as fixed-width chafa SYMBOL ART. This fastfetch has
+# no native image/kitty/sixel support, so when chafa is absent we skip that
+# config and fall back to the plain-text cobweb in webos.txt instead.
 #
 # The card is wrapped in a rounded box ("box bg"): a subtle dark fill and a
 # 1-cell border around the text, sized from the widest visible line so ANSI
@@ -29,7 +29,11 @@ LOG=/tmp/webos-fastfetch.log
 
 ESC=$(printf '\033')
 strip_ansi() { sed "s/${ESC}\[[0-9;]*m//g"; }
-fill() { printf '%*s' "$1" '' | tr ' ' "$2"; }
+# Emit one complete U+2500 per cell. `tr ' ' '─'` only replaces a single byte
+# of the UTF-8 sequence and produced broken/partial box characters.
+fill() {
+	awk -v n="$1" -v c="$2" 'BEGIN { s=""; for (i = 0; i < n; i++) s = s c; printf "%s", s }'
+}
 
 # Print one fastfetch run inside a box. ANSI colours stay intact; only the
 # visible width is used to size the frame and pad shorter lines.
@@ -50,13 +54,23 @@ card() {
 	printf '\033[38;2;140;140;140m╰%s╯\033[0m\n' "$bar"
 }
 
-# First choice: the config as written (text logo). If a user config still
-# points at an image type, fall back to the text logo explicitly.
-if out=$(fastfetch --config "$CFG" "$@" 2>>"$LOG"); then
-	card "$out"
-	exit 0
+# First choice: the config as written. It uses command-raw/webos-chafa-logo,
+# so only try it when the chafa renderer is actually available.
+CHAFA_READY=0
+if command -v chafa >/dev/null 2>&1 && command -v webos-chafa-logo >/dev/null 2>&1; then
+	CHAFA_READY=1
 fi
-echo "webos-fastfetch: config logo failed, using text cobweb" >>"$LOG"
+if [ "$CHAFA_READY" -eq 1 ]; then
+	if out=$(fastfetch --config "$CFG" "$@" 2>>"$LOG"); then
+		card "$out"
+		exit 0
+	fi
+	echo "webos-fastfetch: command-raw logo failed, using text cobweb" >>"$LOG"
+else
+	echo "webos-fastfetch: chafa unavailable, using text cobweb" >>"$LOG"
+fi
+# Fallback: force the plain-text cobweb from webos.txt, which renders in
+# every terminal (including the bare Linux console).
 if [ -f "$TXT" ] && out=$(fastfetch --config "$CFG" --logo-type file --logo-source "$TXT" "$@" 2>>"$LOG"); then
 	card "$out"
 	exit 0

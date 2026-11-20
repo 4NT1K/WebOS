@@ -1,7 +1,8 @@
 # WebOS architecture
 
 How the pieces of WebOS fit together: the repository, the boot flow, the
-install recipe, and the decisions behind them.
+install recipe, and the decisions behind them. This document describes WebOS
+**1.01 "Ashen"** (ISO `webos-1.01-Ashen-amd64.iso`).
 
 ---
 
@@ -262,7 +263,8 @@ subvolid 5 and finds no `/sbin/init`.
 
 `webos-theme` installs the pristine rice under `/usr/share/webos/rice` and a
 set of helper binaries (`webos-rice`, `webos-session`, `webos-wallpaper`,
-`webos-shot`, `webos-gaming`). Files that another package owns (GTK configs,
+`webos-shot`, `webos-gaming`, `webos-fastfetch`, `webos-chafa-logo`,
+`webos-menu`, `webos-music`, `webos-stats`, `webos-refresh`). Files that another package owns (GTK configs,
 SDDM's config, Hyprland's own files) are **not** shipped from the package
 image; they are written by `webos-rice --system` in `pkg_postinst`, with a
 one-time backup, which keeps the tree free of file collisions.
@@ -274,16 +276,20 @@ including for every account in `/home`.
 
 | Role | Value |
 | --- | --- |
-| Base | `#050508` |
-| Surface | `rgba(10,10,12,0.55)` |
-| Text | `#f0f0f5` |
-| Text (dim) | `#9aa3ad` |
-| Accent | `#f0f0f5` |
-| Accent glow | `#7dd3fc` |
-| Urgent | `#f87171` |
+| Base | `#000000` |
+| Surface (waybar, music/stats panels) | `rgba(0,0,0,0.92)` (`0.90` where CSS already used `0.90`) |
+| Text | `#D8D8D8` |
+| Text (dim) | `#7A7A7A` |
+| Text (faint) | `#4A4A4A` |
+| Accent | `#E8E8E8` |
+| Border | `rgba(232,232,232,0.20)` |
+| Border (hover) | `rgba(232,232,232,0.35)` |
+| Urgent | `#d27878` |
 
-The same palette is used by the installer's `theme.rs`, so the wizard and the
-desktop look like one product.
+The greyscale ramp is `#a6a6a6` → `#c2c2c2` → `#d8d8d8` → `#e8e8e8`; plain RGB
+triplets use `216,216,216` for text and `122,122,122` for dim. The installer's
+`theme.rs` is deliberately separate: its red-to-green progress colours are part
+of the install-feedback contract and are not part of the desktop palette.
 
 ### Session
 

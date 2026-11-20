@@ -17,8 +17,8 @@ local terminal  = "kitty"
 local terminal2 = "foot"
 local editor    = "nvim"
 local fileman   = "dolphin"
-local browser   = "firefox"
-local menu      = "wofi --show drun"
+local browser   = "firefox-bin"
+local menu      = "webos-menu"
 local settings  = "webos-settings"
 
 -- ── Autostart ───────────────────────────────────────────────────────────────
@@ -65,7 +65,7 @@ hl.env("_JAVA_AWT_WM_NONREPARENTING", "1")
 -- hl.env("GBM_BACKEND", "nvidia-drm")
 -- hl.env("__GLX_VENDOR_LIBRARY_NAME", "nvidia")
 hl.env("EDITOR", "nvim")
-hl.env("BROWSER", "firefox")
+hl.env("BROWSER", "firefox-bin")
 
 -- ── Monitors ────────────────────────────────────────────────────────────────
 -- Auto-detect; edit for HiDPI or multi-monitor layouts.
@@ -86,7 +86,7 @@ hl.config({
 		gaps_out        = 14,
 		border_size     = 2,
 		col             = {
-			active_border   = { colors = { colors.accent_glow, "rgba(ffffff26)" }, angle = 40 },
+			active_border   = { colors = { colors.accent_glow, "rgba(e8e8e833)" }, angle = 40 },
 			inactive_border = colors.border,
 		},
 		resize_on_border = true,
@@ -133,16 +133,14 @@ hl.config({
 	},
 
 	dwindle = {
-		preserve_split       = true,
-		smart_split          = false,
-		smart_resizing       = true,
-		special_scale_factor = 0.98,
+		preserve_split = true,
+		smart_split    = false,
+		smart_resizing = true,
 	},
 
 	master = {
-		new_status           = "master",
-		mfact                = 0.55,
-		special_scale_factor = 0.98,
+		new_status = "master",
+		mfact      = 0.55,
 	},
 
 	misc = {
@@ -282,7 +280,8 @@ hl.bind(mod .. " + SHIFT + Escape", hl.dsp.exit())
 hl.bind(mod .. " + E",            hl.dsp.exec_cmd(fileman))
 hl.bind(mod .. " + B",            hl.dsp.exec_cmd(browser))
 hl.bind(mod .. " + D",            hl.dsp.exec_cmd(menu))
-hl.bind(mod .. " + R",            hl.dsp.exec_cmd("wofi --show run"))
+hl.bind(mod .. " + R",            hl.dsp.exec_cmd(menu))
+hl.bind(mod .. " + M",            hl.dsp.exec_cmd("webos-music --toggle"))
 hl.bind(mod .. " + I",            hl.dsp.exec_cmd(settings))
 hl.bind(mod .. " + SHIFT + I",    hl.dsp.exec_cmd(settings .. " --display"))
 hl.bind(mod .. " + V",            hl.dsp.exec_cmd("cliphist list | wofi --dmenu | cliphist decode | wl-copy"))

@@ -2,30 +2,46 @@
 
 Everything here is installed to `/usr/share/webos/rice/` and applied to a home
 directory by `webos-rice`. The package that owns this directory is
-`webos-theme/webos-theme`.
+`webos-theme/webos-theme`. This is the only WebOS appearance: the mono rice.
+Advanced dotfiles profiles remain available as expert CLI options, but the
+installer does not expose an appearance page.
 
 ## The look
 
-One idea, applied everywhere: **black, translucent, blurred, with white
-highlights over a single ice-blue glow.** Nothing is grey "for contrast";
-surfaces are black at ~55% opacity and let the compositor blur the wallpaper
-through them.
+One idea, applied everywhere: **pure black, near-opaque, blurred, with soft-white
+highlights and no coloured accents.** Panels are black at 92% opacity and let
+the compositor blur the wallpaper through them.
 
 | Token | Value | Used by |
 |---|---|---|
-| base | `#050508` | terminals, wallpaper |
-| surface | `rgba(10,10,12,0.55)` | waybar, wofi, mako |
-| text | `#f0f0f5` | everywhere |
-| text-dim | `#9aa3ad` | secondary labels |
-| accent | `#f0f0f5` | focus, active workspace, icons, cursor |
-| accent-glow | `#7dd3fc` | selection rings, shadows, wallpaper |
-| urgent | `#f87171` | errors, critical battery |
+| base | `#000000` | terminals, wallpaper |
+| surface | `rgba(0,0,0,0.92)` | waybar, wofi, mako, wlogout, music/stats dropdowns |
+| text | `#D8D8D8` | primary labels, terminal foreground |
+| accent | `#E8E8E8` | focus, active workspace, icons, cursor, borders |
+| dim | `#7A7A7A` | secondary labels |
+| faint | `#4A4A4A` | empty workspace buttons |
+| border | `rgba(232,232,232,0.20)` | pill and panel outlines |
+| border-hover | `rgba(232,232,232,0.35)` | hover/focus outlines |
 
-The palette is defined once in `hypr/webos-colors.lua` (a Lua module that
-`hyprland.lua` loads with `require("webos-colors")`), once as CSS variables at
-the top of `waybar/style.css`, and once inline in `wofi/style.css`. If you
-change it, change all three — they are deliberately not generated from a
-template, because a template that fails silently is worse than three files.
+The greyscale ramp is `#a6a6a6` → `#c2c2c2` → `#d8d8d8` → `#e8e8e8`; where a
+plain RGB triplet is required (fastfetch, Konsole, the Plasma colour scheme),
+use `216,216,216` for text and `122,122,122` for dim/secondary.
+
+The palette is deliberately repeated across several files rather than generated
+from a template — a template that fails silently is worse than an explicit list.
+Change it in all of these places:
+
+* `hypr/webos-colors.lua`, `hypr/hyprland.lua`, `hypr/hyprlock.conf`
+* `waybar/config.jsonc`, `waybar/style.css`
+* `wofi/style.css`, `wlogout/style.css`
+* `kitty/kitty.conf`, `foot/foot.ini`, `fish/functions/fish_prompt.fish`
+* `fastfetch/fastfetch.json`, `mako/config`
+* `gtk-3.0/gtk.css`, `gtk-4.0/gtk.css`
+* `kvantum/kvantum.kvconfig`
+* `konsole/DeepBlack.colorscheme`, `konsole/DeepBlack.profile`,
+  `color-schemes/DeepBlack.colors`, `plasma/kdeglobals`
+* the scripts beside the rice in `/usr/share/webos/`: `webos-wallpaper`,
+  `webos-fastfetch` and `webos-chafa-logo` (ANSI colour codes and accent cycling)
 
 ## Where transparency comes from
 
@@ -39,7 +55,7 @@ hl.layer_rule({ match = { namespace = "^waybar$" }, blur = true })
 hl.layer_rule({ match = { namespace = "^wofi$" },   blur = true })
 ```
 
-Applications only need to *be* translucent — `background_opacity 0.85` in
+Applications only need to *be* translucent — `background_opacity 0.82` in
 kitty, `alpha=0.86` in foot, an alpha channel in the waybar CSS. If a window is
 opaque, blur does nothing to it, which is exactly what we want for Steam and
 games.
@@ -87,7 +103,7 @@ darker variant used by the lock screen.
 ```bash
 webos-wallpaper              # regenerate from the shipped SVG
 webos-wallpaper --dark       # regenerate the dark variant only
-webos-wallpaper --next       # cycle the accent hue (regenerates the PNG)
+webos-wallpaper --next       # cycle the greyscale accent (regenerates the PNG)
 ```
 
 The shipped `webos-wallpaper.svg` is pure black, so `--dark` produces the same

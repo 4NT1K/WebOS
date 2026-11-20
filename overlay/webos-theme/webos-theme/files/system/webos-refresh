@@ -1,0 +1,366 @@
+#!/usr/bin/env python3
+"""Persist and restore Hyprland monitor modes (standard library only).
+
+Commands:
+  --save            write the current monitor signatures to the state file
+  --restore         re-apply every stored monitor signature
+  --watch           PID-guarded watcher; save only when a signature changes
+  status            show current versus saved monitor signatures
+  set <hz|mode>     choose an available mode by exact entry or refresh suffix
+
+Monitor changes go through `hyprctl eval 'hl.monitor({...})'` only.
+"""
+
+import atexit
+import json
+import os
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+
+STATE = os.path.expanduser("~/.config/hypr/webos-monitors.json")
+
+
+def runtime_dir():
+    path = os.environ.get("XDG_RUNTIME_DIR")
+    if not path:
+        path = os.path.join(tempfile.gettempdir(), "webos-" + str(os.getuid()))
+    try:
+        os.makedirs(path, mode=0o700, exist_ok=True)
+    except OSError:
+        pass
+    return path
+
+
+PIDFILE = os.path.join(runtime_dir(), "webos-refresh-watch.pid")
+
+
+# ---------------------------------------------------------------------------
+# hyprctl / monitor discovery
+# ---------------------------------------------------------------------------
+
+def hyprctl(*args):
+    try:
+        proc = subprocess.run(
+            ["hyprctl", *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return proc.stdout.decode("utf-8", "replace").strip()
+
+
+def monitors():
+    raw = hyprctl("-j", "monitors")
+    if not raw:
+        return []
+    try:
+        data = json.loads(raw)
+    except (ValueError, TypeError):
+        return []
+    if not isinstance(data, list):
+        return []
+    return [
+        entry for entry in data
+        if isinstance(entry, dict) and entry.get("name") and not entry.get("disabled")
+    ]
+
+
+def num(value):
+    if isinstance(value, bool):
+        return str(int(value))
+    if isinstance(value, float):
+        return repr(value)
+    return str(value)
+
+
+def mode_of(monitor):
+    nested = monitor.get("mode")
+    if isinstance(nested, dict):
+        return (
+            nested.get("width", monitor.get("width", 0)),
+            nested.get("height", monitor.get("height", 0)),
+            nested.get("refreshRate", monitor.get("refreshRate", 0)),
+        )
+    return (
+        monitor.get("width", 0),
+        monitor.get("height", 0),
+        monitor.get("refreshRate", 0),
+    )
+
+
+def mode_string(mode):
+    width, height, rate = mode
+    return "%sx%s@%s" % (num(width), num(height), num(rate))
+
+
+def signature_entry(monitor):
+    width, height, rate = mode_of(monitor)
+    try:
+        scale = float(monitor.get("scale", 1.0))
+    except (TypeError, ValueError):
+        scale = 1.0
+    try:
+        transform = int(monitor.get("transform", 0))
+    except (TypeError, ValueError):
+        transform = 0
+    return {
+        "name": monitor["name"],
+        "mode": mode_string((width, height, rate)),
+        "position": "%sx%s" % (num(monitor.get("x", 0)), num(monitor.get("y", 0))),
+        "scale": scale,
+        "transform": transform,
+    }
+
+
+def signature():
+    entries = [signature_entry(m) for m in monitors()]
+    return sorted(entries, key=lambda entry: entry["name"])
+
+
+def available_modes(monitor):
+    result = []
+    raw = monitor.get("availableModes") or []
+    if not isinstance(raw, list):
+        return result
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        width = entry.get("width")
+        height = entry.get("height")
+        rate = entry.get("refreshRate")
+        if width is None or height is None or rate is None:
+            continue
+        result.append((width, height, rate))
+    return result
+
+
+# ---------------------------------------------------------------------------
+# state file
+# ---------------------------------------------------------------------------
+
+def load_state():
+    try:
+        with open(STATE, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError):
+        return {"monitors": []}
+    if not isinstance(data, dict) or not isinstance(data.get("monitors"), list):
+        return {"monitors": []}
+    return data
+
+
+def write_state(state):
+    directory = os.path.dirname(STATE)
+    try:
+        os.makedirs(directory, exist_ok=True)
+    except OSError:
+        pass
+    temporary = STATE + ".tmp"
+    with open(temporary, "w", encoding="utf-8") as handle:
+        json.dump(state, handle, indent=2, sort_keys=True)
+        handle.write("\n")
+        handle.flush()
+        os.fsync(handle.fileno())
+    os.replace(temporary, STATE)
+
+
+def save():
+    write_state({"monitors": signature()})
+
+
+def save_merged(current=None):
+    if current is None:
+        current = signature()
+    merged = {entry["name"]: entry for entry in load_state()["monitors"]
+              if isinstance(entry, dict) and entry.get("name")}
+    for entry in current:
+        merged[entry["name"]] = entry
+    write_state({"monitors": [merged[name] for name in sorted(merged)]})
+
+
+# ---------------------------------------------------------------------------
+# applying modes
+# ---------------------------------------------------------------------------
+
+def apply(entry):
+    # Older state files stored positions as "x,y"; Hyprland expects "xXy".
+    position = str(entry.get("position", "")).replace(",", "x")
+    expression = "hl.monitor({%s})" % ", ".join((
+        "output=" + json.dumps(entry["name"]),
+        "mode=" + json.dumps(entry["mode"]),
+        "position=" + json.dumps(position),
+        "scale=" + repr(entry["scale"]),
+        "transform=" + repr(entry["transform"]),
+    ))
+    return hyprctl("eval", expression)
+
+
+def restore():
+    entries = load_state()["monitors"]
+    count = 0
+    for entry in entries:
+        if not isinstance(entry, dict) or not entry.get("name"):
+            continue
+        apply(entry)
+        count += 1
+    return count
+
+
+def mode_matches(value, mode):
+    if value == mode_string(mode):
+        return True
+    rate = num(mode[2])
+    if value == rate:
+        return True
+    if "." in value and rate.startswith(value):
+        return True
+    try:
+        if str(int(round(float(rate)))) == str(int(value)):
+            return True
+    except (TypeError, ValueError, OverflowError):
+        pass
+    return False
+
+
+def set_mode(value):
+    applied = 0
+    for monitor in monitors():
+        base = signature_entry(monitor)
+        for mode in available_modes(monitor):
+            if mode_matches(value, mode):
+                entry = dict(base)
+                entry["mode"] = mode_string(mode)
+                apply(entry)
+                applied += 1
+                break
+    if not applied:
+        print("webos-refresh: no available mode matches %r" % value, file=sys.stderr)
+        return 1
+    save_merged()
+    return 0
+
+
+# ---------------------------------------------------------------------------
+# watcher / status
+# ---------------------------------------------------------------------------
+
+def read_pid():
+    try:
+        with open(PIDFILE, "r", encoding="utf-8") as handle:
+            pid = int(handle.read().strip())
+        return pid if pid > 0 else None
+    except (OSError, ValueError):
+        return None
+
+
+def pid_alive(pid):
+    if not pid:
+        return False
+    try:
+        os.kill(pid, 0)
+    except OSError:
+        return False
+    return True
+
+
+def remove_pidfile():
+    if read_pid() == os.getpid():
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+
+
+def watch():
+    pid = read_pid()
+    if pid_alive(pid):
+        return 0
+    if pid:
+        try:
+            os.unlink(PIDFILE)
+        except OSError:
+            pass
+    with open(PIDFILE, "w", encoding="utf-8") as handle:
+        handle.write(str(os.getpid()) + "\n")
+    atexit.register(remove_pidfile)
+
+    def stop(_signum, _frame):
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+
+    previous = signature()
+    while True:
+        time.sleep(5)
+        current = signature()
+        if current != previous:
+            previous = current
+            save_merged(current)
+    return 0
+
+
+def describe(entry):
+    if not entry:
+        return "(not saved)"
+    return "%s  %s  scale=%s  transform=%s" % (
+        entry.get("mode", "?"),
+        entry.get("position", "?"),
+        num(entry.get("scale", "?")),
+        num(entry.get("transform", "?")),
+    )
+
+
+def status():
+    current = {entry["name"]: entry for entry in signature()}
+    saved = {
+        entry["name"]: entry for entry in load_state()["monitors"]
+        if isinstance(entry, dict) and entry.get("name")
+    }
+    names = sorted(set(current) | set(saved))
+    if not names:
+        print("no enabled monitors found")
+        return 0
+    for name in names:
+        same = current.get(name) == saved.get(name)
+        print("%s %s:" % (" " if same else "*", name))
+        print("  current: %s" % describe(current.get(name)))
+        print("  saved:   %s" % describe(saved.get(name)))
+    return 0
+
+
+USAGE = "usage: webos-refresh {--save|--restore|--watch|status|set <hz|mode>}"
+
+
+def main(argv):
+    if not argv:
+        print(USAGE, file=sys.stderr)
+        return 2
+    command = argv[0]
+    if command == "--save":
+        save()
+        return 0
+    if command == "--restore":
+        restore()
+        return 0
+    if command == "--watch":
+        return watch()
+    if command == "status":
+        return status()
+    if command == "set":
+        if len(argv) != 2:
+            print(USAGE, file=sys.stderr)
+            return 2
+        return set_mode(argv[1])
+    print(USAGE, file=sys.stderr)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))
