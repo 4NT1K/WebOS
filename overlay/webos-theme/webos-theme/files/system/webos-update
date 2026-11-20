@@ -149,7 +149,7 @@ if [ "$CHECK" -eq 1 ]; then
 	exit 0
 fi
 
-say "[2/8] Updating @world (this is the long part; it compiles from source)"
+say "[2/8] Updating @world (prefers prebuilt binaries; falls back to source)"
 if emerge --verbose --update --deep --newuse --backtrack=100 \
 	--autounmask-backtrack=y --autounmask-write=y @world; then
 	ok "world updated"
@@ -264,7 +264,7 @@ if [ -e /var/run/reboot-required ] || [ -e /run/reboot-required ]; then
 	REBOOT=1
 fi
 if [ -n "${REBOOT:-}" ]; then
-	note "reboot with: reboot"
+	note "reboot with: loginctl reboot"
 else
 	ok "no reboot needed"
 fi

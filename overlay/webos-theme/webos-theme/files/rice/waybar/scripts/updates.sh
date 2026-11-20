@@ -12,7 +12,7 @@ mkdir -p "$(dirname "$CACHE")"
 refresh() {
 	# Count pending package updates (pretend). Works best after `emerge --sync`.
 	# Run as user; if it fails, keep previous result.
-	count="$(emerge -puDN --quiet @world 2>/dev/null | awk '/^\[ebuild/ {n++} END{print n+0}')"
+	count="$(emerge -puDN --quiet @world 2>/dev/null | awk '/^\[(ebuild|binary)/ {n++} END{print n+0}')"
 	[ -n "$count" ] || count=0
 	printf '%s\n' "$count" > "$CACHE" 2>/dev/null || true
 	printf '%s' "$count"

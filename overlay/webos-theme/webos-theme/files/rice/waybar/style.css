@@ -55,7 +55,8 @@ tooltip label {
 #mpris,
 #tray,
 #custom-waypaper,
-#custom-perf {
+#custom-perf,
+#custom-power {
     background: @surface;
     border: 1px solid @border;
     border-radius: 12px;
@@ -136,13 +137,19 @@ tooltip label {
 }
 
 #custom-waypaper,
-#custom-perf {
+#custom-perf,
+#custom-power {
     color: @dim;
     padding: 0 12px;
 }
 
+#custom-power {
+    color: @text;
+}
+
 #custom-waypaper:hover,
 #custom-perf:hover,
+#custom-power:hover,
 #mpris:hover {
     color: @accent;
     border-color: @border-hover;

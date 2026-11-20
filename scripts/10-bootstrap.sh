@@ -53,6 +53,11 @@ install -d "${CHROOT}/etc/portage/repos.conf" \
            "${CHROOT}/var/db/repos" \
            "${CHROOT}/var/cache/distfiles"
 
+# Overwrite the generic stage3 binhost with the x86-64-v3 one that matches
+# -march=x86-64-v3 / RUSTFLAGS target-cpu=x86-64-v3 above.
+install -m 0644 "${WEBOS_ROOT}/config/binrepos.conf/gentoo.conf" \
+	"${CHROOT}/etc/portage/binrepos.conf/gentoo.conf"
+
 install -m 0644 "${WEBOS_ROOT}/config/make.conf"        "${CHROOT}/etc/portage/make.conf"
 install -m 0644 "${WEBOS_ROOT}/config/world"            "${CHROOT}/var/lib/portage/world"
 for f in "${WEBOS_ROOT}"/config/package.use/*; do

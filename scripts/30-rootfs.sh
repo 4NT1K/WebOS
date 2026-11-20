@@ -49,6 +49,9 @@ done
 # silently mask packages or ship obsolete CPU_FLAGS_X86 (e.g. AVX-512 flags
 # that crash NumPy on CPUs without AVX-512).
 install -m 0644 "${WEBOS_ROOT}/config/make.conf" "${CHROOT}/etc/portage/make.conf"
+install -d "${CHROOT}/etc/portage/binrepos.conf"
+install -m 0644 "${WEBOS_ROOT}/config/binrepos.conf/gentoo.conf" \
+	"${CHROOT}/etc/portage/binrepos.conf/gentoo.conf"
 install -d "${CHROOT}/etc/portage/repos.conf"
 rm -f "${CHROOT}"/etc/portage/repos.conf/*.conf 2>/dev/null || true
 cp -a "${WEBOS_ROOT}"/config/repos.conf/*.conf "${CHROOT}/etc/portage/repos.conf/"

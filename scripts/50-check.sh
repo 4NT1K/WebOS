@@ -88,5 +88,45 @@ if grep -q 'kde-frameworks/kconfig-6.32.0 qml' "${WEBOS_ROOT}/config/package.use
 	good "kconfig qml USE preset"
 else bad "kconfig qml USE missing"; fi
 
+# 8. binary-package updater + native logind power + detailed stats
+if grep -q -- '--getbinpkg' "${WEBOS_ROOT}/config/make.conf"; then
+	good "emerge defaults prefer binpkgs (--getbinpkg)"
+else bad "EMERGE_DEFAULT_OPTS lacks --getbinpkg"; fi
+if grep -q 'binpackages/23.0/x86-64-v3' "${WEBOS_ROOT}/config/binrepos.conf/gentoo.conf" 2>/dev/null; then
+	good "v3 binhost pinned"
+else bad "v3 binhost config missing"; fi
+for s in 10-bootstrap.sh 30-rootfs.sh; do
+	grep -q 'config/binrepos.conf/gentoo.conf' "${WEBOS_ROOT}/scripts/${s}" \
+		&& good "binhost installed by ${s}" || bad "${s} does not install binhost config"
+done
+UPDATER="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-update"
+grep -q 'prefers prebuilt binaries; falls back to source' "$UPDATER" \
+	&& good "updater binary message" || bad "updater still claims source-only"
+grep -q 'reboot with: loginctl reboot' "$UPDATER" \
+	&& good "logind reboot hint" || bad "stale reboot hint"
+grep -qF '/^\[(ebuild|binary)/' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/waybar/scripts/updates.sh" \
+	&& good "binary-aware update counter" || bad "update counter ignores binaries"
+RICE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice"
+if grep -Rq 'systemctl' "$RICE/hypr/hypridle.conf" "$RICE/wlogout/layout"; then
+	bad "stale systemctl power action"
+else good "power actions use loginctl only"; fi
+for verb in 'loginctl suspend' 'loginctl hibernate' 'loginctl reboot' 'loginctl poweroff'; do
+	grep -q "\"action\" : \"${verb}\"" "$RICE/wlogout/layout" \
+		&& good "wlogout: ${verb}" || bad "wlogout missing ${verb}"
+done
+grep -q '"custom/power"' "$RICE/waybar/config.jsonc" \
+	&& good "waybar power widget present" || bad "waybar power widget missing"
+grep -q '"format": "⏻"' "$RICE/waybar/config.jsonc" \
+	&& good "power glyph matches" || bad "power glyph wrong"
+grep -q '"on-click": "wlogout"' "$RICE/waybar/config.jsonc" \
+	&& good "power widget opens wlogout" || bad "power widget click wrong"
+grep -q '#custom-power' "$RICE/waybar/style.css" \
+	&& good "power widget styled" || bad "power widget unstyled"
+STATS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-stats"
+grep -q 'def ram_details' "$STATS" && grep -q 'used / %.1fG' "$STATS" \
+	&& good "RAM shows used/total" || bad "RAM still percentage-only"
+grep -q 'def core_temperatures' "$STATS" && grep -q 'c%d   %d%% %s' "$STATS" \
+	&& good "per-core usage/temp rows" || bad "per-core stats missing"
+
 step "check: ${fail} problem(s)"
 exit "$((fail > 0))"
