@@ -266,6 +266,20 @@ Session environment: Wayland, XDG_CURRENT_DESKTOP=Hyprland, Breeze_Light
 cursor, dark GTK/Qt defaults. GPU hints are set only when the hardware is
 unambiguous (NVIDIA or AMD); Intel uses Mesa's auto-detection.
 
+POWER / SESSION ACTIONS
+----------------------
+WebOS runs OpenRC + elogind and does not install systemd, so there is no
+`systemctl`. Every power action goes through logind:
+
+  wlogout buttons    loginctl reboot | poweroff | suspend | hibernate
+  Hyprland idle      loginctl suspend (rice/hypr/hypridle.conf)
+  Waybar ⏻           click opens wlogout
+  Screen lock        hyprlock
+
+`reboot` and `poweroff` are plain (non-setuid) sysvinit symlinks and will fail
+from a user session; use the menu or `loginctl ...` instead. Services are still
+managed with `rc-service`/`rc-update` (see SERVICES below).
+
 HYPRLAND
 --------
 Config: ~/.config/hypr/hyprland.lua (source of truth:
@@ -389,17 +403,22 @@ DESKTOP PANELS / REFRESH
 Waybar (top, rounded translucent capsules, surface rgba(0,0,0,0.92)):
   left   workspaces and focused window title
   centre mpris pill — click it or press Super+M to toggle the music dropdown
-  right  ▧ waypaper, clock, tray, ▾ performance  (in that order)
-The cpu, memory, pulseaudio and custom/power pills, and any aliases for them,
-are gone; there is still no network or battery module.
+  right  ▧ waypaper, clock, tray, ▾ performance, ⏻ power  (in that order)
+The cpu, memory and pulseaudio pills, and any aliases for them, are gone; there
+is still no network or battery module. The far-right ⏻ pill opens wlogout.
 
 - Music (`webos-music`): a GTK3 layer-shell dropdown under the bar showing the
   current track's MPRIS album art as a darkened greyscale background, title,
   artist, PLAYING/PAUSED status, previous/play-pause/next controls and a
   seekable elapsed/total bar. No extra widget framework is required.
 - Performance (`webos-stats`): the ▾ pill opens a small corner dropdown with
-  CPU, GPU, VRAM, RAM, DISK and TEMP bars. GPU and VRAM show `n/a` without
-  `nvidia-smi`.
+  CPU, GPU, VRAM, RAM, DISK and TEMP bars. RAM shows actual used/total GiB, and
+  CPU lists every core (`c0   2% 53C`) with usage plus a hwmon temperature;
+  `k10temp`/`coretemp`/`zenpower`/`cpu` are preferred over stale `acpitz`
+  zones. GPU and VRAM show `n/a` without `nvidia-smi`.
+- Power (`⏻`, far right): opens `wlogout`; tooltip is "Power — open session
+  menu (reboot, shut down, suspend)". All buttons use `loginctl` verbs. See
+  POWER / SESSION ACTIONS below.
 - Waypaper (`▧`): the pill launches `waypaper` directly to choose a wallpaper.
 - Refresh (`webos-refresh`): saves and restores exact monitor modes at login and
   watches live changes from wdisplays/wlr-randr.
@@ -459,7 +478,16 @@ GAMING / PERFORMANCE
 
 UPDATES / PACKAGES
 ------------------
-Portage + OpenRC. No binary host by default: emerge compiles from source.
+Portage + OpenRC. `webos-update` and `emerge` prefer prebuilt binaries:
+`EMERGE_DEFAULT_OPTS` includes `--getbinpkg`, and
+`/etc/portage/binrepos.conf/gentoo.conf` pins Gentoo's
+`releases/amd64/binpackages/23.0/x86-64-v3` binhost. A binary is used only when
+its version, USE flags and CPU flags match; mismatches, `~amd64` packages newer
+than the binhost and WebOS/overlay-only packages fall back to source. We
+deliberately do NOT use `-G`, `-K` or `--binpkg-respect-use=n`, so a binary with
+wrong USE flags is never forced onto the machine. `webos-update` reports which
+updates were binary vs source and prints an honest total; the Waybar update
+counter accepts both `[binary` and `[ebuild` emerge lines.
 Repos: gentoo, webos (local overlay /usr/local/portage/webos); build-only
 overlays may be disabled under /etc/portage/repos.conf.disabled.
 
@@ -510,7 +538,8 @@ webos-autostart     start portals, polkit, bar/shell and wallpaper
 webos-portals       start XDG portals + a polkit agent (OpenRC)
 webos-menu          curated wofi application launcher (Super+D / Super+R)
 webos-music         MPRIS music dropdown (Super+M; also the mpris pill)
-webos-stats         CPU/GPU/VRAM/RAM/disk/temp dropdown (the ▾ pill)
+webos-stats         per-core CPU usage + temps, RAM used/total, GPU/VRAM,
+                    disk and temperatures (the ▾ pill)
 webos-refresh       save/restore and watch exact monitor refresh modes
 webos-wallpaper     render/apply/cycle wallpaper, --daemon
 webos-shot          screenshots (region/window/output/full); Super+Shift+S snips
@@ -531,6 +560,8 @@ FILES / PATHS / LOGS
 /etc/zsh/zshrc
 /etc/fish/conf.d/00-webos-fastfetch.fish
 /etc/sddm.conf.d/10-webos.conf
+/etc/portage/binrepos.conf/gentoo.conf  Gentoo x86-64-v3 binhost for emerge
+/usr/share/webos/rice/wlogout/layout     power buttons (loginctl verbs)
 /usr/local/portage/webos/         WebOS ebuild overlay
 /var/log/webos-install.log      installer log
 /var/log/webos-update.log         updater log
@@ -575,12 +606,47 @@ KNOWN LIMITATIONS / NOTES
 - /usr/share/xsessions/Xsession.desktop is the standard xinit entry; SDDM
   does not offer it because WebOS points SessionDir at
   /usr/share/webos/sessions.
-- No binary package host by default; updates compile from source.
+- Gentoo binaries are used only when version/USE/CPU flags match; with
+  `~amd64` and WebOS-specific flags, some updates still compile from source.
+  WebOS-only and overlay packages always compile from source.
+- No `systemctl`: use `loginctl` for power actions and `rc-service`/`rc-update`
+  for services.
 - GitHub social preview cannot be set from the CLI.
+
+MAINTAINER / RELEASE WORKFLOW (FROM WEBOS ITSELF)
+-------------------------------------------------
+You do not need to boot another distro to publish an update. On a running
+WebOS system, as root:
+
+  git clone https://github.com/4NT1K/WebOS.git
+  cd WebOS
+  emerge -av dev-vcs/git dev-lang/rust app-arch/p7zip dev-util/github-cli  # build/publish tools
+  gh auth login                 # authenticate once for release uploads
+  ./build.sh fetch              # stage3, portage, kernel patches, overlays, crate vendor
+  ./build.sh bootstrap          # fresh chroot (or reuse an existing one)
+  ./build.sh kernel
+  ./build.sh rootfs             # includes this WEBOS-INFO.txt via webos-theme
+  bash scripts/50-check.sh      # source regression guards: must report 0 problems
+  ./build.sh iso                # build/webos-1.01-Ashen-amd64.iso
+
+Verify before publishing: `webos-update --check`, `waypaper --help`,
+`webos-stats` core/RAM output, and that the ISO's `webos/version` matches
+`WEBOS_VERSION=1.01-Ashen`. Keep the USB stick mounted, then copy the ISO over
+the old one on Ventoy (and refresh `webos-version.txt`), split it for GitHub,
+verify `sha256sum -c SHA256SUMS.txt`, and use `gh release upload v1.01
+--clobber ...` plus `gh release edit v1.01 --notes-file docs/releases/v1.01.md
+--latest`. Never shut the machine down as part of a release; only reboot when
+you deliberately test the new kernel.
+
+Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.01"`).
+Assets replace the existing `v1.01` tag in place; do not create a new tag for
+maintenance fixes. Before wiping another OS's drive, keep a verified backup and
+confirm WebOS boots and installs from its own SSD.
 
 LINKS
 -----
 Source and releases : https://github.com/4NT1K/WebOS
+Installed guide     : /usr/share/webos/WEBOS-INFO.txt (this file)
 Roadmap             : ROADMAP.md
 Architecture        : docs/ARCHITECTURE.md
 Build guide         : docs/BUILD.md
