@@ -121,8 +121,11 @@ KREL="$(cat "${BUILD_DIR}/.kernel-release" 2>/dev/null || true)"
 [[ -n ${KREL} ]] || die "could not determine kernel release for module builds"
 chroot_sh "set -e
 KREL='${KREL}'
-SRC=\$(ls -d /usr/src/linux-* 2>/dev/null | sort -V | tail -n1)
-[[ -n \"\$SRC\" ]] || { echo 'no kernel sources'; exit 1; }
+# Pin to the WebOS sources. A reused chroot can also hold newer vanilla
+# gentoo-sources (e.g. 7.3.4), whose Kconfig syntax this kernel's kconfig
+# parser cannot read; version-sorting would pick the wrong tree.
+SRC='/usr/src/linux-${WEBOS_KERNEL_SERIES}'
+[[ -d \"\$SRC\" ]] || { echo \"WebOS kernel sources missing at \$SRC\"; exit 1; }
 ln -sfn \"\$SRC\" /usr/src/linux
 ln -sfn \"\$SRC\" \"/lib/modules/\$KREL/build\"
 cp -f \"/boot/config-\$KREL\" \"\$SRC/.config\"
