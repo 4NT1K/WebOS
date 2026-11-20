@@ -1,0 +1,4 @@
+# nss-mdns 0.15 has a parallel-make race: the assembler step that generates
+# src/libnss-mdns-la-map-file can run before automake creates src/, failing with
+# "opening output file ... No such file or directory". Build it serially.
+sys-auth/nss-mdns nss-mdns.conf
