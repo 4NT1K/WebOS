@@ -279,3 +279,22 @@ Fix:
   panels use a 100px top margin so they sit below the top bar (stats aligned
   to the top right). The stale error overlay is cleared with
   `hyprctl seterror disable`. Regression checks added.
+
+[13] hyprlock placeholder regression / auto-lock lockup
+--------------------------------------------------------
+Symptom:
+  The lock screen again rendered the raw `<span foreground=` prefix and the
+  session appeared to lock up at the password prompt.
+
+Cause:
+  Machines still running webos-theme-1.0-r1 had the original hyprlock config,
+  where single `#` in `foreground="#7A7A7A"` is treated as a hyprlang comment
+  and truncates the Pango markup. The same file also carried the obsolete
+  `grace` and `no_fade_in` options.
+
+Fix:
+  - Local config corrected: escaped colour `##7A7A7A` and removed the two
+    obsolete general options.
+  - Bumped the theme to 1.0-r4 (installer pin, docs and 50-check.sh updated) so
+    a normal `webos-update` delivers the corrected rice file to r1/r3 machines.
+  - webos-rice --doctor already asserts the escaped colour and absent options.
