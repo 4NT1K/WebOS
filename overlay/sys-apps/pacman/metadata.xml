@@ -10,8 +10,9 @@
   </upstream>
   <description>
     pacman is the package manager used to install applications on a WebOS
-    system. Arch Linux packages are consumed through the ::arch ebuild
-    repository, which exposes Arch packages as Gentoo ebuilds.
+    system. It is packaged locally by WebOS in the ::webos overlay; applications
+    are installed with pacman -S from the Arch repositories configured in
+    /etc/pacman.conf, not through an ::arch ebuild repository.
   </description>
   <use>
   </use>

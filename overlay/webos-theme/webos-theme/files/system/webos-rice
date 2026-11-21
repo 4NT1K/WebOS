@@ -495,7 +495,9 @@ doctor() {
 	chk "Breeze_Light cursor"      "[[ -d /usr/share/icons/Breeze_Light/cursors ]]"
 	chk "Qt6 platform theme plugin" "[[ -f /usr/lib64/qt6/plugins/platformthemes/libqt6ct.so ]]"
 	chk "qt6ct colour scheme"      "[[ -f /usr/share/qt6ct/colors/darker.conf ]]"
-	chk "hyprlock Pango colour"    "! grep -q '##' \$HOME/.config/hypr/hyprlock.conf"
+	chk "hyprlock Pango colour"    "grep -Eq 'foreground=\"##[0-9A-Fa-f]{6}\"' \$HOME/.config/hypr/hyprlock.conf"
+	chk "hyprlock options valid"   "! grep -Eq '^[[:space:]]*(grace|no_fade_in)[[:space:]]*=' \$HOME/.config/hypr/hyprlock.conf"
+	chk "hypridle DPMS syntax"     "grep -q 'hl.dispatch(hl.dsp.dpms' \$HOME/.config/hypr/hypridle.conf"
 	chk "fastfetch modules"          "[[ -f \$HOME/.config/fastfetch/fastfetch.json ]]"
 	chk "rsvg-convert or magick"   "command -v rsvg-convert || command -v magick || command -v convert"
 	# Do not use `grep -q` in these pipelines: with `set -o pipefail`, grep

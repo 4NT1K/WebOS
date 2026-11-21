@@ -30,8 +30,8 @@ WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look
 - **Fixes:** repaired `webos-theme` merge collisions that could leave an ISO without `webos-shell`, waybar config, portal prefs or dark-mode defaults; portal overrides live under `/etc/xdg-desktop-portal`.
 - **Settings/devices:** `webos-settings` launcher; under Hyprland use `wdisplays` and compositor device tools (KDE device panels require a Plasma session).
 - **Branding & theme:** soft-white spiderweb WebOS logo and WebOS identity (no Gentoo welcome/identity leaks). Refined Ashen greyscale parity across Hyprland and regular Plasma (#000000 base, #D8D8D8 text, #E8E8E8 accents, #7A7A7A dim); translucent kitty (opacity 0.82, `auto` fonts) with a chafa-symbol cobweb fastfetch card, and `Super+Shift+S` screenshot snips.
-- **Hyprland UI:** near-opaque top bar (waybar) — left: workspaces and window title; centre: mpris pill that toggles the music dropdown; right: ▧ waypaper, clock, tray, ▾ performance. `webos-menu` backs Super+D / Super+R, Super+M toggles music, and `webos-stats` opens the corner performance panel. Smoother animations and improved portal/auth wiring.
-- **Updates & packaging:** `webos-update` sync/@world/depclean/config/kernel+GRUB/flatpak/rice flow — no manual kernel or software updates needed; build-time-only Portage overlays disabled on installed systems.
+- **Hyprland UI:** near-opaque top bar (waybar) — left: workspaces and window title; centre: mpris pill that toggles the music dropdown; right: ▧ waypaper, clock, tray, ▾ performance, ⏻ power. `webos-menu` backs Super+D / Super+R, Super+M toggles music, and `webos-stats` opens the corner performance panel. Smoother animations and improved portal/auth wiring.
+- **Updates & packaging:** `webos-update` sync/@world/depclean/config/kernel+GRUB/flatpak/rice flow — no manual kernel or software updates needed; the third-party Portage overlays ship in the image and stay enabled on installed systems.
 
 > **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.01 without adding X11 session packages.
 
@@ -69,7 +69,7 @@ webos-installer -c /etc/webos/install.toml -y
 
 ## Package management & updates
 
-WebOS uses **Portage** (Gentoo) and **OpenRC**. There is no binary host configured by default, so `emerge` builds from source.
+WebOS uses **Portage** (Gentoo) and **OpenRC**. The Gentoo **x86-64-v3 binhost is configured by default** with source fallback: `emerge` prefers matching prebuilt binaries and builds from source when a binary does not match.
 
 ```bash
 sudo emerge --sync
@@ -83,7 +83,7 @@ sudo webos-update           # sync, update world, depclean, config updates, flat
 sudo webos-update --check   # dry run
 ```
 
-- Enabled repos in image config: `gentoo`, `webos` (local overlay), and build-time third-party overlays; some are disabled on installed systems under `/etc/portage/repos.conf.disabled`.
+- Enabled repos in image config: `gentoo`, `webos` (local overlay), and the three third-party overlays (`guru`, `hyproverlay`, `steam-overlay`), which ship in the image and stay enabled on installed systems.
 - See installed docs: `/usr/share/webos/WEBOS-INFO.txt`
 
 ## Steam / 32-bit note
@@ -136,7 +136,7 @@ See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE
 
 ## Roadmap
 
-Planned work beyond 1.01 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, binhost, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
+Planned work beyond 1.01 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
 
 ## License
 

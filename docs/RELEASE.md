@@ -51,14 +51,14 @@ release: `1.01.x` all ship as Ashen.
 - [ ] `installer/Cargo.toml` version is bumped if the installer changed, and
       the matching `webos-installer-<PV>.ebuild` exists.
 - [ ] Kernel: `branding/version`'s `WEBOS_KERNEL_SERIES` matches the ebuilds
-      and `kernel/patchset.conf`.
-- [ ] Every overlay package has a `Manifest` and a `metadata.xml`.
+      and `kernel/patchset.conf` (an empty patchset is valid — stock LTS).
+- [ ] Every overlay package has a `metadata.xml`, and a `Manifest` unless it
+      uses `SRC_URI=""` (no distfiles to checksum).
 - [ ] `config/repos.conf/` lists every repository the tree needs
       (`gentoo`, `webos`, and the third-party overlays), each with the intended
       priority.
 - [ ] Every atom resolved from `guru` / `hyproverlay` / `steam-overlay` still
-      exists in that overlay at the pinned commit you build against.
-      and `sys-apps/pacman` is in the world and in `webos-base`'s RDEPEND.
+      exists at the overlay HEAD fetched for the build.
 - [ ] `docs/` reflects reality (BUILD.md, ARCHITECTURE.md, this file).
 - [ ] `README.md` reflects reality (tree layout, build commands).
 - [ ] `CHANGELOG` / release notes drafted (see §6).
@@ -75,12 +75,21 @@ Run the integrity checks. They are cheap and catch the boring mistakes:
 
 It checks:
 
-1. every package directory has a `Manifest` and `metadata.xml`;
+1. every overlay package has a `metadata.xml`, and a `Manifest` unless it uses
+   `SRC_URI=""` (no distfiles to checksum);
 2. `branding/os-release`'s `ID` matches `branding/version`;
-3. `kernel/patchset.conf` has at least one pinned source;
-4. `installer/Cargo.toml` parses (`cargo metadata`);
-5. every `scripts/*.sh` (and `build.sh`) passes `bash -n`;
-6. the core rice files exist.
+3. the `desktop` and `kernel/webos-fragment.config` symlinks resolve;
+4. `kernel/patchset.conf` entries are well formed and pinned — an empty
+   patchset is valid (stock LTS), a malformed entry is not;
+5. `installer/Cargo.toml` parses (`cargo metadata`, when cargo is present);
+6. every first-party `scripts/*.sh`, `build.sh`, `kernel/fetch-patches.sh` and
+   `installer/vendor.sh` passes `bash -n` (third-party `installer/vendor/` is
+   skipped);
+7. the core rice files exist;
+8. the 1.01 regressions stay fixed (CPU_FLAGS rebuild, third-party overlays
+   shipped in the rootfs, `kconfig[qml]` USE preset);
+9. the binhost/`--getbinpkg` defaults, updater messages, logind power actions,
+   ⏻ power widget, theme pin and hyprlock/hypridle/music/stats details.
 
 Then, where the tools are available:
 
@@ -138,7 +147,9 @@ qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/webos-1.01-Ashen-amd64.iso -
 - [ ] `cat /etc/os-release` reports `ID=webos`, `VERSION="1.01 (Ashen)"`.
 - [ ] `webos-rice --doctor` is clean; the desktop is black with near-opaque
       greyscale panels and no ice-blue accents.
-- [ ] A Steam game launches (gamescope/MangoHud as configured).
+- [ ] Flatpak Steam installs and launches from Flathub
+      (`flatpak install com.valvesoftware.Steam`), with gamescope/MangoHud as
+      configured — the 64-bit-only image uses this fallback, not native Steam.
 - [ ] `/etc/webos/install.toml` exists and re-running
       `webos-installer --config /etc/webos/install.toml --yes` is valid.
 
@@ -231,8 +242,7 @@ What is not, and why:
 * the Gentoo **snapshot** and **stage3** are date-stamped downloads;
 * the third-party overlays (`guru`, `hyproverlay`, `steam-overlay`) are
   shallow-cloned at their moving HEAD, so the exact ebuild that satisfies an
-  overlay atom can change between builds;
-  packages overlay at moving HEAD, and pacman consumes Arch's moving repos.
+  overlay atom can change between builds and is not a pinned commit.
 * `make.conf` targets `-march=x86-64-v3`, but a native rebuild differs;
 * `grub-mkrescue`, `mksquashfs` and `dracut` embed timestamps.
 
@@ -243,7 +253,7 @@ enough to verify a download, not to reproduce it.
 
 ## 9. Tag and publish
 
-The tree is not a git repository in this sandbox; on the real project:
+From the project's git checkout:
 
 ```bash
 git tag -s v1.01 -m "WebOS 1.01 (Ashen)"

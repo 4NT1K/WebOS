@@ -73,8 +73,8 @@ Everything hinges on this distinction.
   Keybinds, waybar modules/CSS, fastfetch card, hyprland rules, transparency,
   zram boot glue, SDDM seeding, WEBOS-INFO.txt
       -> overlay/webos-theme/webos-theme/files/
-      -> bump revision of overlay/webos-theme/webos-theme/webos-theme-1.01.ebuild
-         (e.g. webos-theme-1.01-r1.ebuild), regenerate Manifest if files changed.
+      -> bump the theme ebuild revision (currently webos-theme-1.0-r3;
+         e.g. webos-theme-1.0-r4), regenerate Manifest if files changed.
 
   webos-update, webos-rice, webos-fastfetch, system helpers
       -> overlay/webos-theme/webos-theme/files/system/

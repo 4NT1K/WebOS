@@ -145,7 +145,8 @@ This is the long stage: it builds the toolchain and the base system from source.
 5. Installs branding (`os-release`, `issue`, `lsb-release`, logo).
 6. Emerges `webos-theme/webos-theme` and runs its config hook.
 7. `rsync`s the chroot into `build/rootfs`, excluding `/proc /sys /dev /tmp
-   /var/tmp /var/cache /usr/src /var/db/repos` and the module build trees.
+   /var/tmp /var/cache /usr/src` and the module build trees. `/var/db/repos`,
+   including the third-party overlays, is shipped in the rootfs.
 
 `build/rootfs` is the finished system. The ISO stage and the installer both
 consume it.
@@ -286,12 +287,11 @@ WebOS builds against five repositories. Their `repos.conf` files live in
 | `steam-overlay` | `/var/db/repos/steam-overlay` | <https://github.com/anyc/steam-overlay.git> | `-2000` | `steam-launcher` |
 
 **Priority** is "higher wins". `webos` overrides everything; `gentoo` wins over
-the third-party overlays, so those are only ever consulted for packages
-`::gentoo` does not carry.
+the third-party overlays, so those are only ever consulted for packages the base
 system does not carry itself.
 
 The third-party overlays are cloned into `build/cache/repos/` by `fetch` and
 copied into the chroot by `bootstrap`. They keep their `.git`, so on the
-installed system `emerge --sync` (or `emaint sync -a`) updates them. The
-`rootfs` export excludes `/var/db/repos`, so a fresh install re-syncs them on
-first use rather than shipping stale copies.
+installed system `emerge --sync` (or `emaint sync -a`) updates them. They are
+shipped in the `rootfs` under `/var/db/repos`, so installed packages from those
+overlays stay resolvable without a first-use re-sync.

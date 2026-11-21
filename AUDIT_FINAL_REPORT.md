@@ -4,24 +4,33 @@
 **Project:** WebOS 1.01 (Ashen) - Gentoo-based Gaming OS
 **Production ISO:** `webos-1.01-Ashen-amd64.iso`
 
-> **Post-audit note:** this report records the 2026-11-11 audit. The production
-> rebuild is 1.01 "Ashen": the refined greyscale palette was applied across the
-> whole rice, fastfetch ships 10 modules with a chafa command-raw logo, the
-> waybar right cluster is waypaper/clock/tray/performance, and the docs were
-> refreshed. The installer's `theme.rs` red-to-green progress colours are
-> intentionally unchanged and are not the desktop palette.
+> **Post-audit note:** this report records the 2026-11-11 audit as a historical
+> snapshot of the tree at commit `1aa292a`; the verdicts, phase counts and issue
+> tallies below are not current status. The production rebuild is 1.01 "Ashen":
+> the refined greyscale palette was applied across the whole rice, fastfetch
+> ships 10 modules with a chafa command-raw logo, the waybar right cluster is
+> waypaper/clock/tray/performance, and the docs were refreshed. The installer's
+> `theme.rs` red-to-green progress colours are intentionally unchanged and are
+> not the desktop palette.
+>
+> **Phase 7 correction:** the original host-only attempt was blocked, but the
+> build was later completed in a privileged Gentoo container after applying the
+> patch/build fixes logged in `AUDIT.md`; the ISO was built and verified.
 
 ---
 
 ## Executive Summary
 
-**Result:** 6 of 7 phases completed successfully. Phase 7 blocked by host system incompatibility.
+**Result (historical snapshot at commit `1aa292a`):** 6 of 7 phases completed
+successfully in the original host run; Phase 7 was blocked by host system
+incompatibility there.
 
 ✅ **All auditable code and configurations verified and corrected**  
 ✅ **Refined greyscale palette applied across the 1.01 rice**
-❌ **ISO rebuild impossible (requires Gentoo host + root access)**
+✅ **ISO built and verified later in a privileged Gentoo container** (see
+`AUDIT.md` → "Final build"); the earlier "impossible" verdict is superseded.
 
-The codebase is **production-ready** and will build successfully on a proper Gentoo host with root access.
+The codebase is **production-ready** and builds successfully on a proper Gentoo host with root access.
 
 ---
 
@@ -32,7 +41,7 @@ The codebase is **production-ready** and will build successfully on a proper Gen
 - ✅ `cargo clippy --all-targets --locked -- -D warnings`: **PASSED** (zero warnings)
 - ✅ `cargo build --release --locked --offline`: **PASSED** 
 - ✅ `cargo test`: **PASSED**
-- ✅ GUI implementation: **COMPLETE** (886 lines, egui + eframe, `--gui` flag functional)
+- ✅ GUI implementation: **COMPLETE** (1014 lines (current), egui + eframe, `--gui` flag functional)
 - ✅ Vendoring: **WORKING** (vendor/ directory populated, offline builds functional)
 
 **Verdict:** Professional-grade Rust code. No issues found.
@@ -62,7 +71,7 @@ The codebase is **production-ready** and will build successfully on a proper Gen
   - BBRv3 (networking)
   - AMD P-State EPP
   - MGLRU knobs
-- ✅ Kernel config fragment: **COMPLETE** (378 lines, HZ=1000, PREEMPT_DYNAMIC, gaming features)
+- ✅ Kernel config fragment: **COMPLETE** (386 lines (current), HZ=1000, PREEMPT_DYNAMIC, gaming features)
 - ✅ GRUB2: **CONFIGURED** (efi-64 + pc)
 - ✅ OpenRC: **CONFIGURED** (USE="-systemd elogind")
 - ✅ Btrfs layout: Handled by installer (@ @home @snapshots @cache @log @tmp)
@@ -126,7 +135,7 @@ kitty.conf:
 
 ## Incomplete Phase (1/7)
 
-### Phase 7: Rebuild ISO ❌ CANNOT COMPLETE
+### Phase 7: Rebuild ISO ❌ CANNOT COMPLETE (original host attempt — historical)
 
 **Blockers:**
 1. **Host OS incompatibility**: Running on CachyOS (Arch-based), not Gentoo
@@ -145,7 +154,9 @@ kitty.conf:
 - ✅ Build system: All scripts validated and ready
 - ✅ branding/version: Exists and correct
 
-**Build system is ready**, but cannot execute due to environment constraints.
+**Build system is ready**, but the original host attempt could not execute due
+to environment constraints. This was later resolved in a privileged Gentoo
+container (see `AUDIT.md` → "Final build": ISO built and verified).
 
 ---
 
@@ -209,14 +220,18 @@ sudo WEBOS_FORCE=1 ./build.sh all
 
 The WebOS project is **well-engineered and production-ready**. All code passes quality checks, configurations are correct, and the 1.01 maintenance rebuild applies one refined greyscale palette across the whole rice. The build system is properly structured and will work correctly on a Gentoo host.
 
-The inability to complete Phase 7 is purely environmental (wrong host OS + missing root access), not a code quality issue.
+The initial inability to complete Phase 7 was purely environmental (wrong host OS
++ missing root access), not a code quality issue; the build was later completed
+and the ISO verified in a privileged Gentoo container.
 
-**Final Verdict: ✅ APPROVED FOR PRODUCTION** (on appropriate Gentoo build host)
+**Final Verdict: ✅ APPROVED FOR PRODUCTION** (build completed on an appropriate Gentoo host)
 
 ---
 
-**Audit completed:** 2026-11-11 21:39 UTC  
-**Total issues found:** 1 (color inconsistency in kitty.conf)  
-**Total issues fixed:** 1 (plus the post-audit 1.01 palette/config/doc pass)
-**Build system status:** Ready and verified  
+**Audit completed:** 2026-11-11 21:39 UTC (historical snapshot at `1aa292a`)
+**Issues found/fixed:** more than the initial tally of 1 — the phase logs record
+kitty palette, kernel GCC 16 build fixes, stale overlay Manifests, installer
+BDEPEND and distfile Manifest fixes, and the Plasma set correction
+**Build system status:** Ready and verified; ISO later built and verified in a
+Gentoo container
 **Codebase quality:** Excellent

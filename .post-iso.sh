@@ -1,15 +1,16 @@
 #!/bin/bash
 set -Eeuo pipefail
-export WEBOS_ROOT=/sanusos
-source /sanusos/scripts/lib/common.sh 2>/dev/null || true
-cd /sanusos
-OUT=/sanusos/build/verify.log
+WEBOS_ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+export WEBOS_ROOT
+source "${WEBOS_ROOT}/scripts/lib/common.sh" 2>/dev/null || true
+cd "$WEBOS_ROOT"
+OUT="${WEBOS_ROOT}/build/verify.log"
 exec >"$OUT" 2>&1
 echo "== verify $(date -u +'%Y-%m-%dT%H:%M:%SZ') =="
 # Pick this release's ISO, never an older one that happens to sort first.
-ISO="/sanusos/build/${WEBOS_ID:-webos}-${WEBOS_VERSION_FULL:-}-${WEBOS_ARCH:-amd64}.iso"
+ISO="${WEBOS_ROOT}/build/${WEBOS_ID:-webos}-${WEBOS_VERSION_FULL:-}-${WEBOS_ARCH:-amd64}.iso"
 if [[ ! -f "$ISO" ]]; then
-  ISO=$(ls -1t /sanusos/build/webos-*.iso 2>/dev/null | head -1 || true)
+  ISO=$(ls -1t "${WEBOS_ROOT}"/build/webos-*.iso 2>/dev/null | head -1 || true)
 fi
 if [[ -z "${ISO}" ]]; then echo "FAIL: no ISO found"; echo rc=1; exit 1; fi
 echo "ISO: ${ISO} $(du -h "$ISO" | cut -f1)"

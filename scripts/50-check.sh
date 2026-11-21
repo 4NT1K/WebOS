@@ -102,6 +102,11 @@ done
 UPDATER="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-update"
 grep -q 'prefers prebuilt binaries; falls back to source' "$UPDATER" \
 	&& good "updater binary message" || bad "updater still claims source-only"
+grep -qF -- '--binpkg-respect-use=n' "$UPDATER" \
+	&& grep -qF -- '--binpkg-changed-deps=n' "$UPDATER" \
+	&& good "updater has fast binpkg mode" || bad "updater lacks fast binpkg mode"
+grep -qF -- '--buildpkg' "$UPDATER" \
+	&& good "updater can cache builds" || bad "updater lacks buildpkg mode"
 grep -q 'reboot with: loginctl reboot' "$UPDATER" \
 	&& good "logind reboot hint" || bad "stale reboot hint"
 grep -qF '/^\[(ebuild|binary)/' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/waybar/scripts/updates.sh" \
@@ -130,11 +135,51 @@ grep -q '#custom-power' "$MONO/style.css" \
 LOCK="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/hypr/hyprlock.conf"
 grep -q 'placeholder_text = <span foreground="##' "$LOCK" \
 	&& good "hyprlock placeholder color escaped" || bad "hyprlock placeholder markup truncated"
+! grep -Eq '^[[:space:]]*(grace|no_fade_in)[[:space:]]*=' "$LOCK" \
+	&& good "hyprlock has no removed options" || bad "hyprlock uses removed options"
+IDLE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/hypr/hypridle.conf"
+grep -q "hl.dispatch(hl.dsp.dpms({ action = \"off\" }))" "$IDLE" \
+	&& good "DPMS off uses Lua dispatcher" || bad "DPMS off still uses old syntax"
+grep -q 'brightnessctl -c backlight' "$IDLE" \
+	&& good "idle dim targets backlights only" || bad "idle dim still targets keyboard LEDs"
+grep -q 'hyprlock --grace 0 --no-fade-in' "$IDLE" \
+	&& good "lock cmd passes hyprlock flags" || bad "lock cmd misses hyprlock flags"
+grep -q '"ipc": false' "$RICE/waybar/config.jsonc" \
+	&& good "waybar IPC warning disabled" || bad "waybar IPC still warns"
 STATS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-stats"
 grep -q 'def ram_details' "$STATS" && grep -q 'used / %.1fG' "$STATS" \
 	&& good "RAM shows used/total" || bad "RAM still percentage-only"
 grep -q 'def core_temperatures' "$STATS" && grep -q 'c%d   %d%% %s' "$STATS" \
 	&& good "per-core usage/temp rows" || bad "per-core stats missing"
+
+MUSIC="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-music"
+grep -q 'fallback_position' "$MUSIC" && grep -q 'hl.dsp.window.move' "$MUSIC" \
+	&& good "music dropdown anchors under the bar" || bad "music dropdown can land in the middle"
+grep -q 'def slide_down' "$MUSIC" && grep -q 'PANEL_SIZE \* eased' "$MUSIC" \
+	&& good "music panel slides downwards" || bad "music panel does not slide downwards"
+grep -q 'GaussianBlur(radius=9)' "$MUSIC" \
+	&& good "music art is lightly frosted" || bad "music art frosting is wrong"
+grep -q '#music-card { background-image: url' "$MUSIC" \
+	&& grep -q 'background-size: cover' "$MUSIC" \
+	&& good "song image fills the whole card" || bad "song image is not the card background"
+grep -q 'convert("RGB")' "$MUSIC" && ! grep -q 'convert("L")' "$MUSIC" \
+	&& good "music cover art stays in colour" || bad "music cover art is still greyscale"
+grep -q 'PANEL_SIZE = 340' "$MUSIC" && grep -q 'set_default_size(PANEL_SIZE, PANEL_SIZE)' "$MUSIC" \
+	&& good "music player is a compact square" || bad "music player size is wrong"
+grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class AudioVisualizer' "$MUSIC" \
+	&& good "music player has an audio visualizer" || bad "music player lacks a visualizer"
+grep -q 'art_palette(path, visualizer.BANDS)' "$MUSIC" \
+	&& good "visualizer follows the cover colours" || bad "visualizer colours are not tied to the art"
+grep -q '"pw-record", "--target", self.target' "$MUSIC" \
+	&& ! grep -q '@DEFAULT_SINK@.monitor' "$MUSIC" \
+	&& good "visualizer only captures the music player" || bad "visualizer captures all system audio"
+grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \
+	&& good "music dropdown excluded from blur" || bad "music dropdown not excluded from blur"
+grep -q 'webos-theme-1.0-r3.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "ISO pins theme r3" || bad "ISO still pins an older theme"
+grep -q 'gtk-layer-shell\[introspection\]' \
+	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r3.ebuild" \
+	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
 step "check: ${fail} problem(s)"
 exit "$((fail > 0))"

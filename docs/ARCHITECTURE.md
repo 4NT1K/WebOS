@@ -83,16 +83,16 @@ WebOS is four things stacked:
   keywords, masks, licenses, profile). This is what `bootstrap` produces.
 * **Ebuild repositories** — `::gentoo` plus our `::webos` overlay and three
   third-party overlays (`::guru`, `::hyproverlay`, `::steam-overlay`) that
-  carry the Hyprland stack, the Steam launcher and the misc gaming tools, plus
-  the Arch application packages.
-  Priority is `webos (100) > gentoo (-1000) > third-party (-2000) >
-  the base stack do not carry. See [`BUILD.md`](BUILD.md#10-ebuild-repositories).
+  carry the Hyprland stack, the Steam launcher and miscellaneous gaming tools.
+  Priority is `webos (100) > gentoo (-1000) > third-party (-2000)` — higher
+  wins, so the third-party overlays are consulted only for packages the base
+  stack does not carry. See [`BUILD.md`](BUILD.md#10-ebuild-repositories).
 * **Package manager** — the base system and the WebOS meta sets are installed
-  with Portage (the Gentoo package manager).
-  repository as `sys-apps/pacman` — is the **application package manager**: once
-  it is installed, applications come from the Arch repositories configured in
-  `/etc/pacman.conf` (`core`, `extra`, `multilib`) via `pacman -S`. This gives a
-  CachyOS-like "install apps, don't compile them" experience on top of the
+  with Portage (the Gentoo package manager). `sys-apps/pacman` is *locally
+  packaged by WebOS* in our overlay and is the **application package manager**:
+  once it is installed, applications come from the Arch repositories configured
+  in `/etc/pacman.conf` (`core`, `extra`, `multilib`) via `pacman -S`. This gives
+  a CachyOS-like "install apps, don't compile them" experience on top of the
   source-built Gentoo base.
 * **Kernel** — `sys-kernel/webos-kernel`, built from upstream LTS plus the
   patch series, configured by the fragment.

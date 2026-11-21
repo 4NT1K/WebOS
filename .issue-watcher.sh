@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-cd /home/brah/sanusos
+REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+cd "$REPO"
 notify(){ ./scripts/notify-user.sh "$1" "WebOS Build" >/dev/null 2>&1 || true; }
 seen=/tmp/webos-issues-seen.txt
 touch "$seen"

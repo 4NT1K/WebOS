@@ -124,17 +124,18 @@ fn on_off(v: bool) -> &'static str {
 
 /// Ordered phase labels the worker emits. Keep in sync with the
 /// `r.phase(...)` calls in install.rs; used for the "stage n/total" indicator.
-pub const INSTALL_STAGES: [&str; 12] = [
+pub const INSTALL_STAGES: [&str; 13] = [
     "Preparing",
     "Partitioning",
     "Encrypting",
     "Creating filesystems",
     "Mounting",
-    "Copying the system",
     "Fixing filesystem ownership",
+    "Copying the system",
     "Writing /etc/fstab",
     "Configuring the system",
     "Building the initramfs",
+    "Installing the bootloader",
     "Recording the install",
     "Unmounting",
 ];
@@ -557,7 +558,7 @@ impl App {
     pub fn extras(&self) -> Vec<(String, String)> {
         vec![
             ("Gaming stack".into(), on_off(self.cfg.install_gaming).into()),
-            ("Steam (64-bit note)".into(), on_off(self.cfg.install_steam).into()),
+            ("Steam note (no 32-bit)".into(), on_off(self.cfg.install_steam).into()),
             ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
             ("Discord".into(), on_off(self.cfg.install_discord).into()),
             ("Vesktop (Vencord)".into(), on_off(self.cfg.install_vesktop).into()),

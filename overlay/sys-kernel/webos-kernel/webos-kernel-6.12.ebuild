@@ -96,6 +96,16 @@ src_install() {
 	[[ -f System.map ]] && { insinto /boot; newins System.map "System.map-${release}"; }
 	[[ -f .config ]] && { insinto /boot; newins .config "config-${release}"; }
 
+	# Stamp the exact fragment used for this build so the build script can
+	# force a rebuild when the fragment changes without an ebuild revision.
+	if [[ -f ${FILESDIR}/webos-fragment.config ]]; then
+		local fragment_sha
+		fragment_sha="$(sha256sum "${FILESDIR}/webos-fragment.config" | cut -d' ' -f1)"
+		printf '%s\n' "${fragment_sha}" > "${T}/webos-fragment.sha256"
+		insinto /boot
+		newins "${T}/webos-fragment.sha256" webos-fragment.sha256
+	fi
+
 	webos_kernel_make INSTALL_MOD_PATH="${ED}" INSTALL_MOD_STRIP=1 modules_install
 
 	dodir "/usr/src/linux-${release}"

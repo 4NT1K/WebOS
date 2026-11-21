@@ -263,6 +263,15 @@ hl.window_rule({
 })
 hl.window_rule({ match = { class = ".*" }, suppress_event = "maximize" })
 
+-- Music dropdown: the script anchors it under the bar via layer-shell when
+-- available. If the introspection typelib is missing it falls back to a
+-- floating window, so keep that one crisp and out of the compositor blur.
+hl.window_rule({
+	match   = { class = "^(webos-music)$" },
+	float   = true,
+	no_blur = true,
+})
+
 -- ── Blur the panels and launchers ───────────────────────────────────────────
 hl.layer_rule({ match = { namespace = "^waybar$" },       blur = true, ignore_alpha = 0.25 })
 hl.layer_rule({ match = { namespace = "^wofi$" },         blur = true, ignore_alpha = 0.25 })

@@ -43,7 +43,6 @@ move up when they unblock gaming or the install experience.
 - Optional LUKS full-disk encryption and TPM unlock in the TUI installer.
 - Btrfs + snapper rollback profile, and a “reset to stock” option.
 - Secure Boot signing (shim + MOK) for the ISO and installed system.
-- Binary package host (binhost) so installs and updates stop compiling.
 - Smaller ISO: split optional apps into a post-install download set.
 - ARM64 image (Asahi/ROCK 5 class hardware) once the desktop stack is verified.
 

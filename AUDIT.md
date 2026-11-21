@@ -1,14 +1,22 @@
 # WebOS Audit - 2026-11-11
 
-> **Post-audit status:** this is the historical 2026-11-11 audit of the 1.0
-> tree. The production rebuild is **WebOS 1.01 "Ashen"**
-> (ISO `webos-1.01-Ashen-amd64.iso`). Palette, module-count, waybar and
-> documentation claims recorded below were superseded by the 1.01 fixes; the
-> corrected values are called out inline. The installer's `theme.rs`
-> red-to-green progress colours are intentionally unchanged.
+> **Post-audit status:** this is the historical 2026-11-11 audit, preserved as a
+> snapshot of the tree at commit `1aa292a`. The production rebuild is
+> **WebOS 1.01 "Ashen"** (ISO `webos-1.01-Ashen-amd64.iso`). Palette,
+> module-count, waybar and documentation claims recorded below were superseded
+> by the 1.01 fixes; the corrected values are called out inline. The installer's
+> `theme.rs` red-to-green progress colours are intentionally unchanged.
+>
+> **Phase 7 correction:** the "blocked / cannot complete" verdicts below reflect
+> the original host-only attempt. The build was later unblocked in a privileged
+> Gentoo stage3 container: patch/build fixes were applied and the ISO was built
+> and verified (see "Phase 7 progress" and "Final build" below). Counts and
+> verdicts above those sections are historical snapshots, not current status.
 
 ## Status
-Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (host incompatible).
+Audit complete. 6 of 7 phases finished successfully in the original host run;
+Phase 7 could not complete there (host incompatible). It was completed later in
+a Gentoo container — see the Phase 7 sections and "Final build" below.
 
 ## Summary Report
 
@@ -18,7 +26,7 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 - cargo clippy: PASSED (no warnings)
 - cargo build --release --locked --offline: PASSED
 - cargo test: PASSED
-- GUI implementation: COMPLETE (886 lines, fully functional)
+- GUI implementation: COMPLETE (1014 lines (current), fully functional)
 - egui vendoring: WORKING
 
 **Phase 2: Scripts and Build System** ✓
@@ -30,7 +38,7 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 - Portage config: CORRECT
 - Overlay priorities: CORRECT (webos 100 > gentoo -1000 > third-party -2000)
 - Kernel patchset: COMPLETE (BORE, fsync, ntsync, BBRv3, AMD P-State, MGLRU)
-- Kernel config fragment: COMPLETE (378 lines, all gaming features enabled)
+- Kernel config fragment: COMPLETE (386 lines (current), all gaming features enabled)
 
 **Phase 4: Theme and Rice** ✓
 - Color palette: CONSISTENT (1.01 refined greyscale: #000000 base, #D8D8D8
@@ -50,9 +58,9 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 - docs/: COMPLETE (BUILD.md, ARCHITECTURE.md, RELEASE.md; MAINTENANCE.txt)
 - All claims verified against actual code
 
-### ❌ INCOMPLETE PHASE (1/7)
+### ❌ INCOMPLETE PHASE (1/7) — historical host-only result
 
-**Phase 7: Rebuild ISO** - CANNOT COMPLETE
+**Phase 7: Rebuild ISO** - CANNOT COMPLETE on the original host
 - Host OS: CachyOS (not Gentoo) - WebOS requires Gentoo to build
 - Root access: Required but unavailable (sudo needs password)
 - Missing tools: squashfs-tools, libisoburn (cannot install without sudo)
@@ -64,10 +72,13 @@ Audit complete. 6 of 7 phases finished successfully. Phase 7 cannot complete (ho
 ✅ **kitty.conf color palette** - Aligned with the final 1.01 Ashen greyscale
 (#000000 bg, #D8D8D8 text, #E8E8E8 accent, #7A7A7A dim, opacity 0.82)
 
-## What Cannot Be Done
-❌ **ISO rebuild** - Requires Gentoo host + root access + missing tools
-❌ **Tool installation** - Requires sudo password
-❌ **Package verification** - Requires Gentoo's emerge command
+## What Cannot Be Done (original host-only attempt — historical)
+❌ **ISO rebuild on the CachyOS host** - Requires Gentoo host + root access + missing tools
+❌ **Tool installation on that host** - Requires sudo password
+❌ **Package verification there** - Requires Gentoo's emerge command
+
+These were later done in a privileged Gentoo stage3 container; see the Phase 7
+sections and "Final build" below.
 
 ## Build Requirements (For User)
 To complete Phase 7, you need:
@@ -86,7 +97,7 @@ Checked:
 - cargo clippy --all-targets --locked -- -D warnings: PASSED (no warnings)
 - cargo build --release --locked --offline: PASSED
 - cargo test: PASSED
-- GUI (src/gui.rs): COMPLETE (886 lines, fully implemented, --gui flag wired)
+- GUI (src/gui.rs): COMPLETE (1014 lines (current), fully implemented, --gui flag wired)
 - egui vendoring: WORKING (vendor/ populated, .cargo/config.toml correct)
 
 Fixed:
@@ -120,7 +131,7 @@ Checked:
 - Overlay priorities: CORRECT (webos 100 > gentoo -1000 > guru/hyproverlay/steam -2000)
 - Package sets: VERIFIED (@base, @desktop, @gaming, @webos-installer all exist)
 - Kernel patchset: COMPLETE (BORE, fsync, ntsync, BBRv3, AMD P-State, MGLRU)
-- Kernel fragment: COMPLETE (378 lines, all gaming/desktop features enabled)
+- Kernel fragment: COMPLETE (386 lines (current), all gaming/desktop features enabled)
 - Btrfs layout: NOT IN CONFIG (installer handles @ @home @snapshots @cache @log @tmp)
 - GRUB2: CONFIGURED (efi-64 + pc in make.conf)
 - OpenRC: CONFIGURED (USE="-systemd elogind" in make.conf)

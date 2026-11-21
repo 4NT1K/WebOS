@@ -15,6 +15,8 @@
 #   webos-update --no-depclean   skip `emerge --depclean`
 #   webos-update --no-kernel     skip the kernel/bootloader step
 #   webos-update --quiet         only warnings and the summary
+#   webos-update --fast          prefer stock binpkgs even if local USE differs
+#   webos-update --buildpkg      cache compiled packages for faster later updates
 set -uo pipefail
 
 VERSION="1.01"
@@ -28,6 +30,8 @@ DO_FLATPAK=1
 DO_DEPCLEAN=1
 DO_KERNEL=1
 QUIET=0
+PREFER_BINPKGS=0
+BUILD_PKG=0
 FAILED=0
 
 # ---------------------------------------------------------------- helpers ---
@@ -38,7 +42,7 @@ ok()   { printf '\033[92m  ok\033[0m %s\n' "$*"; }
 die()  { printf '\033[91m  xx\033[0m %s\n' "$*"; exit 1; }
 
 usage() {
-	sed -n '2,20p' "$0" | sed 's/^# \{0,1\}//'
+	sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
 	exit 0
 }
 
@@ -93,13 +97,29 @@ while [ $# -gt 0 ]; do
 		--no-depclean)   DO_DEPCLEAN=0 ;;
 		--no-kernel)     DO_KERNEL=0 ;;
 		-q|--quiet)      QUIET=1 ;;
+		--fast|--fast-binpkg) PREFER_BINPKGS=1 ;;
+		--buildpkg)      BUILD_PKG=1 ;;
 		-h|--help)       usage ;;
 		*)               die "unknown option: $1 (try --help)" ;;
 	esac
 	shift
 done
 
+# Build one shared argument list so --check previews exactly what --apply runs.
+EMERGE_WORLD_ARGS=(--verbose --update --deep --newuse --backtrack=100 \
+	--autounmask-backtrack=y)
+if [ "$PREFER_BINPKGS" -eq 1 ]; then
+	EMERGE_WORLD_ARGS+=(--binpkg-respect-use=n --binpkg-changed-deps=n)
+fi
+if [ "$BUILD_PKG" -eq 1 ]; then
+	EMERGE_WORLD_ARGS+=(--buildpkg)
+fi
+
 need_root
+
+if [ "$PREFER_BINPKGS" -eq 1 ]; then
+	warn "--fast accepts stock binpkgs whose USE flags or dependencies differ from WebOS; some local tuning may be skipped."
+fi
 
 if [ "$CHECK" -eq 1 ]; then
 	LOG=/dev/null
@@ -135,8 +155,7 @@ fi
 # ---------------------------------------------------------- 2. world ----
 if [ "$CHECK" -eq 1 ]; then
 	say "[2/8] Pending updates (dry run)"
-	emerge --pretend --verbose --update --deep --newuse --backtrack=100 \
-		--autounmask-backtrack=y @world
+	emerge --pretend "${EMERGE_WORLD_ARGS[@]}" @world
 	rc=$?
 	[ "$rc" -eq 0 ] || step_fail "dependency calculation failed (rc=$rc)"
 	if [ "$DO_KERNEL" -eq 1 ]; then
@@ -149,9 +168,12 @@ if [ "$CHECK" -eq 1 ]; then
 	exit 0
 fi
 
-say "[2/8] Updating @world (prefers prebuilt binaries; falls back to source)"
-if emerge --verbose --update --deep --newuse --backtrack=100 \
-	--autounmask-backtrack=y --autounmask-write=y @world; then
+if [ "$PREFER_BINPKGS" -eq 1 ]; then
+	say "[2/8] Updating @world (fast mode: stock binpkgs may override local USE)"
+else
+	say "[2/8] Updating @world (prefers prebuilt binaries; falls back to source)"
+fi
+if emerge "${EMERGE_WORLD_ARGS[@]}" --autounmask-write=y @world; then
 	ok "world updated"
 else
 	step_fail "emerge @world reported an error — see $LOG"

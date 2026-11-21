@@ -2,9 +2,11 @@
 
 _Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined greyscale, dropdown panels, menu/music keys, sessions, zram and updater fixes._
 
-## Status: v1.01 ready to build
+## Status: v1.01 — ISO built and verified
 
 - Version 1.01; ISO `webos-1.01-Ashen-amd64.iso`.
+- Kernel, rootfs and ISO stages have all completed; the built ISO was verified
+  (see `AUDIT.md` → "Final build").
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
   (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.
 - SDDM is the shipped greeter and offers exactly the session chosen in the
@@ -26,7 +28,8 @@ _Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined g
   memory and pulseaudio pills (and their aliases) are gone. `webos-music` and
   `webos-stats` provide the music and performance dropdowns.
 - The installer progress panel lists finished stages, shows the real stage
-  count, and runs helpers with null stdio so nothing paints over the TUI.
+  count, and captures helper output into the progress/log panel so nothing
+  paints over the TUI.
 - All `sanus-*` names renamed to `webos-*` (packages, binaries, paths, overlay).
 - Installer toggles: Firefox (firefox-bin), Discord, OpenCode, Spotify — prebuilt.
 - Steam/Wine/winetricks/protontricks/goverlay dropped: image is 64-bit only
@@ -39,23 +42,9 @@ _Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined g
 - Reused chroot: Portage config refreshed, profile symlink repointed, legacy
   `sanus-*` packages removed.
 
-### v8 (verified locally earlier)
+### Current ISO artifact
 
-- ISO: `build/webos-1.01-Ashen-amd64.iso` (4.0G), historical verification sha256 `1db24ab5…`
-- v8:
-  - ships `x11-drivers/nvidia-drivers-595.112.07` (open modules)
-  - kernel build tree prepared in stage 30; `nouveau` blacklisted
-  - installer writes `nvidia.conf` (force_drivers) + `nvidia-drm.modeset=1` (no fake dracut module)
-  - initramfs includes nvidia modules/firmware (`lsinitrd`: 12 nvidia entries)
-  - squashfs < 4GiB (zstd 19); serial console `ttyS0` autologin on live
-  - fixed live `local.d` (`#!/bin/sh`)
-- E2E (QEMU, serial): `INSTALL_RC=0`, `QEMU_RC=0`
-- Target checks: setuid preserved, root ownership, 32-char machine-id, nvidia modules+blacklist+dracut+grub cmdline, user groups OK
-- USB copy to Ventoy `/dev/sdc1`: in progress (watcher will notify)
-
-### v7 (verified, copied to USB earlier)
-
-- ISO: `build/webos-1.01-Ashen-amd64.iso` (3.7G), historical verification sha256 `4e63e90c33b050d7…`
+- ISO: `build/webos-1.01-Ashen-amd64.iso` (3.7G), verified sha256 `4e63e90c33b050d7…`
 - v7 fixes:
   - install copy preserves setuid/setgid (`rsync -rlptDHAX --chown=0:0`); no recursive `chown -R`
   - `scripts/40-iso.sh` normalizes ownership without stripping setuid bits
@@ -74,10 +63,27 @@ _Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined g
 - Ventoy USB updated and checksum-verified, unmounted
 - GitHub release not updated (awaiting approval)
 
+### Historical verification snapshot (earlier v8 build)
+
+- ISO: `build/webos-1.01-Ashen-amd64.iso` (4.0G), historical verification sha256 `1db24ab5…`
+- v8:
+  - ships `x11-drivers/nvidia-drivers-595.112.07` (open modules)
+  - kernel build tree prepared in stage 30; `nouveau` blacklisted
+  - installer writes `nvidia.conf` (force_drivers) + `nvidia-drm.modeset=1` (no fake dracut module)
+  - initramfs includes nvidia modules/firmware (`lsinitrd`: 12 nvidia entries)
+  - squashfs < 4GiB (zstd 19); serial console `ttyS0` autologin on live
+  - fixed live `local.d` (`#!/bin/sh`)
+- E2E (QEMU, serial): `INSTALL_RC=0`, `QEMU_RC=0`
+- Target checks: setuid preserved, root ownership, 32-char machine-id, nvidia modules+blacklist+dracut+grub cmdline, user groups OK
+- USB copy to Ventoy `/dev/sdc1`: checksum-verified and unmounted; the earlier
+  "in progress (watcher will notify)" note was superseded.
+
 ## Known remaining risk
 
-- NVIDIA RTX 4060 (Ada) on `nouveau` showed GSP/DP errors on the user's hardware.
-  Wayland sessions (Hyprland/Plasma) may still fail on that GPU until proprietary
-  `nvidia-drivers`/`nvidia-open` setup is added. Kernel cmdline currently carries
-  nvidia-only params while nouveau is in use.
+- NVIDIA RTX 4060 (Ada) remains **unverified on the user's hardware**. The
+  proprietary `nvidia-drivers` (open modules) is installed and shipped in the
+  image, `nouveau` is blacklisted, and the installer writes the
+  `nvidia.conf` (`force_drivers`) entry plus `nvidia-drm.modeset=1` as-is — do
+  not remove those. Earlier GSP/DP errors on this GPU were seen under `nouveau`;
+  an on-hardware Wayland check (Hyprland/Plasma) is still due.
 - Limine bootloader and CachyOS-style login tweaks not implemented.

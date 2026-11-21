@@ -12,11 +12,13 @@ import atexit
 import hashlib
 import io
 import json
+import math
 import os
 import signal
 import subprocess
 import sys
 import tempfile
+import threading
 import urllib.parse
 import urllib.request
 
@@ -35,6 +37,10 @@ def runtime_dir():
 RUNTIME = runtime_dir()
 PIDFILE = os.path.join(RUNTIME, "webos-music.pid")
 ART_DIR = os.path.join(RUNTIME, "webos-music-art")
+
+# Fallback geometry when gtk-layer-shell's introspection typelib is missing.
+PANEL_SIZE = 340
+TOP_GAP = 88  # 42 px layer margin + 46 px bar height
 
 META_FORMAT = "{{title}}\t{{artist}}\t{{mpris:length}}\t{{mpris:artUrl}}"
 
@@ -123,6 +129,22 @@ def playerctl(*args):
     return proc.stdout.decode("utf-8", "replace").strip()
 
 
+def hyprctl(*args):
+    try:
+        proc = subprocess.run(
+            ["hyprctl", *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout.decode("utf-8", "replace").strip()
+
+
 def to_float(value, default=0.0):
     try:
         return float(value)
@@ -148,17 +170,17 @@ def read_state():
 
 
 def prepare_art(url):
-    """Fetch/convert/cache album art and return the cached PNG path."""
+    """Fetch/cache a square, lightly frosted copy of the cover art."""
     if not url or not url.startswith(("file://", "http://", "https://")):
         return None
     try:
         os.makedirs(ART_DIR, mode=0o700, exist_ok=True)
         key = hashlib.sha256(url.encode("utf-8")).hexdigest()[:12]
-        cached = os.path.join(ART_DIR, key + ".png")
+        cached = os.path.join(ART_DIR, key + "-bg.png")
         if os.path.isfile(cached):
             return cached
 
-        from PIL import Image, ImageEnhance, ImageFilter
+        from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 
         if url.startswith("file://"):
             parsed = urllib.parse.urlparse(url)
@@ -169,21 +191,217 @@ def prepare_art(url):
             with urllib.request.urlopen(url, timeout=2) as response:
                 raw = response.read()
 
-        image = Image.open(io.BytesIO(raw))
-        image = image.convert("L")
-        image = ImageEnhance.Brightness(image).enhance(0.42)
-        image = image.filter(ImageFilter.GaussianBlur(radius=1.2))
-
-        target = (640, 280)
+        image = Image.open(io.BytesIO(raw)).convert("RGB")
         resample = getattr(getattr(Image, "Resampling", Image), "LANCZOS")
-        image.thumbnail(target, resample)
-        canvas = Image.new("L", target, 0)
-        canvas.paste(image, ((target[0] - image.width) // 2,
-                             (target[1] - image.height) // 2))
-        canvas.save(cached, format="PNG")
+
+        # Cover-crop to the square panel, blur just enough to frost it, then
+        # crop the soft edge away. Keep it bright enough to recognise the art.
+        overscan = PANEL_SIZE + 48
+        frost = ImageOps.fit(image, (overscan, overscan), resample)
+        frost = frost.filter(ImageFilter.GaussianBlur(radius=9))
+        frost = frost.crop((24, 24, 24 + PANEL_SIZE, 24 + PANEL_SIZE))
+        frost = ImageEnhance.Brightness(frost).enhance(0.72)
+        frost.save(cached, format="PNG")
+
+        # Drop the older greyscale/dual-image caches for this track.
+        for suffix in (".png", "-color.png", "-frost.png"):
+            old = os.path.join(ART_DIR, key + suffix)
+            if old != cached:
+                try:
+                    os.unlink(old)
+                except OSError:
+                    pass
         return cached
     except Exception:
         return None
+
+
+def art_palette(path, count=20):
+    """Pull a handful of recognisable colours out of the cached cover art."""
+    fallback = [(232, 232, 232)] * count
+    if not path:
+        return fallback
+    try:
+        from PIL import Image
+        image = Image.open(path).convert("RGB").resize((48, 48))
+        quantized = image.quantize(colors=6)
+        palette = quantized.getpalette() or []
+        ranked = sorted(quantized.getcolors() or [], reverse=True)
+        colours = []
+        for _used, index in ranked:
+            rgb = tuple(palette[index * 3:index * 3 + 3])
+            if len(rgb) == 3 and max(rgb) - min(rgb) >= 18 and max(rgb) >= 50:
+                colours.append(rgb)
+        if not colours:
+            return fallback
+        return [colours[i % len(colours)] for i in range(count)]
+    except Exception:
+        return fallback
+
+
+def active_mpris_player():
+    """Return the playing MPRIS player, or the first listed one when paused."""
+    players = [line.strip() for line in playerctl("-l").splitlines() if line.strip()]
+    if not players:
+        return None
+    for player in players:
+        if playerctl("--player=" + player, "status").lower() == "playing":
+            return player
+    return players[0]
+
+
+def music_node_target(player):
+    """Resolve an MPRIS player to its own PipeWire output node name."""
+    if not player:
+        return None
+    try:
+        proc = subprocess.run(
+            ["pw-dump"], stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL, timeout=3, check=False,
+        )
+        objects = json.loads(proc.stdout.decode("utf-8", "replace")) if proc.returncode == 0 else []
+    except (OSError, subprocess.SubprocessError, ValueError):
+        objects = []
+
+    def normal(value):
+        return "".join(ch for ch in str(value or "").lower() if ch.isalnum())
+
+    wanted = normal(player)
+    for obj in objects:
+        if obj.get("type") != "PipeWire:Interface:Node":
+            continue
+        props = (obj.get("info") or {}).get("props") or {}
+        if props.get("media.class") != "Stream/Output/Audio":
+            continue
+        name = str(props.get("node.name") or "")
+        for candidate in (name, props.get("application.name"),
+                          props.get("media.name")):
+            found = normal(candidate)
+            if found and (found == wanted or found in wanted or wanted in found):
+                return name
+    # No discoverable node name: let pw-record try the MPRIS name directly.
+    return player
+
+
+class AudioVisualizer:
+    """Bars fed only from the active MPRIS player's PipeWire output node."""
+
+    BANDS = 20
+    SAMPLES = 512
+    RATE = 22050
+
+    def __init__(self, area):
+        self.area = area
+        self.bars = [0.0] * self.BANDS
+        self.colours = [(232, 232, 232)] * self.BANDS
+        self.proc = None
+        self.thread = None
+        self.running = False
+        self.target = None
+
+    def set_colours(self, colours):
+        if colours and len(colours) >= self.BANDS:
+            self.colours = list(colours[:self.BANDS])
+
+    def set_target(self, target):
+        """Switch the capture to a different player, if it changed."""
+        if target == self.target:
+            return False
+        was_running = self.running
+        if was_running:
+            self.stop()
+        self.target = target
+        if was_running:
+            self.start()
+        return True
+
+    def start(self):
+        if self.running or not self.target:
+            return
+        try:
+            self.proc = subprocess.Popen(
+                ["pw-record", "--target", self.target, "--raw",
+                 "--format", "s16", "--rate=%d" % self.RATE,
+                 "--channels=1", "--latency=20ms", "-"],
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            self.proc = None
+            return
+        self.running = True
+        self.thread = threading.Thread(target=self._reader, daemon=True)
+        self.thread.start()
+
+    def stop(self):
+        self.running = False
+        if self.proc is not None:
+            for action in ("terminate", "kill"):
+                try:
+                    getattr(self.proc, action)()
+                    self.proc.wait(timeout=1)
+                    break
+                except (OSError, subprocess.SubprocessError):
+                    continue
+            self.proc = None
+        self.bars = [0.0] * self.BANDS
+        self.area.queue_draw()
+
+    def _reader(self):
+        chunk = self.SAMPLES * 2
+        while self.running and self.proc is not None:
+            try:
+                data = self.proc.stdout.read(chunk)
+            except (OSError, ValueError):
+                break
+            if not data:
+                break
+            self._analyse(data)
+            try:
+                from gi.repository import GLib
+                GLib.idle_add(self.area.queue_draw)
+            except Exception:
+                pass
+            if len(data) < chunk:
+                continue
+
+    def _analyse(self, data):
+        """Goertzel bands keep this dependency-free (no numpy/cairo needed)."""
+        try:
+            import array
+            samples = array.array("h")
+            samples.frombytes(data[:self.SAMPLES * 2])
+            if len(samples) < self.SAMPLES:
+                return
+            values = []
+            for band in range(self.BANDS):
+                freq = 80.0 * (8000.0 / 80.0) ** (band / (self.BANDS - 1.0))
+                coeff = 2.0 * math.cos(2.0 * math.pi * freq / self.RATE)
+                s1 = s2 = 0.0
+                for raw in samples:
+                    value = raw / 32768.0 + coeff * s1 - s2
+                    s2, s1 = s1, value
+                power = s1 * s1 + s2 * s2 - coeff * s1 * s2
+                values.append(math.sqrt(max(0.0, power)) / self.SAMPLES)
+        except Exception:
+            return
+        peak = max(values) or 1.0
+        self.bars = [min(1.0, (value / peak) ** 0.6) for value in values]
+
+    def draw(self, area, cr):
+        width = area.get_allocated_width()
+        height = area.get_allocated_height()
+        cr.set_source_rgba(0.0, 0.0, 0.0, 0.0)
+        cr.rectangle(0, 0, width, height)
+        cr.fill()
+        gap = 3.0
+        bar_width = (width - gap * (self.BANDS - 1)) / self.BANDS
+        for index, level in enumerate(self.bars):
+            bar_height = max(2.0, level * height)
+            red, green, blue = self.colours[index]
+            cr.set_source_rgba(red / 255.0, green / 255.0, blue / 255.0, 0.9)
+            cr.rectangle(index * (bar_width + gap), height - bar_height,
+                         bar_width, bar_height)
+            cr.fill()
 
 
 def format_time(seconds):
@@ -217,17 +435,12 @@ def run_app(visible):
 
     CSS = b"""
     #music-card {
-        background-color: rgba(0, 0, 0, 0.92);
+        background-color: #000000;
         border: 1px solid rgba(232, 232, 232, 0.20);
         border-radius: 18px;
         color: #D8D8D8;
-        padding: 10px;
-    }
-    #music-art {
-        background-color: #000000;
-        border-radius: 12px;
-        min-width: 640px;
-        min-height: 280px;
+        padding: 14px;
+        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.28);
     }
     .webos-status {
         color: #D8D8D8;
@@ -236,11 +449,11 @@ def run_app(visible):
     }
     .webos-title {
         color: #D8D8D8;
-        font: bold 17px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+        font: bold 14px "JetBrains Mono", "DejaVu Sans Mono", monospace;
     }
     .webos-dim {
         color: #7A7A7A;
-        font: 12px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+        font: 11px "JetBrains Mono", "DejaVu Sans Mono", monospace;
     }
     button {
         color: #D8D8D8;
@@ -271,7 +484,7 @@ def run_app(visible):
     window.set_resizable(False)
     window.set_skip_taskbar_hint(True)
     window.set_skip_pager_hint(True)
-    window.set_default_size(640, 440)
+    window.set_default_size(PANEL_SIZE, PANEL_SIZE)
     window.set_app_paintable(True)
 
     if GtkLayerShell is not None:
@@ -282,9 +495,60 @@ def run_app(visible):
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
         GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 42)
         GtkLayerShell.set_exclusive_zone(window, -1)
+        try:
+            GtkLayerShell.set_namespace(window, "webos-music")
+        except AttributeError:
+            pass  # older bindings still anchor correctly, just without a namespace
+
+    def fallback_position(y):
+        """Hyprland fallback when gtk-layer-shell introspection is unavailable."""
+        if GtkLayerShell is not None:
+            return None
+        display = Gdk.Display.get_default()
+        if display is None:
+            return None
+        try:
+            gdk_window = window.get_window()
+            monitor = (display.get_monitor_at_window(gdk_window) if gdk_window
+                       else display.get_primary_monitor())
+        except Exception:
+            monitor = None
+        if monitor is None:
+            return None
+        geometry = monitor.get_geometry()
+        x = geometry.x + max(0, (geometry.width - PANEL_SIZE) // 2)
+        return x, geometry.y + y
+
+    def slide_down():
+        """Animate the panel downward from above the bar into place."""
+        frames = 12
+        tick = [0]
+
+        def step():
+            progress = min(1.0, tick[0] / float(frames))
+            eased = 1.0 - (1.0 - progress) ** 3
+            if GtkLayerShell is not None:
+                margin = int(round(42 - PANEL_SIZE + PANEL_SIZE * eased))
+                GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, margin)
+            else:
+                # Give Hyprland a moment to focus the newly shown window.
+                if "webos-music" not in hyprctl("activewindow"):
+                    return True
+                position = fallback_position(
+                    int(round(TOP_GAP - PANEL_SIZE + PANEL_SIZE * eased))
+                )
+                if position is None:
+                    return False
+                hyprctl("dispatch", "hl.dsp.window.move({ x = %d, y = %d })" % position)
+            tick[0] += 1
+            return tick[0] <= frames
+
+        GLib.timeout_add(24, step)
+        return False
 
     card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
     card.set_name("music-card")
+    card.set_size_request(PANEL_SIZE, PANEL_SIZE)
     window.add(card)
 
     status_label = Gtk.Label(label="STOPPED")
@@ -293,24 +557,29 @@ def run_app(visible):
     status_label.get_style_context().add_class("webos-status")
     card.pack_start(status_label, False, False, 0)
 
-    art = Gtk.EventBox()
-    art.set_name("music-art")
-    art.set_size_request(640, 280)
-    card.pack_start(art, False, False, 0)
-
     title_label = Gtk.Label(label="No track")
     title_label.set_halign(Gtk.Align.START)
     title_label.set_ellipsize(3)  # Pango.EllipsizeMode.END
-    title_label.set_max_width_chars(60)
+    title_label.set_max_width_chars(32)
     title_label.get_style_context().add_class("webos-title")
     card.pack_start(title_label, False, False, 0)
 
     artist_label = Gtk.Label(label="")
     artist_label.set_halign(Gtk.Align.START)
     artist_label.set_ellipsize(3)
-    artist_label.set_max_width_chars(60)
+    artist_label.set_max_width_chars(32)
     artist_label.get_style_context().add_class("webos-dim")
     card.pack_start(artist_label, False, False, 0)
+
+    # Audio visualizer fills the middle of the square. Its bars take their
+    # colours from the current cover art (set_art below).
+    visual = Gtk.DrawingArea()
+    visual.set_name("music-viz")
+    visual.set_hexpand(True)
+    visual.set_vexpand(True)
+    card.pack_start(visual, True, True, 0)
+    visualizer = AudioVisualizer(visual)
+    visual.connect("draw", visualizer.draw)
 
     controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
     controls.set_halign(Gtk.Align.CENTER)
@@ -342,20 +611,28 @@ def run_app(visible):
     total_label.get_style_context().add_class("webos-dim")
     timeline.pack_start(total_label, False, False, 0)
 
-    art_provider = [None]
     last_art = [None]
+    last_player = [None]
     updating = [False]
+    card_provider = [None]
 
     def set_art(path):
-        if art_provider[0] is not None:
-            Gtk.StyleContext.remove_provider_for_screen(screen, art_provider[0])
-        css = "#music-art { background-image: url(%s); background-size: 640px 280px; }" % json.dumps(path)
-        new_provider = Gtk.CssProvider()
-        new_provider.load_from_data(css.encode("utf-8"))
+        # The song image fills the whole square card, frosted but recognisable.
+        if card_provider[0] is not None:
+            Gtk.StyleContext.remove_provider_for_screen(screen, card_provider[0])
+            card_provider[0] = None
+        if not path:
+            visualizer.set_colours([(232, 232, 232)] * visualizer.BANDS)
+            return
+        css = ("#music-card { background-image: url(%s); background-size: cover; }"
+               % json.dumps(path)).encode("utf-8")
+        visualizer.set_colours(art_palette(path, visualizer.BANDS))
+        provider = Gtk.CssProvider()
+        provider.load_from_data(css)
         Gtk.StyleContext.add_provider_for_screen(
-            screen, new_provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
+            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
         )
-        art_provider[0] = new_provider
+        card_provider[0] = provider
 
     def on_seek(_widget):
         if updating[0]:
@@ -388,18 +665,25 @@ def run_app(visible):
             play_button.get_image().set_from_icon_name(play_icon, Gtk.IconSize.BUTTON)
 
         url = state["art_url"]
-        if url and url != last_art[0]:
+        if url != last_art[0]:
             last_art[0] = url
-            path = prepare_art(url)
-            if path:
-                set_art(path)
+            set_art(prepare_art(url) if url else None)
+
+        player = active_mpris_player()
+        if player != last_player[0]:
+            last_player[0] = player
+            visualizer.set_target(music_node_target(player))
         return True
 
     def toggle_visibility():
         if window.get_visible():
+            visualizer.stop()
             window.hide()
         else:
             window.show_all()
+            window.present()
+            visualizer.start()
+            slide_down()
         return False
 
     def on_sigusr1(_signum, _frame):
@@ -417,6 +701,9 @@ def run_app(visible):
 
     if visible:
         window.show_all()
+        window.present()
+        visualizer.start()
+        slide_down()
     window.connect("destroy", Gtk.main_quit)
     Gtk.main()
     return 0

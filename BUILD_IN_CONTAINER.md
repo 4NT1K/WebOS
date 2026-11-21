@@ -35,7 +35,7 @@ docker run hello-world
 ## Step 2: Prepare the Build Environment
 
 ```bash
-cd /home/brah/sanusos
+cd /path/to/WebOS
 
 # Create a build script that will run inside the container
 cat > build-in-container.sh << 'EOF'
@@ -49,7 +49,7 @@ echo "==> Installing build dependencies..."
 emerge --quiet sys-fs/squashfs-tools app-cdr/xorriso
 
 echo "==> Starting WebOS build..."
-cd /sanusos
+cd /webos
 ./build.sh all
 
 echo "==> Build complete!"
@@ -71,8 +71,8 @@ This lets you see what's happening and troubleshoot:
 # Start a Gentoo container with your source code mounted
 docker run -it --rm \
   --privileged \
-  -v /home/brah/sanusos:/sanusos \
-  -w /sanusos \
+  -v /path/to/WebOS:/webos \
+  -w /webos \
   gentoo/stage3:latest \
   /bin/bash
 
@@ -82,7 +82,7 @@ emerge sys-fs/squashfs-tools app-cdr/xorriso
 ./build.sh all
 
 # When done, exit the container
-# The ISO will be in /home/brah/sanusos/build/ on your host
+# The ISO will be in /path/to/WebOS/build/ on your host
 ```
 
 **Option B: Automated**
@@ -92,10 +92,10 @@ Run everything automatically (takes 3-6 hours):
 ```bash
 docker run -it --rm \
   --privileged \
-  -v /home/brah/sanusos:/sanusos \
-  -w /sanusos \
+  -v /path/to/WebOS:/webos \
+  -w /webos \
   gentoo/stage3:latest \
-  /sanusos/build-in-container.sh
+  /webos/build-in-container.sh
 ```
 
 ---
@@ -103,7 +103,7 @@ docker run -it --rm \
 ## What This Does
 
 1. **Pulls the Gentoo container** (~200 MB download)
-2. **Mounts your WebOS source** at `/sanusos` inside the container
+2. **Mounts your WebOS source** at `/webos` inside the container
 3. **Syncs Portage** (Gentoo's package tree)
 4. **Installs build tools** (squashfs-tools, xorriso)
 5. **Runs `./build.sh all`** which:
@@ -169,17 +169,17 @@ sudo systemctl start docker
 
 The ISO will be at:
 ```
-/home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso
+/path/to/WebOS/build/webos-1.0-Ashen-amd64.iso
 ```
 
 You can then:
 
 ```bash
 # Check it was created
-ls -lh /home/brah/sanusos/build/*.iso
+ls -lh /path/to/WebOS/build/*.iso
 
 # Flash to USB (replace /dev/sdX with your USB device!)
-sudo dd if=/home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso \
+sudo dd if=/path/to/WebOS/build/webos-1.0-Ashen-amd64.iso \
         of=/dev/sdX \
         bs=4M \
         status=progress \
@@ -187,7 +187,7 @@ sudo dd if=/home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso \
 
 # Or test in QEMU first
 qemu-system-x86_64 -m 4096 -enable-kvm \
-  -cdrom /home/brah/sanusos/build/webos-1.0-Ashen-amd64.iso \
+  -cdrom /path/to/WebOS/build/webos-1.0-Ashen-amd64.iso \
   -boot d
 ```
 

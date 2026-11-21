@@ -675,6 +675,21 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
          remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || echo \"warning: could not unmerge $*\" >&2; }\n\n",
     );
 
+    // The live image is built with @gaming already installed. Honour the
+    // wizard toggle by removing the gaming-only packages here; the graphics
+    // stack (mesa, vulkan, nvidia) is shared with the desktop and stays.
+    if !cfg.install_gaming {
+        s.push_str("# Gaming stack was disabled in the installer wizard.\n");
+        s.push_str("for p in gui-wm/gamescope games-util/gamemode games-util/mangohud \\\n");
+        s.push_str("  media-gfx/vkBasalt games-util/lutris games-util/heroic-bin \\\n");
+        s.push_str("  games-emulation/dosbox-staging games-engines/scummvm app-arch/cabextract \\\n");
+        s.push_str("  app-arch/innoextract app-arch/unrar gnome-extra/zenity app-misc/corectrl \\\n");
+        s.push_str("  app-admin/ananicy-cpp sys-apps/earlyoom sys-apps/preload sys-apps/irqbalance \\\n");
+        s.push_str("  sys-power/cpupower sys-power/thermald sys-power/RyzenAdj sys-apps/msr-tools \\\n");
+        s.push_str("  sys-kernel/scx; do remove_app \"$p\"; done\n");
+        s.push_str("printf 'Gaming stack was not selected at install time.\\n' > /etc/webos/gaming-not-installed.txt\n\n");
+    }
+
     // ── services (OpenRC) ────────────────────────────────────────────────
     let mut services = vec![
         "dbus",
@@ -683,8 +698,10 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         "syslog-ng",
         "acpid",
         "webos",
-        "irqbalance",
     ];
+    if cfg.install_gaming {
+        services.push("irqbalance");
+    }
     if cfg.enable_bluetooth {
         services.push("bluetooth");
     }

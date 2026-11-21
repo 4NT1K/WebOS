@@ -42,9 +42,13 @@ chroot_sh "emerge --quiet --unmerge sys-kernel/sanus-kernel sys-kernel/sanus-ker
 
 step "kernel: emerging sources + kernel"
 # The WebOS fragment can change without an ebuild revision, so Portage would
-# otherwise keep the old kernel (and its old config). Rebuild when the image
-# in /boot does not match the fragment we are about to ship.
-if ! chroot_sh "grep -q '^CONFIG_ZRAM_BACKEND_ZSTD=y$' /boot/config-* 2>/dev/null"; then
+# otherwise keep the old kernel (and its old config). The ebuild stamps the
+# fragment hash in /boot; rebuild when that stamp is missing or stale. Old
+# images have no stamp at all, so they are rebuilt once.
+FRAGMENT="${WEBOS_ROOT}/overlay/sys-kernel/webos-kernel/files/webos-fragment.config"
+FRAGMENT_SHA="$(sha256sum "${FRAGMENT}" | awk '{print $1}')"
+INSTALLED_SHA="$(chroot_sh "cat /boot/webos-fragment.sha256 2>/dev/null || true" | tr -d '\r')"
+if [[ "${INSTALLED_SHA}" != "${FRAGMENT_SHA}" ]]; then
 	step "kernel: fragment changed, forcing a rebuild"
 	chroot_sh "emerge --quiet --unmerge sys-kernel/webos-kernel >/dev/null 2>&1 || true"
 fi

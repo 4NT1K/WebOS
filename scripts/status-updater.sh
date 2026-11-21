@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
-cd /home/brah/sanusos
+# This rewrites STATUS.md and may commit/push it. Opt in explicitly.
+if [[ ${WEBOS_STATUS_UPDATER:-0} != 1 ]]; then
+	printf "status-updater: set WEBOS_STATUS_UPDATER=1 to enable\n" >&2
+	exit 0
+fi
+REPO="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO"
 INTERVAL=${STATUS_INTERVAL:-300}
 LOG=/tmp/webos-status-updater.log
 

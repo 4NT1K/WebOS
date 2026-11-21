@@ -95,8 +95,8 @@ case $choice in
         
         docker run -it --rm \
             --privileged \
-            -v "$(pwd):/sanusos" \
-            -w /sanusos \
+            -v "$(pwd):/webos" \
+            -w /webos \
             -e PS1='(gentoo-build) \u@\h:\w\$ ' \
             gentoo/stage3:latest \
             /bin/bash
@@ -120,7 +120,7 @@ emerge-webrsync
 echo "==> Installing build tools..."
 emerge --quiet sys-fs/squashfs-tools app-cdr/xorriso
 echo "==> Starting WebOS build (this takes 3-6 hours)..."
-cd /sanusos
+cd /webos
 ./build.sh all
 echo ""
 echo "════════════════════════════════════════════════════════════════"
@@ -133,10 +133,10 @@ BUILDEOF
         
         docker run -it --rm \
             --privileged \
-            -v "$(pwd):/sanusos" \
-            -w /sanusos \
+            -v "$(pwd):/webos" \
+            -w /webos \
             gentoo/stage3:latest \
-            /sanusos/build-in-container.sh
+            /webos/build-in-container.sh
         ;;
         
     3)
@@ -147,8 +147,8 @@ BUILDEOF
         
         docker run -it --rm \
             --privileged \
-            -v "$(pwd):/sanusos" \
-            -w /sanusos \
+            -v "$(pwd):/webos" \
+            -w /webos \
             -e PS1='(gentoo) \u@\h:\w\$ ' \
             gentoo/stage3:latest \
             /bin/bash
@@ -161,7 +161,7 @@ BUILDEOF
 esac
 
 echo ""
-if [[ -f build/webos-*.iso ]]; then
+if compgen -G 'build/webos-*.iso' >/dev/null; then
     echo "════════════════════════════════════════════════════════════════"
     echo "  ✅ SUCCESS! ISO created:"
     echo "════════════════════════════════════════════════════════════════"
