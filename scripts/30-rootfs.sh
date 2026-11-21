@@ -242,6 +242,13 @@ chroot_sh "test -x /usr/bin/webos-shell" \
 	|| die "webos-shell missing after webos-theme merge"
 chroot_sh "test -f /usr/share/webos/rice/waybar/config.jsonc" \
 	|| die "waybar config missing after webos-theme merge"
+# The Waybar package ships a stale /etc/xdg fallback with a systemctl-based
+# power menu. Replace it with the WebOS rice so the logind-only ⏻ widget is
+# consistent even when a user has no ~/.config/waybar of their own.
+chroot_sh "install -m 0644 /usr/share/webos/rice/waybar/config.jsonc /etc/xdg/waybar/config.jsonc" \
+	|| die "failed to install WebOS Waybar fallback config"
+chroot_sh "install -m 0644 /usr/share/webos/rice/waybar/style.css /etc/xdg/waybar/style.css" \
+	|| die "failed to install WebOS Waybar fallback style"
 chroot_sh "test -x /usr/bin/webos-portals" \
 	|| die "webos-portals missing after webos-theme merge"
 chroot_sh "test -x /usr/bin/webos-autostart" \
