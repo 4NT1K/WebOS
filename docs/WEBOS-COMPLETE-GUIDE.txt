@@ -39,7 +39,8 @@ Identity
   Maintainer acct: 4NT1K
 
 Release state at the time this guide was written
-  - v1.02 source is frozen, committed and pushed to origin/main at 49829b6.
+  - v1.02 source is frozen, committed and pushed to origin/main at 49829b6;
+    documentation-only follow-up at 668079b.
   - v1.01 is historical; do not overwrite/republish it.
   - The regression gate scripts/50-check.sh passes with 0 problems (206 checks).
   - Rootfs rebuild was in progress; ISO build, Ventoy copy and GitHub v1.02
