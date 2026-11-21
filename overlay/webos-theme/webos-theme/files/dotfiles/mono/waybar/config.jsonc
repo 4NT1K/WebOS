@@ -26,7 +26,7 @@
     "modules-center": ["mpris"],
     // No network module: the mono bar never displays the LAN IPv4 address.
     // No battery module either (desktop PC); the power menu stays available.
-    "modules-right": ["custom/waypaper", "clock", "tray", "custom/perf"],
+    "modules-right": ["custom/waypaper", "clock", "tray", "custom/perf", "custom/power"],
 
     "hyprland/workspaces": {
         "format": "{name}",
@@ -85,5 +85,11 @@
         "format": "▾",
         "tooltip": "Performance — CPU, GPU, VRAM, RAM, disk, temp",
         "on-click": "webos-stats --toggle"
+    },
+
+    "custom/power": {
+        "format": "⏻",
+        "tooltip": "Power — open session menu (reboot, shut down, suspend)",
+        "on-click": "wlogout"
     }
 }

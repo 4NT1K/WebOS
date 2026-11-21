@@ -122,6 +122,14 @@ grep -q '"on-click": "wlogout"' "$RICE/waybar/config.jsonc" \
 	&& good "power widget opens wlogout" || bad "power widget click wrong"
 grep -q '#custom-power' "$RICE/waybar/style.css" \
 	&& good "power widget styled" || bad "power widget unstyled"
+MONO="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/dotfiles/mono/waybar"
+grep -q '"custom/power"' "$MONO/config.jsonc" \
+	&& good "mono dotfiles power widget present" || bad "mono dotfiles power widget missing"
+grep -q '#custom-power' "$MONO/style.css" \
+	&& good "mono dotfiles power widget styled" || bad "mono dotfiles power widget unstyled"
+LOCK="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/hypr/hyprlock.conf"
+grep -q 'placeholder_text = <span foreground="##' "$LOCK" \
+	&& good "hyprlock placeholder color escaped" || bad "hyprlock placeholder markup truncated"
 STATS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-stats"
 grep -q 'def ram_details' "$STATS" && grep -q 'used / %.1fG' "$STATS" \
 	&& good "RAM shows used/total" || bad "RAM still percentage-only"

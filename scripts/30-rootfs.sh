@@ -223,7 +223,7 @@ chroot_sh 'rm -rf /var/log/portage/elog/*noctalia* /var/log/portage/elog/*niri* 
 
 # ---------------------------------------------------------- theming ----------
 step "rootfs: applying the rice (webos-theme)"
-THEME_EBUILD="webos-theme-1.0-r1.ebuild"
+THEME_EBUILD="webos-theme-1.0-r2.ebuild"
 chroot_sh "test -f /usr/local/portage/webos/webos-theme/webos-theme/${THEME_EBUILD}" \
 	|| die "${THEME_EBUILD} missing from the copied overlay"
 # Same-package-version edits are not picked up by a plain emerge, so remove the

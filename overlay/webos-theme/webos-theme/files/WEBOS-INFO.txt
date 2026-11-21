@@ -38,10 +38,13 @@ The 1.01 maintenance rebuild carries these fixes into a fresh install:
 - The refined Ashen greyscale is applied everywhere: #000000 base, #D8D8D8
   text, #E8E8E8 accents, #7A7A7A dim, near-opaque rgba(0,0,0,0.92) panels.
   The old ice-blue and light-grey tokens are gone from the rice.
-- The right cluster is waypaper (▧), clock, tray and performance (▾) only;
-  the cpu, memory, pulseaudio and power pills were removed and no aliases
-  were added. `webos-menu` replaces the raw wofi launchers for Super+D and
-  Super+R, and Super+M toggles the music dropdown.
+- The right cluster is waypaper (▧), clock, tray, performance (▾) and power
+  (⏻); the cpu, memory and pulseaudio pills were removed and no aliases were
+  added. The power pill opens wlogout. `webos-menu` replaces the raw wofi
+  launchers for Super+D and Super+R, and Super+M toggles the music dropdown.
+- The hyprlock password hint no longer shows raw Pango markup. Hyprlang needs
+  hex colours escaped as `##7A7A7A`, otherwise `#` starts a comment and Pango
+  receives a truncated `<span foreground=` string.
 - `webos-music` (MPRIS artwork, controls and seek bar), `webos-stats` (CPU,
   GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop panels.
   Clicking the mpris pill toggles the dropdown; it no longer pauses playback.
@@ -166,8 +169,8 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 - ananicy-cpp is enabled under its real OpenRC name, ananicy-cpp.initd, and
   started at install time.
 - The mono bar no longer prints the LAN IPv4 address or a battery percentage;
-  its power pill is also gone (removed in 1.01 along with cpu, memory and
-  pulseaudio). The right cluster is waypaper, clock, tray and performance.
+  its power pill (⏻) opens wlogout. The right cluster is waypaper, clock,
+  tray, performance and power.
 - kitty transparency is restored: kitty owns the alpha value (0.82) and the
   compositor no longer multiplies a second opacity over it; the framed
   fastfetch card is back. 1.01 uses `auto` for bold/italic fonts and a refined

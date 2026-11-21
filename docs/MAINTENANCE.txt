@@ -175,10 +175,11 @@ Everything hinges on this distinction.
     Super+D / Super+R webos-menu, Super+M webos-music --toggle,
     Super+Shift+Escape exit, Super+Shift+S webos-shot region,
     Super+Ctrl+S move window to special.
-  * Mono waybar: no network or battery module; the cpu, memory, pulseaudio and
-    custom/power pills (and their aliases) are removed. Right cluster is
-    ▧ waypaper, clock, tray, ▾ performance. Music and performance are the
-    webos-music / webos-stats dropdowns, toggled from the mpris pill and ▾.
+  * Mono waybar: no network or battery module; the cpu, memory and pulseaudio
+    pills (and their aliases) are removed. The far-right ⏻ custom/power pill
+    opens wlogout. Right cluster is
+    ▧ waypaper, clock, tray, ▾ performance, ⏻ power. Music and performance are
+    the webos-music / webos-stats dropdowns, toggled from the mpris pill and ▾.
   * Pointer: accel_profile = flat, force_no_accel = true.
   * Kitty owns terminal alpha in BOTH configs (background_opacity 0.82,
     dynamic_background_opacity no, background_blur 24, bold/italic `auto`);

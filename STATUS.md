@@ -22,9 +22,9 @@ _Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined g
   opacity), uses `auto` bold/italic faces and a greyscale ANSI ramp, and the
   fastfetch card uses chafa symbol art in a soft-white framed box.
 - The mono bar hides the LAN IPv4 address and battery percentage. Its right
-  cluster is ▧ waypaper, clock, tray and ▾ performance; the cpu, memory,
-  pulseaudio and custom/power pills (and their aliases) are gone. `webos-music`
-  and `webos-stats` provide the music and performance dropdowns.
+  cluster is ▧ waypaper, clock, tray, ▾ performance and ⏻ power; the cpu,
+  memory and pulseaudio pills (and their aliases) are gone. `webos-music` and
+  `webos-stats` provide the music and performance dropdowns.
 - The installer progress panel lists finished stages, shows the real stage
   count, and runs helpers with null stdio so nothing paints over the TUI.
 - All `sanus-*` names renamed to `webos-*` (packages, binaries, paths, overlay).

@@ -114,6 +114,46 @@ backup_once() {
 	note "backed up $f -> $f.webos-orig"
 }
 
+# The installer seeds ~/.config/waybar from the "mono" dotfiles profile, not
+# from RICE_SRC. Up to webos-theme-1.0-r1 that profile shipped a Waybar config
+# with no custom/power pill, so those files are not in our manifest and
+# install_file() treats them as user edits. Upgrade only the exact known
+# distro-generated hashes; anything genuinely modified by the user is left
+# alone. This makes `webos-update` restore the ⏻ widget on existing installs.
+migrate_legacy_waybar() {
+	local home="$1" mf cfg sty new_cfg new_sty
+	local old_cfg="2b3fc6c9c3f0d46bcebebdff9787054cf117e6cba2936505a19ba3de6e978081"
+	local old_sty="13c685e3dfebdee222b3ebe5a5ae75da8486f5a6e8bf9d659fd01500b46a2ac1"
+	mf="$(manifest_of "$home")"
+	cfg="$home/.config/waybar/config.jsonc"
+	sty="$home/.config/waybar/style.css"
+	new_cfg="${RICE_SRC}/waybar/config.jsonc"
+	new_sty="${RICE_SRC}/waybar/style.css"
+	[[ -f "$new_cfg" && -f "$new_sty" ]] || return 0
+
+	if [[ -f "$cfg" && "$(sha "$cfg")" == "$old_cfg" ]]; then
+		if (( DRY_RUN )); then
+			say "would migrate legacy mono Waybar config ${cfg/#$HOME/~}"
+		else
+			backup_once "$cfg"
+			install -m 0644 "$new_cfg" "$cfg"
+			record "$mf" "$cfg" "$(sha "$new_cfg")"
+			note "migrated legacy mono Waybar config ${cfg/#$HOME/~}"
+		fi
+	fi
+
+	if [[ -f "$sty" && "$(sha "$sty")" == "$old_sty" ]]; then
+		if (( DRY_RUN )); then
+			say "would migrate legacy mono Waybar style ${sty/#$HOME/~}"
+		else
+			backup_once "$sty"
+			install -m 0644 "$new_sty" "$sty"
+			record "$mf" "$sty" "$(sha "$new_sty")"
+			note "migrated legacy mono Waybar style ${sty/#$HOME/~}"
+		fi
+	fi
+}
+
 install_file() {
 	# $1 = source, $2 = destination, $3 = manifest, $4 = force, $5 = dry-run
 	local src="$1" dst="$2" mf="$3" force="$4" dry="${5:-$DRY_RUN}"
@@ -195,6 +235,11 @@ apply_home() {
 	local mf lua conf rec
 	mf="$(manifest_of "$home")"
 	prune_manifest "$mf"
+
+	# Fresh installs get their Waybar files from the mono dotfiles profile.
+	# Bring old installs forward before apply_tree() so the power pill returns
+	# on the next `webos-update` without clobbering user-modified configs.
+	migrate_legacy_waybar "$home"
 
 	# Hyprland 0.57+ reads ~/.config/hypr/hyprland.lua and ignores
 	# hyprland.conf. A home that was first themed by an older release (or by
