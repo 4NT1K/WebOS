@@ -191,6 +191,11 @@ Fix:
     that moves the layer-shell margin, or the fallback window via hyprctl),
     with a short retry so Hyprland focuses the window first.
   - Gave the layer-shell window the namespace `webos-music`.
+  - Both `webos-music` and `webos-stats` now show a transparent fullscreen
+    click-catcher behind the card while the dropdown is open. Clicking
+    anywhere outside the card dismisses it; the card itself keeps its own
+    controls. The dropdown sits on the OVERLAY layer so it stays above the
+    catcher.
   - Added a Hyprland window rule for class `webos-music` with `float = true`
     and `no_blur = true`, so the compositor does not double-blur the card.
   - Bumped webos-theme to 1.0-r3 and made it depend on

@@ -156,6 +156,8 @@ grep -q 'def ram_details' "$STATS" && grep -q 'used / %.1fG' "$STATS" \
 	&& good "RAM shows used/total" || bad "RAM still percentage-only"
 grep -q 'def core_temperatures' "$STATS" && grep -q 'c%d   %d%% %s' "$STATS" \
 	&& good "per-core usage/temp rows" || bad "per-core stats missing"
+grep -q 'webos-stats-catcher' "$STATS" && grep -q 'button-press-event' "$STATS" \
+	&& good "stats dropdown dismisses on outside click" || bad "stats dropdown has no outside-click dismiss"
 
 MUSIC="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-music"
 grep -q 'fallback_position' "$MUSIC" && grep -q 'hl.dsp.window.move' "$MUSIC" \
@@ -179,6 +181,8 @@ grep -q '"cava", "-p", self.config' "$MUSIC" \
 	&& grep -q 'method = pipewire' "$MUSIC" && grep -q 'source = %s' "$MUSIC" \
 	&& ! grep -q '@DEFAULT_SINK@.monitor' "$MUSIC" \
 	&& good "visualizer only captures the music player" || bad "visualizer captures all system audio"
+grep -q 'webos-music-catcher' "$MUSIC" && grep -q 'button-press-event' "$MUSIC" \
+	&& good "music dropdown dismisses on outside click" || bad "music dropdown has no outside-click dismiss"
 grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \
 	&& good "music dropdown excluded from blur" || bad "music dropdown not excluded from blur"
 grep -q 'webos-theme-1.0-r3.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \

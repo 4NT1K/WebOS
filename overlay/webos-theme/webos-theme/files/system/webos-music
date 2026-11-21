@@ -473,6 +473,9 @@ def run_app(visible):
         font: bold 12px "JetBrains Mono", "DejaVu Sans Mono", monospace;
         letter-spacing: 2px;
     }
+    #webos-music-catcher, #webos-music-catcher-area {
+        background-color: transparent;
+    }
     .webos-title {
         color: #D8D8D8;
         font: bold 14px "JetBrains Mono", "DejaVu Sans Mono", monospace;
@@ -504,6 +507,37 @@ def run_app(visible):
         screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
 
+    # Transparent fullscreen surface behind the card. A click anywhere that is
+    # not the card dismisses the dropdown (Wayland has no global click grab).
+    catcher = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+    catcher.set_title("webos-music-outside")
+    catcher.set_decorated(False)
+    catcher.set_skip_taskbar_hint(True)
+    catcher.set_skip_pager_hint(True)
+    catcher.set_app_paintable(True)
+    catcher.set_name("webos-music-catcher")
+    if GtkLayerShell is not None:
+        GtkLayerShell.init_for_window(catcher)
+        GtkLayerShell.set_layer(catcher, GtkLayerShell.Layer.TOP)
+        for edge in ("LEFT", "RIGHT", "TOP", "BOTTOM"):
+            GtkLayerShell.set_anchor(catcher, getattr(GtkLayerShell.Edge, edge), True)
+            GtkLayerShell.set_margin(catcher, getattr(GtkLayerShell.Edge, edge), 0)
+        GtkLayerShell.set_exclusive_zone(catcher, -1)
+        try:
+            GtkLayerShell.set_namespace(catcher, "webos-music-outside")
+        except AttributeError:
+            pass
+    else:
+        display = Gdk.Display.get_default()
+        monitor = display.get_primary_monitor() if display else None
+        if monitor is not None:
+            geometry = monitor.get_geometry()
+            catcher.set_default_size(geometry.width, geometry.height)
+            catcher.move(geometry.x, geometry.y)
+    catcher_area = Gtk.EventBox()
+    catcher_area.set_name("webos-music-catcher-area")
+    catcher.add(catcher_area)
+
     window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
     window.set_title("webos-music")
     window.set_decorated(False)
@@ -515,7 +549,7 @@ def run_app(visible):
 
     if GtkLayerShell is not None:
         GtkLayerShell.init_for_window(window)
-        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)
         for edge in ("LEFT", "RIGHT", "BOTTOM"):
             GtkLayerShell.set_anchor(window, getattr(GtkLayerShell.Edge, edge), False)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
@@ -701,11 +735,21 @@ def run_app(visible):
             visualizer.set_target(music_node_target(player))
         return True
 
+    def hide_dropdown():
+        visualizer.stop()
+        window.hide()
+        catcher.hide()
+        return False
+
+    catcher_area.connect(
+        "button-press-event", lambda *_: GLib.idle_add(hide_dropdown)
+    )
+
     def toggle_visibility():
         if window.get_visible():
-            visualizer.stop()
-            window.hide()
+            hide_dropdown()
         else:
+            catcher.show_all()
             window.show_all()
             window.present()
             visualizer.start()
@@ -726,6 +770,7 @@ def run_app(visible):
     GLib.timeout_add(1000, poll)
 
     if visible:
+        catcher.show_all()
         window.show_all()
         window.present()
         visualizer.start()

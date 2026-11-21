@@ -338,6 +338,9 @@ def run_app(visible):
     atexit.register(remove_pidfile)
 
     CSS = b"""
+    #webos-stats-catcher, #webos-stats-catcher-area {
+        background-color: transparent;
+    }
     #stats-card {
         background-color: rgba(0, 0, 0, 0.92);
         border: 1px solid rgba(232, 232, 232, 0.20);
@@ -366,6 +369,37 @@ def run_app(visible):
         Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
 
+    # Transparent fullscreen surface behind the card: clicking outside the
+    # card dismisses the dropdown (Wayland has no global click grab).
+    catcher = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+    catcher.set_title("webos-stats-outside")
+    catcher.set_decorated(False)
+    catcher.set_skip_taskbar_hint(True)
+    catcher.set_skip_pager_hint(True)
+    catcher.set_app_paintable(True)
+    catcher.set_name("webos-stats-catcher")
+    if GtkLayerShell is not None:
+        GtkLayerShell.init_for_window(catcher)
+        GtkLayerShell.set_layer(catcher, GtkLayerShell.Layer.TOP)
+        for edge in ("LEFT", "RIGHT", "TOP", "BOTTOM"):
+            GtkLayerShell.set_anchor(catcher, getattr(GtkLayerShell.Edge, edge), True)
+            GtkLayerShell.set_margin(catcher, getattr(GtkLayerShell.Edge, edge), 0)
+        GtkLayerShell.set_exclusive_zone(catcher, -1)
+        try:
+            GtkLayerShell.set_namespace(catcher, "webos-stats-outside")
+        except AttributeError:
+            pass
+    else:
+        display = Gdk.Display.get_default()
+        monitor = display.get_primary_monitor() if display else None
+        if monitor is not None:
+            geometry = monitor.get_geometry()
+            catcher.set_default_size(geometry.width, geometry.height)
+            catcher.move(geometry.x, geometry.y)
+    catcher_area = Gtk.EventBox()
+    catcher_area.set_name("webos-stats-catcher-area")
+    catcher.add(catcher_area)
+
     window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
     window.set_title("webos-stats")
     window.set_decorated(False)
@@ -378,7 +412,7 @@ def run_app(visible):
 
     if GtkLayerShell is not None:
         GtkLayerShell.init_for_window(window)
-        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.TOP)
+        GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.BOTTOM, False)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.LEFT, False)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
@@ -462,10 +496,20 @@ def run_app(visible):
             bar.set_text("c%d   %d%% %s" % (core, round(usage * 100), temp_text))
         return True
 
+    def hide_dropdown():
+        window.hide()
+        catcher.hide()
+        return False
+
+    catcher_area.connect(
+        "button-press-event", lambda *_: GLib.idle_add(hide_dropdown)
+    )
+
     def toggle_visibility():
         if window.get_visible():
-            window.hide()
+            hide_dropdown()
         else:
+            catcher.show_all()
             window.show_all()
         return False
 
@@ -483,6 +527,7 @@ def run_app(visible):
     GLib.timeout_add(2000, poll)
 
     if visible:
+        catcher.show_all()
         window.show_all()
     window.connect("destroy", Gtk.main_quit)
     Gtk.main()

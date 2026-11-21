@@ -57,6 +57,7 @@ The 1.01 maintenance rebuild carries these fixes into a fresh install:
 - `webos-music` (MPRIS artwork, controls and seek bar), `webos-stats` (CPU,
   GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop panels.
   Clicking the mpris pill toggles the dropdown; it no longer pauses playback.
+  Both the music and performance dropdowns close when you click outside them.
 - `webos-refresh` restores exact saved monitor modes at login and watches live
   changes. Only modes advertised in `availableModes` can be persisted.
 - Audio autostart order is PipeWire, WirePlumber, then pipewire-pulse.
