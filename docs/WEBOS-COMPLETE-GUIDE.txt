@@ -649,7 +649,8 @@ Delivery path
 Release gate for binary-first behavior
   /home/brah/release-v102.sh runs `webos-update --check` and
   `webos-update --fast --check` inside the rebuilt chroot, rejects dependency
-  errors, and now also rejects any plan line with a nonzero source build count.
+  errors and reports binary/source plan counts. Source fallback is allowed by
+  design; `webos-update --no-compile` is the user-facing way to refuse it.
 
 ================================================================================
 11. RELEASE / PUBLICATION FLOW
