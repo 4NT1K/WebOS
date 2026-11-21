@@ -133,16 +133,19 @@ Cause:
   source. Packages from guru/hyprolay/webos overlays are never on that binhost.
 
 Fix:
-  - Added opt-in `webos-update --fast` (alias `--fast-binpkg`), which passes
-    `--binpkg-respect-use=n --binpkg-changed-deps=n` so stock binpkgs can be
-    used even when local USE flags or dependency sets differ. It prints a
-    warning because some local tuning may be skipped. Use
-    `webos-update --check --fast` to preview the effect first.
+  - `EMERGE_DEFAULT_OPTS` in config/make.conf now includes
+    `--binpkg-respect-use=n --binpkg-changed-deps=n`, so Portage no longer
+    rejects stock binpkgs just because USE flags or dependency sets differ.
+    A plain `emerge` is binary-first too, not only `webos-update`.
+  - `webos-update` is binary-first by default. `--fast` / `--fast-binpkg` are
+    kept as explicit aliases, and the new `--strict-use` / `--respect-use`
+    flag restores the old behaviour for users who want WebOS USE flags honoured
+    exactly. The updater prints a warning whenever stock binpkgs are accepted.
   - Added opt-in `webos-update --buildpkg`, which passes `--buildpkg` so the
     packages that still must be compiled are cached locally for future updates.
-  - Kept the safe default unchanged: binary first, source fallback with WebOS
-    USE flags respected. Overlay-only packages still compile; there is no
-    public binhost for them.
+  - Overlay-only packages (guru/hyprolay/webos) still compile; there is no
+    public binhost for them. Packages absent from the binhost snapshot also
+    still fall back to source, but the USE/deps mismatch class is fixed.
 
 
 [8] Music dropdown: frosted art in the middle of the screen
@@ -172,15 +175,17 @@ Fix:
   - Removed the separate image widget and old 640x280 art box. Status, title,
     artist, an audio visualizer, transport buttons and seek bar sit over the
     frosted image.
-  - Added a dependency-free FFT-style audio visualizer in the middle of the
-    panel. It resolves the active MPRIS player to its own PipeWire node via
-    `pw-dump` and records just that node with `pw-record --target`, so
-    notifications, browser tabs and other system audio are never visualised.
-    It computes 20 logarithmically spaced Goertzel bands in a background
-    thread and draws them on a Gtk.DrawingArea. Its bar colours are sampled
-    from the current cover art (quantised with Pillow), so the visualizer
-    follows the song's colour scheme. Audio capture only runs while the panel
-    is visible, and follows the player if it changes.
+  - Added a cava-driven audio visualizer in the middle of the panel. It resolves
+    the active MPRIS player to its own PipeWire node via `pw-dump`, then runs
+    `cava` against that node alone (`[input] method = pipewire, source = <node>`)
+    with raw ASCII output, so notifications, browser tabs and other system
+    audio are never visualised and the motion inherits cava's own smoothing.
+    A light extra attack/decay filter removes stray frames. The 20 bars are
+    drawn with rounded tops and a vertical brightness gradient on a
+    Gtk.DrawingArea; their colours are sampled from the current cover art
+    (quantised with Pillow) so the visualizer follows the song's colour scheme.
+    Capture only runs while the panel is visible and follows the player if it
+    changes.
   - The window and card are now a compact 340x340 square. Showing the panel
     animates it downward from above the bar into place (eased GLib timeout
     that moves the layer-shell margin, or the fallback window via hyprctl),

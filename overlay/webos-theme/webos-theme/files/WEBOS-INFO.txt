@@ -49,9 +49,11 @@ The 1.01 maintenance rebuild carries these fixes into a fresh install:
 - Idle blanking uses Hyprland 0.57's Lua dispatcher, and the dim rule is
   restricted to real backlights so keyboard LEDs are no longer changed.
   Waybar's unused IPC socket is disabled, removing a launch warning.
-- Updates can be sped up with `sudo webos-update --fast` (accept stock binpkgs
-  whose USE flags differ) or `sudo webos-update --buildpkg` (cache packages
-  that still need to compile). Preview with `sudo webos-update --check --fast`.
+- Updates are binary-first by default: stock binpkgs are accepted even when
+  USE flags or dependency sets differ. Use `sudo webos-update --strict-use` to
+  require exact WebOS USE flags, `sudo webos-update --buildpkg` to cache the
+  packages that still need compiling, and `sudo webos-update --check` to
+  preview an update.
 - `webos-music` (MPRIS artwork, controls and seek bar), `webos-stats` (CPU,
   GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop panels.
   Clicking the mpris pill toggles the dropdown; it no longer pauses playback.
@@ -419,7 +421,7 @@ is still no network or battery module. The far-right ⏻ pill opens wlogout.
 
 - Music (`webos-music`): a compact square GTK3 layer-shell dropdown that slides
   down from the bar. The current track's MPRIS album art fills the whole panel
-  as a lightly frosted, recognisable background, with a 20-band audio
+  as a lightly frosted, recognisable background, with a 20-band cava-driven
   visualizer whose colours follow the cover art and which listens only to the
   active music player. Title, artist,
   PLAYING/PAUSED status, previous/play-pause/next controls and a seekable

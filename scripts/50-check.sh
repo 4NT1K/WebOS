@@ -92,6 +92,10 @@ else bad "kconfig qml USE missing"; fi
 if grep -q -- '--getbinpkg' "${WEBOS_ROOT}/config/make.conf"; then
 	good "emerge defaults prefer binpkgs (--getbinpkg)"
 else bad "EMERGE_DEFAULT_OPTS lacks --getbinpkg"; fi
+grep -qF -- '--binpkg-respect-use=n' "${WEBOS_ROOT}/config/make.conf" \
+	&& grep -qF -- '--binpkg-changed-deps=n' "${WEBOS_ROOT}/config/make.conf" \
+	&& good "emerge defaults stay binary-first on USE/deps mismatch" \
+	|| bad "emerge defaults still compile on USE/deps mismatch"
 if grep -q 'binpackages/23.0/x86-64-v3' "${WEBOS_ROOT}/config/binrepos.conf/gentoo.conf" 2>/dev/null; then
 	good "v3 binhost pinned"
 else bad "v3 binhost config missing"; fi
@@ -104,7 +108,8 @@ grep -q 'prefers prebuilt binaries; falls back to source' "$UPDATER" \
 	&& good "updater binary message" || bad "updater still claims source-only"
 grep -qF -- '--binpkg-respect-use=n' "$UPDATER" \
 	&& grep -qF -- '--binpkg-changed-deps=n' "$UPDATER" \
-	&& good "updater has fast binpkg mode" || bad "updater lacks fast binpkg mode"
+	&& grep -qF -- '--strict-use' "$UPDATER" \
+	&& good "updater is binary-first with a strict-use opt-out" || bad "updater lacks binary-first mode"
 grep -qF -- '--buildpkg' "$UPDATER" \
 	&& good "updater can cache builds" || bad "updater lacks buildpkg mode"
 grep -q 'reboot with: loginctl reboot' "$UPDATER" \
@@ -170,7 +175,8 @@ grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class AudioVisualizer' "$MUSIC" \
 	&& good "music player has an audio visualizer" || bad "music player lacks a visualizer"
 grep -q 'art_palette(path, visualizer.BANDS)' "$MUSIC" \
 	&& good "visualizer follows the cover colours" || bad "visualizer colours are not tied to the art"
-grep -q '"pw-record", "--target", self.target' "$MUSIC" \
+grep -q '"cava", "-p", self.config' "$MUSIC" \
+	&& grep -q 'method = pipewire' "$MUSIC" && grep -q 'source = %s' "$MUSIC" \
 	&& ! grep -q '@DEFAULT_SINK@.monitor' "$MUSIC" \
 	&& good "visualizer only captures the music player" || bad "visualizer captures all system audio"
 grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \

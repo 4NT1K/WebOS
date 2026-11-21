@@ -15,7 +15,8 @@
 #   webos-update --no-depclean   skip `emerge --depclean`
 #   webos-update --no-kernel     skip the kernel/bootloader step
 #   webos-update --quiet         only warnings and the summary
-#   webos-update --fast          prefer stock binpkgs even if local USE differs
+#   webos-update --strict-use    reject binpkgs whose USE/deps differ (compiles more)
+#   webos-update --fast          alias for the default binpkg-first behaviour
 #   webos-update --buildpkg      cache compiled packages for faster later updates
 set -uo pipefail
 
@@ -30,7 +31,7 @@ DO_FLATPAK=1
 DO_DEPCLEAN=1
 DO_KERNEL=1
 QUIET=0
-PREFER_BINPKGS=0
+PREFER_BINPKGS=1
 BUILD_PKG=0
 FAILED=0
 
@@ -98,6 +99,7 @@ while [ $# -gt 0 ]; do
 		--no-kernel)     DO_KERNEL=0 ;;
 		-q|--quiet)      QUIET=1 ;;
 		--fast|--fast-binpkg) PREFER_BINPKGS=1 ;;
+		--strict-use|--respect-use) PREFER_BINPKGS=0 ;;
 		--buildpkg)      BUILD_PKG=1 ;;
 		-h|--help)       usage ;;
 		*)               die "unknown option: $1 (try --help)" ;;
@@ -118,7 +120,7 @@ fi
 need_root
 
 if [ "$PREFER_BINPKGS" -eq 1 ]; then
-	warn "--fast accepts stock binpkgs whose USE flags or dependencies differ from WebOS; some local tuning may be skipped."
+	warn "Using stock binpkgs whose USE flags or dependencies differ from WebOS; some local tuning may be skipped. Use --strict-use to opt out."
 fi
 
 if [ "$CHECK" -eq 1 ]; then

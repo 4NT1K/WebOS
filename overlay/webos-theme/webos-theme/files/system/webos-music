@@ -284,20 +284,20 @@ def music_node_target(player):
 
 
 class AudioVisualizer:
-    """Bars fed only from the active MPRIS player's PipeWire output node."""
+    """cava-driven bars from the active MPRIS player's PipeWire node."""
 
     BANDS = 20
-    SAMPLES = 512
-    RATE = 22050
 
     def __init__(self, area):
         self.area = area
         self.bars = [0.0] * self.BANDS
+        self.levels = [0.0] * self.BANDS
         self.colours = [(232, 232, 232)] * self.BANDS
         self.proc = None
         self.thread = None
         self.running = False
         self.target = None
+        self.config = None
 
     def set_colours(self, colours):
         if colours and len(colours) >= self.BANDS:
@@ -318,14 +318,21 @@ class AudioVisualizer:
     def start(self):
         if self.running or not self.target:
             return
+        self.config = os.path.join(runtime_dir(), "webos-music-cava.conf")
         try:
+            with open(self.config, "w", encoding="utf-8") as handle:
+                handle.write(
+                    "[general]\nbars = %d\n\n"
+                    "[input]\nmethod = pipewire\nsource = %s\n\n"
+                    "[output]\nmethod = raw\nraw_target = /dev/stdout\n"
+                    "data_format = ascii\nascii_max_range = 100\n"
+                    % (self.BANDS, self.target)
+                )
             self.proc = subprocess.Popen(
-                ["pw-record", "--target", self.target, "--raw",
-                 "--format", "s16", "--rate=%d" % self.RATE,
-                 "--channels=1", "--latency=20ms", "-"],
+                ["cava", "-p", self.config],
                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
             )
-        except OSError:
+        except (OSError, ValueError):
             self.proc = None
             return
         self.running = True
@@ -343,49 +350,43 @@ class AudioVisualizer:
                 except (OSError, subprocess.SubprocessError):
                     continue
             self.proc = None
+        if self.config:
+            try:
+                os.unlink(self.config)
+            except OSError:
+                pass
+            self.config = None
         self.bars = [0.0] * self.BANDS
+        self.levels = [0.0] * self.BANDS
         self.area.queue_draw()
 
     def _reader(self):
-        chunk = self.SAMPLES * 2
         while self.running and self.proc is not None:
             try:
-                data = self.proc.stdout.read(chunk)
+                line = self.proc.stdout.readline()
             except (OSError, ValueError):
                 break
-            if not data:
+            if not line:
                 break
-            self._analyse(data)
+            try:
+                values = [int(part) for part in
+                          line.decode("utf-8", "replace").strip().split(";")
+                          if part.strip()]
+            except ValueError:
+                continue
+            values = (values + [0] * self.BANDS)[:self.BANDS]
+            raw = [min(1.0, max(0.0, value / 100.0)) ** 0.85 for value in values]
+            # cava already smooths; this only takes the edge off stray frames.
+            for index, value in enumerate(raw):
+                level = self.levels[index]
+                weight = 0.35 if value > level else 0.12
+                self.levels[index] = level + (value - level) * weight
+                self.bars[index] = self.levels[index]
             try:
                 from gi.repository import GLib
                 GLib.idle_add(self.area.queue_draw)
             except Exception:
                 pass
-            if len(data) < chunk:
-                continue
-
-    def _analyse(self, data):
-        """Goertzel bands keep this dependency-free (no numpy/cairo needed)."""
-        try:
-            import array
-            samples = array.array("h")
-            samples.frombytes(data[:self.SAMPLES * 2])
-            if len(samples) < self.SAMPLES:
-                return
-            values = []
-            for band in range(self.BANDS):
-                freq = 80.0 * (8000.0 / 80.0) ** (band / (self.BANDS - 1.0))
-                coeff = 2.0 * math.cos(2.0 * math.pi * freq / self.RATE)
-                s1 = s2 = 0.0
-                for raw in samples:
-                    value = raw / 32768.0 + coeff * s1 - s2
-                    s2, s1 = s1, value
-                power = s1 * s1 + s2 * s2 - coeff * s1 * s2
-                values.append(math.sqrt(max(0.0, power)) / self.SAMPLES)
-        except Exception:
-            return
-        peak = max(values) or 1.0
-        self.bars = [min(1.0, (value / peak) ** 0.6) for value in values]
 
     def draw(self, area, cr):
         width = area.get_allocated_width()
@@ -393,15 +394,40 @@ class AudioVisualizer:
         cr.set_source_rgba(0.0, 0.0, 0.0, 0.0)
         cr.rectangle(0, 0, width, height)
         cr.fill()
+
         gap = 3.0
         bar_width = (width - gap * (self.BANDS - 1)) / self.BANDS
         for index, level in enumerate(self.bars):
             bar_height = max(2.0, level * height)
+            x = index * (bar_width + gap)
+            y = height - bar_height
+            radius = min(bar_width / 2.0, 5.0, bar_height / 2.0)
+
+            # Rounded-top bar, clipped while the vertical gradient is painted.
+            cr.new_path()
+            cr.move_to(x, y + bar_height)
+            cr.line_to(x, y + radius)
+            cr.arc(x + radius, y + radius, radius, math.pi, 1.5 * math.pi)
+            cr.line_to(x + bar_width - radius, y)
+            cr.arc(x + bar_width - radius, y + radius, radius,
+                   1.5 * math.pi, 2.0 * math.pi)
+            cr.line_to(x + bar_width, y + bar_height)
+            cr.close_path()
+            cr.save()
+            cr.clip()
+
             red, green, blue = self.colours[index]
-            cr.set_source_rgba(red / 255.0, green / 255.0, blue / 255.0, 0.9)
-            cr.rectangle(index * (bar_width + gap), height - bar_height,
-                         bar_width, bar_height)
-            cr.fill()
+            stripes = 10
+            for stripe in range(stripes):
+                stripe_y = y + bar_height * stripe / stripes
+                stripe_h = bar_height / stripes + 1.0
+                brightness = 0.42 + 0.58 * (1.0 - stripe / float(stripes))
+                cr.set_source_rgba(red * brightness / 255.0,
+                                   green * brightness / 255.0,
+                                   blue * brightness / 255.0, 0.92)
+                cr.rectangle(x, stripe_y, bar_width, stripe_h)
+                cr.fill()
+            cr.restore()
 
 
 def format_time(seconds):
