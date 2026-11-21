@@ -51,9 +51,9 @@ The 1.01 maintenance rebuild carries these fixes into a fresh install:
   Waybar's unused IPC socket is disabled, removing a launch warning.
 - Updates are binary-first by default: stock binpkgs are accepted even when
   USE flags or dependency sets differ. Use `sudo webos-update --strict-use` to
-  require exact WebOS USE flags, `sudo webos-update --buildpkg` to cache the
-  packages that still need compiling, and `sudo webos-update --check` to
-  preview an update.
+  require exact WebOS USE flags, `sudo webos-update --no-compile` to refuse all
+  source builds, `sudo webos-update --buildpkg` to cache the packages that still
+  need compiling, and `sudo webos-update --check` to preview an update.
 - `webos-music` (MPRIS artwork, controls and seek bar), `webos-stats` (CPU,
   GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop panels.
   Clicking the mpris pill toggles the dropdown; it no longer pauses playback.
@@ -496,16 +496,18 @@ GAMING / PERFORMANCE
 
 UPDATES / PACKAGES
 ------------------
-Portage + OpenRC. `webos-update` and `emerge` prefer prebuilt binaries:
-`EMERGE_DEFAULT_OPTS` includes `--getbinpkg`, and
-`/etc/portage/binrepos.conf/gentoo.conf` pins Gentoo's
-`releases/amd64/binpackages/23.0/x86-64-v3` binhost. A binary is used only when
-its version, USE flags and CPU flags match; mismatches, `~amd64` packages newer
-than the binhost and WebOS/overlay-only packages fall back to source. We
-deliberately do NOT use `-G`, `-K` or `--binpkg-respect-use=n`, so a binary with
-wrong USE flags is never forced onto the machine. `webos-update` reports which
-updates were binary vs source and prints an honest total; the Waybar update
-counter accepts both `[binary` and `[ebuild` emerge lines.
+Portage + OpenRC. `webos-update` and `emerge` are binary-first:
+`EMERGE_DEFAULT_OPTS` includes `--getbinpkg --binpkg-respect-use=n
+--binpkg-changed-deps=n`, and `/etc/portage/binrepos.conf/gentoo.conf` pins
+Gentoo's `releases/amd64/binpackages/23.0/x86-64-v3` binhost. Stock binaries are
+accepted even when their USE flags or dependency sets differ from WebOS, which
+avoids mass recompilation on every update. `webos-update --strict-use` restores
+exact-USE matching; `--no-compile` pre-flights the dry run and aborts if any
+package still needs a source build (a missing binary is reported, not built).
+Packages absent from the binhost (e.g. WebOS-only
+ebuilds) still fall back to source unless `--no-compile` is set. `webos-update`
+reports binary vs source updates; the Waybar update counter accepts both
+`[binary` and `[ebuild` emerge lines.
 Repos: gentoo, webos (local overlay /usr/local/portage/webos); build-only
 overlays may be disabled under /etc/portage/repos.conf.disabled.
 
@@ -515,6 +517,7 @@ overlays may be disabled under /etc/portage/repos.conf.disabled.
   sudo webos-update --check      show what would change
   sudo webos-update --yes        non-interactive config merges
   --no-sync | --no-flatpak | --no-depclean | --no-kernel | --quiet
+  --strict-use | --no-compile | --buildpkg | --fast
 
   You do NOT have to update the kernel or software by hand. webos-update first
   refreshes the local WebOS overlay from GitHub (auto-sync=no, so emerge --sync

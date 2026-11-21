@@ -238,3 +238,44 @@ fixed without changing the installed desktop behaviour:
 Added scripts/50-check.sh assertions for all of the above so a rebuilt image
 fails fast if any fix is regressed. WEBOS_ROOT=/path/to/WebOS bash
 scripts/50-check.sh reports 0 problem(s) with these fixes applied.
+
+[11] Mass recompilation during updates
+---------------------------------------
+Symptom:
+  `sudo webos-update` rebuilt ~95 packages from source and failed on
+  nvidia-drivers and webkit-gtk; Portage's "!!!" binpkg USE/dependency warnings
+  were mistaken for the cause.
+
+Cause:
+  The shipped make.conf and updater accepted a binary only when its USE flags
+  and dependency set matched exactly. WebOS uses ~amd64 and custom flags, so
+  almost every update fell back to source.
+
+Fix:
+  EMERGE_DEFAULT_OPTS and webos-update now pass
+  --binpkg-respect-use=n --binpkg-changed-deps=n (binary-first). A dry run of
+  @world dropped from 235 source builds to 5. `--strict-use` restores exact
+  matching, `--fast` is an alias for the default, `--buildpkg` caches the few
+  remaining builds, and the new `--no-compile` flag pre-flights the dry run and
+  aborts when any source build is required (it deliberately avoids
+  --getbinpkgonly, which would reinstall 815 packages). Docs updated.
+
+[12] Empty dropdown windows and top error overlay
+-------------------------------------------------
+Symptom:
+  Opening the music player left an empty box below it; opening the performance
+  stats opened a second empty window. A red Hyprland error bar sat at the top of
+  the screen.
+
+Cause:
+  Both scripts requested the GtkLayerShell 1.0 GObject namespace, but WebOS
+  ships GtkLayerShell-0.1.typelib. The failed import silently disabled
+  layer-shell, so the transparent fullscreen click-catcher fell back to a bare
+  200x200 toplevel. The red bar was Hyprland's persistent error overlay.
+
+Fix:
+  Both scripts try GtkLayerShell 0.1 before 1.0; the catcher is now a proper TOP
+  layer and the card an OVERLAY layer, so no extra window is visible. Both
+  panels use a 100px top margin so they sit below the top bar (stats aligned
+  to the top right). The stale error overlay is cleared with
+  `hyprctl seterror disable`. Regression checks added.

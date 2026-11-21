@@ -16,6 +16,7 @@
 #   webos-update --no-kernel     skip the kernel/bootloader step
 #   webos-update --quiet         only warnings and the summary
 #   webos-update --strict-use    reject binpkgs whose USE/deps differ (compiles more)
+#   webos-update --no-compile    never build from source; report missing binpkgs
 #   webos-update --fast          alias for the default binpkg-first behaviour
 #   webos-update --buildpkg      cache compiled packages for faster later updates
 set -uo pipefail
@@ -32,6 +33,7 @@ DO_DEPCLEAN=1
 DO_KERNEL=1
 QUIET=0
 PREFER_BINPKGS=1
+NO_COMPILE=0
 BUILD_PKG=0
 FAILED=0
 
@@ -100,6 +102,7 @@ while [ $# -gt 0 ]; do
 		-q|--quiet)      QUIET=1 ;;
 		--fast|--fast-binpkg) PREFER_BINPKGS=1 ;;
 		--strict-use|--respect-use) PREFER_BINPKGS=0 ;;
+		--no-compile)    NO_COMPILE=1; PREFER_BINPKGS=1 ;;
 		--buildpkg)      BUILD_PKG=1 ;;
 		-h|--help)       usage ;;
 		*)               die "unknown option: $1 (try --help)" ;;
@@ -119,7 +122,9 @@ fi
 
 need_root
 
-if [ "$PREFER_BINPKGS" -eq 1 ]; then
+if [ "$NO_COMPILE" -eq 1 ]; then
+	warn "Binary-only mode: updates without a matching binpkg will be reported, never compiled."
+elif [ "$PREFER_BINPKGS" -eq 1 ]; then
 	warn "Using stock binpkgs whose USE flags or dependencies differ from WebOS; some local tuning may be skipped. Use --strict-use to opt out."
 fi
 
@@ -168,6 +173,22 @@ if [ "$CHECK" -eq 1 ]; then
 	note "run 'sudo webos-update' to apply"
 	[ "$FAILED" -eq 0 ] || exit 1
 	exit 0
+fi
+
+if [ "$NO_COMPILE" -eq 1 ]; then
+	# --getbinpkgonly would reinstall hundreds of otherwise-fine packages whose
+	# USE differs from the binhost. Pre-flight the normal binary-first graph and
+	# refuse to continue if any package still requires a source build.
+	say "[2/8] Checking for source builds (--no-compile)"
+	DRYRUN="$(mktemp)"
+	emerge --pretend "${EMERGE_WORLD_ARGS[@]}" @world > "$DRYRUN" 2>&1 || true
+	mapfile -t SOURCE_BUILDS < <(grep '^\[ebuild' "$DRYRUN" || true)
+	rm -f "$DRYRUN"
+	if [ "${#SOURCE_BUILDS[@]}" -gt 0 ]; then
+		printf '%s\n' "${SOURCE_BUILDS[@]}" | sed 's/^/      /'
+		die "source build(s) required in --no-compile mode; install matching binpkgs or rerun without --no-compile"
+	fi
+	ok "only binary packages are scheduled"
 fi
 
 if [ "$PREFER_BINPKGS" -eq 1 ]; then

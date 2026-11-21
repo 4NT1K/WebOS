@@ -112,6 +112,9 @@ grep -qF -- '--binpkg-respect-use=n' "$UPDATER" \
 	&& good "updater is binary-first with a strict-use opt-out" || bad "updater lacks binary-first mode"
 grep -qF -- '--buildpkg' "$UPDATER" \
 	&& good "updater can cache builds" || bad "updater lacks buildpkg mode"
+grep -qF -- '--no-compile' "$UPDATER" && grep -qF 'SOURCE_BUILDS' "$UPDATER" \
+	&& grep -qF '^\[ebuild' "$UPDATER" \
+	&& good "updater can refuse all source builds" || bad "updater lacks binary-only mode"
 grep -q 'reboot with: loginctl reboot' "$UPDATER" \
 	&& good "logind reboot hint" || bad "stale reboot hint"
 grep -qF '/^\[(ebuild|binary)/' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/waybar/scripts/updates.sh" \
