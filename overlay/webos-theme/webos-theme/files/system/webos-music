@@ -40,7 +40,7 @@ ART_DIR = os.path.join(RUNTIME, "webos-music-art")
 
 # Fallback geometry when gtk-layer-shell's introspection typelib is missing.
 PANEL_SIZE = 340
-TOP_GAP = 88  # 42 px layer margin + 46 px bar height
+TOP_GAP = 100  # below the 46 px waybar plus margins
 
 META_FORMAT = "{{title}}\t{{artist}}\t{{mpris:length}}\t{{mpris:artUrl}}"
 
@@ -450,11 +450,17 @@ def run_app(visible):
     gi.require_version("Gdk", "3.0")
     from gi.repository import Gdk, GLib, Gtk
 
-    try:
-        gi.require_version("GtkLayerShell", "1.0")
-        from gi.repository import GtkLayerShell
-    except (ImportError, ValueError):
-        GtkLayerShell = None
+    # WebOS ships GtkLayerShell-0.1.typelib; some newer systems expose 1.0.
+    # Requesting the wrong version silently falls back to normal toplevel
+    # windows, which made the click-catcher appear as an empty box.
+    GtkLayerShell = None
+    for version in ("0.1", "1.0"):
+        try:
+            gi.require_version("GtkLayerShell", version)
+            from gi.repository import GtkLayerShell
+            break
+        except (ImportError, ValueError):
+            continue
 
     write_pidfile()
     atexit.register(remove_pidfile)
@@ -515,7 +521,15 @@ def run_app(visible):
     catcher.set_skip_taskbar_hint(True)
     catcher.set_skip_pager_hint(True)
     catcher.set_app_paintable(True)
+    # Keep the surface hit-testable but completely invisible. On Wayland a
+    # transparent GTK background alone can still arrive as an opaque dark
+    # buffer, which used to dim the whole desktop behind the dropdown.
+    catcher.set_opacity(0.0)
     catcher.set_name("webos-music-catcher")
+    rgba_screen = Gdk.Screen.get_default()
+    rgba_visual = rgba_screen.get_rgba_visual() if rgba_screen else None
+    if rgba_visual is not None:
+        catcher.set_visual(rgba_visual)
     if GtkLayerShell is not None:
         GtkLayerShell.init_for_window(catcher)
         GtkLayerShell.set_layer(catcher, GtkLayerShell.Layer.TOP)
@@ -528,12 +542,19 @@ def run_app(visible):
         except AttributeError:
             pass
     else:
+        # gtk-layer-shell is not installed on every live system. On Wayland
+        # GDK often has no "primary" monitor, so use monitor 0 explicitly;
+        # otherwise the catcher stays at GTK's default 200x200 and shows up as
+        # an empty box underneath the card.
         display = Gdk.Display.get_default()
-        monitor = display.get_primary_monitor() if display else None
+        monitor = None
+        if display is not None:
+            monitor = display.get_primary_monitor() or display.get_monitor(0)
         if monitor is not None:
             geometry = monitor.get_geometry()
             catcher.set_default_size(geometry.width, geometry.height)
             catcher.move(geometry.x, geometry.y)
+        catcher.set_keep_below(True)
     catcher_area = Gtk.EventBox()
     catcher_area.set_name("webos-music-catcher-area")
     catcher.add(catcher_area)
@@ -546,6 +567,12 @@ def run_app(visible):
     window.set_skip_pager_hint(True)
     window.set_default_size(PANEL_SIZE, PANEL_SIZE)
     window.set_app_paintable(True)
+    if rgba_visual is not None:
+        window.set_visual(rgba_visual)
+    if GtkLayerShell is None:
+        # Keep the card above the fullscreen click-catcher without layer-shell.
+        window.set_transient_for(catcher)
+        window.set_keep_above(True)
 
     if GtkLayerShell is not None:
         GtkLayerShell.init_for_window(window)
@@ -553,7 +580,7 @@ def run_app(visible):
         for edge in ("LEFT", "RIGHT", "BOTTOM"):
             GtkLayerShell.set_anchor(window, getattr(GtkLayerShell.Edge, edge), False)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 42)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 100)
         GtkLayerShell.set_exclusive_zone(window, -1)
         try:
             GtkLayerShell.set_namespace(window, "webos-music")
@@ -588,12 +615,11 @@ def run_app(visible):
             progress = min(1.0, tick[0] / float(frames))
             eased = 1.0 - (1.0 - progress) ** 3
             if GtkLayerShell is not None:
-                margin = int(round(42 - PANEL_SIZE + PANEL_SIZE * eased))
+                margin = int(round(100 - PANEL_SIZE + PANEL_SIZE * eased))
                 GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, margin)
             else:
-                # Give Hyprland a moment to focus the newly shown window.
-                if "webos-music" not in hyprctl("activewindow"):
-                    return True
+                # Do not wait for focus: the transparent catcher can become
+                # the active window instead, which used to stall the animation.
                 position = fallback_position(
                     int(round(TOP_GAP - PANEL_SIZE + PANEL_SIZE * eased))
                 )
@@ -750,6 +776,8 @@ def run_app(visible):
             hide_dropdown()
         else:
             catcher.show_all()
+            if GtkLayerShell is None:
+                catcher.fullscreen()
             window.show_all()
             window.present()
             visualizer.start()
@@ -771,6 +799,8 @@ def run_app(visible):
 
     if visible:
         catcher.show_all()
+        if GtkLayerShell is None:
+            catcher.fullscreen()
         window.show_all()
         window.present()
         visualizer.start()

@@ -88,6 +88,22 @@ def remove_pidfile():
             pass
 
 
+def hyprctl(*args):
+    try:
+        proc = subprocess.run(
+            ["hyprctl", *args],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+            check=False,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout.decode("utf-8", "replace").strip()
+
+
 def spawn(visible):
     flag = "--run-visible" if visible else "--run-hidden"
     devnull = open(os.devnull, "rb")
@@ -328,11 +344,17 @@ def run_app(visible):
     gi.require_version("Gdk", "3.0")
     from gi.repository import Gdk, GLib, Gtk
 
-    try:
-        gi.require_version("GtkLayerShell", "1.0")
-        from gi.repository import GtkLayerShell
-    except (ImportError, ValueError):
-        GtkLayerShell = None
+    # WebOS ships GtkLayerShell-0.1.typelib; some newer systems expose 1.0.
+    # Requesting the wrong version silently falls back to normal toplevel
+    # windows, which made the click-catcher appear as an empty box.
+    GtkLayerShell = None
+    for version in ("0.1", "1.0"):
+        try:
+            gi.require_version("GtkLayerShell", version)
+            from gi.repository import GtkLayerShell
+            break
+        except (ImportError, ValueError):
+            continue
 
     write_pidfile()
     atexit.register(remove_pidfile)
@@ -371,13 +393,21 @@ def run_app(visible):
 
     # Transparent fullscreen surface behind the card: clicking outside the
     # card dismisses the dropdown (Wayland has no global click grab).
+    fallback_geometry = None
     catcher = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
     catcher.set_title("webos-stats-outside")
     catcher.set_decorated(False)
     catcher.set_skip_taskbar_hint(True)
     catcher.set_skip_pager_hint(True)
     catcher.set_app_paintable(True)
+    # Keep the surface hit-testable but completely invisible; a transparent
+    # GTK background can otherwise arrive as an opaque dark Wayland buffer.
+    catcher.set_opacity(0.0)
     catcher.set_name("webos-stats-catcher")
+    rgba_screen = Gdk.Screen.get_default()
+    rgba_visual = rgba_screen.get_rgba_visual() if rgba_screen else None
+    if rgba_visual is not None:
+        catcher.set_visual(rgba_visual)
     if GtkLayerShell is not None:
         GtkLayerShell.init_for_window(catcher)
         GtkLayerShell.set_layer(catcher, GtkLayerShell.Layer.TOP)
@@ -390,12 +420,19 @@ def run_app(visible):
         except AttributeError:
             pass
     else:
+        # The live session often has no gtk-layer-shell introspection and no
+        # "primary" GDK monitor. Use monitor 0 so the click-catcher covers the
+        # whole screen instead of appearing as a 200x200 empty window.
         display = Gdk.Display.get_default()
-        monitor = display.get_primary_monitor() if display else None
+        monitor = None
+        if display is not None:
+            monitor = display.get_primary_monitor() or display.get_monitor(0)
         if monitor is not None:
             geometry = monitor.get_geometry()
+            fallback_geometry = geometry
             catcher.set_default_size(geometry.width, geometry.height)
             catcher.move(geometry.x, geometry.y)
+        catcher.set_keep_below(True)
     catcher_area = Gtk.EventBox()
     catcher_area.set_name("webos-stats-catcher-area")
     catcher.add(catcher_area)
@@ -409,6 +446,11 @@ def run_app(visible):
     core_ids = read_core_ids()
     window.set_default_size(250, 40 + 26 * (len(LABELS) + len(core_ids)))
     window.set_app_paintable(True)
+    if rgba_visual is not None:
+        window.set_visual(rgba_visual)
+    if GtkLayerShell is None:
+        window.set_transient_for(catcher)
+        window.set_keep_above(True)
 
     if GtkLayerShell is not None:
         GtkLayerShell.init_for_window(window)
@@ -417,7 +459,7 @@ def run_app(visible):
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.LEFT, False)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.TOP, True)
         GtkLayerShell.set_anchor(window, GtkLayerShell.Edge.RIGHT, True)
-        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 42)
+        GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 100)
         GtkLayerShell.set_margin(window, GtkLayerShell.Edge.RIGHT, 12)
         GtkLayerShell.set_exclusive_zone(window, -1)
 
@@ -496,6 +538,14 @@ def run_app(visible):
             bar.set_text("c%d   %d%% %s" % (core, round(usage * 100), temp_text))
         return True
 
+    def place_fallback():
+        """Top-right placement when gtk-layer-shell is unavailable."""
+        if GtkLayerShell is not None or fallback_geometry is None:
+            return
+        x = fallback_geometry.x + fallback_geometry.width - 250 - 12
+        y = fallback_geometry.y + 42
+        hyprctl("dispatch", "hl.dsp.window.move({ x = %d, y = %d })" % (x, y))
+
     def hide_dropdown():
         window.hide()
         catcher.hide()
@@ -510,7 +560,10 @@ def run_app(visible):
             hide_dropdown()
         else:
             catcher.show_all()
+            if GtkLayerShell is None:
+                catcher.fullscreen()
             window.show_all()
+            place_fallback()
         return False
 
     def on_sigusr1(_signum, _frame):
@@ -528,7 +581,10 @@ def run_app(visible):
 
     if visible:
         catcher.show_all()
+        if GtkLayerShell is None:
+            catcher.fullscreen()
         window.show_all()
+        place_fallback()
     window.connect("destroy", Gtk.main_quit)
     Gtk.main()
     return 0
