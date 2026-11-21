@@ -1,0 +1,916 @@
+================================================================================
+WEBOS - COMPLETE SOURCE / DISTRO GUIDE
+Audience: a future OpenCode instance working on the real WebOS source tree.
+Version described: WebOS 1.02 "Ashen" (ISO webos-1.02-Ashen-amd64.iso)
+================================================================================
+
+PURPOSE OF THIS FILE
+--------------------
+This is the single deep-context brief for the WebOS project. If you are handed
+the source checkout on a working WebOS machine, read this first. It explains
+what the distro is, where everything lives, which files are contract-sensitive,
+how the build and release pipeline works, what has already been fixed, what is
+still pending, and what future work (including a possible KDE Plasma X11
+addition) would touch.
+
+It is intentionally plain text so it can be read from a shell, a USB stick, or
+an installed machine without Markdown tooling. For shorter summaries see
+README.md, STATUS.md, docs/ARCHITECTURE.md, docs/BUILD.md and docs/RELEASE.md.
+For the shipped end-user/system brief see overlay/webos-theme/webos-theme/files/
+WEBOS-INFO.txt (installed as /usr/share/webos/WEBOS-INFO.txt).
+
+================================================================================
+0. CURRENT STATE AND GROUND RULES
+================================================================================
+
+Identity
+  Name:            WebOS
+  Codename:        Ashen
+  Version:         1.02 (marketing version from branding/version)
+  Full version:    1.02-Ashen
+  ID:              webos
+  Kernel:          6.12.0-webos (vanilla LTS + WebOS config fragment)
+  Init:            OpenRC + elogind (no systemd)
+  Desktop:         Hyprland (Wayland) with the Ashen greyscale rice
+  Greeter:         SDDM
+  Arch:            amd64 (ABI_X86="64", x86-64-v3 baseline)
+  ISO:             webos-1.02-Ashen-amd64.iso
+  Upstream:        https://github.com/4NT1K/WebOS
+  Maintainer acct: 4NT1K
+
+Release state at the time this guide was written
+  - v1.02 source is frozen, committed and pushed to origin/main at 49829b6.
+  - v1.01 is historical; do not overwrite/republish it.
+  - The regression gate scripts/50-check.sh passes with 0 problems (206 checks).
+  - Rootfs rebuild was in progress; ISO build, Ventoy copy and GitHub v1.02
+    publication were the remaining release steps. Check STATUS.md for live state.
+
+Hard constraints (NEVER violate these)
+  1. Binary-first Portage via --getbinpkg and the Gentoo x86-64-v3 binhost.
+  2. NEVER use -G, -K, --getbinpkgonly or --binpkg-respect-use=n.
+     --fast uses --binpkg-changed-deps=n plus --binpkg-respect-use=y.
+  3. Power actions are loginctl-only. The Waybar power widget glyph is exactly
+     ⏻ , tooltip exactly:
+     "Power — open session menu (reboot, shut down, suspend)"
+     and on-click is exactly "wlogout".
+  4. Stats must show real RAM used/total and every CPU core as "c0 2% 53C".
+  5. Music dropdown: compact 340x340 square, frosted cover art, per-song cava
+     visualizer bound to the active MPRIS player's PipeWire node, outside-click
+     dismissal, and GtkLayerShell-0.1 requested before GtkLayerShell-1.0.
+  6. Installed systems receive features through `sudo webos-update`; overlay
+     main must be pushed BEFORE building/publishing an ISO.
+  7. Desktop notifications use ./scripts/notify-user.sh "<message>" "WebOS Release".
+  8. Never shut the machine down as part of a release. Leave it powered on.
+
+If you change a contract-sensitive file, update scripts/50-check.sh and rerun it.
+
+================================================================================
+1. REPOSITORY MAP (top level)
+================================================================================
+
+/home/brah/sanusos/                    working checkout (branch main)
+├── build.sh                           top-level build entry point
+│                                      usage: ./build.sh all|fetch|bootstrap|
+│                                      kernel|rootfs|iso|clean|distclean|status
+├── Makefile                           convenience wrappers (make iso, lint, ...)
+├── README.md                          user-facing overview and quick links
+├── STATUS.md                          live build/release status; read first
+├── ROADMAP.md                         completed/planned feature roadmap
+├── AUDIT.md, AUDIT_FINAL_REPORT.md    historical audit evidence
+├── LICENSE                            project license
+├── branding/                          identity files (see §2)
+├── config/                            Portage configuration injected into chroot
+├── desktop -> overlay/webos-theme/webos-theme/files/rice
+│                                      symlink: rice has one source of truth
+├── docs/                              architecture, build, release docs (see §3)
+├── installer/                         Rust installer crate (see §4)
+├── kernel/                            kernel metadata/patches (see §5)
+├── livecd/                            live-medium overlay (see §6)
+├── overlay/                           the ::webos Gentoo overlay (see §7)
+├── scripts/                           build pipeline stages (see §8)
+├── assets/                            logo PNG sources
+├── .issue-watcher.sh                  long-running build-issue notifier
+├── .step-watcher.sh                   build-step notifier
+├── .finalize-rootfs.sh                post-rootfs helper
+├── .post-iso.sh                       post-ISO helper
+├── setup-container-build.sh           container bootstrap/helper script
+
+Build outputs (not source, do not hand-edit)
+  build/downloads/                     stage3, portage snapshot, checksums
+  build/cache/kernel-patches/          resolved patch series, INDEX, .lock
+  build/cache/repos/                   cloned guru/hyproverlay/steam-overlay
+  build/chroot/                        active build chroot (32G on this machine)
+  build/chroot.backup/                 restored good chroot used for v1.02 builds
+  build/rootfs/                        exported installable system
+  build/live-root/                     rootfs + livecd/ before squashfs
+  build/iso-staging/                   ISO tree passed to grub-mkrescue
+  build/webos-*.iso                    historical/current ISO artifacts
+  build/v102-rootfs.log/.rc            current rootfs stage log and exit code
+  build/v102-iso.log/.rc               current ISO stage log and exit code
+
+Maintainer-machine context (outside the repo)
+  /home/brah/release-v102.sh           final release script for v1.02
+  /dev/sdc1, label Ventoy               USB target
+  /run/media/brah/Ventoy               Ventoy mountpoint (exFAT)
+  docker container webos-build          build container; root is /sanusos
+  GitHub repo 4NT1K/WebOS              releases v1.0, v1.01; v1.02 to publish
+
+================================================================================
+2. BRANDING / IDENTITY FILES
+================================================================================
+
+branding/version
+  The single source of version truth. Contains WEBOS_NAME, WEBOS_CODENAME,
+  WEBOS_VERSION, WEBOS_VERSION_FULL, WEBOS_ID, WEBOS_HOME, WEBOS_KERNEL_SERIES.
+  Do not hard-code 1.01 anywhere; all identity checks expect 1.02.
+
+branding/os-release
+  ID=webos, NAME="WebOS", PRETTY_NAME="WebOS 1.02 (Ashen)", ANSI_COLOR greyscale
+  (ANSI_COLOR="38;2;216;216;216"). Installer/kcm/docs mirror this.
+
+branding/issue, branding/lsb-release
+  Console/login banners; both carry 1.02.
+
+branding/logo.svg, webos-logo.png, webos-logo-512.png, wallpaper.png
+  Artwork. The rice uses /usr/share/webos/logo.svg (the 512x512 cobweb mark),
+  NOT the wallpaper SVG, which is a black rectangle and made hyprlock/KDE About
+  draw an invisible square.
+
+config/make.conf
+  Shipped /etc/portage/make.conf. x86-64-v3 COMMON_FLAGS/CFLAGS/CXXFLAGS and
+  RUSTFLAGS, MAKEOPTS=-j16 -l24, EMERGE_DEFAULT_OPTS includes --getbinpkg,
+  FEATURES with parallel-fetch/parallel-install/split-log, gaming USE flags,
+  CPU_FLAGS_X86 without AVX-512 (stale AVX-512 caused NumPy SIGILL in waypaper),
+  ABI_X86="64", ACCEPT_KEYWORDS="~amd64", WEBOS_OS/WEBOS_VERSION markers.
+  This file must not contain forbidden binary flags.
+
+config/binrepos.conf/gentoo.conf
+  Pins https://distfiles.gentoo.org/releases/amd64/binpackages/23.0/x86-64-v3
+  at /var/cache/binhost/gentoo with verify-signature=true.
+
+config/repos.conf/{gentoo,webos,guru,hyproverlay,steam-overlay}.conf
+  Repository priorities: webos(100) > gentoo(-1000) > third-party(-2000).
+  The WebOS overlay is a local repo at /usr/local/portage/webos with
+  auto-sync=no; that is why webos-update refetches it from GitHub main.
+
+config/sets/{base,desktop,gaming,plasma,webos-installer}
+  Build-time @sets mirrored by metapackages. @plasma is opt-in only.
+
+config/world
+  Base world file installed into the chroot.
+
+config/package.use/{00-global,gaming}
+  Per-package USE tuning, e.g. kde-frameworks/kconfig-6.32.0 qml.
+config/package.mask/00-webos
+  Masks systemd and unwanted packages.
+config/package.accept_keywords/{00-webos,webos}
+  Testing keywords for fast-moving desktop/gaming packages.
+config/package.license/00-webos
+  License policy.
+config/env/*
+  Package-specific environment (ananicy-cpp, nss-mdns).
+
+overlay/profiles/default/linux/{amd64,arm64}/webos/
+  eapi, parent, make.defaults, use.mask, profiles.desc, repo_name, categories.
+  make.defaults repeats key policy: elogind/-systemd, wayland+X, gaming USE,
+  -dist-kernel, ABI_X86=64, GRUB_PLATFORMS="efi-64 pc", L10N/LINGUAS=en.
+  amd64 make.defaults carries WEBOS_VERSION=1.02.
+
+overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc
+  KDE About dialog branding; carries 1.02.
+
+installer/src/main.rs also carries version identity (installer-facing).
+
+================================================================================
+3. DOCS
+================================================================================
+
+docs/ARCHITECTURE.md
+  Best overview of principles, layers, kernel, installer, rice, ISO, boot flows
+  and design decisions. Read after this file.
+
+docs/BUILD.md
+  Full stage-by-stage build walkthrough, environment knobs, troubleshooting,
+  repo table, and what lands in each build/ directory.
+
+docs/RELEASE.md
+  Release checklist: versioning, verification, smoke tests, checksums,
+  reproducibility notes, tagging, and shipping updates to installed machines.
+
+docs/MAINTENANCE.txt
+  Long-form maintenance notes.
+
+docs/RELEASE.md + docs/releases/v1.0.md, v1.01.md, v1.02.md, v1.022.md
+  v1.01.md is historical. v1.02.md is the current release notes and names the
+  v1.02 assets. v1.022.md is an older intermediate historical note; do not
+  treat it as current.
+
+docs/FIXLOG-v1.01.txt was deliberately deleted: it made false post-release
+claims. Do not recreate it.
+
+WEBOS-INFO.txt (in overlay/webos-theme/webos-theme/files/)
+  Shipped system brief, installed to /usr/share/webos/WEBOS-INFO.txt. Contains
+  "WHAT CHANGED IN 1.02", power restoration, per-core CPU details, binary-first
+  updater guidance, ".webos-orig" backup suffix, and maintainer workflow.
+  Keep it in sync with source changes.
+
+This file: docs/WEBOS-COMPLETE-GUIDE.txt
+  Deep source/distro brief; keep it updated when architecture changes.
+
+================================================================================
+4. INSTALLER (Rust crate)
+================================================================================
+
+Location: installer/ (crate webos-installer, version 1.0.0)
+Build:    make -C installer release  (or installer/target/release/webos-installer)
+Deps:     vendored in installer/vendor/; installer/.cargo enforces offline.
+Offline:  ebuild builds with CARGO_NET_OFFLINE=true, --locked.
+
+Source map
+  installer/src/main.rs        argument parsing, terminal setup, event loop
+  installer/src/app.rs         wizard state, key handling, install worker thread;
+                               INSTALL_STAGES (13 labels) and stage-count logic
+  installer/src/ui.rs          ratatui rendering (pure functions of App)
+  installer/src/gui.rs         windowed/egui installer front-end
+  installer/src/theme.rs       Ashen palette for ratatui + egui; progress colours
+  installer/src/config.rs      InstallConfig, Profile enum, validation
+  installer/src/disk.rs        disk enumeration, firmware detection, partitions
+  installer/src/rootfs.rs      locate/mount the system to install
+  installer/src/install.rs     the install recipe and generated chroot script
+  installer/src/bootloader.rs  GRUB install and kernel command line
+  installer/src/exec.rs        command runner, logging, UI progress reporting
+
+Profiles (installer/src/config.rs)
+  Full    = "WebOS — Hyprland + gaming" (default)
+  Plasma  = "KDE Plasma + gaming" (currently Wayland)
+  Minimal = minimal/no desktop
+  Profile chooses the SDDM session .desktop name: webos.desktop for Full,
+  plasma.desktop for Plasma. The installer links only that session into
+  /usr/share/webos/sessions/{wayland,x11}, so SDDM shows one option. Both
+  session directories and SDDM [Wayland]/[X11] SessionDir settings are already
+  created in install.rs, which matters for the possible X11 work in §14.
+
+13 truthful stages (installer/src/app.rs)
+  Preparing, Partitioning, Encrypting, Creating filesystems, Mounting,
+  Fixing filesystem ownership, Copying the system, Writing /etc/fstab,
+  Configuring the system, Building the initramfs, Installing the bootloader,
+  Recording the install, Unmounting.
+  Stage count subtracts one when Encryption::None. The label order matches the
+  actual r.phase(...) emission order; do not reorder it to match an older idea.
+
+Install recipe highlights (installer/src/install.rs)
+  - rsync -aHAX --numeric-ids --one-file-system with pseudofs exclusions;
+    setuid/setgid preserved (no recursive chown that strips bits).
+  - btrfs subvolumes @ @home @snapshots @cache @log @tmp, zstd:1 mount options.
+  - rootflags=subvol=@ is mandatory in GRUB for btrfs.
+  - Optional LUKS2 opened as webos_crypt; dracut adds crypt/dm/btrfs modules.
+  - User groups ensured: wheel,audio,video,render,input,plugdev,gamemode,usb,kvm,seat.
+  - 32-char /etc/machine-id and /var/lib/dbus/machine-id symlink verified.
+  - Live glue removed: /etc/inittab.webos-orig restored; /etc/webos-live deleted.
+  - Gaming toggle off removes webos-gaming packages plus wine/protontricks/
+    vkd3d/tools and writes /etc/webos/gaming-not-installed.txt.
+  - Steam wording is honest: "Steam (Flatpak fallback)" in app.rs,
+    "Steam as a Flatpak fallback" in config.rs; Flatpak fallback recorded in
+    install.rs. Native Steam is impossible with ABI_X86=64.
+  - Non-Plasma profiles unmerge Plasma packages except the keep-list
+    {systemsettings, breeze}, remove plasma.desktop, and install qt6ct/breeze/
+    konsole. Plasma profile emerges @plasma and removes qt6ct (conflict).
+  - Assertions fail loudly if Plasma presence does not match the chosen profile.
+
+Installer ebuild
+  overlay/app-admin/webos-installer/webos-installer-1.0.0.ebuild
+  Manifest + metadata.xml present. Installer tarball is staged before emerge.
+
+================================================================================
+5. KERNEL
+================================================================================
+
+kernel/patchset.conf
+  Pipe-delimited name|url|sha256|target-series|description. Entries with sha256
+  "auto" are pinned in place on first fetch; an existing pin mismatch is fatal.
+  For 6.12 all patch entries are commented out (upstream URLs unavailable), so
+  the image ships stock LTS + the WebOS fragment. CONFIG_SCHED_BORE and
+  CONFIG_TCP_CONG_BBR3 in the fragment are harmless if the tree lacks them.
+
+kernel/fetch-patches.sh
+  Downloads and verifies patches into build/cache/kernel-patches/ with series,
+  INDEX and .lock. --verify rechecks pins without downloading.
+
+kernel/webos-fragment.config -> overlay/sys-kernel/webos-kernel/files/webos-fragment.config
+  Symlink; the fragment lives with the ebuild that consumes it.
+  Sets CONFIG_LOCALVERSION="-webos", CONFIG_HZ=1000, CONFIG_PREEMPT_DYNAMIC=y,
+  CONFIG_SCHED_CLASS_EXT=y, CONFIG_SCHED_BORE=y, desktop/gaming knobs.
+
+overlay/eclass/webos-kernel.eclass
+  webos_apply_patchset, webos_merge_config (strict CONFIG_* replacement),
+  webos_kernel_make, webos_kernel_release, webos_kernel_install.
+
+overlay/sys-kernel/webos-kernel/webos-kernel-6.12.ebuild
+  Builds/installs vmlinuz, modules and a header tree; writes a fragment stamp
+  via newins to /boot/webos-fragment.sha256 so scripts/20-kernel.sh can detect
+  config changes and rebuild deterministically. Do not replace newins with a
+  raw ${ED}/boot write.
+
+overlay/sys-kernel/webos-kernel-sources/webos-kernel-sources-6.12.ebuild
+  Ships patched tree under /usr/src/linux-<PV> plus the fragment.
+
+overlay/virtual/linux-sources/linux-sources-3-r9.ebuild
+  Virtual provider; we do not use dist-kernels.
+
+scripts/20-kernel.sh
+  Refreshes overlay in chroot, drops patch series into /var/cache/webos/patches,
+  runs egencache, regenerates kernel Manifests, emerges sources + kernel, writes
+  build/.kernel-release.
+
+================================================================================
+6. LIVE MEDIUM / ISO
+================================================================================
+
+livecd/boot/grub/grub.cfg
+  GRUB template for the hybrid BIOS+UEFI image. @VOLID@ and @VERSION_FULL@
+  are substituted by scripts/40-iso.sh.
+
+livecd/etc/conf.d/agetty.tty1
+livecd/etc/profile.d/99-webos-live.sh
+livecd/etc/webos-live
+livecd/usr/local/bin/webos-live-session
+  Live root autologin and menu. Both agetty and sysvinit /etc/inittab paths are
+  covered; inittab is backed up as /etc/inittab.webos-orig.
+  Safety: live glue checks for /etc/webos-live so it can never take over an
+  installed system. The installer removes the marker and restores inittab.
+
+scripts/40-iso.sh
+  1. kernel -> /boot/vmlinuz-webos
+  2. dracut initramfs with dmsquash-live + pollcdrom
+  3. build/live-root = build/rootfs + livecd/
+  4. mksquashfs zstd, 1 MiB blocks -> /live/webos.squashfs
+  5. writes /webos/version, substitutes GRUB template variables
+  6. grub-mkrescue -> build/webos-1.02-Ashen-amd64.iso + .sha256
+  It normalizes ownership without stripping setuid/setgid bits.
+
+Boot flow (live)
+  firmware -> GRUB -> vmlinuz-webos + initramfs -> dmsquash-live mounts
+  /live/webos.squashfs at /run/initramfs/live -> OpenRC -> tty1 root autologin
+  -> webos-live-session -> webos-installer.
+
+Boot flow (installed)
+  firmware -> GRUB -> vmlinuz-6.12.0-webos -> root=UUID=... [LUKS]
+  rootflags=subvol=@ -> OpenRC -> SDDM -> webos-session -> Hyprland.
+
+================================================================================
+7. OVERLAY ::webos (complete map)
+================================================================================
+
+overlay/metadata/layout.conf, overlay/profiles/*
+  Repo metadata, categories, repo_name, amd64/arm64 webos profiles.
+
+overlay/eclass/webos-kernel.eclass
+  Shared kernel helpers (see §5).
+
+overlay/sys-kernel/webos-kernel/, webos-kernel-sources/
+  Kernel ebuilds, files/webos-fragment.config, metadata.xml, Manifest.
+
+overlay/virtual/linux-sources/
+  Virtual linux-sources provider.
+
+overlay/webos-base/webos-base/webos-base-1.0.ebuild
+  Base metapackage: OpenRC, NetworkManager, core services.
+
+overlay/webos-desktop/webos-desktop/webos-desktop-1.0.ebuild
+  Desktop metapackage: Hyprland, SDDM, Waybar, wlogout, portals, fonts, cava,
+  Pipewire, Kvantum, Qt6ct, etc. IUSE bluetooth,browser. Does NOT pull Plasma.
+  Keeps webos-theme as RDEPEND.
+
+overlay/webos-gaming/webos-gaming/webos-gaming-1.0.ebuild
+  Gaming metapackage: gamescope, gamemode, MangoHud, tools; native Steam is
+  excluded by ABI_X86=64 and documented as Flatpak fallback.
+
+overlay/app-admin/webos-installer/
+  webos-installer-1.0.0.ebuild, Manifest, metadata.xml.
+
+overlay/sys-apps/pacman/
+  Locally packaged pacman-6.0.1 + files/pacman.conf. Application package manager
+  using Arch core/extra/multilib for "install apps, don't compile them".
+
+overlay/webos-theme/webos-theme/
+  The rice and every WebOS helper. Multiple revisions exist:
+    webos-theme-1.0.ebuild       original
+    webos-theme-1.0-r1.ebuild    historical installed version on v1.01 systems
+    webos-theme-1.0-r2/r3.ebuild remote history, harmless
+    webos-theme-1.0-r4.ebuild    CURRENT; pins new features and r4 delivery
+  r4 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pillow, jq,
+  brightnessctl, grim/slurp/wdisplays/swaybg/waypaper, playerctl, fonts, chafa,
+  libnotify, and librsvg||imagemagick. r4 installs the rice, dotfiles profiles,
+  system fallbacks, session files, and all /usr/bin/webos-* helpers.
+  pkg_postinst calls webos-wallpaper and webos-rice --system (with backups).
+
+  files/WEBOS-INFO.txt
+    Shipped guide at /usr/share/webos/WEBOS-INFO.txt.
+
+  files/rice/ (also reachable via the top-level desktop symlink)
+    hypr/hyprland.lua             Hyprland 0.57 Lua config (hyprland.conf is gone)
+    hypr/webos-colors.lua         Ashen palette for Hyprland
+    hypr/hypridle.conf            DPMS via Lua hl.dispatch(hl.dsp.dpms(...));
+                                  hyprlock --grace 0 --no-fade-in; backlight-only
+                                  dim guarded by /sys/class/backlight. Never use
+                                  `hyprctl dispatch dpms` or dim keyboard LEDs.
+    hypr/hyprlock.conf            escape '#' as '##' in Pango markup:
+                                  foreground="##7A7A7A"; no obsolete grace/
+                                  no_fade_in keys (those are CLI flags now).
+    hypr/hyprpaper.conf, hyprsunset.conf
+    waybar/config.jsonc           ipc:false; mpris pill; right modules end with
+                                  custom/power. Power contract:
+                                    "format": "⏻"
+                                    "tooltip": "Power — open session menu (reboot, shut down, suspend)"
+                                    "on-click": "wlogout"
+    waybar/style.css              #custom-power styling; near-opaque greyscale
+    waybar/scripts/updates.sh     counts [binary] and [ebuild] updates, so the
+                                  badge is honest under binary-first Portage.
+    waybar/scripts/gamemode.sh
+    wlogout/layout                loginctl-only actions: loginctl suspend,
+                                  hibernate, reboot, poweroff. No systemctl.
+    wlogout/style.css
+    wofi/config, wofi/style.css
+    mako/config, kitty/kitty.conf, foot/foot.ini, fish/*
+    gtk-3.0/*, gtk-4.0/*, qt5ct/*, qt6ct/*, kvantum/*, konsole/*, plasma/*
+    color-schemes/DeepBlack.colors
+    fastfetch/fastfetch.json, webos-logo.png, webos.txt
+    wallpapers/*                  logo SVG and dark/light wallpapers
+    README.rice
+
+  files/dotfiles/
+    mono/{waybar,kitty,mako}      selectable mono profile; its waybar config also
+                                  has the ⏻ power widget and ipc:false.
+    minimal/waybar/*, jakoolit/waybar/*
+    webos-dotfiles lets the user choose a profile. The old mono config hash
+    2b3fc6c9c3f0d46bcebebdff9787054cf117e6cba2936505a19ba3de6e978081 is pinned
+    in webos-rice so a legacy mono install gets migrated, not overwritten.
+
+  files/system/ helpers (all installed to /usr/bin unless noted)
+    webos-menu              curated wofi launcher (Super+D / Super+R)
+    webos-music             GTK3/gtk-layer-shell now-playing dropdown.
+                            PANEL_SIZE=340, TOP_GAP=100, frosted cover via
+                            GaussianBlur(radius=9) + enhance(0.72), palette via
+                            quantize(colors=6), cava config method=pipewire and
+                            source=%s bound by pw-dump to the MPRIS player's
+                            node, outside-click catcher, GtkLayerShell 0.1->1.0
+                            fallback, set_namespace(window,"webos-music").
+                            run_quiet(["hyprctl","seterror","disable"]) at start.
+    webos-stats             GTK3/gtk-layer-shell per-core monitor.
+                            read_core_ids(), ram_details(), core_temperatures();
+                            output line "c%d   %d%% %s"; outside-click catcher;
+                            GtkLayerShell 0.1->1.0 fallback; margin TOP 100.
+    webos-rice              rice/dotfile/system applicator + doctor.
+                            Modes: --user, --system, --doctor, --toggle-panel.
+                            migrate_legacy_waybar() backs up old config once
+                            (suffix .webos-orig) and migrates known mono hash.
+    webos-update            one-command updater (see §10)
+    webos-session           exports env and launches Hyprland with the Lua rice
+    webos-autostart, webos-rice-autostart.desktop
+    webos-portals           xdg-desktop-portal + polkit agent for Wayland
+    webos-wallpaper         generates wallpapers with rsvg-convert/magick
+    webos-shot              grim/slurp screenshots (region/window/output)
+    webos-fastfetch, bashrc.d-webos-fastfetch.bash, zshrc-webos-fastfetch,
+    fish-conf-webos.fish    terminal card (16x16 chafa logo, ten modules)
+    webos-chafa-logo        fixed 16x16 cobweb logo renderer
+    webos-gaming            gamescope/gamemode launcher
+    webos-plasma-setup      applies DeepBlack scheme/wallpaper in Plasma
+    webos-plasma-setup.desktop
+    webos-settings, webos-settings.desktop
+    webos-shell, webos.desktop, webos-gamescope.desktop
+    webos-refresh           persists/restores Hyprland monitor modes
+    sddm-webos.conf, local.d-webos.start, environment.d-webos.conf,
+    profile.d-webos.sh, locale.conf, waypaper-config.ini, icons-default/*,
+    desktop-overrides/*     system fallbacks written by webos-rice --system
+    xdg-desktop-portal/*.conf, xdg/kcm-about-distrorc
+
+================================================================================
+8. BUILD PIPELINE (scripts/)
+================================================================================
+
+scripts/lib/common.sh
+  Shared env defaults (WEBOS_ROOT, WEBOS_ARCH, WEBOS_JOBS, WEBOS_BUILD_DIR,
+  mirrors, kernel series), logging helpers, host checks, chroot helpers,
+  mount/unmount EXIT traps.
+
+scripts/lib/mkmanifest.sh
+  Regenerates overlay Manifests with hex BLAKE2B/SHA512 digests. Never commit
+  base64-looking EBUILD/MISC digests; 50-check.sh rejects them.
+
+scripts/00-fetch.sh
+  Downloads stage3 + portage snapshot, verifies sidecars, fetches kernel
+  patchset, shallow-clones third-party overlays, runs installer/vendor.sh.
+
+scripts/10-bootstrap.sh
+  Unpacks stage3 into build/chroot, installs config/, copies overlay to
+  /usr/local/portage/webos, materializes third-party repos, selects profile,
+  emerges @world.
+
+scripts/20-kernel.sh
+  See §5. Checks /boot/webos-fragment.sha256 before rebuilding.
+
+scripts/30-rootfs.sh
+  Refreshes overlay/sets in chroot; emerge @base @desktop @gaming
+  @webos-installer; stages installer tarball; builds installer offline;
+  installs branding; unmerge+remerge webos-theme (same-version edits need a
+  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r4.ebuild"; applies
+  rice; rsyncs chroot -> build/rootfs excluding pseudofs/cache/src trees.
+  Reuses build/chroot.backup on this machine for fast v1.02 rebuilds.
+
+scripts/40-iso.sh
+  See §6. Ownership normalization preserves setuid bits.
+
+scripts/50-check.sh
+  Consolidated 15-section regression gate. Current run: 0 problems, 206 ok.
+  Sections:
+   1 overlay Manifest/metadata presence
+   2 branding consistency
+   3 kernel patchset pinned
+   4 installer crate parses
+   5 bash -n on all first-party scripts
+   6 core rice files exist
+   7 v1.01 regressions (CPU_FLAGS, overlays shipped, kconfig[qml])
+   8 binary-package updater, logind power, ⏻ widget, detailed stats
+   9 v1.02 identity, WEBOS-INFO.txt, release notes
+  10 power widget in both Waybar profiles + mono migration
+  11 hyprlock/hypridle/DPMS/backlight fixes
+  12 r4 theme ebuild and rootfs pin
+  13 binary-first updater controls, forbidden-flag sweep
+  14 music/stats dropdown details and python syntax
+  15 installer, Manifest hex, kernel stamp, watchers, cargo check --offline
+
+scripts/notify-user.sh
+  Desktop notifications with canberra/paplay/aplay sound fallback and
+  notify-send/kdialog/zenity fallback. Always call it as:
+  ./scripts/notify-user.sh "<message>" "WebOS Release"
+
+scripts/status-updater.sh
+  Opt-in with WEBOS_STATUS_UPDATER=1. Local snapshot only; git add/commit/push
+  were removed. Do not reintroduce auto-commit.
+
+.issue-watcher.sh, .step-watcher.sh
+  Build notifiers. ISO detection uses compgen -G 'build/webos-*.iso', not a raw
+  glob test. No /home/brah/sanusos or /sanusos paths, no git pushes.
+
+setup-container-build.sh
+  Container helper. Uses generic /webos container paths, not hard-coded
+  maintainer paths. Also uses compgen ISO glob.
+
+Other verification commands used during v1.02 integration
+  bash -n ... ; python3 -m py_compile webos-music webos-stats ;
+  JSONC parse both waybar configs (ipc false, power last, glyph/click) ;
+  forbidden sweep for --binpkg-respect-use=n|--getbinpkgonly|-G|-K ;
+  git diff --check ; cd installer && cargo check --offline.
+
+================================================================================
+9. DESKTOP CONTRACT - RICE, POWER, NOTIFICATIONS, STATS, MUSIC
+================================================================================
+
+Hyprland config
+  Hyprland 0.57 reads ~/.config/hypr/hyprland.lua and ignores hyprland.conf.
+  hyprland.conf was removed; hyprland.lua + webos-colors.lua are authoritative.
+  Key highlights: Super+Q kitty, Super+Shift+Return foot, Super+C close,
+  Super+D/R webos-menu, Super+M webos-music --toggle, Super+Shift+S snip,
+  Super+Escape hyprlock, Super+P toggle panel, media keys via wpctl/playerctl,
+  brightness keys via brightnessctl.
+
+Power (contract-sensitive)
+  Waybar right modules end in custom/power in BOTH rice and mono profiles.
+  Exact glyph: ⏻
+  Exact tooltip: Power — open session menu (reboot, shut down, suspend)
+  Exact on-click: wlogout
+  wlogout/layout uses loginctl suspend/hibernate/reboot/poweroff only.
+  ipc:false is set in both Waybar configs so IPC cannot corrupt the widget.
+  #custom-power styled in both CSS files.
+
+Lock/idle
+  hypridle lock_cmd: hyprlock --grace 0 --no-fade-in
+  DPMS off/on: hyprctl eval 'hl.dispatch(hl.dsp.dpms({ action = "off"/"on" }))'
+  Dim: only if /sys/class/backlight exists, and brightnessctl -c backlight.
+  hyprlock Pango colour uses ##7A7A7A; obsolete grace/no_fade_in keys removed.
+
+Legacy migration
+  webos-rice migrate_legacy_waybar() detects the known old mono config hash,
+  backs it up once with .webos-orig, then writes the new config with the power
+  widget. User edits are never silently destroyed.
+
+Notifications
+  Use scripts/notify-user.sh, not ad-hoc notify-send. Sound fallback included.
+
+Stats
+  webos-stats shows actual RAM used/total (not cached math) and every CPU core
+  with usage and temp like "c0 2% 53C". Thermal fallback via thermal_temp().
+
+Music
+  webos-music is a 340x340 GTK layer-shell square under the bar. Cover art is
+  frosted and quantized to six colours. cava is generated per song with
+  method=pipewire and source=<active MPRIS node from pw-dump>. Outside clicks
+  are dismissed by a full-screen transparent catcher. GtkLayerShell 0.1 is
+  requested before 1.0.
+
+================================================================================
+10. UPDATER AND DELIVERY TO INSTALLED SYSTEMS
+================================================================================
+
+overlay/webos-theme/webos-theme/files/system/webos-update (installed /usr/bin/webos-update)
+  VERSION=1.02, log /var/log/webos-update.log.
+  Steps:
+    [0/8] --no-compile preflight (pretend with --getbinpkg; abort if source builds)
+    [1/8] sync repos + refresh WebOS overlay from GitHub main tarball
+    [2/8] @world update (dry run for --check), reports binpkg vs source counts
+    [3/8] config file updates
+    [4/8] depclean
+    [5/8] Flatpak update
+    [6/8] re-apply rice
+    [7/8] kernel + GRUB
+    [8/8] health check and reboot recommendation ("reboot with: loginctl reboot")
+
+Flags:
+  --check             dry run only
+  --fast/--fast-binpkg adds --binpkg-changed-deps=n, keeps --binpkg-respect-use=y
+  --strict-use/--respect-use adds --binpkg-respect-use=y --binpkg-changed-deps=y
+  --buildpkg          cache source builds locally
+  --no-compile        abort before any change if a source build is needed
+  --yes, --no-sync, --no-flatpak, --no-depclean, --no-kernel, --quiet
+
+Forbidden flags must never appear: -G, -K, --getbinpkgonly,
+--binpkg-respect-use=n. If a stock binpkg's USE flags do not match, Portage
+falls back to source (allowed), or --no-compile stops cleanly. We do not force
+binary-only because that would reinstall hundreds of packages.
+
+Delivery path
+  Commit/push source to origin/main first. webos-update downloads
+  https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and replaces
+  /usr/local/portage/webos. The r4 theme ebuild then reaches installed systems
+  on their next `sudo webos-update`. r1 stayed historical; remote r2/r3 are
+  harmless. Rootfs pins r4 via scripts/30-rootfs.sh.
+
+Release gate for binary-first behavior
+  /home/brah/release-v102.sh runs `webos-update --check` and
+  `webos-update --fast --check` inside the rebuilt chroot, rejects dependency
+  errors, and now also rejects any plan line with a nonzero source build count.
+
+================================================================================
+11. RELEASE / PUBLICATION FLOW
+================================================================================
+
+Preconditions
+  - origin/main contains the final source (49829b6 for v1.02).
+  - scripts/50-check.sh = 0 problems; bash -n, py_compile, JSONC parse,
+    forbidden-flag sweep, git diff --check, cargo check --offline all pass.
+  - Rootfs stage rc=0 and log contains "rootfs exported".
+  - ISO /webos/version contains WEBOS_VERSION=1.02-Ashen,
+    WEBOS_KERNEL=6.12.0-webos, WEBOS_BUILD=<today>.
+
+/home/brah/release-v102.sh
+  Final gate. It verifies rootfs packages/helpers/overlays/theme r4, syncs the
+  installed WEBOS-INFO.txt and Waybar fallbacks, verifies binary-first config,
+  runs runtime checks in the chroot (emerge --pretend --getbinpkg vim,
+  waypaper --help, webos-update --check/--fast --check, stats module import),
+  builds the ISO, verifies version/sha256, copies to Ventoy, splits assets,
+  creates/updates GitHub v1.02 as Latest, and never shuts down.
+
+Ventoy
+  Device /dev/sdc1, label Ventoy, mount /run/media/brah/Ventoy (exFAT).
+  Keep cachyos-desktop-linux-260809.iso. Write webos-1.02-Ashen-amd64.iso and
+  webos-version.txt with ISO name + SHA256. Historical v1.01 sha256:
+  e8351089a4aaefe0d1d4afa11f2d939f94d54bc5979fabfa0355bf77157f3d90
+
+GitHub
+  Repo 4NT1K/WebOS, tag/release v1.02, title WebOS 1.02 "Ashen".
+  Assets: README.txt, SHA256SUMS.txt, and split parts
+  webos-1.02-Ashen-amd64.iso.part-00, -01, ... (PART_SIZE=2086666240).
+  Reassembly: cat webos-*.part-* > webos-1.02-Ashen-amd64.iso
+  Verify: sha256sum -c SHA256SUMS.txt
+  v1.01 remains historical; v1.02 becomes Latest.
+
+Power policy
+  Leave the PC powered on. Do not issue shutdown/reboot/poweroff as part of
+  publication. Use loginctl only if a user explicitly requests a session action.
+
+================================================================================
+12. FULL FILE/FOLDER INDEX (source tree, excluding build outputs)
+================================================================================
+
+Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
+        [D] docs, [X] auxiliary/maintainer.
+
+[Root]
+  build.sh [B]                        stage dispatcher
+  Makefile [X]                        wrappers
+  README.md [D]                       overview
+  STATUS.md [D]                       live state
+  ROADMAP.md [D]                      roadmap
+  AUDIT.md, AUDIT_FINAL_REPORT.md [D] audit history
+  LICENSE [D]
+  .issue-watcher.sh, .step-watcher.sh [X] notifiers
+  .finalize-rootfs.sh, .post-iso.sh [X] helpers
+  setup-container-build.sh [B]
+
+[branding/] - [C] identity
+  version, os-release, lsb-release, issue, logo.svg, webos-logo.png,
+  webos-logo-512.png, wallpaper.png
+
+[config/] - [B]/[C] Portage config
+  make.conf, binrepos.conf/, repos.conf/, sets/, world,
+  package.use/, package.mask/, package.accept_keywords/,
+  package.license/, env/
+
+[desktop] - [R] symlink to overlay/webos-theme/webos-theme/files/rice
+
+[docs/] - [D]
+  ARCHITECTURE.md, BUILD.md, RELEASE.md, MAINTENANCE.txt,
+  releases/v1.0.md, releases/v1.01.md, releases/v1.02.md,
+  releases/v1.022.md, WEBOS-COMPLETE-GUIDE.txt (this file)
+
+[installer/] - [I]
+  Cargo.toml, Cargo.lock, Makefile, README.md, vendor.sh, .cargo/,
+  vendor/, src/{main,app,ui,gui,theme,config,disk,rootfs,install,
+  bootloader,exec}.rs, target/ (build output)
+
+[kernel/] - [B]
+  patchset.conf, fetch-patches.sh, README.md,
+  webos-fragment.config -> overlay/sys-kernel/webos-kernel/files/webos-fragment.config
+
+[livecd/] - [B]
+  boot/grub/grub.cfg,
+  etc/conf.d/agetty.tty1, etc/profile.d/99-webos-live.sh, etc/webos-live,
+  usr/local/bin/webos-live-session
+
+[overlay/] - [C]/[R]/[B] the ::webos repo
+  metadata/layout.conf
+  profiles/{categories,profiles.desc,repo_name}
+  profiles/default/linux/amd64/webos/{eapi,make.defaults,parent,use.mask}
+  profiles/default/linux/arm64/webos/{eapi,make.defaults,parent,use.mask}
+  eclass/webos-kernel.eclass
+  sys-apps/pacman/{Manifest,metadata.xml,pacman-6.0.1.ebuild,files/pacman.conf}
+  sys-kernel/webos-kernel/{Manifest,metadata.xml,webos-kernel-6.12.ebuild,
+    files/webos-fragment.config}
+  sys-kernel/webos-kernel-sources/{Manifest,metadata.xml,
+    webos-kernel-sources-6.12.ebuild,files/README.webos}
+  virtual/linux-sources/{Manifest,metadata.xml,linux-sources-3-r9.ebuild}
+  webos-base/webos-base/{Manifest,metadata.xml,webos-base-1.0.ebuild}
+  webos-desktop/webos-desktop/{Manifest,metadata.xml,webos-desktop-1.0.ebuild}
+  webos-gaming/webos-gaming/{Manifest,metadata.xml,webos-gaming-1.0.ebuild}
+  app-admin/webos-installer/{Manifest,metadata.xml,webos-installer-1.0.0.ebuild}
+  webos-theme/webos-theme/
+    Manifest, metadata.xml,
+    webos-theme-1.0.ebuild, -r1, -r2, -r3, -r4 [C],
+    WEBOS-INFO.txt [C],
+    files/rice/ [R] (hypr/, waybar/, wlogout/, wofi/, kitty/, foot/, fish/,
+      gtk-3.0/, gtk-4.0/, qt5ct/, qt6ct/, kvantum/, konsole/, konsolerc/,
+      plasma/, mako/, color-schemes/, fastfetch/, icons-default/, wallpapers/,
+      README.rice, webos-logo.png),
+    files/dotfiles/ [R] (mono/, minimal/, jakoolit/),
+    files/system/ [R]/[C] (all webos-* helpers listed in §7 plus fallbacks)
+
+[scripts/] - [B]
+  00-fetch.sh, 10-bootstrap.sh, 20-kernel.sh, 30-rootfs.sh,
+  40-iso.sh, 50-check.sh, notify-user.sh, status-updater.sh,
+  lib/common.sh, lib/mkmanifest.sh
+
+[assets/] - [X]
+  webos-cobweb-logo.png, webos-cobweb-logo-512.png
+
+================================================================================
+13. COMMON FAILURE MODES AND HOW TO AVOID THEM
+================================================================================
+
+- Forbidden Portage flags: a single --binpkg-respect-use=n or --getbinpkgonly
+  in make.conf/webos-update/docs breaks the contract. Sweep before committing.
+- Reusing stale stage labels: INSTALL_STAGES must match r.phase() order.
+- Same-version theme edits not reaching rootfs: scripts/30-rootfs.sh unmerges
+  then remerges webos-theme and pins r4.
+- chroot copy failing with "Directory not empty": a previous cp -a was killed
+  mid-copy. Remove the partial build/chroot from inside webos-build and copy
+  chroot.backup again; do not try to merge trees.
+- Stale rc file: build/v102-rootfs.rc can be older than the running build;
+  compare mtimes and check the process/log before declaring failure.
+- hyprlock Pango colours: '#' must be '##' or the config fails to parse.
+- DPMS: use Lua hl.dispatch(hl.dsp.dpms(...)) with hyprland 0.57; old
+  `hyprctl dispatch dpms` is wrong.
+- Backlight dim: plain brightnessctl -s set dims keyboard LEDs; use
+  brightnessctl -c backlight guarded by /sys/class/backlight.
+- AVX-512 in CPU_FLAGS_X86 causes NumPy to emit AVX-512 and waypaper to SIGILL
+  on the target Ryzen 5 5600X. Keep the v3 flag list.
+- Native Steam: impossible with ABI_X86=64; keep the Flatpak fallback wording.
+- Manifest digests: EBUILD/MISC lines must be 128-hex-char BLAKE2B/SHA512.
+- Watchers: never add git push or hard-coded /home/brah paths.
+- Notifications: use notify-user.sh; do not invent another mechanism.
+- Do not shut down. Seriously.
+
+================================================================================
+14. FUTURE WORK: POSSIBLE KDE PLASMA X11 ADDITION
+================================================================================
+
+Current Plasma situation
+  - Plasma is opt-in via the installer's Profile::Plasma, currently described
+    as "KDE Plasma (Wayland)" in installer/src/config.rs.
+  - config/sets/plasma contains plasma-meta, plasma-workspace, plasma-desktop.
+  - It is deliberately outside @desktop. Non-Plasma installs unmerge Plasma
+    packages except the {systemsettings, breeze} keep-list and remove
+    plasma.desktop; an assertion enforces this.
+  - SDDM already has both session directories configured in install.rs:
+    /usr/share/webos/sessions/wayland and /usr/share/webos/sessions/x11, with
+    [Wayland] and [X11] SessionDir entries. This is the natural hook for X11.
+  - webos-plasma-setup applies the DeepBlack colour scheme, cursor and
+    wallpaper in Plasma; it is session-type agnostic.
+  - The global USE line already has X for XWayland/games; a Plasma X11 session
+    still needs Xorg and X11-specific Plasma packages.
+
+What an X11 Plasma variant would touch
+  1. installer/src/config.rs
+     - Add a Profile::PlasmaX11 (or a session-type flag on Plasma) with label
+       "KDE Plasma (X11) + gaming", description, and session name
+       plasma.desktop from /usr/share/xsessions instead of wayland-sessions.
+     - Keep Profile::ALL consistent and update the Full/Plasma/Minimal cycle.
+  2. installer/src/install.rs
+     - Generalize the Plasma branch: link the chosen session into
+       /usr/share/webos/sessions/x11 for X11, wayland for Wayland. The generic
+       session-link block already handles xsessions fallback; make the Plasma
+       post-install link use the same helper.
+     - Update the Plasma assertion to check wayland/plasma.desktop OR
+       x11/plasma.desktop according to the selected profile.
+     - Non-Plasma cleanup must still remove both wayland and x11 plasma entries.
+     - Optionally set /etc/sddm.conf.d/20-webos-session.conf DisplayServer=x11
+       for the X11 profile, or leave SDDM auto if both session dirs are desiring.
+  3. config/sets/
+     - Add config/sets/plasma-x11 (or extend @plasma with a USE-controlled X11
+       subgroup) with x11-base/xorg-server, x11-drivers/xf86-input-libinput,
+       x11-apps/setxkbmap/xrandr, and any kde-plasma/* X11 session dependencies.
+     - Keep it out of @desktop so the default Hyprland image stays lean.
+  4. overlay/webos-desktop/webos-desktop/
+     - Either add a plasma USE flag to the metapackage or create a separate
+       webos-plasma metapackage; do not make Plasma a default RDEPEND.
+  5. overlay/webos-theme/webos-theme/files/system/webos-plasma-setup
+     - Reuse as-is; verify DeepBlack applies under X11 KWin too.
+     - Ensure xdg-desktop-portal-kde and polkit are present for X11.
+  6. Portage/USE
+     - Global X is already enabled. Check kde-plasma/plasma-workspace,
+       kde-plasma/plasma-desktop and Qt USE flags for X/xcb requirements.
+     - Continue using --getbinpkg with the v3 binhost; never add forbidden
+       flags to make the new profile install faster.
+  7. Regression gates
+     - Extend scripts/50-check.sh with X11 Plasma assertions: new set file,
+       installer profile label, x11 session dir handling, and a check that
+       default/non-Plasma profiles still remove x11/plasma.desktop.
+     - Extend /home/brah/release-v102.sh-style runtime gates to smoke-test
+       SDDM -> Plasma X11 -> webos-plasma-setup, then confirm the Full profile
+       still boots Hyprland.
+  8. Docs/release notes
+     - Update docs/ARCHITECTURE.md, installer/src/config.rs descriptions,
+       README.md, ROADMAP.md, WEBOS-INFO.txt and future release notes. Make it
+       explicit that Wayland/Hyprland remains the default and X11 Plasma is an
+       alternative, not a replacement.
+  9. Risks
+     - More packages and storage; X11 libs plus Plasma can add GBs.
+     - Two session stacks means more QA: GPU drivers, SDDM, portals, screenshot
+       and gamescope interaction all need testing on both.
+     - Keep the greeter showing exactly one session per installed profile; do
+       not let both plasma.desktop files leak into the WebOS session dirs.
+     - Do not regress the loginctl-only power contract or the ⏻ widget when
+       touching SDDM/wlogout/layout.
+
+Storage/compression follow-up (hypothetical, no changes made)
+  - Strip debug symbols, drop dev headers/static libs, prune docs/locales/man.
+  - Depclean unused packages and old kernels; Flatpak runtimes are large.
+  - Rust installer already uses opt-level="z", LTO, panic="abort", stripped.
+  - mksquashfs zstd ratio/blocks and btrfs zstd can be tuned; dedupe with
+    duperemove before squashfs. Any USE change must be checked against the
+    binary-first binhost constraint.
+
+================================================================================
+15. QUICK VERIFICATION CHEAT SHEET
+================================================================================
+
+cd /home/brah/sanusos
+
+# Source gate (must print 0 problems)
+bash scripts/50-check.sh
+
+# Syntax / data
+bash -n build.sh setup-container-build.sh .issue-watcher.sh .step-watcher.sh scripts/*.sh
+PYTHONPYCACHEPREFIX=/tmp/opencode/webos-pycache python3 -m py_compile \
+  overlay/webos-theme/webos-theme/files/system/webos-music \
+  overlay/webos-theme/webos-theme/files/system/webos-stats
+git diff --check
+(cd installer && cargo check --offline)
+
+# Forbidden flag sweep
+grep -RIn --exclude-dir=.git --exclude-dir=build -- '--binpkg-respect-use=n\|--getbinpkgonly\|(^|[[:space:]])-G([[:space:]]|$)|(^|[[:space:]])-K([[:space:]]|$)' .
+
+# Build container / stages
+docker start webos-build
+docker exec webos-build bash -lc 'cd /sanusos && ./build.sh status'
+docker exec webos-build bash -lc 'cd /sanusos && ./build.sh rootfs > build/v102-rootfs.log 2>&1; echo $? > build/v102-rootfs.rc'
+# Final gate
+/home/brah/release-v102.sh
+
+# Notifications
+./scripts/notify-user.sh "message" "WebOS Release"
+
+Remember: push main before release, publish only after all checks pass, leave
+the machine powered on.
+================================================================================
+END OF WEBOS COMPLETE GUIDE
+================================================================================
