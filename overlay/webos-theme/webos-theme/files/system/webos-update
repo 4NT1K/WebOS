@@ -6,22 +6,29 @@
 # file updates, update the WebOS kernel + GRUB config, update Flatpaks,
 # re-apply the rice and tell you whether a reboot is needed.
 #
+# Binaries are preferred by default through Portage's --getbinpkg (strict USE
+# matching, source fallback). The pinned x86-64-v3 binhost is unchanged.
+#
 # Usage:
-#   webos-update                 update everything
+#   webos-update                 update everything (binary-first, strict USE)
 #   webos-update --check         show what would be updated, change nothing
+#   webos-update --fast          accept more stock binpkgs with --binpkg-changed-deps=n;
+#                                USE flags are still strictly matched
+#   webos-update --fast-binpkg   alias for --fast
+#   webos-update --strict-use    require exact USE and dependency matches
+#                                (--binpkg-respect-use=y --binpkg-changed-deps=y)
+#   webos-update --respect-use   alias for --strict-use
+#   webos-update --buildpkg      cache any source builds as local binpkgs
+#   webos-update --no-compile    abort up front if any source build is needed
 #   webos-update --yes           do not prompt for config-file merges
 #   webos-update --no-sync       skip `emerge --sync`
 #   webos-update --no-flatpak    skip `flatpak update`
 #   webos-update --no-depclean   skip `emerge --depclean`
 #   webos-update --no-kernel     skip the kernel/bootloader step
 #   webos-update --quiet         only warnings and the summary
-#   webos-update --strict-use    reject binpkgs whose USE/deps differ (compiles more)
-#   webos-update --no-compile    never build from source; report missing binpkgs
-#   webos-update --fast          alias for the default binpkg-first behaviour
-#   webos-update --buildpkg      cache compiled packages for faster later updates
 set -uo pipefail
 
-VERSION="1.01"
+VERSION="1.02"
 LOG="/var/log/webos-update.log"
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
@@ -32,10 +39,18 @@ DO_FLATPAK=1
 DO_DEPCLEAN=1
 DO_KERNEL=1
 QUIET=0
-PREFER_BINPKGS=1
-NO_COMPILE=0
+FAST=0
+STRICT_USE=0
 BUILD_PKG=0
+NO_COMPILE=0
+FAST_MODE=0
 FAILED=0
+
+# Shared @world flags. Binary-first behaviour comes from --getbinpkg in
+# /etc/portage/make.conf; we never swap it for a binary-only mode because that
+# would reinstall hundreds of packages.
+WORLD_BASE=(--verbose --update --deep --newuse --backtrack=100 --autounmask-backtrack=y)
+EMERGE_EXTRA=()
 
 # ---------------------------------------------------------------- helpers ---
 say()  { [ "$QUIET" -eq 1 ] || printf '\n\033[97m==>\033[0m %s\n' "$*"; }
@@ -45,7 +60,7 @@ ok()   { printf '\033[92m  ok\033[0m %s\n' "$*"; }
 die()  { printf '\033[91m  xx\033[0m %s\n' "$*"; exit 1; }
 
 usage() {
-	sed -n '2,19p' "$0" | sed 's/^# \{0,1\}//'
+	awk 'NR == 1 { next } /^#/ { sub(/^# ?/, ""); print; next } { exit }' "$0"
 	exit 0
 }
 
@@ -54,6 +69,42 @@ step_fail() { FAILED=$((FAILED + 1)); warn "$*"; }
 
 need_root() {
 	[ "$(id -u)" -eq 0 ] || die "webos-update must run as root (try: sudo webos-update)"
+}
+
+# Resolve the binary-acceptance flags once so the dry run and every apply step
+# make exactly the same choices.
+build_emerge_extra() {
+	EMERGE_EXTRA=()
+	FAST_MODE=0
+	if [ "$STRICT_USE" -eq 1 ]; then
+		# Explicit exact matching: reject both USE-mismatched and
+		# dependency-mismatched binpkgs. This wins if --fast was also given.
+		EMERGE_EXTRA+=(--binpkg-respect-use=y --binpkg-changed-deps=y)
+	elif [ "$FAST" -eq 1 ]; then
+		# Faster path: accept stock binpkgs whose dependencies changed, but
+		# still require an exact USE match. USE checking is never relaxed.
+		EMERGE_EXTRA+=(--binpkg-changed-deps=n --binpkg-respect-use=y)
+		FAST_MODE=1
+	fi
+	if [ "$BUILD_PKG" -eq 1 ]; then
+		EMERGE_EXTRA+=(--buildpkg)
+	fi
+}
+
+# Dry run shared by --check and the --no-compile pre-flight. --getbinpkg is
+# explicit: it is the default binary-first mechanism, with strict USE matching
+# and a source fallback. No binary-only mode is used here.
+pretend_plan() {
+	emerge --pretend --getbinpkg "${WORLD_BASE[@]}" "${EMERGE_EXTRA[@]}" @world >"$1" 2>&1
+}
+
+# Count real binpkg vs source entries from emerge output so reported numbers
+# and completion messages stay honest.
+count_plan() {
+	BIN_N=$(grep -cE '^[[:space:]]*\[binary' "$1" 2>/dev/null || true)
+	SRC_N=$(grep -cE '^[[:space:]]*\[ebuild' "$1" 2>/dev/null || true)
+	[ -n "$BIN_N" ] || BIN_N=0
+	[ -n "$SRC_N" ] || SRC_N=0
 }
 
 # The WebOS overlay is installed as a plain local repo (auto-sync = no), so
@@ -93,40 +144,25 @@ sync_webos_overlay() {
 # ------------------------------------------------------------------ args ----
 while [ $# -gt 0 ]; do
 	case "$1" in
-		-c|--check)      CHECK=1 ;;
-		-y|--yes)        ASSUME_YES=1 ;;
-		-n|--no-sync)    DO_SYNC=0 ;;
-		--no-flatpak)    DO_FLATPAK=0 ;;
-		--no-depclean)   DO_DEPCLEAN=0 ;;
-		--no-kernel)     DO_KERNEL=0 ;;
-		-q|--quiet)      QUIET=1 ;;
-		--fast|--fast-binpkg) PREFER_BINPKGS=1 ;;
-		--strict-use|--respect-use) PREFER_BINPKGS=0 ;;
-		--no-compile)    NO_COMPILE=1; PREFER_BINPKGS=1 ;;
-		--buildpkg)      BUILD_PKG=1 ;;
-		-h|--help)       usage ;;
-		*)               die "unknown option: $1 (try --help)" ;;
+		-c|--check)                  CHECK=1 ;;
+		-y|--yes)                    ASSUME_YES=1 ;;
+		-n|--no-sync)                DO_SYNC=0 ;;
+		--no-flatpak)                DO_FLATPAK=0 ;;
+		--no-depclean)               DO_DEPCLEAN=0 ;;
+		--no-kernel)                 DO_KERNEL=0 ;;
+		-q|--quiet)                  QUIET=1 ;;
+		--fast|--fast-binpkg)        FAST=1 ;;
+		--strict-use|--respect-use)  STRICT_USE=1 ;;
+		--buildpkg)                  BUILD_PKG=1 ;;
+		--no-compile)                NO_COMPILE=1 ;;
+		-h|--help)                   usage ;;
+		*)                           die "unknown option: $1 (try --help)" ;;
 	esac
 	shift
 done
 
-# Build one shared argument list so --check previews exactly what --apply runs.
-EMERGE_WORLD_ARGS=(--verbose --update --deep --newuse --backtrack=100 \
-	--autounmask-backtrack=y)
-if [ "$PREFER_BINPKGS" -eq 1 ]; then
-	EMERGE_WORLD_ARGS+=(--binpkg-respect-use=n --binpkg-changed-deps=n)
-fi
-if [ "$BUILD_PKG" -eq 1 ]; then
-	EMERGE_WORLD_ARGS+=(--buildpkg)
-fi
-
+build_emerge_extra
 need_root
-
-if [ "$NO_COMPILE" -eq 1 ]; then
-	warn "Binary-only mode: updates without a matching binpkg will be reported, never compiled."
-elif [ "$PREFER_BINPKGS" -eq 1 ]; then
-	warn "Using stock binpkgs whose USE flags or dependencies differ from WebOS; some local tuning may be skipped. Use --strict-use to opt out."
-fi
 
 if [ "$CHECK" -eq 1 ]; then
 	LOG=/dev/null
@@ -138,6 +174,39 @@ fi
 
 say "WebOS update ($STAMP) — webos-update $VERSION"
 note "log: $LOG"
+
+if [ "$FAST_MODE" -eq 1 ]; then
+	warn "fast binpkg mode: stock Gentoo binpkgs are accepted with --binpkg-changed-deps=n"
+	warn "USE flags are still strictly matched (--binpkg-respect-use=y); check the plan before trusting it"
+fi
+if [ "$STRICT_USE" -eq 1 ]; then
+	note "exact binpkg matching: --binpkg-respect-use=y --binpkg-changed-deps=y"
+fi
+if [ "$BUILD_PKG" -eq 1 ]; then
+	note "source builds will be cached locally (--buildpkg)"
+fi
+
+# --no-compile: inspect the binary-first plan before any sync or apply step.
+# This is only a --pretend with --getbinpkg; nothing is installed here.
+if [ "$NO_COMPILE" -eq 1 ] && [ "$CHECK" -eq 0 ]; then
+	say "[0/8] Pre-flight: checking for required source builds (--no-compile)"
+	plan="$(mktemp)"
+	if pretend_plan "$plan"; then rc=0; else rc=$?; fi
+	count_plan "$plan"
+	cat "$plan"
+	if [ "$rc" -ne 0 ]; then
+		rm -f "$plan"
+		die "--no-compile: dependency calculation failed (rc=$rc); nothing was changed"
+	fi
+	if [ "$SRC_N" -gt 0 ]; then
+		warn "plan: ${BIN_N} binpkg(s), ${SRC_N} source build(s) required"
+		grep -E '^[[:space:]]*\[ebuild' "$plan" | sed 's/^/      /'
+		rm -f "$plan"
+		die "--no-compile: source builds are required; aborting before any changes"
+	fi
+	ok "plan: ${BIN_N} binpkg(s), 0 source build(s) — proceeding without compiling"
+	rm -f "$plan"
+fi
 
 # --------------------------------------------------------------- 1. sync ----
 if [ "$DO_SYNC" -eq 1 ] && [ "$CHECK" -eq 0 ]; then
@@ -162,12 +231,16 @@ fi
 # ---------------------------------------------------------- 2. world ----
 if [ "$CHECK" -eq 1 ]; then
 	say "[2/8] Pending updates (dry run)"
-	emerge --pretend "${EMERGE_WORLD_ARGS[@]}" @world
-	rc=$?
+	plan="$(mktemp)"
+	if pretend_plan "$plan"; then rc=0; else rc=$?; fi
+	cat "$plan"
+	count_plan "$plan"
+	rm -f "$plan"
 	[ "$rc" -eq 0 ] || step_fail "dependency calculation failed (rc=$rc)"
+	note "plan: ${BIN_N} binpkg(s), ${SRC_N} source build(s)"
 	if [ "$DO_KERNEL" -eq 1 ]; then
 		say "Kernel (updated separately from @world)"
-		emerge --pretend --update --newuse sys-kernel/webos-kernel 2>/dev/null | sed 's/^/      /' || true
+		emerge --pretend --update --newuse "${EMERGE_EXTRA[@]}" sys-kernel/webos-kernel 2>/dev/null | sed 's/^/      /' || true
 	fi
 	say "Summary"
 	note "run 'sudo webos-update' to apply"
@@ -175,35 +248,23 @@ if [ "$CHECK" -eq 1 ]; then
 	exit 0
 fi
 
-if [ "$NO_COMPILE" -eq 1 ]; then
-	# --getbinpkgonly would reinstall hundreds of otherwise-fine packages whose
-	# USE differs from the binhost. Pre-flight the normal binary-first graph and
-	# refuse to continue if any package still requires a source build.
-	say "[2/8] Checking for source builds (--no-compile)"
-	DRYRUN="$(mktemp)"
-	emerge --pretend "${EMERGE_WORLD_ARGS[@]}" @world > "$DRYRUN" 2>&1 || true
-	mapfile -t SOURCE_BUILDS < <(grep '^\[ebuild' "$DRYRUN" || true)
-	rm -f "$DRYRUN"
-	if [ "${#SOURCE_BUILDS[@]}" -gt 0 ]; then
-		printf '%s\n' "${SOURCE_BUILDS[@]}" | sed 's/^/      /'
-		die "source build(s) required in --no-compile mode; install matching binpkgs or rerun without --no-compile"
-	fi
-	ok "only binary packages are scheduled"
-fi
-
-if [ "$PREFER_BINPKGS" -eq 1 ]; then
-	say "[2/8] Updating @world (fast mode: stock binpkgs may override local USE)"
+say "[2/8] Updating @world (prefers prebuilt binaries; falls back to source)"
+world_out="$(mktemp)"
+if emerge "${WORLD_BASE[@]}" --autounmask-write=y "${EMERGE_EXTRA[@]}" @world 2>&1 | tee "$world_out"; then
+	rc=0
 else
-	say "[2/8] Updating @world (prefers prebuilt binaries; falls back to source)"
+	rc=$?
 fi
-if emerge "${EMERGE_WORLD_ARGS[@]}" --autounmask-write=y @world; then
-	ok "world updated"
+count_plan "$world_out"
+rm -f "$world_out"
+if [ "$rc" -eq 0 ]; then
+	ok "world updated (${BIN_N} binpkg(s), ${SRC_N} source build(s))"
 else
 	step_fail "emerge @world reported an error — see $LOG"
 fi
 
 # Some packages were rebuilt in place; repair their dependants.
-if emerge --quiet @preserved-rebuild; then
+if emerge --quiet "${EMERGE_EXTRA[@]}" @preserved-rebuild; then
 	ok "preserved rebuilds complete"
 else
 	step_fail "@preserved-rebuild reported an error"
@@ -264,7 +325,7 @@ if [ "$DO_KERNEL" -eq 1 ]; then
 	# sys-kernel/webos-kernel is emerged explicitly by the image build, not
 	# recorded in @world, so an @world update alone would never fetch a new
 	# kernel. Do it here, then refresh GRUB if a newer image landed in /boot.
-	if emerge --quiet --update --newuse sys-kernel/webos-kernel >/dev/null 2>&1; then
+	if emerge --quiet --update --newuse "${EMERGE_EXTRA[@]}" sys-kernel/webos-kernel >/dev/null 2>&1; then
 		ok "WebOS kernel package up to date"
 	else
 		step_fail "sys-kernel/webos-kernel update failed — see $LOG"

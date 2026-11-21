@@ -195,11 +195,7 @@ post_update() {
   [[ -z "$short" ]] && short=$(tr '\r' '\n' < build/desktop-fix.log 2>/dev/null | grep -E 'Jobs:|Emerging|Installing|rc=' | tail -n 1 | cut -c1-100 || true)
   [[ -z "$short" ]] && short="progress update"
   msg="status: ${ts} — ${short}"
-  git add STATUS.md >/dev/null 2>&1 || true
-  if ! git diff --cached --quiet 2>/dev/null; then
-    git -c user.name='WebOS Build' -c user.email='dev@webos.local' commit -q -m "$msg" >/dev/null 2>&1 || true
-    git push origin main >/dev/null 2>&1 || true
-  fi
+  # Local snapshot only: no git staging, commit or push.
 }
 
 while true; do

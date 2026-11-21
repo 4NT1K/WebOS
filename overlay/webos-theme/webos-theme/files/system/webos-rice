@@ -20,7 +20,7 @@ set -Eeuo pipefail
 
 readonly RICE_SRC="/usr/share/webos/rice"
 readonly WALL_DIR="/usr/share/webos/wallpaper"
-readonly VERSION="1.01"
+readonly VERSION="1.02"
 
 MODE="user"
 FORCE=0

@@ -8,7 +8,7 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 
 | | |
 |---|---|
-| **Version** | 1.01 (Ashen) |
+| **Version** | 1.02 (Ashen) |
 | **Base** | Gentoo (OpenRC + elogind, WebOS overlay/profile) |
 | **Kernel** | `sys-kernel/webos-kernel` — vanilla LTS + gaming-oriented tuning, `-webos` localversion |
 | **Init** | OpenRC (default) |
@@ -17,11 +17,11 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 | **Filesystem** | btrfs (default, subvolumes), ext4, xfs; LUKS2 option |
 | **Bootloader** | GRUB2 (BIOS + UEFI) |
 | **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
-| **ISO** | `webos-1.01-Ashen-amd64.iso` |
+| **ISO** | `webos-1.02-Ashen-amd64.iso` |
 
 WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look — floating rounded top-bar capsules, near-opaque panels and rounded windows — prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
 
-## What’s in 1.01
+## What’s in 1.02
 
 - **Hyprland config that actually loads:** Hyprland 0.57 reads `~/.config/hypr/hyprland.lua` and ignores `hyprland.conf`. The rice is now a Lua config plus a `webos-colors.lua` palette module, with `~/.config/hypr/local.lua` loaded for personal tweaks.
 - **Session reliability:** SDDM shows exactly the one session chosen in the installer (WebOS or regular Plasma), seeded in `/var/lib/sddm/state.conf`. Portals and a polkit agent start from `webos-portals` on OpenRC; `webos-session` applies the rice before launch; waybar and fastfetch have system-wide fallbacks and reliable autostart.
@@ -30,10 +30,10 @@ WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look
 - **Fixes:** repaired `webos-theme` merge collisions that could leave an ISO without `webos-shell`, waybar config, portal prefs or dark-mode defaults; portal overrides live under `/etc/xdg-desktop-portal`.
 - **Settings/devices:** `webos-settings` launcher; under Hyprland use `wdisplays` and compositor device tools (KDE device panels require a Plasma session).
 - **Branding & theme:** soft-white spiderweb WebOS logo and WebOS identity (no Gentoo welcome/identity leaks). Refined Ashen greyscale parity across Hyprland and regular Plasma (#000000 base, #D8D8D8 text, #E8E8E8 accents, #7A7A7A dim); translucent kitty (opacity 0.82, `auto` fonts) with a chafa-symbol cobweb fastfetch card, and `Super+Shift+S` screenshot snips.
-- **Hyprland UI:** near-opaque top bar (waybar) — left: workspaces and window title; centre: mpris pill that toggles the music dropdown; right: ▧ waypaper, clock, tray, ▾ performance, ⏻ power. `webos-menu` backs Super+D / Super+R, Super+M toggles music, and `webos-stats` opens the corner performance panel. Smoother animations and improved portal/auth wiring.
-- **Updates & packaging:** `webos-update` sync/@world/depclean/config/kernel+GRUB/flatpak/rice flow — no manual kernel or software updates needed; the third-party Portage overlays ship in the image and stay enabled on installed systems.
+- **Hyprland UI:** near-opaque top bar (waybar) — left: workspaces and window title; centre: mpris pill that toggles the music dropdown; right: ▧ waypaper, clock, tray, ▾ performance, ⏻ power. `webos-menu` backs Super+D / Super+R, Super+M toggles a compact square music card with a per-song visualizer, and `webos-stats` opens the corner performance panel. Both dropdowns dismiss on outside click.
+- **Updates & packaging:** `webos-update` sync/@world/depclean/config/kernel+GRUB/flatpak/rice flow — no manual kernel or software updates needed. Gentoo x86-64-v3 binpkgs are used by default via `--getbinpkg`, with `--fast`, `--strict-use`, `--buildpkg` and `--no-compile` controls; third-party overlays ship in the image so @world stays resolvable.
 
-> **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.01 without adding X11 session packages.
+> **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.02 without adding X11 session packages.
 
 ## Key features
 
@@ -48,13 +48,13 @@ Download the latest release ISO (split parts + checksums): **[Releases](https://
 
 Reassemble and verify (Linux/macOS):
 ```bash
-cat webos-1.01-Ashen-amd64.iso.part-* > webos-1.01-Ashen-amd64.iso
+cat webos-1.02-Ashen-amd64.iso.part-* > webos-1.02-Ashen-amd64.iso
 sha256sum -c SHA256SUMS.txt
 ```
 
 Windows (PowerShell/CMD):
 ```bat
-copy /b webos-1.01-Ashen-amd64.iso.part-* webos-1.01-Ashen-amd64.iso
+copy /b webos-1.02-Ashen-amd64.iso.part-* webos-1.02-Ashen-amd64.iso
 ```
 
 Flash with Ventoy, Rufus, balenaEtcher, or `dd` (UEFI supported). Boot the live medium and run:
@@ -123,7 +123,7 @@ sudo ./build.sh iso        # squashfs/initramfs/GRUB hybrid ISO
 sudo ./build.sh all
 ```
 
-Output: `build/webos-1.01-Ashen-amd64.iso`
+Output: `build/webos-1.02-Ashen-amd64.iso`
 
 See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details. If you are maintaining WebOS or pushing out updates, start with [`docs/MAINTENANCE.txt`](docs/MAINTENANCE.txt).
 
@@ -136,7 +136,7 @@ See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE
 
 ## Roadmap
 
-Planned work beyond 1.01 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
+Planned work beyond 1.02 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
 
 ## License
 

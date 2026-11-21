@@ -3,7 +3,7 @@
 # the default in 23.0). Everything below is what makes WebOS different.
 
 WEBOS_OS="1"
-WEBOS_VERSION="1.01"
+WEBOS_VERSION="1.02"
 
 # Init and session. OpenRC + elogind; systemd is masked by use.mask.
 USE="elogind -systemd"

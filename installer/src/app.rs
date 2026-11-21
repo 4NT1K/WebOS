@@ -123,7 +123,8 @@ fn on_off(v: bool) -> &'static str {
 }
 
 /// Ordered phase labels the worker emits. Keep in sync with the
-/// `r.phase(...)` calls in install.rs; used for the "stage n/total" indicator.
+/// `r.phase(...)` calls in install.rs and bootloader.rs; used for the
+/// "stage n/total" indicator. "Encrypting" is only emitted for LUKS installs.
 pub const INSTALL_STAGES: [&str; 13] = [
     "Preparing",
     "Partitioning",
@@ -558,7 +559,7 @@ impl App {
     pub fn extras(&self) -> Vec<(String, String)> {
         vec![
             ("Gaming stack".into(), on_off(self.cfg.install_gaming).into()),
-            ("Steam note (no 32-bit)".into(), on_off(self.cfg.install_steam).into()),
+            ("Steam (Flatpak fallback)".into(), on_off(self.cfg.install_steam).into()),
             ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
             ("Discord".into(), on_off(self.cfg.install_discord).into()),
             ("Vesktop (Vencord)".into(), on_off(self.cfg.install_vesktop).into()),

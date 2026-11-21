@@ -40,6 +40,15 @@ PIDFILE = os.path.join(RUNTIME, "webos-stats.pid")
 LABELS = ("CPU", "GPU", "VRAM", "RAM", "DISK", "TEMP")
 
 
+def run_quiet(args):
+    """Best-effort helper for host commands that may not be installed."""
+    try:
+        subprocess.run(args, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+    except OSError:
+        pass
+
+
 # ---------------------------------------------------------------------------
 # process management
 # ---------------------------------------------------------------------------
@@ -338,6 +347,7 @@ def temp_fraction(temp_c):
 # ---------------------------------------------------------------------------
 
 def run_app(visible):
+    run_quiet(["hyprctl", "seterror", "disable"])
     import gi
 
     gi.require_version("Gtk", "3.0")

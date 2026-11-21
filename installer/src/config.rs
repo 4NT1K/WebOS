@@ -148,10 +148,10 @@ impl Profile {
     pub fn note(self) -> &'static str {
         match self {
             Profile::Full => {
-                "Hyprland desktop, SDDM login, the WebOS rice and dotfiles, Flatpak Steam fallback, MangoHud."
+                "Hyprland desktop, SDDM login, the WebOS rice and dotfiles, gaming tools; Steam as a Flatpak fallback, not a native install."
             }
             Profile::Plasma => {
-                "KDE Plasma (Wayland) desktop, SDDM login, Flatpak Steam fallback, MangoHud."
+                "KDE Plasma (Wayland) desktop, SDDM login, gaming tools; Steam as a Flatpak fallback, not a native install."
             }
             Profile::Minimal => {
                 "Base system only. Boots to a console. You can emerge a desktop later."

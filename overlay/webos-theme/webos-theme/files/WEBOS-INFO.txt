@@ -1,4 +1,4 @@
-WebOS 1.01 "Ashen" — system information
+WebOS 1.02 "Ashen" — system information
 ========================================
 
 Everything important about this installed system, in one file.
@@ -7,7 +7,7 @@ Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
 RELEASE / IDENTITY
 ------------------
-- Version      : WebOS 1.01 "Ashen"
+- Version      : WebOS 1.02 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
@@ -17,9 +17,9 @@ RELEASE / IDENTITY
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
-- ISO          : webos-1.01-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- ISO          : webos-1.02-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
 - Source       : https://github.com/4NT1K/WebOS
-- Release file : /etc/os-release and /etc/webos-release both report 1.01
+- Release file : /etc/os-release and /etc/webos-release both report 1.02
 
 QUICK START
 -----------
@@ -32,32 +32,58 @@ QUICK START
    the polkit agent start automatically.
 5. Update with `sudo webos-update`.
 
+WHAT CHANGED IN 1.02
+--------------------
+The 1.02 maintenance rebuild is delivered to existing 1.01 machines by
+`sudo webos-update`. The WebOS overlay is refreshed from GitHub, the theme is
+upgraded to `webos-theme-1.0-r4`, and the rice is re-applied. Log out and back
+in (or reboot) after the update so the session picks up the new files.
+
+- The far-right ⏻ power button is now present in the "mono" dotfiles profile as
+  well as the rice profile. `webos-rice` migrates only the exact distro-generated
+  legacy Waybar config, backs it up once as `.webos-orig`, and never
+  touches a file you edited yourself.
+- The lock screen no longer shows raw `<span foreground=` text. Hyprlang needs
+  `##` for a literal colour, so the placeholder is `foreground="##7A7A7A"`.
+- Obsolete `grace` and `no_fade_in` keys were removed from hyprlock.conf; they
+  are CLI flags now: `hyprlock --grace 0 --no-fade-in`.
+- Idle blanking uses Hyprland 0.57's real Lua DPMS dispatch:
+  `hl.dispatch(hl.dsp.dpms({ action = "off" }))`. The dim listener is scoped to
+  `/sys/class/backlight` with `brightnessctl -c backlight`, so keyboard LEDs
+  are no longer changed by mistake.
+- Waybar IPC is disabled in both rice and mono configs; the "socket path is
+  empty" warning is gone.
+- `webos-music` is now a compact 340x340 layer-shell card under the bar. The
+  current MPRIS cover is cover-cropped, lightly blurred and dimmed to 0.72, then
+  used as the whole card background. It slides down from above the panel.
+- A 20-bar cava visualizer sits in the middle of the music card. It is bound to
+  the active MPRIS player's own PipeWire node via `pw-dump`, so notifications and
+  browser tabs are not captured. Bar colours come from the cover art.
+- Clicking outside `webos-music` or `webos-stats` dismisses it. The transparent
+  catcher is on the TOP layer and the card is above it on OVERLAY.
+- Both dropdowns try `GtkLayerShell-0.1.typelib` before `1.0`, which is the
+  typelib WebOS actually ships, and clear stale Hyprland error overlays.
+- `webos-update` keeps the binary-first `--getbinpkg` default and adds
+  `--fast` / `--fast-binpkg`, `--strict-use` / `--respect-use`, `--buildpkg`
+  and `--no-compile`. It still refuses to force a binary with wrong USE flags:
+  `-G`, `-K` and `--binpkg-respect-use=n` are deliberately not used.
+- Installer, Manifest, kernel-fragment, build-script and watcher audit defects
+  were corrected, and the shipped guide and release notes now describe 1.02.
+
 WHAT CHANGED IN 1.01
 --------------------
 The 1.01 maintenance rebuild carries these fixes into a fresh install:
 - The refined Ashen greyscale is applied everywhere: #000000 base, #D8D8D8
   text, #E8E8E8 accents, #7A7A7A dim, near-opaque rgba(0,0,0,0.92) panels.
   The old ice-blue and light-grey tokens are gone from the rice.
-- The right cluster is waypaper (▧), clock, tray, performance (▾) and power
-  (⏻); the cpu, memory and pulseaudio pills were removed and no aliases were
-  added. The power pill opens wlogout. `webos-menu` replaces the raw wofi
-  launchers for Super+D and Super+R, and Super+M toggles the music dropdown.
-- The hyprlock password hint no longer shows raw Pango markup. Hyprlang needs
-  hex colours escaped as `##7A7A7A`, otherwise `#` starts a comment and Pango
-  receives a truncated `<span foreground=` string. The removed `grace` and
-  `no_fade_in` config options are gone; hypridle passes them as CLI flags.
-- Idle blanking uses Hyprland 0.57's Lua dispatcher, and the dim rule is
-  restricted to real backlights so keyboard LEDs are no longer changed.
-  Waybar's unused IPC socket is disabled, removing a launch warning.
-- Updates are binary-first by default: stock binpkgs are accepted even when
-  USE flags or dependency sets differ. Use `sudo webos-update --strict-use` to
-  require exact WebOS USE flags, `sudo webos-update --no-compile` to refuse all
-  source builds, `sudo webos-update --buildpkg` to cache the packages that still
-  need compiling, and `sudo webos-update --check` to preview an update.
+- The right cluster is waypaper (▧), clock, tray and performance (▾) in the
+  original 1.01 image; the cpu, memory, pulseaudio and power pills were removed
+  and no aliases were added. 1.02 restores the far-right ⏻ power pill.
+  `webos-menu` replaces the raw wofi launchers for Super+D and Super+R, and
+  Super+M toggles the music dropdown.
 - `webos-music` (MPRIS artwork, controls and seek bar), `webos-stats` (CPU,
   GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop panels.
   Clicking the mpris pill toggles the dropdown; it no longer pauses playback.
-  Both the music and performance dropdowns close when you click outside them.
 - `webos-refresh` restores exact saved monitor modes at login and watches live
   changes. Only modes advertised in `availableModes` can be persisted.
 - Audio autostart order is PipeWire, WirePlumber, then pipewire-pulse.
@@ -179,7 +205,8 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 - ananicy-cpp is enabled under its real OpenRC name, ananicy-cpp.initd, and
   started at install time.
 - The mono bar no longer prints the LAN IPv4 address or a battery percentage;
-  its power pill (⏻) opens wlogout. The right cluster is waypaper, clock,
+  its power pill was removed in the original 1.01 image along with cpu, memory
+  and pulseaudio. 1.02 restores ⏻; the right cluster is waypaper, clock,
   tray, performance and power.
 - kitty transparency is restored: kitty owns the alpha value (0.82) and the
   compositor no longer multiplies a second opacity over it; the framed
@@ -193,7 +220,7 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 EXPECTED BEHAVIOUR
 ------------------
 Boot / live medium
-- The banner reads "WebOS 1.01 (Ashen) — live medium".
+- The banner reads "WebOS 1.02 (Ashen) — live medium".
 - Nothing is written to disk until the summary is confirmed.
 - The installer progress panel stays inside its border, keeps the "%" sign,
   and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow
@@ -420,15 +447,10 @@ Waybar (top, rounded translucent capsules, surface rgba(0,0,0,0.92)):
 The cpu, memory and pulseaudio pills, and any aliases for them, are gone; there
 is still no network or battery module. The far-right ⏻ pill opens wlogout.
 
-- Music (`webos-music`): a compact square GTK3 layer-shell dropdown that slides
-  down from the bar. The current track's MPRIS album art fills the whole panel
-  as a lightly frosted, recognisable background, with a 20-band cava-driven
-  visualizer whose colours follow the cover art and which listens only to the
-  active music player. Title, artist,
-  PLAYING/PAUSED status, previous/play-pause/next controls and a seekable
-  elapsed/total bar sit on top. If gtk-layer-shell introspection is missing it
-  falls back to a top-anchored, non-blurred window. No extra widget framework
-  is required.
+- Music (`webos-music`): a GTK3 layer-shell dropdown under the bar showing the
+  current track's MPRIS album art as a darkened greyscale background, title,
+  artist, PLAYING/PAUSED status, previous/play-pause/next controls and a
+  seekable elapsed/total bar. No extra widget framework is required.
 - Performance (`webos-stats`): the ▾ pill opens a small corner dropdown with
   CPU, GPU, VRAM, RAM, DISK and TEMP bars. RAM shows actual used/total GiB, and
   CPU lists every core (`c0   2% 53C`) with usage plus a hwmon temperature;
@@ -496,18 +518,16 @@ GAMING / PERFORMANCE
 
 UPDATES / PACKAGES
 ------------------
-Portage + OpenRC. `webos-update` and `emerge` are binary-first:
-`EMERGE_DEFAULT_OPTS` includes `--getbinpkg --binpkg-respect-use=n
---binpkg-changed-deps=n`, and `/etc/portage/binrepos.conf/gentoo.conf` pins
-Gentoo's `releases/amd64/binpackages/23.0/x86-64-v3` binhost. Stock binaries are
-accepted even when their USE flags or dependency sets differ from WebOS, which
-avoids mass recompilation on every update. `webos-update --strict-use` restores
-exact-USE matching; `--no-compile` pre-flights the dry run and aborts if any
-package still needs a source build (a missing binary is reported, not built).
-Packages absent from the binhost (e.g. WebOS-only
-ebuilds) still fall back to source unless `--no-compile` is set. `webos-update`
-reports binary vs source updates; the Waybar update counter accepts both
-`[binary` and `[ebuild` emerge lines.
+Portage + OpenRC. `webos-update` and `emerge` prefer prebuilt binaries:
+`EMERGE_DEFAULT_OPTS` includes `--getbinpkg`, and
+`/etc/portage/binrepos.conf/gentoo.conf` pins Gentoo's
+`releases/amd64/binpackages/23.0/x86-64-v3` binhost. A binary is used only when
+its version, USE flags and CPU flags match; mismatches, `~amd64` packages newer
+than the binhost and WebOS/overlay-only packages fall back to source. We
+deliberately do NOT use `-G`, `-K` or `--binpkg-respect-use=n`, so a binary with
+wrong USE flags is never forced onto the machine. `webos-update` reports which
+updates were binary vs source and prints an honest total; the Waybar update
+counter accepts both `[binary` and `[ebuild` emerge lines.
 Repos: gentoo, webos (local overlay /usr/local/portage/webos); build-only
 overlays may be disabled under /etc/portage/repos.conf.disabled.
 
@@ -516,8 +536,12 @@ overlays may be disabled under /etc/portage/repos.conf.disabled.
                                  Flatpak, rice; log /var/log/webos-update.log
   sudo webos-update --check      show what would change
   sudo webos-update --yes        non-interactive config merges
+  --fast | --fast-binpkg         faster binaries (--binpkg-changed-deps=n),
+                                  still with strict USE matching
+  --strict-use | --respect-use   force --binpkg-respect-use=y
+  --buildpkg                     cache remaining source builds locally
+  --no-compile                   abort if any source build would be needed
   --no-sync | --no-flatpak | --no-depclean | --no-kernel | --quiet
-  --strict-use | --no-compile | --buildpkg | --fast
 
   You do NOT have to update the kernel or software by hand. webos-update first
   refreshes the local WebOS overlay from GitHub (auto-sync=no, so emerge --sync
@@ -648,21 +672,23 @@ WebOS system, as root:
   ./build.sh kernel
   ./build.sh rootfs             # includes this WEBOS-INFO.txt via webos-theme
   bash scripts/50-check.sh      # source regression guards: must report 0 problems
-  ./build.sh iso                # build/webos-1.01-Ashen-amd64.iso
+  ./build.sh iso                # build/webos-1.02-Ashen-amd64.iso
 
 Verify before publishing: `webos-update --check`, `waypaper --help`,
 `webos-stats` core/RAM output, and that the ISO's `webos/version` matches
-`WEBOS_VERSION=1.01-Ashen`. Keep the USB stick mounted, then copy the ISO over
+`WEBOS_VERSION=1.02-Ashen`. Keep the USB stick mounted, then copy the ISO over
 the old one on Ventoy (and refresh `webos-version.txt`), split it for GitHub,
-verify `sha256sum -c SHA256SUMS.txt`, and use `gh release upload v1.01
---clobber ...` plus `gh release edit v1.01 --notes-file docs/releases/v1.01.md
---latest`. Never shut the machine down as part of a release; only reboot when
-you deliberately test the new kernel.
+verify `sha256sum -c SHA256SUMS.txt`, and publish a **new** `v1.02` release with
+`gh release create v1.02 --notes-file docs/releases/v1.02.md --latest ...`.
+Keep `v1.01` untouched as the historical release. Never shut the machine down
+as part of a release; only reboot when you deliberately test the new kernel.
 
-Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.01"`).
-Assets replace the existing `v1.01` tag in place; do not create a new tag for
-maintenance fixes. Before wiping another OS's drive, keep a verified backup and
-confirm WebOS boots and installs from its own SSD.
+Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.02"`).
+Maintenance fixes that must reach installed machines need a new package
+revision (`webos-theme-1.0-r4`) and a new tag; `webos-update` refreshes the
+overlay from `main`, so commit and push the source before publishing assets.
+Before wiping another OS's drive, keep a verified backup and confirm WebOS
+boots and installs from its own SSD.
 
 LINKS
 -----

@@ -45,6 +45,15 @@ TOP_GAP = 100  # below the 46 px waybar plus margins
 META_FORMAT = "{{title}}\t{{artist}}\t{{mpris:length}}\t{{mpris:artUrl}}"
 
 
+def run_quiet(args):
+    """Best-effort helper for host commands that may not be installed."""
+    try:
+        subprocess.run(args, stdout=subprocess.DEVNULL,
+                       stderr=subprocess.DEVNULL, check=False)
+    except OSError:
+        pass
+
+
 # ---------------------------------------------------------------------------
 # process management (uses only the standard library)
 # ---------------------------------------------------------------------------
@@ -444,6 +453,7 @@ def format_time(seconds):
 # ---------------------------------------------------------------------------
 
 def run_app(visible):
+    run_quiet(["hyprctl", "seterror", "disable"])
     import gi
 
     gi.require_version("Gtk", "3.0")

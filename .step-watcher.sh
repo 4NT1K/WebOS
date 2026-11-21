@@ -15,7 +15,7 @@ while true; do
 done
 # wait for ISO
 while true; do
-  if grep -aq '^rc=0' build/iso-build.log 2>/dev/null && (ls build/webos-*.iso >/dev/null 2>&1 || ls build/webos-*.iso >/dev/null 2>&1); then
+  if grep -aq '^rc=0' build/iso-build.log 2>/dev/null && compgen -G 'build/webos-*.iso' >/dev/null; then
     notify "Step complete: ISO built. Run ./.post-iso.sh to verify it."
     sleep 5
     # wait for verify

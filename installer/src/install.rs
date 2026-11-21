@@ -675,19 +675,29 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
          remove_app() { emerge --quiet --unmerge \"$@\" >/dev/null 2>&1 || echo \"warning: could not unmerge $*\" >&2; }\n\n",
     );
 
-    // The live image is built with @gaming already installed. Honour the
-    // wizard toggle by removing the gaming-only packages here; the graphics
-    // stack (mesa, vulkan, nvidia) is shared with the desktop and stays.
+    // ── gaming stack baked into the live image ──────────────────────────
+    // @gaming is merged into the image before the wizard runs, so "off" has
+    // to actively remove the gaming-only packages. Shared graphics packages
+    // (mesa, vulkan-loader/layers, libglvnd, libva, nvidia-drivers,
+    // nv-codec-headers, virtual/libudev, irqbalance) stay for the desktop.
     if !cfg.install_gaming {
-        s.push_str("# Gaming stack was disabled in the installer wizard.\n");
-        s.push_str("for p in gui-wm/gamescope games-util/gamemode games-util/mangohud \\\n");
-        s.push_str("  media-gfx/vkBasalt games-util/lutris games-util/heroic-bin \\\n");
-        s.push_str("  games-emulation/dosbox-staging games-engines/scummvm app-arch/cabextract \\\n");
-        s.push_str("  app-arch/innoextract app-arch/unrar gnome-extra/zenity app-misc/corectrl \\\n");
-        s.push_str("  app-admin/ananicy-cpp sys-apps/earlyoom sys-apps/preload sys-apps/irqbalance \\\n");
-        s.push_str("  sys-power/cpupower sys-power/thermald sys-power/RyzenAdj sys-apps/msr-tools \\\n");
-        s.push_str("  sys-kernel/scx; do remove_app \"$p\"; done\n");
-        s.push_str("printf 'Gaming stack was not selected at install time.\\n' > /etc/webos/gaming-not-installed.txt\n\n");
+        s.push_str(r#"
+# Gaming was not selected: strip the gaming stack from the live image.
+for pkg in webos-gaming/webos-gaming gui-wm/gamescope games-util/gamemode \
+           games-util/mangohud media-gfx/vkBasalt games-util/lutris \
+           games-util/heroic-bin games-emulation/dosbox-staging \
+           games-engines/scummvm app-arch/cabextract app-arch/innoextract \
+           app-arch/unrar app-emulation/protontricks app-emulation/winetricks \
+           app-emulation/wine-staging app-emulation/vkd3d-proton \
+           dev-util/vulkan-tools games-util/goverlay \
+           games-util/game-device-udev-rules app-misc/corectrl \
+           sys-apps/earlyoom sys-apps/preload sys-power/RyzenAdj \
+           sys-power/thermald sys-apps/msr-tools sys-kernel/scx; do
+  emerge --quiet --unmerge "$pkg" >/dev/null 2>&1 || true
+done
+install -d -m 0755 /etc/webos
+printf 'Gaming stack was not selected during installation.\n' > /etc/webos/gaming-not-installed.txt
+"#);
     }
 
     // ── services (OpenRC) ────────────────────────────────────────────────
@@ -880,10 +890,11 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
         } else {
             s.push_str("remove_app www-client/firefox-bin\n");
         }
-        // Steam is 32-bit only and this image is 64-bit (ABI_X86=\"64\").
-        // Record the choice instead of pulling in a multilib rebuild.
+        // Steam is not installed natively: it needs a 32-bit (multilib)
+        // runtime and this image is 64-bit only (ABI_X86=\"64\"). Flatpak and
+        // Flathub are enabled by default, so record the Flatpak fallback.
         if cfg.install_steam {
-            s.push_str("mkdir -p /etc/webos && printf 'Steam needs a 32-bit (multilib) runtime; not included in this image.\\n' > /etc/webos/steam-unavailable.txt\n");
+            s.push_str("mkdir -p /etc/webos && printf 'Native Steam/Proton is not included in this 64-bit image. Install the Steam Flatpak from Flathub instead (Flatpak is enabled by default).\\n' > /etc/webos/steam-unavailable.txt\n");
         }
         if cfg.install_discord {
             s.push_str("emerge_app net-im/discord\n");

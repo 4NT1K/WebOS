@@ -92,10 +92,10 @@ else bad "kconfig qml USE missing"; fi
 if grep -q -- '--getbinpkg' "${WEBOS_ROOT}/config/make.conf"; then
 	good "emerge defaults prefer binpkgs (--getbinpkg)"
 else bad "EMERGE_DEFAULT_OPTS lacks --getbinpkg"; fi
-grep -qF -- '--binpkg-respect-use=n' "${WEBOS_ROOT}/config/make.conf" \
-	&& grep -qF -- '--binpkg-changed-deps=n' "${WEBOS_ROOT}/config/make.conf" \
-	&& good "emerge defaults stay binary-first on USE/deps mismatch" \
-	|| bad "emerge defaults still compile on USE/deps mismatch"
+if grep -Eq -- '--binpkg-respect-use=n|--getbinpkgonly|(^|[[:space:]])-G([[:space:]]|$)|(^|[[:space:]])-K([[:space:]]|$)' \
+	"${WEBOS_ROOT}/config/make.conf"; then
+	bad "forbidden binary flag in make.conf"
+else good "make.conf never forces wrong-USE binaries"; fi
 if grep -q 'binpackages/23.0/x86-64-v3' "${WEBOS_ROOT}/config/binrepos.conf/gentoo.conf" 2>/dev/null; then
 	good "v3 binhost pinned"
 else bad "v3 binhost config missing"; fi
@@ -106,15 +106,19 @@ done
 UPDATER="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-update"
 grep -q 'prefers prebuilt binaries; falls back to source' "$UPDATER" \
 	&& good "updater binary message" || bad "updater still claims source-only"
-grep -qF -- '--binpkg-respect-use=n' "$UPDATER" \
-	&& grep -qF -- '--binpkg-changed-deps=n' "$UPDATER" \
+if grep -Eq -- '--binpkg-respect-use=n|--getbinpkgonly' "$UPDATER"; then
+	bad "updater forces wrong-USE binaries"
+else good "updater keeps strict USE matching"; fi
+grep -qF -- '--binpkg-changed-deps=n' "$UPDATER" \
 	&& grep -qF -- '--strict-use' "$UPDATER" \
-	&& good "updater is binary-first with a strict-use opt-out" || bad "updater lacks binary-first mode"
+	&& grep -qF -- '--respect-use' "$UPDATER" \
+	&& grep -qF -- '--fast-binpkg' "$UPDATER" \
+	&& good "updater has fast and strict-use controls" || bad "updater lacks binary-first controls"
 grep -qF -- '--buildpkg' "$UPDATER" \
 	&& good "updater can cache builds" || bad "updater lacks buildpkg mode"
-grep -qF -- '--no-compile' "$UPDATER" && grep -qF 'SOURCE_BUILDS' "$UPDATER" \
-	&& grep -qF '^\[ebuild' "$UPDATER" \
-	&& good "updater can refuse all source builds" || bad "updater lacks binary-only mode"
+grep -qF -- '--no-compile' "$UPDATER" && grep -qF 'count_plan' "$UPDATER" \
+	&& grep -qF '^[[:space:]]*\[ebuild' "$UPDATER" \
+	&& good "updater can refuse all source builds" || bad "updater lacks no-compile pre-flight"
 grep -q 'reboot with: loginctl reboot' "$UPDATER" \
 	&& good "logind reboot hint" || bad "stale reboot hint"
 grep -qF '/^\[(ebuild|binary)/' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/waybar/scripts/updates.sh" \
@@ -197,6 +201,178 @@ grep -q 'webos-theme-1.0-r4.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
 grep -q 'gtk-layer-shell\[introspection\]' \
 	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r4.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
+
+# 9. v1.02 identity and shipped guide
+for f in branding/version branding/os-release branding/lsb-release branding/issue \
+	config/make.conf overlay/profiles/default/linux/amd64/webos/make.defaults \
+	overlay/profiles/default/linux/arm64/webos/make.defaults \
+	overlay/webos-theme/webos-theme/files/system/webos-rice \
+	overlay/webos-theme/webos-theme/files/system/webos-update \
+	overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc \
+	installer/src/main.rs; do
+	grep -q '1\.02' "${WEBOS_ROOT}/${f}" \
+		&& good "v1.02 identity ${f}" || bad "stale version in ${f}"
+done
+grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
+	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
+GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
+for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r4' \
+	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
+	'WEBOS_VERSION=1.02-Ashen'; do
+	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
+done
+[[ -f "${WEBOS_ROOT}/docs/releases/v1.02.md" ]] \
+	&& good "v1.02 release notes" || bad "missing docs/releases/v1.02.md"
+grep -qF 'webos-1.02-Ashen-amd64.iso' "${WEBOS_ROOT}/docs/releases/v1.02.md" \
+	&& good "v1.02 asset names" || bad "v1.02 notes have wrong asset names"
+
+# 10. power widget in both profiles, with safe mono migration
+WAYBAR_DIR="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files"
+for cfg in "${WAYBAR_DIR}/rice/waybar/config.jsonc" \
+	"${WAYBAR_DIR}/dotfiles/mono/waybar/config.jsonc"; do
+	grep -qF '"ipc": false' "$cfg" && good "waybar ipc off ${cfg##*/files/}" \
+		|| bad "waybar ipc still on in ${cfg##*/files/}"
+	grep -qF '"custom/power"' "$cfg" \
+		&& good "power widget ${cfg##*/files/}" || bad "power widget missing in ${cfg##*/files/}"
+	grep -qF '"format": "⏻"' "$cfg" \
+		&& good "power glyph ${cfg##*/files/}" || bad "power glyph wrong in ${cfg##*/files/}"
+	grep -qF 'Power — open session menu (reboot, shut down, suspend)' "$cfg" \
+		&& good "power tooltip ${cfg##*/files/}" || bad "power tooltip wrong in ${cfg##*/files/}"
+	grep -qF '"on-click": "wlogout"' "$cfg" \
+		&& good "power click ${cfg##*/files/}" || bad "power click wrong in ${cfg##*/files/}"
+done
+for css in "${WAYBAR_DIR}/rice/waybar/style.css" \
+	"${WAYBAR_DIR}/dotfiles/mono/waybar/style.css"; do
+	grep -qF '#custom-power' "$css" \
+		&& good "power styling ${css##*/files/}" || bad "power styling missing in ${css##*/files/}"
+done
+RICE_TOOL="${WAYBAR_DIR}/system/webos-rice"
+grep -qF 'migrate_legacy_waybar()' "$RICE_TOOL" \
+	&& good "legacy waybar migration defined" || bad "migrate_legacy_waybar missing"
+grep -qF 'migrate_legacy_waybar "$home"' "$RICE_TOOL" \
+	&& good "legacy waybar migration called" || bad "migration not applied"
+grep -qF '2b3fc6c9c3f0d46bcebebdff9787054cf117e6cba2936505a19ba3de6e978081' "$RICE_TOOL" \
+	&& good "known mono hash pinned" || bad "legacy mono hash missing"
+grep -qF 'backup_once' "$RICE_TOOL" \
+	&& good "legacy config backed up once" || bad "legacy backup missing"
+
+# 11. lock screen and idle session fixes
+HYPRLOCK="${WAYBAR_DIR}/rice/hypr/hyprlock.conf"
+HYPRLIDLE="${WAYBAR_DIR}/rice/hypr/hypridle.conf"
+grep -qF 'foreground="##7A7A7A"' "$HYPRLOCK" \
+	&& good "escaped hyprlock colour" || bad "unescaped hyprlock colour"
+if grep -Eq '^[[:space:]]*(grace|no_fade_in)[[:space:]]*=' "$HYPRLOCK"; then
+	bad "obsolete hyprlock config key remains"
+else good "hyprlock obsolete keys removed"; fi
+grep -qF 'hyprlock --grace 0 --no-fade-in' "$HYPRLIDLE" \
+	&& good "hyprlock CLI flags" || bad "hyprlock CLI flags missing"
+grep -qF 'hl.dispatch(hl.dsp.dpms({ action = "off" }))' "$HYPRLIDLE" \
+	&& good "Lua DPMS off" || bad "Lua DPMS off missing"
+grep -qF 'hl.dispatch(hl.dsp.dpms({ action = "on" }))' "$HYPRLIDLE" \
+	&& good "Lua DPMS on" || bad "Lua DPMS on missing"
+grep -qF '/sys/class/backlight' "$HYPRLIDLE" \
+	&& good "backlight guard present" || bad "backlight guard missing"
+grep -qF 'brightnessctl -c backlight' "$HYPRLIDLE" \
+	&& good "dim scoped to backlight" || bad "dim not scoped to backlight"
+if grep -qF 'hyprctl dispatch dpms' "$HYPRLIDLE"; then
+	bad "old dpms dispatch remains"
+else good "old dpms dispatch gone"; fi
+
+# 12. theme revision reaches installed machines
+R4="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r4.ebuild"
+[[ -f "$R4" ]] && good "r4 theme ebuild" || bad "missing r4 theme ebuild"
+grep -qF 'gui-libs/gtk-layer-shell[introspection]' "$R4" \
+	&& good "r4 ships layer-shell introspection" || bad "r4 lacks introspection dependency"
+grep -qF 'THEME_EBUILD="webos-theme-1.0-r4.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "rootfs pins r4" || bad "rootfs does not pin r4"
+
+# 13. binary-first updater controls, without forbidden flags
+UPDATER="${WAYBAR_DIR}/system/webos-update"
+for pat in '--fast' '--fast-binpkg' '--strict-use' '--respect-use' '--buildpkg' \
+	'--no-compile' '--binpkg-changed-deps=n' \
+	'prefers prebuilt binaries; falls back to source' \
+	'reboot with: loginctl reboot' 'archive/refs/heads/main.tar.gz'; do
+	grep -qF -- "$pat" "$UPDATER" && good "updater: ${pat}" || bad "updater missing: ${pat}"
+done
+for f in "$UPDATER" "${WEBOS_ROOT}/config/make.conf"; do
+	if grep -Eq -- '--binpkg-respect-use=n|--getbinpkgonly|(^|[[:space:]])-G([[:space:]]|$)|(^|[[:space:]])-K([[:space:]]|$)' "$f"; then
+		bad "forbidden binary flag in ${f##*/}"
+	else good "no forbidden binary flags in ${f##*/}"; fi
+done
+
+# 14. music/stats dropdown details
+MUSIC="${WAYBAR_DIR}/system/webos-music"
+STATS="${WAYBAR_DIR}/system/webos-stats"
+for pat in 'PANEL_SIZE = 340' 'TOP_GAP = 100' \
+	'for version in ("0.1", "1.0")' \
+	'GtkLayerShell.set_namespace(window, "webos-music")' \
+	'GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)' \
+	'webos-music-catcher' 'button-press-event' 'GaussianBlur(radius=9)' \
+	'enhance(0.72)' 'background-size: cover' 'quantize(colors=6)' \
+	'method = pipewire' 'source = %s' \
+	'run_quiet(["hyprctl", "seterror", "disable"])'; do
+	grep -qF -- "$pat" "$MUSIC" && good "music: ${pat}" || bad "music missing: ${pat}"
+done
+for pat in 'for version in ("0.1", "1.0")' \
+	'GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)' \
+	'GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 100)' \
+	'webos-stats-catcher' 'button-press-event' \
+	'run_quiet(["hyprctl", "seterror", "disable"])' 'def ram_details' \
+	'c%d   %d%% %s'; do
+	grep -qF -- "$pat" "$STATS" && good "stats: ${pat}" || bad "stats missing: ${pat}"
+done
+if have python3; then
+	PYTHONPYCACHEPREFIX="/tmp/opencode/webos-pycache-check" \
+		python3 -m py_compile "$MUSIC" "$STATS" \
+		&& good "music/stats python syntax" || bad "music/stats python syntax"
+else bad "python3 not available to compile helpers"; fi
+
+# 15. installer, manifest and build-tooling audit
+APP="${WEBOS_ROOT}/installer/src/app.rs"
+INSTALL="${WEBOS_ROOT}/installer/src/install.rs"
+CFG="${WEBOS_ROOT}/installer/src/config.rs"
+grep -qF '"Installing the bootloader"' "$APP" \
+	&& good "bootloader phase present" || bad "bootloader phase missing"
+grep -qF 'pub const INSTALL_STAGES: [&str; 13]' "$APP" \
+	&& good "13 installer stages" || bad "installer stage list is not 13"
+grep -qF 'Encryption::None' "$APP" \
+	&& good "stage count follows encryption" || bad "stage count ignores encryption"
+grep -qF '/etc/webos/gaming-not-installed.txt' "$INSTALL" \
+	&& good "gaming-off marker" || bad "gaming-off marker missing"
+grep -qF 'Steam (Flatpak fallback)' "$APP" \
+	&& good "Steam extra label is honest" || bad "Steam extra label is stale"
+grep -qF 'Steam as a Flatpak fallback' "$CFG" \
+	&& good "Steam wording is honest" || bad "Steam wording still promises native install"
+grep -qF 'Flatpak is enabled by default' "$INSTALL" \
+	&& good "Flatpak Steam fallback recorded" || bad "Flatpak Steam fallback missing"
+manifest_bad=0
+while IFS= read -r m; do
+	if grep -E '^(EBUILD|MISC) ' "$m" \
+		| grep -Ev ' BLAKE2B [0-9a-f]{128} SHA512 [0-9a-f]{128}$' >/dev/null; then
+		bad "non-hex EBUILD/MISC digest in ${m#${WEBOS_ROOT}/}"
+		manifest_bad=$((manifest_bad + 1))
+	fi
+done < <(find "${WEBOS_ROOT}/overlay" -name Manifest -print | sort)
+((manifest_bad == 0)) && good "all Manifest digests hex"
+grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/overlay/sys-kernel/webos-kernel/webos-kernel-6.12.ebuild" \
+	&& good "kernel fragment stamp" || bad "kernel fragment stamp missing"
+grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/scripts/20-kernel.sh" \
+	&& good "kernel rebuild checks stamp" || bad "kernel rebuild ignores stamp"
+for s in setup-container-build.sh .issue-watcher.sh .step-watcher.sh; do
+	grep -qF "compgen -G 'build/webos-*.iso'" "${WEBOS_ROOT}/${s}" \
+		&& good "ISO glob uses compgen in ${s}" || bad "invalid ISO glob test in ${s}"
+done
+grep -qF 'WEBOS_STATUS_UPDATER' "${WEBOS_ROOT}/scripts/status-updater.sh" \
+	&& good "status updater is opt-in" || bad "status updater auto-runs"
+if grep -REq '/home/brah/sanusos|/sanusos|git add|git commit|git push' \
+	"${WEBOS_ROOT}/.issue-watcher.sh" "${WEBOS_ROOT}/.step-watcher.sh" \
+	"${WEBOS_ROOT}/scripts/status-updater.sh"; then
+	bad "watchers still use foreign paths or auto-commit"
+else good "watchers are path-independent and non-committing"; fi
+if have cargo; then
+	(cd "${WEBOS_ROOT}/installer" && cargo check --offline >/dev/null 2>&1) \
+		&& good "installer cargo check --offline" || bad "installer cargo check failed"
+else note skip "cargo not installed"; fi
 
 step "check: ${fail} problem(s)"
 exit "$((fail > 0))"

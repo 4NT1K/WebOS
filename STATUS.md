@@ -1,12 +1,12 @@
 # WebOS build status
 
-_Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined greyscale, dropdown panels, menu/music keys, sessions, zram and updater fixes._
+_Last update: 2026-11-21 — v1.02 (Ashen): second maintenance rebuild; power widget, lock/idle fixes, compact music dropdown, per-song visualizer, outside-click dismissal and honest binary-first updater controls._
 
-## Status: v1.01 — ISO built and verified
+## Status: v1.02 — source frozen, ISO build pending
 
-- Version 1.01; ISO `webos-1.01-Ashen-amd64.iso`.
-- Kernel, rootfs and ISO stages have all completed; the built ISO was verified
-  (see `AUDIT.md` → "Final build").
+- Version 1.02; target ISO `webos-1.02-Ashen-amd64.iso`.
+- Source regression gate passes (`bash scripts/50-check.sh`: 0 problems).
+  Rootfs and ISO rebuild are the remaining release steps.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
   (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.
 - SDDM is the shipped greeter and offers exactly the session chosen in the
@@ -42,9 +42,12 @@ _Last update: 2026-11-20 — v1.01 (Ashen): first maintenance rebuild; refined g
 - Reused chroot: Portage config refreshed, profile symlink repointed, legacy
   `sanus-*` packages removed.
 
-### Current ISO artifact
+### Historical v1.01 ISO artifact (superseded by v1.02)
 
-- ISO: `build/webos-1.01-Ashen-amd64.iso` (3.7G), verified sha256 `4e63e90c33b050d7…`
+- Published v1.01 ISO: `webos-1.01-Ashen-amd64.iso`, sha256
+  `e8351089a4aaefe0d1d4afa11f2d939f94d54bc5979fabfa0355bf77157f3d90`.
+- Older verification lines below are kept for provenance.
+- Pre-release v1.01 ISO: `build/webos-1.01-Ashen-amd64.iso` (3.7G), verified sha256 `4e63e90c33b050d7…`
 - v7 fixes:
   - install copy preserves setuid/setgid (`rsync -rlptDHAX --chown=0:0`); no recursive `chown -R`
   - `scripts/40-iso.sh` normalizes ownership without stripping setuid bits
