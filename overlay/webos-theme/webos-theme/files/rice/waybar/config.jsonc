@@ -20,7 +20,7 @@
     "reload_style_on_change": true,
 
     "modules-left": [
-        "hyprland/workspaces",
+        "group/ws",
         "hyprland/window"
     ],
     "modules-center": ["mpris"],
@@ -28,11 +28,45 @@
     // No battery module either (desktop PC); the power menu stays available.
     "modules-right": ["custom/waypaper", "clock", "tray", "custom/perf", "custom/power"],
 
-    "hyprland/workspaces": {
-        "format": "{name}",
-        "on-click": "activate",
-        "all-outputs": true,
-        "persistent-workspaces": { "*": 5 }
+    "group/ws": {
+        "modules": ["custom/ws1", "custom/ws2", "custom/ws3", "custom/ws4", "custom/ws5"],
+        "orientation": "horizontal"
+    },
+
+    "custom/ws1": {
+        "exec": "/home/brah/.local/bin/webos-workspace-state 1",
+        "interval": 1,
+        "return-type": "json",
+        "on-click": "/home/brah/.local/bin/webos-workspace-goto 1",
+        "tooltip": false
+    },
+    "custom/ws2": {
+        "exec": "/home/brah/.local/bin/webos-workspace-state 2",
+        "interval": 1,
+        "return-type": "json",
+        "on-click": "/home/brah/.local/bin/webos-workspace-goto 2",
+        "tooltip": false
+    },
+    "custom/ws3": {
+        "exec": "/home/brah/.local/bin/webos-workspace-state 3",
+        "interval": 1,
+        "return-type": "json",
+        "on-click": "/home/brah/.local/bin/webos-workspace-goto 3",
+        "tooltip": false
+    },
+    "custom/ws4": {
+        "exec": "/home/brah/.local/bin/webos-workspace-state 4",
+        "interval": 1,
+        "return-type": "json",
+        "on-click": "/home/brah/.local/bin/webos-workspace-goto 4",
+        "tooltip": false
+    },
+    "custom/ws5": {
+        "exec": "/home/brah/.local/bin/webos-workspace-state 5",
+        "interval": 1,
+        "return-type": "json",
+        "on-click": "/home/brah/.local/bin/webos-workspace-goto 5",
+        "tooltip": false
     },
 
     "hyprland/window": {

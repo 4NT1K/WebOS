@@ -332,8 +332,9 @@ for i = 1, 10 do
 	hl.bind(mod .. " + " .. key,         hl.dsp.focus({ workspace = i }))
 	hl.bind(mod .. " + SHIFT + " .. key, hl.dsp.window.move({ workspace = i }))
 end
-hl.bind(mod .. " + mouse_down", hl.dsp.focus({ workspace = "e+1" }))
-hl.bind(mod .. " + mouse_up",   hl.dsp.focus({ workspace = "e-1" }))
+-- Super + scroll: cycle only workspaces 1-5 (wraps 5 -> 1 and 1 -> 5).
+hl.bind(mod .. " + mouse_down", hl.dsp.exec_cmd("/usr/bin/webos-workspace-scroll down"))
+hl.bind(mod .. " + mouse_up",   hl.dsp.exec_cmd("/usr/bin/webos-workspace-scroll up"))
 hl.bind(mod .. " + Tab",        hl.dsp.focus({ workspace = "previous" }))
 
 -- Mouse

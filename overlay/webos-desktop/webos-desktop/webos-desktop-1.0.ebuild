@@ -44,6 +44,7 @@ RDEPEND="
 	media-fonts/nerdfonts
 	media-fonts/noto
 	media-fonts/noto-emoji
+	media-fonts/noto-cjk
 	media-gfx/imv
 	media-gfx/swayimg
 	media-sound/cava

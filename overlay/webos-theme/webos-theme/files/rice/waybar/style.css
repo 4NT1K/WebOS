@@ -154,3 +154,31 @@ tooltip label {
     color: @accent;
     border-color: @border-hover;
 }
+
+/* ── clickable workspace buttons (custom modules, Hyprland 0.57 IPC fix) ─ */
+#group-ws {
+    background: @surface;
+    border: 1px solid @border;
+    border-radius: 12px;
+    padding: 0 4px;
+    margin: 6px 3px;
+}
+
+#group-ws .ws-btn {
+    color: @dim;
+    background: transparent;
+    border-radius: 10px;
+    padding: 0 9px;
+    margin: 5px 2px;
+    min-width: 14px;
+    transition: color 120ms linear, background-color 120ms linear;
+}
+
+#group-ws .ws-btn:hover {
+    color: @accent;
+}
+
+#group-ws .ws-btn.active {
+    color: @base;
+    background: @accent;
+}
