@@ -171,6 +171,7 @@ src_install() {
 	insinto /usr/share/webos/rice/firefox
 	doins "${FILESDIR}"/rice/firefox/userChrome.css
 	doins "${FILESDIR}"/rice/firefox/userContent.css
+	doins "${FILESDIR}"/rice/firefox/user.js
 	insinto /usr/share/webos/rice/spicetify
 	doins "${FILESDIR}"/rice/spicetify/user.css
 

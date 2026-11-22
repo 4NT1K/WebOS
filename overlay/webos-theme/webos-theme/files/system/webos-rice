@@ -232,6 +232,7 @@ apply_web_themes() {
 		mkdir -p "$profile/chrome"
 		install_file "${RICE_SRC}/firefox/userChrome.css" "$profile/chrome/userChrome.css" "$mf" "$force" "$dry"
 		install_file "${RICE_SRC}/firefox/userContent.css" "$profile/chrome/userContent.css" "$mf" "$force" "$dry"
+		install_file "${RICE_SRC}/firefox/user.js" "$profile/user.js" "$mf" "$force" "$dry"
 		pref="$profile/prefs.js"
 		if [[ -f "$pref" ]] && ! grep -q 'toolkit.legacyUserProfileCustomizations.stylesheets' "$pref"; then
 			(( dry )) || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pref"
