@@ -7,12 +7,14 @@
   --background-tertiary: rgba(20, 20, 26, .04) !important;
   --background-floating: rgba(20, 20, 26, .22) !important;
   --channeltextarea-background: rgba(20, 20, 26, .08) !important;
-  --var-opacity-option: .2 !important;
-  --var-opacity-titlebar: .12 !important;
-  --var-opacity-left-sidebar: .16 !important;
-  --var-opacity-bottom-input: .14 !important;
-  --var-opacity-right-sidebar: .16 !important;
-  --var-opacity-inner-messages: .2 !important;
+  --var-contrast: .5 !important;
+  --var-color-saturation: .7 !important;
+  --var-opacity-option: .08 !important;
+  --var-opacity-titlebar: .06 !important;
+  --var-opacity-left-sidebar: .08 !important;
+  --var-opacity-bottom-input: .07 !important;
+  --var-opacity-right-sidebar: .08 !important;
+  --var-opacity-inner-messages: .1 !important;
 }
 html, body, #app-container, [class*="app__"], [class*="layerContainer"],
 [class*="layers"], [class*="containerDefault"], [class*="sidebar"],
