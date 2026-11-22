@@ -20,7 +20,7 @@ set -Eeuo pipefail
 
 readonly RICE_SRC="/usr/share/webos/rice"
 readonly WALL_DIR="/usr/share/webos/wallpaper"
-readonly VERSION="1.021"
+readonly VERSION="1.03"
 
 MODE="user"
 FORCE=0
@@ -89,7 +89,7 @@ record() {
 }
 
 prune_manifest() {
-	# 1.021 shipped hyprland.conf/webos-colors.conf; their hashes stayed in
+	# 1.03 shipped hyprland.conf/webos-colors.conf; their hashes stayed in
 	# rice.manifest forever. Drop those obsolete entries on every apply so
 	# --doctor and --check do not report files that no longer exist.
 	local mf="$1" tmp

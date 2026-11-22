@@ -236,7 +236,7 @@ chroot_sh "test -f /usr/local/portage/webos/webos-theme/webos-theme/${THEME_EBUI
 chroot_sh "emerge --quiet --unmerge webos-theme/webos-theme" >/dev/null 2>&1 || true
 chroot_sh "emerge --quiet-build=y webos-theme/webos-theme" \
 	|| die "webos-theme merge failed (rice/session helpers would be missing)"
-# 1.021 shipped hyprland.conf and webos-colors.conf; 1.0 uses hyprland.lua
+# 1.03 shipped hyprland.conf and webos-colors.conf; 1.0 uses hyprland.lua
 # plus webos-colors.lua. The chroot is reused between builds, so remove the
 # dead files from the seeded homes before the config hook applies the rice.
 chroot_sh 'rm -f /root/.config/hypr/hyprland.conf /root/.config/hypr/hyprland.lua.webos-disabled /root/.config/hypr/webos-colors.conf /etc/skel/.config/hypr/hyprland.conf /etc/skel/.config/hypr/hyprland.lua.webos-disabled /etc/skel/.config/hypr/webos-colors.conf' || true

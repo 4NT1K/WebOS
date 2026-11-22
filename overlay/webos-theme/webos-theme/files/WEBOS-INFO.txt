@@ -1,4 +1,4 @@
-WebOS 1.021 "Ashen" — system information
+WebOS 1.03 "Ashen" — system information
 ========================================
 
 Everything important about this installed system, in one file.
@@ -7,7 +7,7 @@ Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
 RELEASE / IDENTITY
 ------------------
-- Version      : WebOS 1.021 "Ashen"
+- Version      : WebOS 1.03 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
@@ -17,9 +17,9 @@ RELEASE / IDENTITY
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
-- ISO          : webos-1.021-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- ISO          : webos-1.03-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
 - Source       : https://github.com/4NT1K/WebOS
-- Release file : /etc/os-release and /etc/webos-release both report 1.021
+- Release file : /etc/os-release and /etc/webos-release both report 1.03
 
 QUICK START
 -----------
@@ -32,7 +32,7 @@ QUICK START
    the polkit agent start automatically.
 5. Update with `sudo webos-update`.
 
-WHAT CHANGED IN 1.021
+WHAT CHANGED IN 1.03
 --------------------
 This is a clean maintenance rebuild of the Ashen image, built from a fresh
 stage3 chroot rather than from a maintainer's installed system. It ships the
@@ -81,7 +81,7 @@ a theme update so the session picks up the new files.
   and `--no-compile`. It still refuses to force a binary with wrong USE flags:
   `-G`, `-K` and `--binpkg-respect-use=n` are deliberately not used.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
-  were corrected, and the shipped guide and release notes now describe 1.021.
+  were corrected, and the shipped guide and release notes now describe 1.03.
 
 RECENT THEME REVISIONS (r41-r51)
 --------------------------------
@@ -125,7 +125,7 @@ The 1.01 maintenance rebuild carries these fixes into a fresh install:
   The old ice-blue and light-grey tokens are gone from the rice.
 - The right cluster is waypaper (▧), clock, tray and performance (▾) in the
   original 1.01 image; the cpu, memory, pulseaudio and power pills were removed
-  and no aliases were added. 1.021 restores the far-right ⏻ power pill.
+  and no aliases were added. 1.03 restores the far-right ⏻ power pill.
   `webos-menu` replaces the raw wofi launchers for Super+D and Super+R, and
   Super+M toggles the music dropdown.
 - `webos-music` (Spotify artwork, controls and flat black/white text),
@@ -255,7 +255,7 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
   started at install time.
 - The mono bar no longer prints the LAN IPv4 address or a battery percentage;
   its power pill was removed in the original 1.01 image along with cpu, memory
-  and pulseaudio. 1.021 restores ⏻; the right cluster is waypaper, clock,
+  and pulseaudio. 1.03 restores ⏻; the right cluster is waypaper, clock,
   tray, performance and power.
 - kitty transparency is restored: kitty owns the alpha value (0.82) and the
   compositor no longer multiplies a second opacity over it; the framed
@@ -269,7 +269,7 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 EXPECTED BEHAVIOUR
 ------------------
 Boot / live medium
-- The banner reads "WebOS 1.021 (Ashen) — live medium".
+- The banner reads "WebOS 1.03 (Ashen) — live medium".
 - Nothing is written to disk until the summary is confirmed.
 - The installer progress panel stays inside its border, keeps the "%" sign,
   and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow
@@ -727,18 +727,18 @@ WebOS system, as root:
   ./build.sh kernel
   ./build.sh rootfs             # includes this WEBOS-INFO.txt via webos-theme
   bash scripts/50-check.sh      # source regression guards: must report 0 problems
-  ./build.sh iso                # build/webos-1.021-Ashen-amd64.iso
+  ./build.sh iso                # build/webos-1.03-Ashen-amd64.iso
 
 Verify before publishing: `webos-update --check`, `waypaper --help`,
 `webos-stats` core/RAM output, and that the ISO's `webos/version` matches
-`WEBOS_VERSION=1.021-Ashen`. Keep the USB stick mounted, then copy the ISO over
+`WEBOS_VERSION=1.03-Ashen`. Keep the USB stick mounted, then copy the ISO over
 the old one on Ventoy (and refresh `webos-version.txt`), split it for GitHub,
-verify `sha256sum -c SHA256SUMS.txt`, and publish a **new** `v1.021` release with
-`gh release create v1.021 --notes-file docs/releases/v1.021.md --latest ...`.
+verify `sha256sum -c SHA256SUMS.txt`, and publish a **new** `v1.03` release with
+`gh release create v1.03 --notes-file docs/releases/v1.03.md --latest ...`.
 Keep `v1.01` untouched as the historical release. Never shut the machine down
 as part of a release; only reboot when you deliberately test the new kernel.
 
-Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.021"`).
+Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.03"`).
 Maintenance fixes that must reach installed machines need a new package
 revision (`webos-theme-1.0-r51`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.

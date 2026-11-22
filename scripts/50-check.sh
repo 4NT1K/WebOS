@@ -201,7 +201,7 @@ grep -q 'gtk-layer-shell\[introspection\]' \
 	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
-# 9. v1.021 identity and shipped guide
+# 9. v1.03 identity and shipped guide
 for f in branding/version branding/os-release branding/lsb-release branding/issue \
 	config/make.conf overlay/profiles/default/linux/amd64/webos/make.defaults \
 	overlay/profiles/default/linux/arm64/webos/make.defaults \
@@ -209,21 +209,21 @@ for f in branding/version branding/os-release branding/lsb-release branding/issu
 	overlay/webos-theme/webos-theme/files/system/webos-update \
 	overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc \
 	installer/src/main.rs; do
-	grep -q '1\.021' "${WEBOS_ROOT}/${f}" \
-		&& good "v1.021 identity ${f}" || bad "stale version in ${f}"
+	grep -q '1\.03' "${WEBOS_ROOT}/${f}" \
+		&& good "v1.03 identity ${f}" || bad "stale version in ${f}"
 done
 grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
 	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
 GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
-for pat in 'WebOS 1.021' 'WHAT CHANGED IN 1.021' 'webos-theme-1.0-r51' \
+for pat in 'WebOS 1.03' 'WHAT CHANGED IN 1.03' 'webos-theme-1.0-r51' \
 	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
-	'WEBOS_VERSION=1.021-Ashen'; do
+	'WEBOS_VERSION=1.03-Ashen'; do
 	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
 done
-[[ -f "${WEBOS_ROOT}/docs/releases/v1.021.md" ]] \
-	&& good "v1.021 release notes" || bad "missing docs/releases/v1.021.md"
-grep -qF 'webos-1.021-Ashen-amd64.iso' "${WEBOS_ROOT}/docs/releases/v1.021.md" \
-	&& good "v1.021 asset names" || bad "v1.021 notes have wrong asset names"
+[[ -f "${WEBOS_ROOT}/docs/releases/v1.03.md" ]] \
+	&& good "v1.03 release notes" || bad "missing docs/releases/v1.03.md"
+grep -qF 'webos-1.03-Ashen-amd64.iso' "${WEBOS_ROOT}/docs/releases/v1.03.md" \
+	&& good "v1.03 asset names" || bad "v1.03 notes have wrong asset names"
 
 # 10. power widget in both profiles, with safe mono migration
 WAYBAR_DIR="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files"
