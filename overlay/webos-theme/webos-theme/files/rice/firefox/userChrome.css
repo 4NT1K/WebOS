@@ -3,9 +3,9 @@
 
 /* ---- SETTINGS (fully quit Firefox to apply changes) ---- */
 html|html {
-  --a: .35;          /* toolbar, tabs, address bar opacity */
-  --content: .45;    /* page area tint */
-  --solid: .6;       /* focused address bar + findbar */
+  --a: .28;          /* toolbar, tabs, address bar opacity */
+  --content: .38;    /* page area tint */
+  --solid: .5;       /* focused address bar + findbar */
   --t: 20 20 26;     /* tint colour (also update the sidebar hover at the bottom) */
 
   --f: rgb(var(--t) / calc(var(--a) + .22));
@@ -97,5 +97,5 @@ html|sidebar-main {
 
 /* Hover colour must be a literal: keep in step with --t and --solid by hand */
 html|sidebar-main:hover {
-  background: rgb(20 20 26 / .6) !important;
+  background: rgb(20 20 26 / .5) !important;
 }

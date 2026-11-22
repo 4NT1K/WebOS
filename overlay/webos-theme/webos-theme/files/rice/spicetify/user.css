@@ -1,15 +1,15 @@
 /* WebOS transparent Spotify — matches the Firefox/terminal tint (20,20,26).
    Applied via Spicetify theme `user.css`. */
 :root, html, body {
-  --background-base: rgba(20, 20, 26, .55) !important;
-  --background-press: rgba(20, 20, 26, .72) !important;
-  --background-elevated-base: rgba(20, 20, 26, .65) !important;
-  --background-elevated-highlight: rgba(232, 232, 232, .10) !important;
+  --background-base: rgba(20, 20, 26, .45) !important;
+  --background-press: rgba(20, 20, 26, .62) !important;
+  --background-elevated-base: rgba(20, 20, 26, .55) !important;
+  --background-elevated-highlight: rgba(232, 232, 232, .08) !important;
   --text-base: #D8D8D8 !important;
   --text-subdued: #7A7A7A !important;
   --text-bright-accent: #E8E8E8 !important;
   --essential-base: #E8E8E8 !important;
-  --decorative-subdued: rgba(232, 232, 232, .12) !important;
+  --decorative-subdued: rgba(232, 232, 232, .10) !important;
 }
 .Root__globalNav, .Root__main-view, .Root__right-sidebar,
 .main-view-container, .main-view-container__scroll-node,
@@ -21,7 +21,7 @@
   background-color: transparent !important;
   box-shadow: none !important;
 }
-.main-root-container { background: rgba(20, 20, 26, .45) !important; }
+.main-root-container { background: rgba(20, 20, 26, .35) !important; }
 .Root__top-bar, .main-topBar-container, .GlobalNav,
 .top-bar, .main-topBar-background {
   background: transparent !important;
