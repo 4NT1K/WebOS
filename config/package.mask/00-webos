@@ -12,6 +12,8 @@ gnome-base/gnome
 gnome-base/gnome-shell
 xfce-base/xfce4-meta
 lxde-base/lxde-meta
+# Keep Spotify 1.3.4 so Spicetify patches are not overwritten.
+>=media-sound/spotify-1.3.5
 # Flatpak is supported on every profile and installed by default.
 # mailutils 3.21 collides with itself under merged-/usr (/bin/mail vs /usr/bin/mail)
 net-mail/mailutils
