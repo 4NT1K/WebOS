@@ -224,7 +224,7 @@ hl.window_rule({ match = { class = "^(firefox|zen|chromium)$" },     opacity = "
 hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "0.97 0.95" })
 -- Electron apps can ignore app-level transparency and still paint an opaque
 -- black surface. Force compositor alpha so wallpaper + blur always show through.
-hl.window_rule({ match = { class = "^(vesktop|discord)$" }, opacity = "0.95 0.92" })
+hl.window_rule({ match = { class = "^(vesktop|discord)$" }, opacity = "0.88 0.84" })
 hl.window_rule({ match = { class = "^(spotify)$" },          opacity = "0.95 0.92" })
 
 -- Utilities should not be transparent at all.
