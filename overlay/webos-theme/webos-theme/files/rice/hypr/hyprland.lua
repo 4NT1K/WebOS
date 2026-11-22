@@ -202,10 +202,11 @@ hl.curve("linear",   { type = "bezier", points = { {0.00, 0.00}, {1.00, 1.00} } 
 hl.animation({ leaf = "windows",       enabled = true, speed = 5,  bezier = "overshot", style = "slide" })
 hl.animation({ leaf = "windowsIn",     enabled = true, speed = 5,  bezier = "overshot", style = "popin 92%" })
 hl.animation({ leaf = "windowsOut",    enabled = true, speed = 4,  bezier = "smooth",   style = "popin 94%" })
--- `windowsMove` inherits the `windows` slide style; `fade` is not a valid
--- style there and was silently rejected, leaving windows visibly dragging
--- between workspaces. Disable it so windows snap out with the workspace.
-hl.animation({ leaf = "windowsMove",   enabled = false })
+-- Animate geometry changes such as toggling a window to floating.
+-- `fade` is not a valid style here; `slide` is. Workspace switches crossfade
+-- (see the workspaces leaves below), so they no longer drag windows across
+-- the screen the way they did when workspaces slid.
+hl.animation({ leaf = "windowsMove",   enabled = true, speed = 5,  bezier = "smooth",   style = "slide" })
 hl.animation({ leaf = "border",        enabled = true, speed = 6,  bezier = "smooth" })
 hl.animation({ leaf = "borderangle",   enabled = true, speed = 30, bezier = "linear",   style = "loop" })
 hl.animation({ leaf = "fade",          enabled = true, speed = 4,  bezier = "soft" })
