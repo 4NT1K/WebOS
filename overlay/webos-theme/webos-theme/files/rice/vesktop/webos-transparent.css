@@ -1,15 +1,15 @@
 /* WebOS transparent Discord (Vesktop) — matches Firefox/Spotify tint. */
 :root {
-  --background-primary: rgba(20, 20, 26, .28) !important;
-  --background-secondary: rgba(20, 20, 26, .22) !important;
-  --background-secondary-alt: rgba(20, 20, 26, .18) !important;
-  --background-tertiary: rgba(20, 20, 26, .18) !important;
-  --background-accent: rgba(232, 232, 232, .12) !important;
-  --background-floating: rgba(20, 20, 26, .55) !important;
-  --background-modifier-hover: rgba(232, 232, 232, .08) !important;
-  --background-modifier-active: rgba(232, 232, 232, .12) !important;
-  --background-modifier-selected: rgba(232, 232, 232, .16) !important;
-  --channeltextarea-background: rgba(20, 20, 26, .28) !important;
+  --background-primary: rgba(20, 20, 26, .10) !important;
+  --background-secondary: rgba(20, 20, 26, .8) !important;
+  --background-secondary-alt: rgba(20, 20, 26, .6) !important;
+  --background-tertiary: rgba(20, 20, 26, .6) !important;
+  --background-accent: rgba(232, 232, 232, .06) !important;
+  --background-floating: rgba(20, 20, 26, .19) !important;
+  --background-modifier-hover: rgba(232, 232, 232, .05) !important;
+  --background-modifier-active: rgba(232, 232, 232, .06) !important;
+  --background-modifier-selected: rgba(232, 232, 232, .08) !important;
+  --channeltextarea-background: rgba(20, 20, 26, .10) !important;
   --text-normal: #D8D8D8 !important;
   --text-muted: #7A7A7A !important;
   --header-primary: #E8E8E8 !important;
@@ -18,7 +18,7 @@
   --interactive-hover: #E8E8E8 !important;
   --interactive-muted: #4A4A4A !important;
 }
-[class*="app__"], [class*="layerContainer"], [class*="layers"],
+html, body, #app-container, .appMount, [class*="app__"], [class*="layerContainer"], [class*="layers"],
 [class*="containerDefault"], [class*="sidebar"], [class*="chat__"],
 [class*="content__"], [class*="scroller"], [class*="titleBar"],
 [class*="topBar"], [class*="toolbar"], [class*="memberList"],
@@ -29,5 +29,5 @@
   box-shadow: none !important;
 }
 [class*="modal__"], [class*="popout"], [class*="contextMenu"] {
-  background-color: rgba(20, 20, 26, .55) !important;
+  background-color: rgba(20, 20, 26, .19) !important;
 }
