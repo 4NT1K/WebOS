@@ -7,10 +7,12 @@ Modes:
   --run-hidden     internal: run the daemon with the window hidden
   --run-visible    internal: run the daemon with the window visible
 
-Six progress bars show CPU, GPU, VRAM, RAM, DISK and TEMP, followed by one
-row per CPU core ("c0   2% 53C") with its usage and temperature. RAM shows
-actual used/total capacity rather than only a percentage. GPU/VRAM use
-nvidia-smi when it is present; without it those rows read "n/a".
+Six progress bars show CPU, GPU, VRAM, RAM, DISK and TEMP, followed by a
+CPU chip: dynamic banks of core boxes ("c0  2%") with live usage, Cairo pin
+strips, and a centre badge with the hottest package temperature. The number
+of banks and boxes adapts to every CPU. RAM shows actual used/total capacity
+rather than only a percentage. GPU/VRAM use nvidia-smi when it is present;
+without it those rows read "n/a".
 """
 
 import atexit
@@ -342,6 +344,17 @@ def temp_fraction(temp_c):
     return clamp(temp_c / 100.0)
 
 
+def heat_state(temp_c):
+    """Grey below 55 °C, amber from 55 °C, red from 75 °C."""
+    if temp_c is None:
+        return "cool"
+    if temp_c >= 75:
+        return "hot"
+    if temp_c >= 55:
+        return "warm"
+    return "cool"
+
+
 # ---------------------------------------------------------------------------
 # GTK overlay
 # ---------------------------------------------------------------------------
@@ -369,7 +382,7 @@ def run_app(visible):
     write_pidfile()
     atexit.register(remove_pidfile)
 
-    CSS = b"""
+    CSS = """
     #webos-stats-catcher, #webos-stats-catcher-area {
         background-color: transparent;
     }
@@ -393,10 +406,42 @@ def run_app(visible):
         font: 11px "JetBrains Mono", "DejaVu Sans Mono", monospace;
         color: #D8D8D8;
     }
+    /* CPU chip: grey under 55 °C, amber 55–75 °C, red at 75 °C and up. */
+    #chip-frame {
+        border: 1px solid rgba(232, 232, 232, 0.35);
+        border-radius: 8px;
+        padding: 4px;
+    }
+    #chip-frame.warm { border-color: rgba(251, 191, 36, 0.85); }
+    #chip-frame.hot  { border-color: rgba(248, 113, 113, 0.95); }
+    #chip-core {
+        min-width: 26px;
+        min-height: 24px;
+        border: 1px solid rgba(232, 232, 232, 0.28);
+        border-radius: 4px;
+        color: #D8D8D8;
+        font: 11px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+    }
+    #chip-core.warm {
+        border-color: rgba(251, 191, 36, 0.85);
+        color: #FBBF24;
+    }
+    #chip-core.hot {
+        border-color: rgba(248, 113, 113, 0.95);
+        color: #F87171;
+    }
+    #chip-temp {
+        min-width: 70px;
+        color: #E8E8E8;
+        font: 13px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+    }
+    #chip-temp.warm { color: #FBBF24; }
+    #chip-temp.hot  { color: #F87171; }
+    #chip-pins { min-height: 8px; }
     """
 
     provider = Gtk.CssProvider()
-    provider.load_from_data(CSS)
+    provider.load_from_data(CSS.encode("utf-8"))
     Gtk.StyleContext.add_provider_for_screen(
         Gdk.Screen.get_default(), provider, Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
@@ -454,7 +499,19 @@ def run_app(visible):
     window.set_skip_taskbar_hint(True)
     window.set_skip_pager_hint(True)
     core_ids = read_core_ids()
-    window.set_default_size(250, 40 + 26 * (len(LABELS) + len(core_ids)))
+    # Two banks by default; only wide CPUs need more. Every logical CPU gets
+    # exactly one box, so an 18-core chip shows 18 boxes (two banks of nine).
+    bank_count = min(len(core_ids), max(2, (len(core_ids) + 15) // 16)) if core_ids else 1
+    base, extra = divmod(len(core_ids), bank_count)
+    banks, start = [], 0
+    for index in range(bank_count):
+        size = base + (1 if index < extra else 0)
+        banks.append(core_ids[start:start + size])
+        start += size
+    columns = max((len(bank) for bank in banks), default=0)
+    win_width = max(280, columns * 28 + 96)
+    win_height = 48 + 26 * len(LABELS) + 34 + 40 * len(banks) + 22
+    window.set_default_size(win_width, win_height)
     window.set_app_paintable(True)
     if rgba_visual is not None:
         window.set_visual(rgba_visual)
@@ -486,14 +543,64 @@ def run_app(visible):
         card.pack_start(bar, False, False, 0)
         bars[label] = bar
 
-    core_bars = {}
-    for core in core_ids:
-        bar = Gtk.ProgressBar()
-        bar.set_show_text(True)
-        bar.set_text("c%d   n/a" % core)
-        bar.set_fraction(0.0)
-        card.pack_start(bar, False, False, 0)
-        core_bars[core] = bar
+    heat = ["cool"]
+    pin_area = []
+
+    def draw_pins(area, cr):
+        width = float(area.get_allocated_width())
+        height = float(area.get_allocated_height())
+        color = {
+            "cool": (0.75, 0.75, 0.75, 0.85),
+            "warm": (0.98, 0.75, 0.14, 0.90),
+            "hot": (0.97, 0.44, 0.44, 0.95),
+        }[heat[0]]
+        cr.set_source_rgba(*color)
+        count = max(columns + 1, 2)
+        for index in range(count):
+            x = 2 + index * (width - 4) / (count - 1)
+            cr.rectangle(x - 1.5, 0, 3, height)
+        cr.fill()
+
+    chip = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+    chip.set_name("chip-frame")
+    card.pack_start(chip, False, False, 2)
+
+    pins_top = Gtk.DrawingArea()
+    pins_top.set_name("chip-pins")
+    pins_top.connect("draw", draw_pins)
+    chip.pack_start(pins_top, False, False, 0)
+
+    chip_body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    chip_body.set_homogeneous(False)
+    chip.pack_start(chip_body, False, False, 0)
+
+    core_labels = {}
+    temp_label = Gtk.Label()
+    temp_label.set_name("chip-temp")
+    temp_label.set_markup("<small>PKG TEMP</small>\n<b>n/a</b>")
+
+    for index, bank in enumerate(banks):
+        if index == len(banks) // 2:
+            chip_body.pack_start(temp_label, False, False, 4)
+        grid = Gtk.Grid()
+        grid.set_column_spacing(3)
+        grid.set_row_spacing(3)
+        for column, core in enumerate(bank):
+            label = Gtk.Label()
+            label.set_name("chip-core")
+            label.set_justify(Gtk.Justification.CENTER)
+            label.set_markup("<small>c%d</small>\n<b>n/a</b>" % core)
+            grid.attach(label, column, 0, 1, 1)
+            core_labels[core] = label
+        chip_body.pack_start(grid, False, False, 0)
+    if len(banks) // 2 >= len(banks):
+        chip_body.pack_start(temp_label, False, False, 4)
+
+    pins_bottom = Gtk.DrawingArea()
+    pins_bottom.set_name("chip-pins")
+    pins_bottom.connect("draw", draw_pins)
+    chip.pack_start(pins_bottom, False, False, 0)
+    pin_area.extend([pins_top, pins_bottom])
 
     cpu_previous = [read_cpu()]
     cpu_previous_cores = {core: read_cpu(core) for core in core_ids}
@@ -535,24 +642,35 @@ def run_app(visible):
                     suffix = "%.1fG used / %.1fG" % (ram_used, ram_total)
                 bar.set_text("%s   %s" % (label, suffix))
 
-        core_temps = core_temperatures(core_ids, temp_c)
         for core in core_ids:
             current_core = read_cpu(core)
             usage = cpu_fraction(cpu_previous_cores.get(core), current_core)
             if current_core:
                 cpu_previous_cores[core] = current_core
-            core_temp = core_temps.get(core)
-            temp_text = "%dC" % int(round(core_temp)) if core_temp is not None else "n/a"
-            bar = core_bars[core]
-            bar.set_fraction(usage)
-            bar.set_text("c%d   %d%% %s" % (core, round(usage * 100), temp_text))
+            label = core_labels[core]
+            label.set_markup("<small>c%d</small>\n<b>%d%%</b>" % (core, round(usage * 100)))
+
+        temp_text = "%d°C" % int(round(temp_c)) if temp_c is not None else "n/a"
+        temp_label.set_markup("<small>PKG TEMP</small>\n<b>%s</b>" % temp_text)
+
+        state = heat_state(temp_c)
+        if state != heat[0]:
+            heat[0] = state
+            for widget in [chip, temp_label, *core_labels.values()]:
+                context = widget.get_style_context()
+                context.remove_class("cool")
+                context.remove_class("warm")
+                context.remove_class("hot")
+                context.add_class(state)
+            for area in pin_area:
+                area.queue_draw()
         return True
 
     def place_fallback():
         """Top-right placement when gtk-layer-shell is unavailable."""
         if GtkLayerShell is not None or fallback_geometry is None:
             return
-        x = fallback_geometry.x + fallback_geometry.width - 250 - 12
+        x = fallback_geometry.x + fallback_geometry.width - win_width - 12
         y = fallback_geometry.y + 42
         hyprctl("dispatch", "hl.dsp.window.move({ x = %d, y = %d })" % (x, y))
 
