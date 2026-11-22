@@ -1,5 +1,8 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
+//
+// WebOS Lock — SDDM greeter styled like the WebOS hyprlock screen.
+//
+import QtQuick 2.0
+import SddmComponents 2.0
 
 Rectangle {
     id: root
@@ -18,7 +21,8 @@ Rectangle {
         opacity: 0.72
     }
 
-    // Session selector — top left.
+    // Session selector — top left. Uses SDDM's own ComboBox, as shipped
+    // themes do, so keyboard Up/Down/Enter works without a mouse.
     ComboBox {
         id: sessionBox
         anchors.top: parent.top
@@ -26,25 +30,20 @@ Rectangle {
         anchors.margins: 22
         width: 168
         height: 34
+
         model: sessionModel
-        currentIndex: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
+        index: sessionModel.lastIndex >= 0 ? sessionModel.lastIndex : 0
+
+        color: "#1a1a1a"
+        borderColor: "#3a3a3a"
+        focusColor: "#d8d8d8"
+        hoverColor: "#7a7a7a"
+        menuColor: "#141414"
+        textColor: "#d8d8d8"
         font.family: "Inter"
         font.pixelSize: 12
-        background: Rectangle {
-            color: "#1a1a1a"
-            border.color: "#3a3a3a"
-            border.width: 1
-            radius: 8
-        }
-        contentItem: Text {
-            text: sessionBox.displayText
-            color: "#d8d8d8"
-            font: sessionBox.font
-            verticalAlignment: Text.AlignVCenter
-            leftPadding: 10
-            rightPadding: 22
-            elide: Text.ElideRight
-        }
+        arrowIcon: Qt.resolvedUrl("arrow.svg")
+        arrowColor: "#d8d8d8"
     }
 
     // Clock — upper centre.
@@ -108,36 +107,51 @@ Rectangle {
         font.pixelSize: 15
     }
 
-    // Password field — matches hyprlock's rounded outlined box.
-    TextField {
-        id: password
+    // Password field — hyprlock's rounded outlined box, plain TextInput
+    // so no QtQuick.Controls dependency in the greeter.
+    Rectangle {
+        id: pwBox
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
         anchors.topMargin: parent.height * 0.66
         width: 320
         height: 52
-        echoMode: TextInput.Password
-        font.family: "JetBrains Mono Nerd Font"
-        font.pixelSize: 13
-        color: "#d8d8d8"
-        placeholderText: "enter password…"
-        verticalAlignment: TextInput.AlignVCenter
-        leftPadding: 16
-        rightPadding: 16
-        background: Rectangle {
-            color: "#000000"
-            opacity: 0.92
-            border.color: Qt.rgba(0.91, 0.91, 0.91, 0.20)
-            border.width: 1
-            radius: 14
+        color: "#000000"
+        opacity: 0.92
+        border.color: "#3a3a3a"
+        border.width: 1
+        radius: 14
+
+        Text {
+            anchors.fill: parent
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            verticalAlignment: Text.AlignVCenter
+            text: "enter password…"
+            color: "#7a7a7a"
+            font.family: "JetBrains Mono Nerd Font"
+            font.pixelSize: 13
+            visible: password.text.length === 0
         }
-        onAccepted: attemptLogin()
+
+        TextInput {
+            id: password
+            anchors.fill: parent
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
+            verticalAlignment: TextInput.AlignVCenter
+            echoMode: TextInput.Password
+            font.family: "JetBrains Mono Nerd Font"
+            font.pixelSize: 13
+            color: "#d8d8d8"
+            onAccepted: attemptLogin()
+        }
     }
 
     Text {
         id: failText
         anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: password.bottom
+        anchors.top: pwBox.bottom
         anchors.topMargin: 10
         text: ""
         color: "#f87171"
@@ -162,7 +176,7 @@ Rectangle {
         var user = userModel.lastUser
         if (!user && sddm.users.length > 0)
             user = sddm.users[0]
-        sddm.login(user, password.text, sessionBox.currentIndex)
+        sddm.login(user, password.text, sessionBox.index)
     }
 
     Connections {
