@@ -7,9 +7,11 @@
 # no native image/kitty/sixel support, so when chafa is absent we skip that
 # config and fall back to the plain-text cobweb in webos.txt instead.
 #
-# The card is wrapped in a rounded box ("box bg"): a subtle dark fill and a
-# 1-cell border around the text, sized from the widest visible line so ANSI
-# colours and the braille logo do not push the border out of alignment.
+# The card is wrapped in a thin 1-cell border, sized from the widest visible
+# line so ANSI colours and the braille logo cannot push it out of alignment.
+# Every line starts with an explicit reset: fastfetch omits the leading reset
+# on its first and last modules (Display/Date), which otherwise inherited the
+# wrapper's fill colour and rendered opaque while the rest stayed transparent.
 set -u
 export LANG="${LANG:-C.UTF-8}"
 export LC_ALL="${LANG:-C.UTF-8}"
@@ -48,7 +50,7 @@ card() {
 		case "$vis" in ''|*[!0-9]*) vis=0 ;; esac
 		pad=$((width - vis))
 		[ "$pad" -lt 0 ] && pad=0
-		printf '\033[38;2;140;140;140m│\033[0m \033[48;2;18;18;18m%s%*s\033[0m \033[38;2;140;140;140m│\033[0m\n' \
+		printf '\033[38;2;140;140;140m│\033[0m \033[0m%s%*s\033[0m \033[38;2;140;140;140m│\033[0m\n' \
 			"$line" "$pad" ''
 	done
 	printf '\033[38;2;140;140;140m╰%s╯\033[0m\n' "$bar"
