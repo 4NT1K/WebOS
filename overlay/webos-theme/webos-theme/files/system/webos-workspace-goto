@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# Activate a workspace by number, using Hyprland 0.57 Lua dispatcher.
-n="$1"
-[[ "$n" =~ ^[0-9]+$ ]] || exit 1
-(( n >= 1 && n <= 5 )) || exit 1
-hyprctl eval "hl.dispatch(hl.dsp.focus({ workspace = $n }))" >/dev/null 2>&1

@@ -96,12 +96,16 @@ elif command -v waybar >/dev/null 2>&1; then
 	st="$HOME/.config/waybar/style.css"
 	[[ -f "$st" ]] || st=/usr/share/webos/rice/waybar/style.css
 	[[ -f "$st" ]] || st=/etc/xdg/waybar/style.css
+	# Waybar 0.15 sends legacy IPC dispatches that Hyprland 0.57 rejects.
+	shim=/usr/lib/webos/waybar-ipc-shim.so
+	[[ -f "$shim" ]] && export LD_PRELOAD="$shim${LD_PRELOAD:+:$LD_PRELOAD}"
 	for _ in 1 2 3 4 5; do
 		waybar -c "$cfg" -s "$st" >>"$log" 2>&1 &
 		sleep 2
 		running waybar && break
 		sleep 1
 	done
+	unset LD_PRELOAD
 	running waybar || note "waybar did not stay running (see $log)"
 fi
 if running mako; then

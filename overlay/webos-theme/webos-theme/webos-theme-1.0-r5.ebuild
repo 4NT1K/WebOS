@@ -1,5 +1,7 @@
 EAPI=8
 
+inherit toolchain-funcs
+
 DESCRIPTION="WebOS rice — the black/transparent Hyprland theme, dotfiles and session glue"
 HOMEPAGE="https://github.com/4NT1K/WebOS/"
 SRC_URI=""
@@ -156,8 +158,12 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-chafa-logo webos-chafa-logo
 	newexe "${FILESDIR}"/system/webos-music webos-music
 	newexe "${FILESDIR}"/system/webos-workspace-scroll webos-workspace-scroll
-	newexe "${FILESDIR}"/system/webos-workspace-goto webos-workspace-goto
-	newexe "${FILESDIR}"/system/webos-workspace-state webos-workspace-state
+	# Waybar IPC shim: rewrites legacy workspace dispatches for Hyprland 0.57.
+	insinto /usr/lib/webos
+	newins "${FILESDIR}"/system/waybar-ipc-shim.c waybar-ipc-shim.c
+	$(tc-getCC) -shared -fPIC -o "${D}"/usr/lib/webos/waybar-ipc-shim.so \
+		"${D}"/usr/lib/webos/waybar-ipc-shim.c -ldl || die "failed to build waybar IPC shim"
+	rm -f "${D}"/usr/lib/webos/waybar-ipc-shim.c
 	newexe "${FILESDIR}"/system/webos-refresh webos-refresh
 	newexe "${FILESDIR}"/system/webos-stats webos-stats
 
