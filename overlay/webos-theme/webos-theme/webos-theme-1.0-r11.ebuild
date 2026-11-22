@@ -174,6 +174,8 @@ src_install() {
 	doins "${FILESDIR}"/rice/firefox/user.js
 	insinto /usr/share/webos/rice/spotify
 	doins "${FILESDIR}"/rice/spotify/spotify
+	insinto /usr/share/webos/rice/applications
+	doins "${FILESDIR}"/rice/applications/com.github.wwmm.easyeffects.desktop
 	insinto /usr/share/webos/rice/vesktop
 	doins "${FILESDIR}"/rice/vesktop/vesktop
 	doins "${FILESDIR}"/rice/vesktop/Acrylic-Harmony.theme.css

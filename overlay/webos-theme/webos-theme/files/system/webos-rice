@@ -238,6 +238,10 @@ apply_web_themes() {
 			(( dry )) || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pref"
 		fi
 	done
+	if [[ -d "$home/.local/share/applications" ]]; then
+		install_file "${RICE_SRC}/applications/com.github.wwmm.easyeffects.desktop" \
+			"$home/.local/share/applications/com.github.wwmm.easyeffects.desktop" "$mf" "$force" "$dry"
+	fi
 	install_file "${RICE_SRC}/spotify/spotify" "$home/.local/bin/spotify" "$mf" "$force" "$dry"
 	install_file "${RICE_SRC}/vesktop/vesktop" "$home/.local/bin/vesktop" "$mf" "$force" "$dry"
 	vs="$home/.config/vesktop/settings/settings.json"
