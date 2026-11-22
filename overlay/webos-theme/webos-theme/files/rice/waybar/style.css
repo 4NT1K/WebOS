@@ -83,7 +83,7 @@ tooltip label {
 }
 
 #workspaces button.empty {
-    color: @faint;
+    color: @dim;
 }
 
 #workspaces button.active {
