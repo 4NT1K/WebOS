@@ -510,8 +510,9 @@ def run_app(visible):
         start += size
     columns = max((len(bank) for bank in banks), default=0)
     win_width = max(280, columns * 28 + 96)
-    win_height = 48 + 26 * len(LABELS) + 34 + 40 * len(banks) + 22
-    window.set_default_size(win_width, win_height)
+    # Let GTK size to the content. A fixed height leaves dead space under the
+    # chip when the CPU has fewer logical cores than the widest layout.
+    window.set_default_size(win_width, -1)
     window.set_app_paintable(True)
     if rgba_visual is not None:
         window.set_visual(rgba_visual)
