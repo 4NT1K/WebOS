@@ -44,6 +44,7 @@ case "$TARGET" in
 		need slurp
 		# Translucent WebOS dim + a crisp white box so the selection is clear.
 		GEOM="$(slurp -b '#14141a14' -s '#00000000' -c '#e8e8e8ff' -w 2 -d)" || exit 0
+		sleep 0.4
 		grim -g "$GEOM" "$FILE"
 		;;
 	window)

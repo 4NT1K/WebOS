@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# WebOS: launch Spotify with Electron transparency enabled (PATH shim).
+flags=(--enable-transparent-visuals --disable-gpu)
+[[ -n ${WAYLAND_DISPLAY:-} ]] && flags+=(--enable-features=UseOzonePlatform --ozone-platform=wayland)
+exec /usr/sbin/spotify "${flags[@]}" "$@"

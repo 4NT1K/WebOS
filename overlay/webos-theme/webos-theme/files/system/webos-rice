@@ -238,9 +238,11 @@ apply_web_themes() {
 			(( dry )) || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pref"
 		fi
 	done
-	if [[ -d "$home/.config/vesktop/themes" ]]; then
-		install_file "${RICE_SRC}/vesktop/webos-transparent.css" \
-			"$home/.config/vesktop/themes/webos-transparent.css" "$mf" "$force" "$dry"
+	install_file "${RICE_SRC}/spotify/spotify" "$home/.local/bin/spotify" "$mf" "$force" "$dry"
+	vs="$home/.config/vesktop/settings/settings.json"
+	if [[ -f "$vs" ]]; then
+		(( dry )) || sed -i 's/"transparent"[[:space:]]*:[[:space:]]*false/"transparent": true/' "$vs"
+		(( dry )) || sed -i 's/"enabledThemes"[[:space:]]*:[[:space:]]*\[\]/"enabledThemes": ["webos-transparent.css"]/' "$vs"
 	fi
 	ini="$home/.config/spicetify/config-xpui.ini"
 	[[ -f "$ini" ]] || return 0
