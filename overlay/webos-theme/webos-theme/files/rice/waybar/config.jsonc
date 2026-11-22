@@ -26,7 +26,7 @@
     "modules-center": ["mpris"],
     // No network module: the mono bar never displays the LAN IPv4 address.
     // No battery module either (desktop PC); the power menu stays available.
-    "modules-right": ["custom/waypaper", "clock", "tray", "custom/perf", "custom/power"],
+    "modules-right": ["custom/waypaper", "custom/update", "clock", "tray", "custom/perf", "custom/power"],
 
     "hyprland/workspaces": {
         "format": "{name}",

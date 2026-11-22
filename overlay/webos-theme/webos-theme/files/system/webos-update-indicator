@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# webos-update-indicator — Waybar update badge for WebOS.
+# Outputs JSON for Waybar: an icon when updates are available, empty otherwise.
+set -u
+
+CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/webos"
+CACHE="$CACHE_DIR/update-indicator.count"
+LOCK="$CACHE_DIR/update-indicator.lock"
+MAX_AGE="${WEBOS_UPDATE_CHECK_AGE:-1800}"
+
+count_updates() {
+	local n flat
+	n="$(emerge --pretend --quiet --getbinpkg --binpkg-changed-deps=n \
+		--binpkg-respect-use=y --update --deep --newuse --backtrack=100 @world 2>/dev/null |
+		grep -cE '^\[(ebuild|binary)' || printf '0')"
+	flat="$(flatpak remote-ls --updates --user 2>/dev/null | grep -c . || printf '0')"
+	printf '%s\n' "$(( ${n%%[[:space:]]*} + ${flat%%[[:space:]]*} ))"
+}
+
+refresh() {
+	mkdir -p "$CACHE_DIR"
+	(
+		exec 9>"$LOCK"
+		flock -n 9 || exit 0
+		count_updates >"$CACHE"
+	) >/dev/null 2>&1 &
+}
+
+case "${1:---check}" in
+	--check)
+		n=0
+		age=$MAX_AGE
+		if [[ -r "$CACHE" ]]; then
+			read -r n <"$CACHE" || n=0
+			ts="$(stat -c %Y "$CACHE" 2>/dev/null || printf '0')"
+			age=$(( $(date +%s) - ts ))
+		fi
+		[[ "$n" =~ ^[0-9]+$ ]] || n=0
+		if (( age >= MAX_AGE )); then refresh; fi
+		if (( n > 0 )); then
+			printf '{"text":"⟳","tooltip":"%s update(s) available — click to run webos-update","class":"available"}\n' "$n"
+		else
+			printf '{"text":"","tooltip":"No updates available","class":"none"}\n'
+		fi
+		;;
+	--update)
+		setsid kitty --title 'WebOS Update' -e sudo webos-update --fast --buildpkg >/dev/null 2>&1 &
+		;;
+	*)
+		printf '{"text":"","tooltip":"","class":"none"}\n'
+		;;
+esac
