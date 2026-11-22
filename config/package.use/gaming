@@ -22,6 +22,9 @@ games-util/mangohud X wayland
 # NVIDIA users: comment out VIDEO_CARDS="nvidia" in make.conf if not needed.
 x11-drivers/nvidia-drivers tools
 
-# Plasma 6.32's libplasma/polkit-kde-agent require this USE flag on kconfig.
-# Set it here so `webos-update --newuse` does not need to autounmask it later.
->=kde-frameworks/kconfig-6.32.0 qml
+# Plasma 6.31+ needs these USE flags. Without them webos-update reports
+# dependency conflicts on qtbase, qt5compat, kconfig and libdrm.
+dev-qt/qtbase libproxy
+dev-qt/qt5compat qml
+kde-frameworks/kconfig qml
+x11-libs/libdrm video_cards_radeon
