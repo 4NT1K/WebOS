@@ -1,0 +1,7 @@
+{
+  "name": "WebOS Crimson",
+  "accent": "#ee0001",
+  "rgb": [238, 0, 1],
+  "source": "wallhaven-qdgmr5_2560x1440.png",
+  "description": "Signature crimson derived from the default WebOS wallpaper. The black base and grey text ramp stay fixed so CJK glyphs and kaomoji remain readable."
+}

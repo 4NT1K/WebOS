@@ -227,6 +227,26 @@ def refresh_session():
 
 def main(argv):
     args = [arg for arg in argv if not arg.startswith("--quiet")]
+
+    # --apply HEX|FILE.json seeds a colourway for another account without
+    # touching the wallpaper or reloading anyone's session.
+    if "--apply" in args:
+        index = args.index("--apply")
+        value = args[index + 1] if len(args) > index + 1 else ""
+        source = "shared WebOS colourway"
+        if value.endswith(".json") and Path(value).is_file():
+            data = json.loads(Path(value).read_text(encoding="utf-8"))
+            value = data.get("accent", "")
+            source = data.get("source", source)
+        value = value.strip().lstrip("#")
+        if not re.fullmatch(r"[0-9a-fA-F]{6}", value):
+            note("--apply needs a RRGGBB hex or a JSON accent file")
+            return 2
+        rgb = tuple(int(value[i:i + 2], 16) for i in (0, 2, 4))
+        accent = apply_accent(rgb, source)
+        note("applied shared accent %s" % accent)
+        return 0
+
     if "--reset" in args:
         rgb = (232, 232, 232)
         source = "stock"

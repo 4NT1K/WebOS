@@ -35,6 +35,17 @@ WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look
 
 > **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.02 without adding X11 session packages.
 
+## Colourways (dynamic accents)
+
+The Deep Black base and grey text ramp never change, so CJK glyphs and kaomoji stay readable on every wallpaper. Only accents follow the colourway:
+
+- **Automatic:** waypaper runs `webos-accent "$wallpaper"` after each wallpaper change. It extracts a bright, saturated colour and retints Hyprland borders, waybar, GTK 3/4, kitty, wofi, Spicetify and Vesktop.
+- **Signature crimson:** `webos-accent --apply /usr/share/webos/colourways/webos-crimson.json`
+- **Any colour:** `webos-accent --apply '#ee0001'`
+- **Back to Ashen soft-white:** `webos-accent --reset`
+
+Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install to `/usr/share/webos/colourways/`.
+
 ## Key features
 
 - **Two desktop experiences:** Hyprland (Wayland) by default, with regular Plasma available through the opt-in profile.
