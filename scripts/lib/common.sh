@@ -36,7 +36,7 @@ load_branding
 : "${WEBOS_JOBS:=$(nproc 2>/dev/null || echo 4)}"
 : "${WEBOS_BUILD_DIR:=${WEBOS_ROOT}/build}"
 : "${WEBOS_MIRROR:=https://distfiles.gentoo.org}"
-: "${WEBOS_PORTAGE_MIRROR:=https://snapshots.gentoo.org}"
+: "${WEBOS_PORTAGE_MIRROR:=https://distfiles.gentoo.org}"
 : "${WEBOS_LOG_LEVEL:=info}"
 
 export WEBOS_ARCH WEBOS_JOBS WEBOS_BUILD_DIR WEBOS_STAGE3_VARIANT
@@ -217,13 +217,22 @@ resolve_stage3_url() {
 	printf '%s/releases/%s/autobuilds/%s\n' "${WEBOS_MIRROR}" "${STAGE3_ARCH}" "${line}"
 }
 
-# fetch_portage_snapshot — newest portage snapshot URL.
+# resolve_portage_url — newest portage snapshot URL.
+# Gentoo retired snapshots.gentoo.org; snapshots now live under
+# distfiles.gentoo.org/snapshots/. Try the modern layout first, then the old
+# /latest/ one so custom mirrors on either layout keep working.
 resolve_portage_url() {
-	local latest="${WEBOS_PORTAGE_MIRROR}/latest/"
-	curl --fail --silent --show-error --location "${latest}" \
-		| grep -oE 'portage-[0-9]{8}\.tar\.(xz|zst|bz2|gz)' \
-		| sort -u | tail -n1 \
-		| sed "s|^|${latest}|"
+	local base="${WEBOS_PORTAGE_MIRROR}" dir listing file
+	for dir in "${base}/snapshots/" "${base}/latest/" "${base}/"; do
+		listing="$(curl --fail --silent --show-error --location --max-time 60 "${dir}" 2>/dev/null)" || continue
+		file="$(printf '%s\n' "${listing}" \
+			| grep -oE 'portage-[0-9]{8}\.tar\.(xz|zst|bz2|gz)' \
+			| sort -u | tail -n1)" || file=""
+		[[ -n "${file}" ]] || continue
+		printf '%s\n' "${dir}${file}"
+		return 0
+	done
+	return 1
 }
 
 # ------------------------------------------------------------ iso helpers ----
