@@ -223,6 +223,27 @@ apply_tree() {
 	done
 }
 
+apply_web_themes() {
+	# $1 = home, $2 = force, $3 = dry-run
+	local home="$1" force="$2" dry="$3" mf profile pref theme ini
+	mf="$(manifest_of "$home")"
+	for profile in "$home"/.config/mozilla/firefox/*.default*; do
+		[[ -d "$profile" ]] || continue
+		mkdir -p "$profile/chrome"
+		install_file "${RICE_SRC}/firefox/userChrome.css" "$profile/chrome/userChrome.css" "$mf" "$force" "$dry"
+		install_file "${RICE_SRC}/firefox/userContent.css" "$profile/chrome/userContent.css" "$mf" "$force" "$dry"
+		pref="$profile/prefs.js"
+		if [[ -f "$pref" ]] && ! grep -q 'toolkit.legacyUserProfileCustomizations.stylesheets' "$pref"; then
+			(( dry )) || echo 'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);' >> "$pref"
+		fi
+	done
+	ini="$home/.config/spicetify/config-xpui.ini"
+	[[ -f "$ini" ]] || return 0
+	theme="$(sed -n 's/^current_theme[[:space:]]*=[[:space:]]*//p' "$ini" | head -1)"
+	[[ -n "$theme" ]] || return 0
+	install_file "${RICE_SRC}/spicetify/user.css" "$home/.config/spicetify/Themes/$theme/user.css" "$mf" "$force" "$dry"
+}
+
 apply_home() {
 	# $1 = home, $2 = force, $3 = dry-run
 	local home="$1" force="$2" dry="$3"
@@ -275,6 +296,7 @@ apply_home() {
 	# gtk/plasma defaults live outside the managed tree dirs
 	install_gtk_user "$home" "$force" "$dry"
 	install_plasma_user "$home" "$force" "$dry"
+	apply_web_themes "$home" "$force" "$dry"
 	# When --system runs as root, the state dir and manifest are created by
 	# root. Hand them back to the account that owns the home directory, or
 	# `webos-rice --doctor` cannot read its own manifest as that user.
