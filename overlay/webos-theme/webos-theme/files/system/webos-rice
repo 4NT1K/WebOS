@@ -239,6 +239,7 @@ apply_web_themes() {
 		fi
 	done
 	install_file "${RICE_SRC}/spotify/spotify" "$home/.local/bin/spotify" "$mf" "$force" "$dry"
+	install_file "${RICE_SRC}/vesktop/vesktop" "$home/.local/bin/vesktop" "$mf" "$force" "$dry"
 	vs="$home/.config/vesktop/settings/settings.json"
 	if [[ -d "$home/.config/vesktop/themes" ]]; then
 		install_file "${RICE_SRC}/vesktop/Acrylic-Harmony.theme.css" \

@@ -1,23 +1,31 @@
-/* WebOS clean transparent Spotify — no cards, no boxes. */
+/* WebOS maximum-transparent Spotify — nothing opaque, no boxes. */
 :root {
-  --webos-tint: rgba(20, 20, 26, .08);
+  --webos-glass: rgba(20, 20, 26, .03);
   --text-base: #D8D8D8 !important;
   --text-subdued: #7A7A7A !important;
   --text-bright-accent: #E8E8E8 !important;
   --essential-base: #E8E8E8 !important;
-}
-.encore-dark-theme { --background-base: transparent !important; }
-:root, .encore-layout-themes, .encore-dark-theme .encore-announcement-set,
-.encore-bright-accent-set {
-  --background-highlight: var(--webos-tint) !important;
-  --background-press: var(--webos-tint) !important;
+  --background-base: transparent !important;
+  --background-highlight: var(--webos-glass) !important;
+  --background-press: var(--webos-glass) !important;
   --background-elevated-base: transparent !important;
-  --background-elevated-highlight: var(--webos-tint) !important;
-  --background-elevated-press: var(--webos-tint) !important;
+  --background-elevated-highlight: var(--webos-glass) !important;
+  --background-elevated-press: var(--webos-glass) !important;
   --background-tinted-base: transparent !important;
-  --background-tinted-highlight: var(--webos-tint) !important;
-  --background-tinted-press: var(--webos-tint) !important;
+  --background-tinted-highlight: var(--webos-glass) !important;
+  --background-tinted-press: var(--webos-glass) !important;
   --spice-card: transparent !important;
+}
+.encore-dark-theme,
+.encore-layout-themes,
+.encore-dark-theme .encore-announcement-set,
+.encore-bright-accent-set {
+  --background-base: transparent !important;
+  --background-highlight: var(--webos-glass) !important;
+  --background-press: var(--webos-glass) !important;
+  --background-elevated-base: transparent !important;
+  --background-elevated-highlight: var(--webos-glass) !important;
+  --background-tinted-base: transparent !important;
 }
 html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
 .main-root-container, .Root__globalNav, .Root__main-view,
@@ -32,13 +40,14 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
   background-color: transparent !important;
   box-shadow: none !important;
 }
-[class*="card"], [class*="Card"], [class*="box"], [class*="Box"],
-[class*="container"], [class*="Container"], [class*="panel"], [class*="Panel"],
-[class*="section"], [class*="Section"], [class*="background"],
-[class*="Background"], [class*="header"], [class*="Header"] {
-  background: transparent !important;
+*:not(img):not(svg):not(video):not(canvas) {
   background-color: transparent !important;
   box-shadow: none !important;
-  border-color: transparent !important;
   backdrop-filter: none !important;
+}
+[class*="background"], [class*="Background"], [class*="card"],
+[class*="Card"], [class*="box"], [class*="Box"], [class*="container"],
+[class*="Container"], [class*="panel"], [class*="Panel"] {
+  background: transparent !important;
+  border-color: transparent !important;
 }
