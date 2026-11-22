@@ -2,13 +2,21 @@
 """Continuous Waybar module: a flat, cava-style Spotify spectrum.
 
 Waybar 0.15 in WebOS has no built-in cava module, so this helper drives cava
-directly with its raw ASCII output and prints one JSON line per frame. The
-input source is the Spotify PipeWire node only; osu!/Firefox are never read.
+directly with its raw ASCII output and prints one JSON line per frame.
+
+Only the Spotify PipeWire stream is captured. cava's `target.object` is a
+*preference*, not a restriction: if that node is missing it silently links to
+the default capture source (the microphone). So before emitting anything this
+helper resolves the live Spotify node, and a periodic watchdog checks cava's
+real PipeWire links. If the source is anything but Spotify, cava is stopped
+until the Spotify stream is back. No mic or other app audio ever reaches the
+bar.
 """
 
 import atexit
 import json
 import os
+import select
 import signal
 import subprocess
 import sys
@@ -17,10 +25,12 @@ import time
 
 BARS = 12
 GLYPHS = "▁▂▃▄▅▆▇█"
+SILENT = {"text": "", "class": "silent"}
 FRAMERATE = 45
 CAVA_FRAMERATE = 90
 EMIT_EVERY = CAVA_FRAMERATE // FRAMERATE
 RESTART_DELAY = 2.0
+CHECK_INTERVAL = 0.5
 
 _runtime = os.environ.get("XDG_RUNTIME_DIR") or os.path.join(
     tempfile.gettempdir(), "webos-" + str(os.getuid())
@@ -36,7 +46,8 @@ framerate = 90
 
 [input]
 method = pipewire
-source = spotify
+# Resolved from the live PipeWire graph, never a fixed default source.
+source = {source}
 
 [output]
 method = raw
@@ -49,7 +60,7 @@ bar_delimiter = 59
 noise_reduction = 90
 monstercat = 1
 waves = 1
-""".format(bars=BARS)
+""".format(bars=BARS, source="{source}")
 
 _child = [None]
 
@@ -66,24 +77,89 @@ def stop_child(*_args):
         raise SystemExit(0)
 
 
-def write_config():
+def write_config(source):
     os.makedirs(_config_dir, mode=0o700, exist_ok=True)
     with open(_config, "w", encoding="utf-8") as handle:
-        handle.write(CONFIG)
+        handle.write(CONFIG.format(source=source))
 
 
-def start_cava():
+def pw_graph():
+    """Return (nodes by id -> props, link props) from pw-dump."""
+    dump = subprocess.check_output(["pw-dump"], text=True, timeout=2)
+    nodes, links = {}, []
+    for obj in json.loads(dump or "[]"):
+        kind = obj.get("type")
+        if kind == "PipeWire:Interface:Node":
+            nodes[obj["id"]] = (obj.get("info") or {}).get("props") or {}
+        elif kind == "PipeWire:Interface:Link":
+            links.append((obj.get("info") or {}).get("props") or {})
+    return nodes, links
+
+
+def spotify_playing():
+    """True only while Spotify reports active playback (not paused/stopped)."""
+    try:
+        status = subprocess.check_output(
+            ["playerctl", "--player=spotify", "status"],
+            text=True, timeout=1, stderr=subprocess.DEVNULL,
+        ).strip().lower()
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return status == "playing"
+
+
+def capture_status():
+    """Return (Spotify node ids -> names, safe-to-capture flag).
+
+    Safe means every cava capture node is fed by Spotify and nothing else.
+    With no cava node yet it is safe to start one, but only against a Spotify
+    stream that actually exists right now.
+    """
+    try:
+        nodes, links = pw_graph()
+    except (OSError, subprocess.SubprocessError, ValueError):
+        return {}, False
+
+    spotify, cava_ids = {}, set()
+    for node_id, props in nodes.items():
+        media_class = str(props.get("media.class") or "")
+        name = str(props.get("node.name") or "")
+        app = str(props.get("application.name") or "").lower()
+        if media_class == "Stream/Output/Audio" and (
+            "spotify" in name.lower() or "spotify" in app
+        ):
+            spotify[node_id] = name or "spotify"
+        if media_class == "Stream/Input/Audio" and name == "cava":
+            cava_ids.add(node_id)
+
+    if not cava_ids:
+        return spotify, True
+
+    linked_to_spotify = False
+    for link in links:
+        if link.get("link.input.node") not in cava_ids:
+            continue
+        if link.get("link.output.node") in spotify:
+            linked_to_spotify = True
+        else:
+            return spotify, False
+    return spotify, linked_to_spotify
+
+
+def start_cava(source):
+    write_config(source)
     return subprocess.Popen(
         ["cava", "-p", _config],
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
-        text=True,
-        bufsize=1,
+        bufsize=0,  # raw fd: select() and readline() share one buffer
     )
 
 
 def frame(line):
     """Convert `0;12;...` into block glyphs of a fixed width."""
+    if isinstance(line, bytes):
+        line = line.decode("utf-8", "replace")
     try:
         values = [int(part.strip())
                   for part in line.strip().strip(";").split(";") if part.strip()]
@@ -92,39 +168,74 @@ def frame(line):
     if not values:
         return None
     values = (values + [0] * BARS)[:BARS]
+    if not any(values):
+        return SILENT  # empty text hides the Waybar module
     text = "".join(
         GLYPHS[min(len(GLYPHS) - 1, max(0, value * len(GLYPHS) // 101))]
         for value in values
     )
-    return {"text": text, "class": "silent" if not any(values) else ""}
+    return {"text": text, "class": ""}
 
 
 def main():
-    write_config()
     atexit.register(stop_child)
     signal.signal(signal.SIGTERM, stop_child)
     signal.signal(signal.SIGINT, stop_child)
 
     seen = 0
+    verified = False
+    last_check = 0.0
     while True:
-        child = start_cava()
-        _child[0] = child
+        now = time.monotonic()
+        if now - last_check >= CHECK_INTERVAL:
+            last_check = now
+            spotify, safe = capture_status()
+            playing = spotify_playing()
+
+            if _child[0] is not None:
+                if not spotify or not safe or not playing:
+                    stop_child()
+                    _child[0] = None
+                else:
+                    # A fresh child must prove its link before any frames show.
+                    verified = True
+
+            if _child[0] is None and spotify and safe and playing:
+                _child[0] = start_cava(next(iter(spotify.values())))
+                verified = False
+
+            if _child[0] is None:
+                verified = False
+                print(json.dumps(SILENT, separators=(",", ":")), flush=True)
+                time.sleep(CHECK_INTERVAL)
+                continue
+
+        child = _child[0]
+        if child.poll() is not None:
+            stop_child()
+            _child[0] = None
+            verified = False
+            continue
+
         try:
-            for line in child.stdout:
-                payload = frame(line)
-                if payload is None:
-                    continue
-                # Frame pacing by count, not wall-clock time: the input stream
-                # is bursty, so a timeout throttle drops to ~30 fps in practice.
-                seen += 1
-                if seen % EMIT_EVERY:
-                    continue
-                print(json.dumps(payload, separators=(",", ":")), flush=True)
+            ready, _, _ = select.select([child.stdout], [], [], 0.1)
         except (OSError, ValueError):
-            pass
-        stop_child()
-        _child[0] = None
-        time.sleep(RESTART_DELAY)
+            ready = []
+        if not ready:
+            continue
+
+        line = child.stdout.readline()
+        if not verified:
+            continue
+        payload = frame(line)
+        if payload is None:
+            continue
+        # Frame pacing by count, not wall-clock time: the input stream
+        # is bursty, so a timeout throttle drops to ~30 fps in practice.
+        seen += 1
+        if seen % EMIT_EVERY:
+            continue
+        print(json.dumps(payload, separators=(",", ":")), flush=True)
 
 
 if __name__ == "__main__":

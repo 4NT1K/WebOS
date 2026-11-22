@@ -457,77 +457,53 @@ class FlatSeekBar:
         return True
 
 
-class FlatFader:
-    """Slim vertical Spotify fader drawn without outlines or glow."""
+class FlatVolumeBar(FlatSeekBar):
+    """Progress-style volume bar that applies changes during the drag.
+
+    Looks and handles like the seek bar (flat horizontal track, drag to
+    preview), except the level is applied continuously - dragging right
+    raises the volume and dragging left lowers it, without waiting for the
+    mouse button to be released.
+    """
+
+    THROTTLE = 0.05  # seconds between pactl calls while dragging (20 Hz)
 
     def __init__(self, area):
         from gi.repository import Gdk
-        self.area = area
-        self.ink = (1.0, 1.0, 1.0)
-        self.value = 0.5
+        super().__init__(area)
+        area.add_events(Gdk.EventMask.SCROLL_MASK)
         self.on_change = None
-        self.dragging = False
-        self.smoothing = False
-        self.last_y = 0.0
-        area.set_events(Gdk.EventMask.BUTTON_PRESS_MASK |
-                        Gdk.EventMask.BUTTON1_MOTION_MASK |
-                        Gdk.EventMask.BUTTON_RELEASE_MASK |
-                        Gdk.EventMask.SCROLL_MASK)
-        area.connect("draw", self.draw)
-        area.connect("button-press-event", self.press)
-        area.connect("motion-notify-event", self.motion)
-        area.connect("button-release-event", self.release)
-        area.connect("scroll-event", self.scroll)
+        self.on_label = None
+        self.last_set = 0.0
 
-    def set_ink(self, light):
-        self.ink = (0.0, 0.0, 0.0) if light else (1.0, 1.0, 1.0)
-        self.area.queue_draw()
-
-    def get_value(self):
-        return self.value
-
-    def set_value(self, value):
-        self.value = max(0.0, min(1.0, float(value)))
-        self.area.queue_draw()
-
-    def draw(self, _widget, cr):
-        width = self.area.get_allocated_width()
-        height = self.area.get_allocated_height()
-        bar = 4
-        left = max(0.0, (width - bar) / 2.0)
-        red, green, blue = self.ink
-        cr.set_source_rgba(red, green, blue, 0.20)
-        cr.rectangle(left, 0, bar, height)
-        cr.fill()
-        cr.set_source_rgb(red, green, blue)
-        filled = height * self.value
-        cr.rectangle(left, height - filled, bar, filled)
-        cr.fill()
-        return False
-
-    def preview_at(self, y):
-        """Move only the fader while dragging; volume ramps on release."""
-        height = max(1, self.area.get_allocated_height())
-        self.last_y = float(y)
-        self.set_value(1.0 - max(0.0, min(1.0, self.last_y / height)))
+    def apply(self, force=False):
+        now = time.monotonic()
+        if not force and now - self.last_set < self.THROTTLE:
+            return
+        self.last_set = now
+        if self.on_label is not None:
+            self.on_label(self.value)
+        if self.on_change is not None:
+            self.on_change(self.value)
 
     def press(self, _widget, event):
         self.dragging = True
-        self.preview_at(event.y)
+        self.preview_at(event.x)
+        self.apply(force=True)
         return True
 
     def motion(self, _widget, event):
         if self.dragging:
-            self.preview_at(event.y)
+            self.preview_at(event.x)
+            self.apply()
         return True
 
     def release(self, _widget, event):
         if not self.dragging:
             return False
         self.dragging = False
-        self.preview_at(getattr(event, "y", self.last_y))
-        if self.on_change is not None:
-            self.on_change(self.value)
+        self.preview_at(getattr(event, "x", self.last_x))
+        self.apply(force=True)
         return True
 
     def scroll(self, _widget, event):
@@ -539,8 +515,7 @@ class FlatFader:
         else:
             return False
         self.set_value(value)
-        if self.on_change:
-            self.on_change(self.value)
+        self.apply(force=True)
         return True
 
 
@@ -1003,8 +978,8 @@ def run_app(visible):
     card.set_size_request(PANEL_SIZE, PANEL_SIZE)
     window.add(card)
 
-    # Main body: status, controls, track info and vinyl on the left; a small
-    # plain vertical volume bar on the right. Higher handle = louder.
+    # Main body: status, controls, track info and vinyl. Volume sits below
+    # the progress bar as a matching horizontal fader.
     body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
     card.pack_start(body, True, True, 0)
 
@@ -1050,16 +1025,6 @@ def run_app(visible):
     visualizer = VinylVisualizer(visual)
     visual.connect("draw", visualizer.draw)
 
-    fader = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-    fader.set_name("webos-fader")
-    fader.set_valign(Gtk.Align.CENTER)
-    body.pack_start(fader, False, False, 0)
-
-    volume_area = Gtk.DrawingArea()
-    volume_area.set_size_request(12, 110)
-    fader.pack_start(volume_area, False, False, 0)
-    volume_fader = FlatFader(volume_area)
-
     timeline = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
     card.pack_start(timeline, False, False, 0)
 
@@ -1075,6 +1040,24 @@ def run_app(visible):
     total_label = Gtk.Label(label="0:00")
     total_label.get_style_context().add_class("webos-dim")
     timeline.pack_start(total_label, False, False, 0)
+
+    # Volume mirrors the elapsed/total progress row: a flat bar that tracks
+    # the pointer live, with a numeric level at the right.
+    volume_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+    card.pack_start(volume_row, False, False, 0)
+
+    volume_caption = Gtk.Label(label="VOL")
+    volume_caption.get_style_context().add_class("webos-dim")
+    volume_row.pack_start(volume_caption, False, False, 0)
+
+    volume_area = Gtk.DrawingArea()
+    volume_area.set_size_request(-1, 12)
+    volume_row.pack_start(volume_area, True, True, 0)
+    volume_bar = FlatVolumeBar(volume_area)
+
+    volume_percent = Gtk.Label(label="0%")
+    volume_percent.get_style_context().add_class("webos-dim")
+    volume_row.pack_start(volume_percent, False, False, 0)
 
     # Borderless playback buttons sit directly under the progress bar.
     controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -1103,7 +1086,7 @@ def run_app(visible):
             text_provider[0] = None
         ink = "000000" if light else "FFFFFF"
         seek_bar.set_ink(light)
-        volume_fader.set_ink(light)
+        volume_bar.set_ink(light)
         if light:
             button_hover = "rgba(0, 0, 0, 0.12)"
             button_active = "rgba(0, 0, 0, 0.20)"
@@ -1212,44 +1195,15 @@ def run_app(visible):
 
     seek_bar.on_seek = on_seek
 
-    volume_ramp = [None]
-
     def on_volume(value):
-        """Ease the Spotify stream to the new level; never touch the sink."""
-        current, _muted = volume_state()
-        target = max(0.0, min(1.0, float(value)))
-        if abs(target - current) < 0.02:
-            set_volume(target)
-            volume_fader.set_value(target)
-            return
-        ramp = {
-            "from": current, "to": target,
-            "start": time.monotonic(),
-            "duration": min(0.6, max(0.18, abs(target - current) * 0.9)),
-        }
-        volume_ramp[0] = ramp
-        volume_fader.smoothing = True
+        """Apply the level as the bar is dragged; never touch the system sink."""
+        set_volume(max(0.0, min(1.0, float(value))))
 
-        def step():
-            if volume_ramp[0] is not ramp:
-                return False  # a newer drag replaced this one
-            elapsed = time.monotonic() - ramp["start"]
-            t = min(1.0, elapsed / ramp["duration"])
-            eased = t * t * (3.0 - 2.0 * t)
-            level = ramp["from"] + (ramp["to"] - ramp["from"]) * eased
-            set_volume(level)
-            volume_fader.set_value(level)
-            if t >= 1.0:
-                set_volume(ramp["to"])
-                volume_fader.set_value(ramp["to"])
-                volume_fader.smoothing = False
-                volume_ramp[0] = None
-                return False
-            return True
+    def on_volume_label(value):
+        volume_percent.set_text("%d%%" % int(round(max(0.0, min(1.0, value)) * 100)))
 
-        GLib.timeout_add(30, step)
-
-    volume_fader.on_change = on_volume
+    volume_bar.on_change = on_volume
+    volume_bar.on_label = on_volume_label
 
     def poll():
         state = read_state()
@@ -1266,8 +1220,10 @@ def run_app(visible):
         total_label.set_text(format_time(length))
 
         volume, _muted = volume_state()
-        if not (volume_fader.dragging or volume_fader.smoothing):
-            volume_fader.set_value(volume)
+        shown = volume_bar.value if volume_bar.dragging else volume
+        if not volume_bar.dragging:
+            volume_bar.set_value(volume)
+        volume_percent.set_text("%d%%" % int(round(shown * 100)))
 
         seek_bar.set_length(length)
         seek_bar.set_sensitive(length > 0)

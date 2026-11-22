@@ -1,11 +1,11 @@
 # WebOS build status
 
-_Last update: 2026-11-22 — v1.02 (Ashen): active maintenance; compact music dropdown with spinning vinyl, high-contrast controls, outside-click dismissal and honest binary-first updater controls._
+_Last update: 2026-11-22 — v1.02 (Ashen): active maintenance; compact music dropdown with spinning vinyl, live volume drag, Spotify-guarded hidden spectrum and honest binary-first updater controls._
 
-## Status: v1.02 — active maintenance; theme r48 committed
+## Status: v1.02 — active maintenance; theme r49 committed
 
 - Version 1.02; target ISO `webos-1.02-Ashen-amd64.iso`.
-- Theme r48 is committed on `main`. Run `bash scripts/50-check.sh` before the
+- Theme r49 is committed on `main`. Run `bash scripts/50-check.sh` before the
   next rootfs/ISO rebuild.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
   (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.

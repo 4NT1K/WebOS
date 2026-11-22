@@ -36,7 +36,7 @@ WHAT CHANGED IN 1.02
 --------------------
 The 1.02 maintenance rebuild is delivered to existing 1.01 machines by
 `sudo webos-update`. The WebOS overlay is refreshed from GitHub, the theme is
-upgraded to `webos-theme-1.0-r48`, and the rice is re-applied. Log out and back
+upgraded to `webos-theme-1.0-r49`, and the rice is re-applied. Log out and back
 in (or reboot) after the update so the session picks up the new files.
 
 - The far-right ⏻ power button is now present in the "mono" dotfiles profile as
@@ -64,11 +64,12 @@ in (or reboot) after the update so the session picks up the new files.
   on dark art, black on light art, with no glow, outline or button box. The
   title/artist are bold and slightly larger at the top left, the mute button
   is gone, and flat playback buttons sit directly under the elapsed/total
-  progress bar. The slim flat volume bar on the right edge rises to increase
-  volume. Dragging previews the bar; on release the seek lands once at that
-  point and playback continues, while volume eases in small steps. The Waybar
-  pill shows only icon, title
-  and artist, with a flat cava-style Spotify spectrum beside it.
+  progress bar. A matching flat horizontal volume bar with a percentage sits
+  just below it; dragging right raises the volume and dragging left lowers it,
+  applied live while dragging. Dragging the seek previews it and seeks once on
+  release. The Waybar pill shows only icon, title
+  and artist, with a flat cava-style Spotify spectrum beside it that is hidden
+  until playback starts and can never fall back to the microphone.
   MPRIS/volume stay Spotify-only.
 - Clicking outside `webos-music` or `webos-stats` dismisses it. The transparent
   catcher is on the TOP layer and the card is above it on OVERLAY.
@@ -81,7 +82,7 @@ in (or reboot) after the update so the session picks up the new files.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
   were corrected, and the shipped guide and release notes now describe 1.02.
 
-RECENT THEME REVISIONS (r41-r48)
+RECENT THEME REVISIONS (r41-r49)
 --------------------------------
 - r41/r42: cava bars became solid opaque white and the cover was lightly frosted
   instead of heavily dimmed, so the artwork stayed recognisable.
@@ -106,6 +107,12 @@ RECENT THEME REVISIONS (r41-r48)
   long song title wraps onto a second line instead of being cut off. The top
   bar gained a flat monochrome cava-style spectrum that reads only the
   Spotify PipeWire node, with heavier smoothing so the bars do not flicker.
+- r49: the volume control is now a flat horizontal bar like the progress bar,
+  with a percentage readout; it changes Spotify's level continuously while
+  dragging (right louder, left quieter) rather than only on release. The
+  Waybar spectrum checks its real PipeWire links, so it never captures the mic
+  or another app when the Spotify node is gone, and it stays hidden until
+  Spotify is actually playing.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -491,10 +498,10 @@ is still no network or battery module. The far-right ⏻ pill opens wlogout.
   the top left, PLAYING/PAUSED status, a spinning vinyl with the cover as its
   centre label, a seekable elapsed/total bar and flat outline-free playback
   buttons directly beneath it. Text, buttons and both bars switch between
-  plain white (dark art) and plain black (light art). A slim flat vertical
-  volume bar sits on the right edge. The Waybar pill
-  shows only icon/title/artist. Spotify's own stream volume is the only one
-  changed. No extra widget framework is required.
+  plain white (dark art) and plain black (light art). A flat horizontal
+  volume bar with a live percentage sits below the progress bar. The Waybar
+  pill shows only icon/title/artist. Spotify's own stream volume is the only
+  one changed. No extra widget framework is required.
 - Performance (`webos-stats`): the ▾ pill opens a small corner dropdown with
   CPU, GPU, VRAM, RAM, DISK and TEMP bars. RAM shows actual used/total GiB, and
   CPU lists every core (`c0   2% 53C`) with usage plus a hwmon temperature;
@@ -730,7 +737,7 @@ as part of a release; only reboot when you deliberately test the new kernel.
 
 Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.02"`).
 Maintenance fixes that must reach installed machines need a new package
-revision (`webos-theme-1.0-r48`) and a new tag; `webos-update` refreshes the
+revision (`webos-theme-1.0-r49`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.
 Before wiping another OS's drive, keep a verified backup and confirm WebOS
 boots and installs from its own SSD.
