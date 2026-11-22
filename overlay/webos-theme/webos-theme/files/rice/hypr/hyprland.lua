@@ -202,9 +202,10 @@ hl.curve("linear",   { type = "bezier", points = { {0.00, 0.00}, {1.00, 1.00} } 
 hl.animation({ leaf = "windows",       enabled = true, speed = 5,  bezier = "overshot", style = "slide" })
 hl.animation({ leaf = "windowsIn",     enabled = true, speed = 5,  bezier = "overshot", style = "popin 92%" })
 hl.animation({ leaf = "windowsOut",    enabled = true, speed = 4,  bezier = "smooth",   style = "popin 94%" })
--- Fade moving windows instead of sliding them: a slide can leave a window
--- visibly hanging mid-motion when workspaces are switched in quick succession.
-hl.animation({ leaf = "windowsMove",   enabled = true, speed = 7,  bezier = "smooth",   style = "fade" })
+-- `windowsMove` inherits the `windows` slide style; `fade` is not a valid
+-- style there and was silently rejected, leaving windows visibly dragging
+-- between workspaces. Disable it so windows snap out with the workspace.
+hl.animation({ leaf = "windowsMove",   enabled = false })
 hl.animation({ leaf = "border",        enabled = true, speed = 6,  bezier = "smooth" })
 hl.animation({ leaf = "borderangle",   enabled = true, speed = 30, bezier = "linear",   style = "loop" })
 hl.animation({ leaf = "fade",          enabled = true, speed = 4,  bezier = "soft" })
