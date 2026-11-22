@@ -81,6 +81,17 @@
         "on-click": "waypaper"
     },
 
+    "custom/update": {
+        "format": "{}",
+        "exec": "webos-update-indicator --check",
+        "on-click": "webos-update-indicator --update",
+        "interval": 1800,
+        "signal": 8,
+        "hide-empty-text": true,
+        "tooltip": true,
+        "return-type": "json"
+    },
+
     "custom/perf": {
         "format": "▾",
         "tooltip": "Performance — CPU, GPU, VRAM, RAM, disk, temp",
