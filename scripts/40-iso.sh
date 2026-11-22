@@ -112,6 +112,19 @@ else
 			|| die "dbus-daemon-launch-helper has wrong permissions: $(stat -c '%a %u:%g' "${DBUS_HELPER}")"
 	fi
 
+	# --- strip regenerable leftovers from the live tree --------------------------
+	# Python bytecode is recreated on first use; dropping it keeps the squashfs
+	# smaller without changing behaviour.
+	find "${LIVE_ROOT}" -xdev -type d -name __pycache__ -prune \
+		-exec rm -rf {} + 2>/dev/null || true
+	find "${LIVE_ROOT}" -xdev -type f -name '*.pyc' -delete 2>/dev/null || true
+	# The cava visualizer was removed in r51. A reused chroot can still carry
+	# its helper or config, so make sure none of it reaches a fresh install.
+	rm -f "${LIVE_ROOT}/usr/bin/webos-visualizer" \
+		"${LIVE_ROOT}"/home/*/.local/bin/webos-visualizer 2>/dev/null || true
+	rm -rf "${LIVE_ROOT}/etc/cava" "${LIVE_ROOT}/home/"*/.config/cava \
+		"${LIVE_ROOT}/root/.config/cava" 2>/dev/null || true
+
 	# --- live-only autologin -----------------------------------------------------
 	# tty1 logs in as root and runs the live session. Two mechanisms, because a
 	# stage3 may use either: OpenRC's agetty services (livecd/etc/conf.d) and

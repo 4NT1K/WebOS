@@ -2,7 +2,7 @@
 
 How the pieces of WebOS fit together: the repository, the boot flow, the
 install recipe, and the decisions behind them. This document describes WebOS
-**1.02 "Ashen"** (ISO `webos-1.02-Ashen-amd64.iso`).
+**1.021 "Ashen"** (ISO `webos-1.021-Ashen-amd64.iso`).
 
 ---
 

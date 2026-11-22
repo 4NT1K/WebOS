@@ -201,7 +201,7 @@ grep -q 'gtk-layer-shell\[introspection\]' \
 	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
-# 9. v1.02 identity and shipped guide
+# 9. v1.021 identity and shipped guide
 for f in branding/version branding/os-release branding/lsb-release branding/issue \
 	config/make.conf overlay/profiles/default/linux/amd64/webos/make.defaults \
 	overlay/profiles/default/linux/arm64/webos/make.defaults \
@@ -209,21 +209,21 @@ for f in branding/version branding/os-release branding/lsb-release branding/issu
 	overlay/webos-theme/webos-theme/files/system/webos-update \
 	overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc \
 	installer/src/main.rs; do
-	grep -q '1\.02' "${WEBOS_ROOT}/${f}" \
-		&& good "v1.02 identity ${f}" || bad "stale version in ${f}"
+	grep -q '1\.021' "${WEBOS_ROOT}/${f}" \
+		&& good "v1.021 identity ${f}" || bad "stale version in ${f}"
 done
 grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
 	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
 GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
-for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r51' \
+for pat in 'WebOS 1.021' 'WHAT CHANGED IN 1.021' 'webos-theme-1.0-r51' \
 	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
-	'WEBOS_VERSION=1.02-Ashen'; do
+	'WEBOS_VERSION=1.021-Ashen'; do
 	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
 done
-[[ -f "${WEBOS_ROOT}/docs/releases/v1.02.md" ]] \
-	&& good "v1.02 release notes" || bad "missing docs/releases/v1.02.md"
-grep -qF 'webos-1.02-Ashen-amd64.iso' "${WEBOS_ROOT}/docs/releases/v1.02.md" \
-	&& good "v1.02 asset names" || bad "v1.02 notes have wrong asset names"
+[[ -f "${WEBOS_ROOT}/docs/releases/v1.021.md" ]] \
+	&& good "v1.021 release notes" || bad "missing docs/releases/v1.021.md"
+grep -qF 'webos-1.021-Ashen-amd64.iso' "${WEBOS_ROOT}/docs/releases/v1.021.md" \
+	&& good "v1.021 asset names" || bad "v1.021 notes have wrong asset names"
 
 # 10. power widget in both profiles, with safe mono migration
 WAYBAR_DIR="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files"
@@ -404,6 +404,12 @@ if grep -REq '/home/brah/sanusos|/sanusos|git add|git commit|git push' \
 	"${WEBOS_ROOT}/scripts/status-updater.sh"; then
 	bad "watchers still use foreign paths or auto-commit"
 else good "watchers are path-independent and non-committing"; fi
+ISO_SCRIPT="${WEBOS_ROOT}/scripts/40-iso.sh"
+for pat in 'name __pycache__ -prune' 'name '\''*.pyc'\'' -delete' \
+	'webos-visualizer' '/etc/cava'; do
+	grep -qF -- "$pat" "$ISO_SCRIPT" \
+		&& good "ISO strips ${pat}" || bad "ISO cleanup missing: ${pat}"
+done
 if have cargo; then
 	(cd "${WEBOS_ROOT}/installer" && cargo check --offline >/dev/null 2>&1) \
 		&& good "installer cargo check --offline" || bad "installer cargo check failed"

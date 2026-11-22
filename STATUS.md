@@ -1,10 +1,10 @@
 # WebOS build status
 
-_Last update: 2026-11-22 — v1.02 (Ashen): active maintenance; compact music dropdown with spinning vinyl, live volume drag, Spotify-guarded hidden spectrum and honest binary-first updater controls._
+_Last update: 2026-11-22 — v1.021 (Ashen): active maintenance; compact music dropdown with spinning vinyl, live volume drag, Spotify-guarded hidden spectrum and honest binary-first updater controls._
 
-## Status: v1.02 — active maintenance; theme r51 committed
+## Status: v1.021 — active maintenance; theme r51 committed
 
-- Version 1.02; target ISO `webos-1.02-Ashen-amd64.iso`.
+- Version 1.021; target ISO `webos-1.021-Ashen-amd64.iso`.
 - Theme r51 is committed on `main`. Run `bash scripts/50-check.sh` before the
   next rootfs/ISO rebuild.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
@@ -43,7 +43,7 @@ _Last update: 2026-11-22 — v1.02 (Ashen): active maintenance; compact music dr
 - Reused chroot: Portage config refreshed, profile symlink repointed, legacy
   `sanus-*` packages removed.
 
-### Historical v1.01 ISO artifact (superseded by v1.02)
+### Historical v1.01 ISO artifact (superseded by v1.021)
 
 - Published v1.01 ISO: `webos-1.01-Ashen-amd64.iso`, sha256
   `e8351089a4aaefe0d1d4afa11f2d939f94d54bc5979fabfa0355bf77157f3d90`.

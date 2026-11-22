@@ -1,6 +1,6 @@
 # WebOS roadmap
 
-Planned work beyond **v1.02 (Ashen)**. Nothing here is a promise of a date; items
+Planned work beyond **v1.021 (Ashen)**. Nothing here is a promise of a date; items
 move up when they unblock gaming or the install experience.
 
 ## Next release (priority)
@@ -9,13 +9,13 @@ move up when they unblock gaming or the install experience.
   `games-util/steam-launcher`, Wine/Proton 32-bit prefixes, winetricks,
   protontricks and goverlay can be preinstalled as binary packages. This is the
   main blocker for shipping Steam in the installer.
-- ~~**Flatpak preinstalled** with Flathub enabled~~ — **shipped in v1.01, unchanged in v1.02**:
+- ~~**Flatpak preinstalled** with Flathub enabled~~ — **shipped in v1.01, unchanged in v1.021**:
   Flatpak + Flathub are really installed, so Steam, Bottles, Heroic and other
   apps install without a source build. `com.valvesoftware.Steam` is the fallback
   for the current 64-bit-only image.
 - **Installer:** Steam toggle becomes real once multilib lands; keep the current
   “recorded only” behaviour until then.
-- ~~**`WEBOS-INFO.txt` refresh**~~ — **done for v1.02**: the system brief now
+- ~~**`WEBOS-INFO.txt` refresh**~~ — **done for v1.021**: the system brief now
   documents the refined palette, ten-module fastfetch card, dropdown panels and
   current keybinds. Keep refreshing it whenever packages, keys or paths change.
 
@@ -48,7 +48,7 @@ move up when they unblock gaming or the install experience.
 
 ## Updates / infra
 
-- ~~`webos-update` wrapper~~ — **shipped in v1.01, improved in v1.02**:
+- ~~`webos-update` wrapper~~ — **shipped in v1.01, improved in v1.021**:
   `sudo webos-update` (sync, `@world`, depclean, config merges, Flatpak, rice,
   reboot check, plus `--fast`, `--strict-use`, `--buildpkg` and `--no-compile`).
 - Signed release artefacts and reproducible ISO builds in CI.

@@ -1,7 +1,7 @@
 # Building WebOS
 
 This is the full walkthrough for turning the source tree into
-`build/webos-1.02-Ashen-amd64.iso`.
+`build/webos-1.021-Ashen-amd64.iso`.
 
 WebOS is a source distribution, so a cold build compiles a toolchain, a
 kernel, a desktop and a gaming stack. Budget **several hours** and a real
@@ -49,8 +49,8 @@ sudo ./build.sh all
 Output:
 
 ```
-build/webos-1.02-Ashen-amd64.iso
-build/webos-1.02-Ashen-amd64.iso.sha256
+build/webos-1.021-Ashen-amd64.iso
+build/webos-1.021-Ashen-amd64.iso.sha256
 ```
 
 `make iso`, `make kernel`, etc. are thin wrappers over the same stages.
@@ -266,7 +266,7 @@ stage is killed hard, run `./build.sh distclean` (it umounts first) or
 | `build/rootfs/` | the exported, ready-to-install system. |
 | `build/live-root/` | `rootfs` + `livecd/` before squashfs. |
 | `build/iso-staging/` | the ISO tree handed to `grub-mkrescue`. |
-| `build/webos-1.02-Ashen-amd64.iso` | the deliverable. |
+| `build/webos-1.021-Ashen-amd64.iso` | the deliverable. |
 
 See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the pieces fit together and
 [`RELEASE.md`](RELEASE.md) for the release checklist.
