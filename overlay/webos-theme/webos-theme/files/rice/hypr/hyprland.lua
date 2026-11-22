@@ -225,10 +225,9 @@ hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "s
 
 -- ── Per-window polish ───────────────────────────────────────────────────────
 -- Terminals and anything that opts in get the translucent treatment.
--- kitty owns its own alpha (background_opacity). Do not stack a compositor
--- opacity on top of it or the two values multiply and the terminal looks
--- either opaque or almost invisible.
-hl.window_rule({ match = { class = "^(kitty)$" },                    opacity = "1.0 1.0" })
+-- kitty also draws its own alpha; a small absolute compositor opacity makes
+-- the glass visible even if kitty's own alpha has not taken effect yet.
+hl.window_rule({ match = { class = "^(kitty)$" },                    opacity = "0.94 override 0.90 override" })
 hl.window_rule({ match = { class = "^(foot)$" },                     opacity = "0.86 0.80" })
 hl.window_rule({ match = { class = "^(Alacritty)$" },                opacity = "0.90 0.85" })
 hl.window_rule({ match = { class = "^(wezterm)$" },                  opacity = "0.92 0.88" })
@@ -245,7 +244,7 @@ hl.window_rule({ match = { class = "^(spotify)$" },          opacity = "0.95 0.9
 -- Re-assert alpha the moment the window opens so transparency is there from
 -- the first frame, every boot, without touching app-level CSS.
 local BOOT_ALPHA = {
-	kitty      = "1.0 override 1.0 override",  -- kitty draws its own alpha
+	kitty      = "0.94 override 0.90 override",
 	foot       = "0.86 override 0.80 override",
 	Alacritty  = "0.90 override 0.85 override",
 	wezterm    = "0.92 override 0.88 override",
@@ -253,7 +252,7 @@ local BOOT_ALPHA = {
 	discord    = "0.88 override 0.84 override",
 	spotify    = "0.95 override 0.92 override",
 }
-hl.on("window.open_early", function(w)
+local function apply_boot_alpha(w)
 	if not w then
 		return
 	end
@@ -263,7 +262,11 @@ hl.on("window.open_early", function(w)
 			window = w.address, prop = "opacity", value = value,
 		}))
 	end
-end)
+end
+-- open_early fires before static rules; open fires after them. Applying on
+-- both means neither ordering can leave an opaque window on the first frame.
+hl.on("window.open_early", apply_boot_alpha)
+hl.on("window.open", apply_boot_alpha)
 
 -- Utilities should not be transparent at all.
 hl.window_rule({
