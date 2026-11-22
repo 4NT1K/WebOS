@@ -43,7 +43,8 @@ ART_DIR = os.path.join(RUNTIME, "webos-music-art")
 PANEL_SIZE = 340
 TOP_GAP = 100  # below the 46 px waybar plus margins
 
-META_FORMAT = "{{title}}\t{{artist}}\t{{mpris:length}}\t{{mpris:artUrl}}"
+META_FORMAT = ("{{status}}\t{{title}}\t{{artist}}\t{{mpris:length}}\t"
+               "{{mpris:artUrl}}\t{{position}}")
 
 
 def run_quiet(args):
@@ -150,8 +151,9 @@ def spotify_active():
 
 def spotifyctl(*args):
     """Run playerctl against Spotify only; never control osu!/Firefox/etc."""
-    if not spotify_active():
-        return ""
+    # An explicit --player=spotify is enough to keep other players untouched;
+    # skipping a separate `playerctl -l` here avoids an extra subprocess on
+    # every poll (and therefore a visible delay in the card update).
     return playerctl("--player=spotify", *args)
 
 
@@ -260,21 +262,14 @@ def toggle_spotify_mute():
 
 
 def read_state():
-    if not spotify_active():
-        return {
-            "status": "stopped",
-            "title": "",
-            "artist": "",
-            "length": 0.0,
-            "position": 0.0,
-            "art_url": "",
-        }
-    status = spotifyctl("status").lower()
+    """Read Spotify's whole card state in one playerctl call."""
     fields = spotifyctl("metadata", "--format", META_FORMAT).split("\t")
-    fields += [""] * (4 - len(fields))
-    title, artist, length_raw, art_url = fields[:4]
+    fields += [""] * (6 - len(fields))
+    status, title, artist, length_raw, art_url, position_raw = fields[:6]
     length = to_float(length_raw) / 1000000.0 if length_raw else 0.0
-    position = to_float(spotifyctl("position"))
+    # {{position}} is reported in microseconds, unlike `playerctl position`.
+    position = to_float(position_raw) / 1000000.0 if position_raw else 0.0
+    status = status.strip().lower()
     return {
         "status": status if status in ("playing", "paused") else "stopped",
         "title": title,
@@ -355,13 +350,15 @@ def art_palette(path, count=20):
         return fallback
 
 
-def readable_text_colour(rgb):
-    """Lift a cover-derived hue until it stays legible on the dark card.
+def readable_text_colour(rgb, light=False):
+    """Return lettering that stays legible over the current cover.
 
-    Dark blues/reds would vanish against the artwork, so brighten while
-    preserving the hue and give every channel a floor. The result reads as
-    the song's colour but never drops below a mid-grey contrast.
+    On dark art the cover hue is lifted toward white while keeping its tint.
+    On a fairly white cover the lettering goes black instead, so text and
+    icons do not disappear into the bright background.
     """
+    if light:
+        return (0, 0, 0)
     red, green, blue = rgb
     peak = max(rgb) or 1
     scale = min(2.4, 235.0 / peak)
@@ -369,8 +366,26 @@ def readable_text_colour(rgb):
     return tuple(max(110, channel) for channel in lifted)
 
 
-def active_mpris_player():
+def art_is_light(path):
+    """True when the frosted cover is bright enough to need dark lettering."""
+    if not path:
+        return False
+    try:
+        from PIL import Image, ImageStat
+        image = Image.open(path).convert("L").resize((64, 64))
+        mean = ImageStat.Stat(image).mean[0]
+        data = getattr(image, "get_flattened_data", image.getdata)()
+        light_fraction = sum(1 for value in data if value >= 170) / 4096.0
+        return mean >= 160 or light_fraction >= 0.55
+    except Exception:
+        return False
+
+
+def active_mpris_player(state=None):
     """Return Spotify only, so osu!/Firefox/etc never hijack the panel."""
+    if state is not None:
+        return "spotify" if (state["status"] != "stopped" or
+                             state["title"]) else None
     return "spotify" if spotify_active() else None
 
 
@@ -854,20 +869,37 @@ def run_app(visible):
     updating = [False]
     card_provider = [None]
     text_provider = [None]
+    art_loading = [None]
 
-    def set_text_colour(rgb):
-        """Tint every label to the current song while keeping it readable."""
+    def set_text_colour(rgb, light=False):
+        """Tint labels and controls to the song while keeping them readable."""
         if text_provider[0] is not None:
             Gtk.StyleContext.remove_provider_for_screen(screen, text_provider[0])
             text_provider[0] = None
-        colour = readable_text_colour(rgb)
+        colour = readable_text_colour(rgb, light)
         hex6 = "%02x%02x%02x" % colour
+        if light:
+            dim = "rgba(0, 0, 0, 0.72)"
+            button_bg = "rgba(255, 255, 255, 0.30)"
+            button_border = "rgba(0, 0, 0, 0.38)"
+            button_hover = "rgba(255, 255, 255, 0.50)"
+            button_active = "rgba(255, 255, 255, 0.70)"
+        else:
+            dim = "rgba(%d, %d, %d, 0.78)" % colour
+            button_bg = "rgba(%d, %d, %d, 0.10)" % colour
+            button_border = "rgba(%d, %d, %d, 0.42)" % colour
+            button_hover = "rgba(%d, %d, %d, 0.20)" % colour
+            button_active = "rgba(%d, %d, %d, 0.30)" % colour
         css = (
-            "#music-card, .webos-status, .webos-title, button {"
+            "#music-card, .webos-status, .webos-title, button, button image {"
             " color: #%s; }"
-            ".webos-dim { color: rgba(%d, %d, %d, 0.78); }"
+            ".webos-dim { color: %s; }"
+            "button { background-color: %s; border-color: %s; }"
+            "button:hover { background-color: %s; }"
+            "button:active { background-color: %s; }"
             "scale progress { background-color: #%s; }"
-            % (hex6, colour[0], colour[1], colour[2], hex6)
+            % (hex6, dim, button_bg, button_border,
+               button_hover, button_active, hex6)
         ).encode("utf-8")
         provider = Gtk.CssProvider()
         provider.load_from_data(css)
@@ -894,7 +926,31 @@ def run_app(visible):
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
         )
         card_provider[0] = provider
-        set_text_colour(art_palette(path, count=1)[0])
+        set_text_colour(art_palette(path, count=1)[0], art_is_light(path))
+
+    def load_art_async(url):
+        """Prepare frosted art off the GTK thread so label updates never stall."""
+        if url == art_loading[0]:
+            return
+        art_loading[0] = url
+        if not url:
+            set_art(None)
+            art_loading[0] = None
+            return
+
+        def worker():
+            path = prepare_art(url)
+
+            def apply():
+                if url != last_art[0]:
+                    return False  # a newer track arrived while art was loading
+                set_art(path)
+                art_loading[0] = None
+                return False
+
+            GLib.idle_add(apply)
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def on_seek(_widget):
         if updating[0]:
@@ -940,9 +996,9 @@ def run_app(visible):
         url = state["art_url"]
         if url != last_art[0]:
             last_art[0] = url
-            set_art(prepare_art(url) if url else None)
+            load_art_async(url)
 
-        player = active_mpris_player()
+        player = active_mpris_player(state)
         if player != last_player[0]:
             last_player[0] = player
             visualizer.set_target(music_node_target(player))
@@ -982,7 +1038,7 @@ def run_app(visible):
     signal.signal(signal.SIGINT, on_stop)
 
     poll()
-    GLib.timeout_add(1000, poll)
+    GLib.timeout_add(250, poll)
 
     if visible:
         catcher.show_all()
