@@ -2,6 +2,8 @@
 # Waybar custom-module output for one workspace button.
 n="$1"
 cur=$(hyprctl activeworkspace -j 2>/dev/null | jq -r '.id // 0')
-cls="ws-btn"
-[[ "$cur" == "$n" ]] && cls="ws-btn active"
-printf '{"text":"%s","class":"%s"}\n' "$n" "$cls"
+if [[ "$cur" == "$n" ]]; then
+	printf '{"text":"%s","class":["ws-btn","active"]}\n' "$n"
+else
+	printf '{"text":"%s","class":["ws-btn"]}\n' "$n"
+fi
