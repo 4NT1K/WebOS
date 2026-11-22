@@ -69,10 +69,13 @@ hl.env("BROWSER", "firefox-bin")
 
 -- ── Monitors ────────────────────────────────────────────────────────────────
 -- Auto-detect; edit for HiDPI or multi-monitor layouts.
+-- Pin the exact 170 Hz mode. "preferred" resolves to 60 Hz on this monitor
+-- whenever the config reloads, and the refresh watcher then saves that 60 Hz
+-- as the new default — so keep the real mode here as well.
 hl.monitor({
-	output   = "",
-	mode     = "preferred",
-	position = "auto",
+	output   = "DP-1",
+	mode     = "1920x1080@169.99699",
+	position = "0x0",
 	scale    = "1",
 })
 -- Example: internal 1.5x, external 144 Hz to the right.
