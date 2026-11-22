@@ -195,10 +195,10 @@ grep -q 'for version in ("0.1", "1.0")' "$MUSIC" && grep -q 'GtkLayerShell.Edge.
 	&& good "music uses layer-shell below the top bar" || bad "music fallback leaves an empty window"
 grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \
 	&& good "music dropdown excluded from blur" || bad "music dropdown not excluded from blur"
-grep -q 'webos-theme-1.0-r47.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "ISO pins theme r47" || bad "ISO still pins an older theme"
+grep -q 'webos-theme-1.0-r48.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "ISO pins theme r48" || bad "ISO still pins an older theme"
 grep -q 'gtk-layer-shell\[introspection\]' \
-	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r47.ebuild" \
+	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r48.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
 # 9. v1.02 identity and shipped guide
@@ -215,7 +215,7 @@ done
 grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
 	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
 GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
-for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r47' \
+for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r48' \
 	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
 	'WEBOS_VERSION=1.02-Ashen'; do
 	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
@@ -278,12 +278,16 @@ if grep -qF 'hyprctl dispatch dpms' "$HYPRLIDLE"; then
 else good "old dpms dispatch gone"; fi
 
 # 12. theme revision reaches installed machines
-THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r47.ebuild"
-[[ -f "$THEME" ]] && good "r47 theme ebuild" || bad "missing r47 theme ebuild"
+THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r48.ebuild"
+[[ -f "$THEME" ]] && good "r48 theme ebuild" || bad "missing r48 theme ebuild"
 grep -qF 'gui-libs/gtk-layer-shell[introspection]' "$THEME" \
-	&& good "r47 ships layer-shell introspection" || bad "r47 lacks introspection dependency"
-grep -qF 'THEME_EBUILD="webos-theme-1.0-r47.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "rootfs pins r47" || bad "rootfs does not pin r47"
+	&& good "r48 ships layer-shell introspection" || bad "r48 lacks introspection dependency"
+grep -qF 'THEME_EBUILD="webos-theme-1.0-r48.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "rootfs pins r48" || bad "rootfs does not pin r48"
+grep -qF 'media-sound/cava' "$THEME" \
+	&& good "r48 ships cava for the Waybar visualizer" || bad "r48 lacks cava dependency"
+grep -qF 'webos-visualizer' "$THEME" \
+	&& good "r48 installs webos-visualizer" || bad "r48 lacks webos-visualizer"
 
 # 13. binary-first updater controls, without forbidden flags
 UPDATER="${WAYBAR_DIR}/system/webos-update"
@@ -309,6 +313,9 @@ for pat in 'PANEL_SIZE = 340' 'TOP_GAP = 100' \
 	'webos-music-catcher' 'button-press-event' 'GaussianBlur(radius=2.5)' \
 	'enhance(1.0)' 'background-size: cover' 'art_is_light(path)' \
 	'class VinylVisualizer' 'box-shadow: none' \
+	'def preview_at(self, x)' 'def on_volume(value)' \
+	'title_label.set_line_wrap(True)' 'title_label.set_lines(2)' \
+	'volume_fader.smoothing' 'spotifyctl("position", "%.2f" % target)' \
 	'run_quiet(["hyprctl", "seterror", "disable"])'; do
 	grep -qF -- "$pat" "$MUSIC" && good "music: ${pat}" || bad "music missing: ${pat}"
 done
@@ -320,10 +327,28 @@ for pat in 'for version in ("0.1", "1.0")' \
 	'<small>c%d</small>'; do
 	grep -qF -- "$pat" "$STATS" && good "stats: ${pat}" || bad "stats missing: ${pat}"
 done
+VISUALIZER="${WAYBAR_DIR}/system/webos-visualizer"
+for pat in 'source = spotify' 'method = pipewire' 'noise_reduction = 90' \
+	'waves = 1' 'framerate = 90' 'FRAMERATE = 45' 'data_format = ascii'; do
+	grep -qF -- "$pat" "$VISUALIZER" && good "visualizer: ${pat}" \
+		|| bad "visualizer missing: ${pat}"
+done
+for cfg in "${WAYBAR_DIR}/rice/waybar/config.jsonc" \
+	"${WAYBAR_DIR}/dotfiles/mono/waybar/config.jsonc"; do
+	grep -qF '"custom/visualizer"' "$cfg" && good "visualizer in ${cfg##*/}" \
+		|| bad "visualizer missing from ${cfg##*/}"
+	grep -qF '"modules-center": ["custom/visualizer", "mpris"]' "$cfg" \
+		&& good "centre order in ${cfg##*/}" || bad "music not centred after spectrum in ${cfg##*/}"
+done
+for css in "${WAYBAR_DIR}/rice/waybar/style.css" \
+	"${WAYBAR_DIR}/dotfiles/mono/waybar/style.css"; do
+	grep -qF 'margin-right: 128px' "$css" \
+		&& good "music pill centred in ${css##*/}" || bad "music pill centring missing in ${css##*/}"
+done
 if have python3; then
 	PYTHONPYCACHEPREFIX="/tmp/opencode/webos-pycache-check" \
-		python3 -m py_compile "$MUSIC" "$STATS" \
-		&& good "music/stats python syntax" || bad "music/stats python syntax"
+		python3 -m py_compile "$MUSIC" "$STATS" "$VISUALIZER" \
+		&& good "music/stats/visualizer python syntax" || bad "helper python syntax"
 else bad "python3 not available to compile helpers"; fi
 
 # 15. installer, manifest and build-tooling audit

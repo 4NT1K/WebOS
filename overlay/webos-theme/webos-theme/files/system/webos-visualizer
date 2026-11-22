@@ -1,0 +1,131 @@
+#!/usr/bin/env python3
+"""Continuous Waybar module: a flat, cava-style Spotify spectrum.
+
+Waybar 0.15 in WebOS has no built-in cava module, so this helper drives cava
+directly with its raw ASCII output and prints one JSON line per frame. The
+input source is the Spotify PipeWire node only; osu!/Firefox are never read.
+"""
+
+import atexit
+import json
+import os
+import signal
+import subprocess
+import sys
+import tempfile
+import time
+
+BARS = 12
+GLYPHS = "▁▂▃▄▅▆▇█"
+FRAMERATE = 45
+CAVA_FRAMERATE = 90
+EMIT_EVERY = CAVA_FRAMERATE // FRAMERATE
+RESTART_DELAY = 2.0
+
+_runtime = os.environ.get("XDG_RUNTIME_DIR") or os.path.join(
+    tempfile.gettempdir(), "webos-" + str(os.getuid())
+)
+_config_dir = os.path.join(_runtime, "webos-visualizer")
+_config = os.path.join(_config_dir, "cava.conf")
+
+CONFIG = """\
+[general]
+bars = {bars}
+# cava runs at twice the emit rate; every second frame gives a steady 45 fps.
+framerate = 90
+
+[input]
+method = pipewire
+source = spotify
+
+[output]
+method = raw
+raw_target = /dev/stdout
+data_format = ascii
+ascii_max_range = 100
+bar_delimiter = 59
+
+[smoothing]
+noise_reduction = 90
+monstercat = 1
+waves = 1
+""".format(bars=BARS)
+
+_child = [None]
+
+
+def stop_child(*_args):
+    child = _child[0]
+    if child is not None and child.poll() is None:
+        try:
+            child.terminate()
+            child.wait(timeout=2)
+        except (OSError, subprocess.SubprocessError):
+            child.kill()
+    if _args:
+        raise SystemExit(0)
+
+
+def write_config():
+    os.makedirs(_config_dir, mode=0o700, exist_ok=True)
+    with open(_config, "w", encoding="utf-8") as handle:
+        handle.write(CONFIG)
+
+
+def start_cava():
+    return subprocess.Popen(
+        ["cava", "-p", _config],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        text=True,
+        bufsize=1,
+    )
+
+
+def frame(line):
+    """Convert `0;12;...` into block glyphs of a fixed width."""
+    try:
+        values = [int(part.strip())
+                  for part in line.strip().strip(";").split(";") if part.strip()]
+    except (TypeError, ValueError):
+        return None
+    if not values:
+        return None
+    values = (values + [0] * BARS)[:BARS]
+    text = "".join(
+        GLYPHS[min(len(GLYPHS) - 1, max(0, value * len(GLYPHS) // 101))]
+        for value in values
+    )
+    return {"text": text, "class": "silent" if not any(values) else ""}
+
+
+def main():
+    write_config()
+    atexit.register(stop_child)
+    signal.signal(signal.SIGTERM, stop_child)
+    signal.signal(signal.SIGINT, stop_child)
+
+    seen = 0
+    while True:
+        child = start_cava()
+        _child[0] = child
+        try:
+            for line in child.stdout:
+                payload = frame(line)
+                if payload is None:
+                    continue
+                # Frame pacing by count, not wall-clock time: the input stream
+                # is bursty, so a timeout throttle drops to ~30 fps in practice.
+                seen += 1
+                if seen % EMIT_EVERY:
+                    continue
+                print(json.dumps(payload, separators=(",", ":")), flush=True)
+        except (OSError, ValueError):
+            pass
+        stop_child()
+        _child[0] = None
+        time.sleep(RESTART_DELAY)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

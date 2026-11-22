@@ -23,7 +23,7 @@
         "hyprland/workspaces",
         "hyprland/window"
     ],
-    "modules-center": ["mpris"],
+    "modules-center": ["custom/visualizer", "mpris"],
     // No network module: the mono bar never displays the LAN IPv4 address.
     // No battery module either (desktop PC); the power menu stays available.
     "modules-right": ["custom/waypaper", "custom/update", "clock", "tray", "custom/perf", "custom/power"],
@@ -39,6 +39,16 @@
         "format": "{title}",
         "max-length": 48,
         "separate-outputs": true
+    },
+
+    // Flat cava-style spectrum of the Spotify stream only. The helper is a
+    // continuous custom module (no interval): one JSON line per video frame.
+    "custom/visualizer": {
+        "format": "{}",
+        "exec": "webos-visualizer",
+        "return-type": "json",
+        "hide-empty-text": true,
+        "tooltip": false
     },
 
     "mpris": {

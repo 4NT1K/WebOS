@@ -36,7 +36,7 @@ WHAT CHANGED IN 1.02
 --------------------
 The 1.02 maintenance rebuild is delivered to existing 1.01 machines by
 `sudo webos-update`. The WebOS overlay is refreshed from GitHub, the theme is
-upgraded to `webos-theme-1.0-r47`, and the rice is re-applied. Log out and back
+upgraded to `webos-theme-1.0-r48`, and the rice is re-applied. Log out and back
 in (or reboot) after the update so the session picks up the new files.
 
 - The far-right ⏻ power button is now present in the "mono" dotfiles profile as
@@ -65,8 +65,11 @@ in (or reboot) after the update so the session picks up the new files.
   title/artist are bold and slightly larger at the top left, the mute button
   is gone, and flat playback buttons sit directly under the elapsed/total
   progress bar. The slim flat volume bar on the right edge rises to increase
-  volume. The Waybar pill shows only icon, title
-  and artist. MPRIS/volume stay Spotify-only.
+  volume. Dragging previews the bar; on release the seek lands once at that
+  point and playback continues, while volume eases in small steps. The Waybar
+  pill shows only icon, title
+  and artist, with a flat cava-style Spotify spectrum beside it.
+  MPRIS/volume stay Spotify-only.
 - Clicking outside `webos-music` or `webos-stats` dismisses it. The transparent
   catcher is on the TOP layer and the card is above it on OVERLAY.
 - Both dropdowns try `GtkLayerShell-0.1.typelib` before `1.0`, which is the
@@ -78,7 +81,7 @@ in (or reboot) after the update so the session picks up the new files.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
   were corrected, and the shipped guide and release notes now describe 1.02.
 
-RECENT THEME REVISIONS (r41-r47)
+RECENT THEME REVISIONS (r41-r48)
 --------------------------------
 - r41/r42: cava bars became solid opaque white and the cover was lightly frosted
   instead of heavily dimmed, so the artwork stayed recognisable.
@@ -97,6 +100,12 @@ RECENT THEME REVISIONS (r41-r47)
   Text, buttons and both bars are pure black or white with no glow based on
   `art_is_light()`. Spotify remains the only MPRIS player and the only audio
   stream the card reads or changes.
+- r48: dragging the seek bar previews it; dropping seeks once to that point and
+  playback continues from there instead of the bar sliding or snapping back.
+  Volume drags are previewed and eased in small steps, still Spotify-only. A
+  long song title wraps onto a second line instead of being cut off. The top
+  bar gained a flat monochrome cava-style spectrum that reads only the
+  Spotify PipeWire node, with heavier smoothing so the bars do not flicker.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -721,7 +730,7 @@ as part of a release; only reboot when you deliberately test the new kernel.
 
 Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.02"`).
 Maintenance fixes that must reach installed machines need a new package
-revision (`webos-theme-1.0-r47`) and a new tag; `webos-update` refreshes the
+revision (`webos-theme-1.0-r48`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.
 Before wiping another OS's drive, keep a verified backup and confirm WebOS
 boots and installs from its own SSD.
