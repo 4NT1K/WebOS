@@ -157,6 +157,10 @@ chroot_sh "emerge --quiet-build=y --jobs=${WEBOS_JOBS} --load-average=$((WEBOS_J
 	@base @desktop @gaming @webos-installer" \
 	|| warn "WebOS set emerge had failures (continuing; review if critical packages missing)"
 
+# Vesktop is no longer in @desktop. The chroot is reused between builds, so
+# unmerge it (and drop it from world) when it came from an older image.
+chroot_sh 'pkgs="$(qlist -I 2>/dev/null | grep -E "^net-im/vesktop(-bin)?(-[0-9]|$)" || true)"; if [ -n "$pkgs" ]; then emerge --quiet --unmerge $pkgs >/dev/null 2>&1 || true; fi; sed -i -E "/^net-im\/vesktop(-bin)?$/d" /var/lib/portage/world 2>/dev/null || true' || true
+
 # A reused chroot can still hold Plasma from before it moved into @plasma.
 # Strip it from the live rootfs so the image itself has no Plasma session;
 # keep systemsettings (used by webos-settings) and breeze (the cursor theme).
@@ -352,8 +356,8 @@ rm -f "${CHROOT}/usr/share/hypr/hyprland.lua" "${ROOTFS_DIR}/usr/share/hypr/hypr
 
 # The ::gentoo tree and the three third-party overlays ship with the image so
 # `emerge` works on a fresh install without a network round-trip. The overlays
-# are NOT build-time-only: packages from them (waypaper, vesktop-bin,
-# ananicy-cpp, opencode-bin, hyprpolkitagent) are in world, so hiding the repos
+# are NOT build-time-only: packages from them (waypaper, ananicy-cpp,
+# opencode-bin, hyprpolkitagent) are in world, so hiding the repos
 # makes `emerge @world` fail with "no available ebuilds" and an invalid world
 # file. Keep their repos.conf entries enabled and their .git metadata intact
 # so `webos-update` can sync them later.

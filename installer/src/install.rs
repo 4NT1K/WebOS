@@ -901,9 +901,10 @@ printf 'Gaming stack was not selected during installation.\n' > /etc/webos/gamin
         } else {
             s.push_str("remove_app net-im/discord\n");
         }
-        if cfg.install_vesktop {
-            s.push_str("emerge_app net-im/vesktop-bin || emerge_app net-im/vesktop\n");
-        }
+        // Vesktop is no longer shipped. Clean up packages left by older images
+        // so an in-place install does not keep the discarded client around.
+        s.push_str("if qlist -I net-im/vesktop-bin >/dev/null 2>&1; then remove_app net-im/vesktop-bin; fi\n");
+        s.push_str("if qlist -I net-im/vesktop >/dev/null 2>&1; then remove_app net-im/vesktop; fi\n");
         if cfg.install_opencode {
             s.push_str("emerge_app dev-util/opencode-bin\n");
         } else {

@@ -275,7 +275,7 @@ in the installer. `webos-dotfiles --apply` remains an expert CLI option.
 Installer options and defaults:
   gaming stack on, Steam note on, Firefox on, fish on, zsh on, Flatpak on,
   Bluetooth on, GRUB on.
-  Discord, OpenCode, Spotify, Vesktop, Waypaper, SSH server,
+  Discord, OpenCode, Spotify, Waypaper, SSH server,
   firewall and NVIDIA are opt-in.
   Filesystem btrfs (or ext4/xfs), swap zram (or partition/none),
   ESP 512 MiB, LUKS2 optional, UEFI or BIOS.
@@ -478,8 +478,8 @@ hyprsunset, SDDM. regular Plasma 6.8.3 (Wayland) is an opt-in profile installed
 only when selected.
 Terminals/editors: kitty, foot, wezterm, alacritty, neovim, zellij, tmux,
 ranger, pcmanfm, Dolphin.
-Apps: Firefox, Discord, OpenCode, Spotify, Vesktop (binary `vesktop-bin`),
-Waypaper, mpv, imv, Lutris, Heroic, btop, fastfetch, pavucontrol, blueman,
+Apps: Firefox, Discord, OpenCode, Spotify, Waypaper, mpv, imv, Lutris, Heroic,
+btop, fastfetch, pavucontrol, blueman,
 nm-connection-editor.
 Gaming: gamescope, gamemode (`gamemoderun` / `gamemoded`), MangoHud, vkBasalt
 (library only, no launcher), vkd3d-proton, dosbox-staging, scummvm, corectrl,

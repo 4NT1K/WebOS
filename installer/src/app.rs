@@ -562,7 +562,6 @@ impl App {
             ("Steam (Flatpak fallback)".into(), on_off(self.cfg.install_steam).into()),
             ("Firefox".into(), on_off(self.cfg.install_firefox).into()),
             ("Discord".into(), on_off(self.cfg.install_discord).into()),
-            ("Vesktop (Vencord)".into(), on_off(self.cfg.install_vesktop).into()),
             ("OpenCode".into(), on_off(self.cfg.install_opencode).into()),
             ("Spotify".into(), on_off(self.cfg.install_spotify).into()),
             ("Waypaper (wallpapers)".into(), on_off(self.cfg.install_waypaper).into()),
@@ -578,13 +577,12 @@ impl App {
             1 => self.cfg.install_steam = !self.cfg.install_steam,
             2 => self.cfg.install_firefox = !self.cfg.install_firefox,
             3 => self.cfg.install_discord = !self.cfg.install_discord,
-            4 => self.cfg.install_vesktop = !self.cfg.install_vesktop,
-            5 => self.cfg.install_opencode = !self.cfg.install_opencode,
-            6 => self.cfg.install_spotify = !self.cfg.install_spotify,
-            7 => self.cfg.install_waypaper = !self.cfg.install_waypaper,
-            8 => self.cfg.install_fish = !self.cfg.install_fish,
-            9 => self.cfg.install_zsh = !self.cfg.install_zsh,
-            10 => self.cfg.install_flatpak = !self.cfg.install_flatpak,
+            4 => self.cfg.install_opencode = !self.cfg.install_opencode,
+            5 => self.cfg.install_spotify = !self.cfg.install_spotify,
+            6 => self.cfg.install_waypaper = !self.cfg.install_waypaper,
+            7 => self.cfg.install_fish = !self.cfg.install_fish,
+            8 => self.cfg.install_zsh = !self.cfg.install_zsh,
+            9 => self.cfg.install_flatpak = !self.cfg.install_flatpak,
             _ => {}
         }
     }

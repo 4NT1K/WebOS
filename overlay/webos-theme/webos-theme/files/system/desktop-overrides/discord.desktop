@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Discord
+Comment=All-in-one voice and text chat for gamers
+Icon=discord
+Exec=/usr/local/bin/discord
+TryExec=/usr/local/bin/discord
+StartupWMClass=discord
+Categories=Network;InstantMessaging;

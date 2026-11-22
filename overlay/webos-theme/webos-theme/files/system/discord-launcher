@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# WebOS Discord launcher.
+# Chromium's Wayland Ozone backend selects Vulkan on this NVIDIA stack, which
+# kills the GPU process with error_code=1002 and makes Electron abort with
+# "GPU process isn't usable. Goodbye."
+# Forcing ANGLE's OpenGL backend keeps native Wayland and the Gentoo wrapper's
+# update-disabling/IME flags while avoiding the Vulkan GPU-process crash.
+exec /usr/bin/discord --use-angle=gl "$@"

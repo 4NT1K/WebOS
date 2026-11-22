@@ -283,6 +283,19 @@ else
 	printf '%s\n' "$pending" | sed 's/^/      /'
 fi
 
+# Vesktop was retired from the image in r45. Upgraded machines can still have
+# it merged and in world from an older ISO, so remove it before depclean.
+for pkg in net-im/vesktop-bin net-im/vesktop; do
+	if qlist -I "$pkg" >/dev/null 2>&1; then
+		say "Removing retired package: $pkg"
+		emerge --quiet --unmerge "$pkg" >/dev/null 2>&1 || step_fail "could not unmerge $pkg"
+	fi
+done
+if [ -f /var/lib/portage/world ]; then
+	sed -i -e '/^net-im\/vesktop-bin$/d' -e '/^net-im\/vesktop$/d' \
+		/var/lib/portage/world 2>/dev/null || true
+fi
+
 # ------------------------------------------------------------- 4. depclean --
 if [ "$DO_DEPCLEAN" -eq 1 ]; then
 	say "[4/8] Removing orphaned packages"

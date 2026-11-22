@@ -236,7 +236,7 @@ hl.window_rule({ match = { class = "^(firefox|zen|chromium)$" },     opacity = "
 hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "0.97 0.95" })
 -- Electron apps can ignore app-level transparency and still paint an opaque
 -- black surface. Force compositor alpha so wallpaper + blur always show through.
-hl.window_rule({ match = { class = "^(vesktop|discord)$" }, opacity = "0.88 0.84" })
+hl.window_rule({ match = { class = "^(discord)$" }, opacity = "0.88 0.84" })
 hl.window_rule({ match = { class = "^(spotify)$" },          opacity = "0.95 0.92" })
 
 -- A fresh boot can race Electron/kitty startup: the window maps before the
@@ -248,7 +248,6 @@ local BOOT_ALPHA = {
 	foot       = "0.86 override 0.80 override",
 	Alacritty  = "0.90 override 0.85 override",
 	wezterm    = "0.92 override 0.88 override",
-	vesktop    = "0.88 override 0.84 override",
 	discord    = "0.88 override 0.84 override",
 	spotify    = "0.95 override 0.92 override",
 }

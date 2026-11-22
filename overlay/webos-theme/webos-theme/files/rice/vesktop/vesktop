@@ -1,5 +1,0 @@
-#!/usr/bin/env bash
-# WebOS: launch Vesktop with Electron transparency (Wayland-native, no GPU disable).
-flags=(--enable-transparent-visuals)
-[[ -n ${WAYLAND_DISPLAY:-} ]] && flags+=(--enable-features=UseOzonePlatform --ozone-platform=wayland)
-exec /opt/vesktop-bin/vesktop "${flags[@]}" "$@"

@@ -241,27 +241,18 @@ apply_web_themes() {
 	if [[ -d "$home/.local/share/applications" ]]; then
 		install_file "${RICE_SRC}/applications/com.github.wwmm.easyeffects.desktop" \
 			"$home/.local/share/applications/com.github.wwmm.easyeffects.desktop" "$mf" "$force" "$dry"
-		install_file "${RICE_SRC}/applications/vesktop.desktop" \
-			"$home/.local/share/applications/vesktop.desktop" "$mf" "$force" "$dry"
 	fi
 	install_file "${RICE_SRC}/spotify/spotify" "$home/.local/bin/spotify" "$mf" "$force" "$dry"
-	install_file "${RICE_SRC}/vesktop/vesktop" "$home/.local/bin/vesktop" "$mf" "$force" "$dry"
-	vs="$home/.config/vesktop/settings/settings.json"
-	if [[ -d "$home/.config/vesktop/themes" ]]; then
-		install_file "${RICE_SRC}/vesktop/Acrylic-Harmony.theme.css" \
-			"$home/.config/vesktop/themes/Acrylic-Harmony.theme.css" "$mf" "$force" "$dry"
-		install_file "${RICE_SRC}/vesktop/webos-transparent.css" \
-			"$home/.config/vesktop/themes/webos-transparent.css" "$mf" "$force" "$dry"
-	fi
-	if [[ -d "$home/.config/vesktop/settings" ]]; then
-		install_file "${RICE_SRC}/vesktop/quickCss.css" \
-			"$home/.config/vesktop/settings/quickCss.css" "$mf" "$force" "$dry"
-	fi
-	if [[ -f "$vs" ]]; then
-		(( dry )) || sed -i 's/"transparent"[[:space:]]*:[[:space:]]*false/"transparent": true/' "$vs"
-		(( dry )) || sed -i 's/"splashTheming"[[:space:]]*:[[:space:]]*false/"splashTheming": true/' "$vs"
-		(( dry )) || sed -i 's/"enabledThemes"[[:space:]]*:[[:space:]]*\[[^]]*\]/"enabledThemes": ["Acrylic-Harmony.theme.css", "webos-transparent.css"]/' "$vs"
-	fi
+	# Vesktop was removed from the image; drop the launcher and wrapper left
+	# by older rice versions. Keep a Hidden=true stub: that is how the
+	# root-owned system entry is suppressed until the package is unmerged.
+	(( dry )) || {
+		rm -f "$home/.local/bin/vesktop"
+		vs_launcher="$home/.local/share/applications/vesktop.desktop"
+		if [[ -f "$vs_launcher" ]] && grep -q '^Exec=.*\.local/bin/vesktop' "$vs_launcher"; then
+			rm -f "$vs_launcher"
+		fi
+	}
 	ini="$home/.config/spicetify/config-xpui.ini"
 	[[ -f "$ini" ]] || return 0
 	theme="$(sed -n 's/^current_theme[[:space:]]*=[[:space:]]*//p' "$ini" | head -1)"

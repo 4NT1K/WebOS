@@ -39,7 +39,7 @@ WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look
 
 The Deep Black base and grey text ramp never change, so CJK glyphs and kaomoji stay readable on every wallpaper. Only accents follow the colourway:
 
-- **Automatic:** waypaper runs `webos-accent "$wallpaper"` after each wallpaper change. It extracts a bright, saturated colour and retints Hyprland borders, waybar, GTK 3/4, kitty, wofi, Spicetify and Vesktop.
+- **Automatic:** waypaper runs `webos-accent "$wallpaper"` after each wallpaper change. It extracts a bright, saturated colour and retints Hyprland borders, waybar, GTK 3/4, kitty, wofi and Spicetify.
 - **Signature crimson:** `webos-accent --apply /usr/share/webos/colourways/webos-crimson.json`
 - **Any colour:** `webos-accent --apply '#ee0001'`
 - **Back to Ashen soft-white:** `webos-accent --reset`

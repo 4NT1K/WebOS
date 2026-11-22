@@ -191,13 +191,6 @@ def apply_accent(rgb, source):
                  "  --essential-base: %s !important;\n"
                  "}" % (accent, accent))
 
-    patch_marked(HOME / ".config/vesktop/themes/webos-transparent.css",
-                 ":root {\n"
-                 "  --header-primary: %s !important;\n"
-                 "  --interactive-hover: %s !important;\n"
-                 "  --background-accent: %s !important;\n"
-                 "}" % (accent, accent, rgba_of(rgb, ".06")))
-
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps({
         "accent": accent,

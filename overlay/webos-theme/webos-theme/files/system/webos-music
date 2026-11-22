@@ -20,6 +20,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import urllib.parse
 import urllib.request
 
@@ -44,7 +45,8 @@ PANEL_SIZE = 340
 TOP_GAP = 100  # below the 46 px waybar plus margins
 
 META_FORMAT = ("{{status}}\t{{title}}\t{{artist}}\t{{mpris:length}}\t"
-               "{{mpris:artUrl}}\t{{position}}")
+               "{{mpris:artUrl}}\t{{position}}\t{{mpris:trackid}}")
+META_FIELDS = 7
 
 
 def run_quiet(args):
@@ -264,8 +266,10 @@ def toggle_spotify_mute():
 def read_state():
     """Read Spotify's whole card state in one playerctl call."""
     fields = spotifyctl("metadata", "--format", META_FORMAT).split("\t")
-    fields += [""] * (6 - len(fields))
-    status, title, artist, length_raw, art_url, position_raw = fields[:6]
+    sampled_at = time.monotonic()
+    fields += [""] * (META_FIELDS - len(fields))
+    (status, title, artist, length_raw, art_url, position_raw,
+     track_id) = fields[:META_FIELDS]
     length = to_float(length_raw) / 1000000.0 if length_raw else 0.0
     # {{position}} is reported in microseconds, unlike `playerctl position`.
     position = to_float(position_raw) / 1000000.0 if position_raw else 0.0
@@ -277,6 +281,8 @@ def read_state():
         "length": length,
         "position": position,
         "art_url": art_url,
+        "track_id": track_id,
+        "sampled_at": sampled_at,
     }
 
 
@@ -572,6 +578,57 @@ def format_time(seconds):
     if hours:
         return "%d:%02d:%02d" % (hours, minutes, secs)
     return "%d:%02d" % (minutes, secs)
+
+
+# MPRIS position is sampled every 250 ms, but the label should track the song
+# continuously. Keep the last sample as an anchor and advance it with the
+# monotonic clock between samples so the display never lags or drifts.
+_position_anchor = {"identity": None, "position": 0.0,
+                    "status": "stopped", "at": 0.0}
+
+
+def track_identity(state):
+    """Everything that changes when the song changes, including a seek reset."""
+    return (state.get("track_id") or state.get("title"), state.get("artist"),
+            state.get("art_url"), state.get("length"))
+
+
+def anchor_position(position, status=None):
+    """Re-anchor immediately after a seek or an external position change."""
+    _position_anchor.update(identity=track_identity(read_state()),
+                            position=max(0.0, to_float(position)),
+                            status=status or _position_anchor["status"],
+                            at=time.monotonic())
+
+
+def synced_position(state):
+    """Drift-free playback position from the MPRIS sample in ``state``."""
+    now = time.monotonic()
+    identity = track_identity(state)
+    raw = max(0.0, to_float(state.get("position")))
+    status = state.get("status", "stopped")
+
+    predicted = _position_anchor["position"]
+    if _position_anchor["status"] == "playing":
+        predicted += now - _position_anchor["at"]
+
+    # A new track, a pause/resume or any real seek invalidates the old anchor.
+    if (_position_anchor["identity"] != identity or
+            _position_anchor["status"] != status or
+            abs(raw - predicted) > 1.0):
+        _position_anchor.update(identity=identity, position=raw,
+                                status=status,
+                                at=state.get("sampled_at", now))
+
+    if status == "playing":
+        value = _position_anchor["position"] + (now - _position_anchor["at"])
+    else:
+        value = _position_anchor["position"]
+
+    length = to_float(state.get("length"))
+    if length > 0:
+        value = min(max(value, 0.0), length)
+    return value
 
 
 # ---------------------------------------------------------------------------
@@ -955,7 +1012,11 @@ def run_app(visible):
     def on_seek(_widget):
         if updating[0]:
             return
-        spotifyctl("position", "%.2f" % scale.get_value())
+        position = scale.get_value()
+        spotifyctl("position", "%.2f" % position)
+        # The seek bar and the elapsed label must move together immediately,
+        # even for jumps smaller than the re-sync tolerance in poll().
+        anchor_position(position)
 
     scale.connect("value-changed", on_seek)
 
@@ -967,7 +1028,8 @@ def run_app(visible):
         )
         title_label.set_text(state["title"] or "No track")
         artist_label.set_text(state["artist"] or "")
-        elapsed_label.set_text(format_time(state["position"]))
+        position = synced_position(state)
+        elapsed_label.set_text(format_time(position))
         total_label.set_text(format_time(state["length"]))
 
         volume, muted = volume_state()
@@ -986,7 +1048,7 @@ def run_app(visible):
         if length > 0:
             updating[0] = True
             scale.set_range(0.0, length)
-            scale.set_value(min(max(state["position"], 0.0), length))
+            scale.set_value(position)
             updating[0] = False
 
         play_icon = "media-pause-symbolic" if status == "playing" else "media-playback-start-symbolic"

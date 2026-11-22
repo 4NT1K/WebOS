@@ -443,7 +443,7 @@ fn page_extras(f: &mut Frame, area: Rect, app: &mut App) {
         .collect();
     f.render_widget(List::new(items), rows[0]);
 
-    let help = "Choose apps, shells and features (Discord, Spotify, Firefox, Vesktop, Waypaper, etc.). Enter/Space to toggle.";
+    let help = "Choose apps, shells and features (Discord, Spotify, Firefox, Waypaper, etc.). Enter/Space to toggle.";
     f.render_widget(
         Paragraph::new(Line::from(Span::styled(help.to_string(), theme::faint()))).wrap(Wrap { trim: true }),
         rows[1],
@@ -509,10 +509,9 @@ fn page_summary(f: &mut Frame, area: Rect, app: &mut App) {
     );
     row(
         "Apps",
-        format!("firefox={} discord={} vesktop={} opencode={} spotify={}",
+        format!("firefox={} discord={} opencode={} spotify={}",
             if c.install_firefox {"yes"} else {"no"},
             if c.install_discord {"yes"} else {"no"},
-            if c.install_vesktop {"yes"} else {"no"},
             if c.install_opencode {"yes"} else {"no"},
             if c.install_spotify {"yes"} else {"no"}),
         theme::base(),
