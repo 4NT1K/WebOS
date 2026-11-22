@@ -69,10 +69,13 @@ tooltip label {
 #custom-update {
     color: @accent;
     padding: 0 10px;
+    border-color: rgba(255, 255, 255, 0.75);
 }
 
 #custom-update.available {
-    color: @accent;
+    color: #FFFFFF;
+    border-color: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.25);
 }
 
 #custom-update:hover {
