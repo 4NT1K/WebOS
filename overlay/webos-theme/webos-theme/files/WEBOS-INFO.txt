@@ -36,7 +36,7 @@ WHAT CHANGED IN 1.02
 --------------------
 The 1.02 maintenance rebuild is delivered to existing 1.01 machines by
 `sudo webos-update`. The WebOS overlay is refreshed from GitHub, the theme is
-upgraded to `webos-theme-1.0-r49`, and the rice is re-applied. Log out and back
+upgraded to `webos-theme-1.0-r50`, and the rice is re-applied. Log out and back
 in (or reboot) after the update so the session picks up the new files.
 
 - The far-right ⏻ power button is now present in the "mono" dotfiles profile as
@@ -82,7 +82,7 @@ in (or reboot) after the update so the session picks up the new files.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
   were corrected, and the shipped guide and release notes now describe 1.02.
 
-RECENT THEME REVISIONS (r41-r49)
+RECENT THEME REVISIONS (r41-r50)
 --------------------------------
 - r41/r42: cava bars became solid opaque white and the cover was lightly frosted
   instead of heavily dimmed, so the artwork stayed recognisable.
@@ -113,6 +113,10 @@ RECENT THEME REVISIONS (r41-r49)
   Waybar spectrum checks its real PipeWire links, so it never captures the mic
   or another app when the Spotify node is gone, and it stays hidden until
   Spotify is actually playing.
+- r50: `webos-update` also removes retired Vesktop entries from custom Portage
+  sets. Older images left one in `/etc/portage/sets/desktop`, so `@world`
+  reinstalled it every run and the update badge never cleared even though the
+  update itself succeeded.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -737,7 +741,7 @@ as part of a release; only reboot when you deliberately test the new kernel.
 
 Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.02"`).
 Maintenance fixes that must reach installed machines need a new package
-revision (`webos-theme-1.0-r49`) and a new tag; `webos-update` refreshes the
+revision (`webos-theme-1.0-r50`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.
 Before wiping another OS's drive, keep a verified backup and confirm WebOS
 boots and installs from its own SSD.

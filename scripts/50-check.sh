@@ -195,10 +195,10 @@ grep -q 'for version in ("0.1", "1.0")' "$MUSIC" && grep -q 'GtkLayerShell.Edge.
 	&& good "music uses layer-shell below the top bar" || bad "music fallback leaves an empty window"
 grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \
 	&& good "music dropdown excluded from blur" || bad "music dropdown not excluded from blur"
-grep -q 'webos-theme-1.0-r49.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "ISO pins theme r49" || bad "ISO still pins an older theme"
+grep -q 'webos-theme-1.0-r50.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "ISO pins theme r50" || bad "ISO still pins an older theme"
 grep -q 'gtk-layer-shell\[introspection\]' \
-	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r49.ebuild" \
+	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r50.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
 # 9. v1.02 identity and shipped guide
@@ -215,7 +215,7 @@ done
 grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
 	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
 GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
-for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r49' \
+for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r50' \
 	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
 	'WEBOS_VERSION=1.02-Ashen'; do
 	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
@@ -278,25 +278,29 @@ if grep -qF 'hyprctl dispatch dpms' "$HYPRLIDLE"; then
 else good "old dpms dispatch gone"; fi
 
 # 12. theme revision reaches installed machines
-THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r49.ebuild"
-[[ -f "$THEME" ]] && good "r49 theme ebuild" || bad "missing r49 theme ebuild"
+THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r50.ebuild"
+[[ -f "$THEME" ]] && good "r50 theme ebuild" || bad "missing r50 theme ebuild"
 grep -qF 'gui-libs/gtk-layer-shell[introspection]' "$THEME" \
-	&& good "r49 ships layer-shell introspection" || bad "r49 lacks introspection dependency"
-grep -qF 'THEME_EBUILD="webos-theme-1.0-r49.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "rootfs pins r49" || bad "rootfs does not pin r49"
+	&& good "r50 ships layer-shell introspection" || bad "r50 lacks introspection dependency"
+grep -qF 'THEME_EBUILD="webos-theme-1.0-r50.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "rootfs pins r50" || bad "rootfs does not pin r50"
 grep -qF 'media-sound/cava' "$THEME" \
-	&& good "r49 ships cava for the Waybar visualizer" || bad "r49 lacks cava dependency"
+	&& good "r50 ships cava for the Waybar visualizer" || bad "r50 lacks cava dependency"
 grep -qF 'webos-visualizer' "$THEME" \
-	&& good "r49 installs webos-visualizer" || bad "r49 lacks webos-visualizer"
+	&& good "r50 installs webos-visualizer" || bad "r50 lacks webos-visualizer"
 
 # 13. binary-first updater controls, without forbidden flags
 UPDATER="${WAYBAR_DIR}/system/webos-update"
 for pat in '--fast' '--fast-binpkg' '--strict-use' '--respect-use' '--buildpkg' \
 	'--no-compile' '--binpkg-changed-deps=n' \
 	'prefers prebuilt binaries; falls back to source' \
-	'reboot with: loginctl reboot' 'archive/refs/heads/main.tar.gz'; do
+	'reboot with: loginctl reboot' 'archive/refs/heads/main.tar.gz' \
+	'/etc/portage/sets/*' '/^net-im\/vesktop(-bin)?$/d'; do
 	grep -qF -- "$pat" "$UPDATER" && good "updater: ${pat}" || bad "updater missing: ${pat}"
 done
+if grep -qE '^net-im/vesktop(-bin)?$' "${WEBOS_ROOT}/config/sets/desktop"; then
+	bad "fresh installs still list retired Vesktop"
+else good "fresh installs omit retired Vesktop"; fi
 for f in "$UPDATER" "${WEBOS_ROOT}/config/make.conf"; do
 	if grep -Eq -- '--binpkg-respect-use=n|--getbinpkgonly|(^|[[:space:]])-G([[:space:]]|$)|(^|[[:space:]])-K([[:space:]]|$)' "$f"; then
 		bad "forbidden binary flag in ${f##*/}"
