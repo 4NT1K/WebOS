@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Waybar 0.15 sends legacy Hyprland IPC dispatches that 0.57 rejects.
+# Shim rewrites them to valid Lua dispatchers so workspace buttons work.
+# Installed as /usr/local/bin/waybar so every launch is shimmed.
+shim=/usr/lib/webos/waybar-ipc-shim.so
+[[ -f "$shim" ]] && export LD_PRELOAD="$shim${LD_PRELOAD:+:$LD_PRELOAD}"
+exec /usr/bin/waybar "$@"
