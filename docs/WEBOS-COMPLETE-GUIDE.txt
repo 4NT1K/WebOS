@@ -59,8 +59,8 @@ Hard constraints (NEVER violate these)
      spinning vinyl with the cover as its centre label, pure black/white text,
      flat outline-free buttons and bars, bold top-left title/artist (long
      titles wrap to two lines instead of being cut off), elapsed/total
-     progress bar with flat controls beneath it, a matching horizontal
-     Spotify volume bar with a live percentage, outside-click dismissal, and
+     progress bar with flat controls beneath it, a slim outline-free Spotify
+     volume fader on the right edge, outside-click dismissal, and
      GtkLayerShell-0.1 before 1.0. Dragging the seek previews it and seeks on
      release; volume applies continuously while dragging. The Waybar pill is
      centred with a flat monochrome Spotify-only cava-style spectrum to its
@@ -468,8 +468,8 @@ overlay/webos-theme/webos-theme/
                             selects pure black or white text, buttons, progress
                             and volume bars; all controls are flat, with no
                             glow, outline or button box. Playback buttons sit
-                            below the elapsed/total bar, with a matching
-                            horizontal volume bar that changes level live.
+                            below the elapsed/total bar, with a slim
+                            vertical volume fader that changes level live.
                             Spotify-only MPRIS/volume,
                             outside-click catcher, GtkLayerShell 0.1->1.0
                             fallback, set_namespace(window,"webos-music").
@@ -629,8 +629,8 @@ Music
   art is lightly frosted (blur 2.5, full brightness) and also becomes the
   rotating label of a Cairo-drawn vinyl. art_is_light() picks pure black or
   white text, buttons and bars; no glows, outlines or button boxes.
-  Playback buttons sit under the elapsed/total bar and a matching horizontal
-  volume bar applies changes live while dragging. The Waybar spectrum only
+  Playback buttons sit under the elapsed/total bar and a slim vertical
+  volume fader on the right edge applies changes live while dragging. The Waybar spectrum only
   appears while Spotify plays. The Waybar pill lists only title and
   artist. Outside clicks are dismissed by a full-screen transparent catcher.
   GtkLayerShell 0.1 is requested before 1.0.
