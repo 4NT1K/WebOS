@@ -314,9 +314,9 @@ def prepare_art(url):
         # crop the soft edge away. Keep it bright enough to recognise the art.
         overscan = PANEL_SIZE + 48
         frost = ImageOps.fit(image, (overscan, overscan), resample)
-        frost = frost.filter(ImageFilter.GaussianBlur(radius=9))
+        frost = frost.filter(ImageFilter.GaussianBlur(radius=5))
         frost = frost.crop((24, 24, 24 + PANEL_SIZE, 24 + PANEL_SIZE))
-        frost = ImageEnhance.Brightness(frost).enhance(0.72)
+        frost = ImageEnhance.Brightness(frost).enhance(0.92)
         frost.save(cached, format="PNG")
 
         # Drop the older greyscale/dual-image caches for this track.
@@ -526,17 +526,13 @@ class AudioVisualizer:
             cr.save()
             cr.clip()
 
+            # The palette is forced to white in set_art(): keep the bars a
+            # solid, fully opaque white. The old 10-stripe gradient dimmed the
+            # lower half to 42% and capped alpha at 0.92, which read as grey.
             red, green, blue = self.colours[index]
-            stripes = 10
-            for stripe in range(stripes):
-                stripe_y = y + bar_height * stripe / stripes
-                stripe_h = bar_height / stripes + 1.0
-                brightness = 0.42 + 0.58 * (1.0 - stripe / float(stripes))
-                cr.set_source_rgba(red * brightness / 255.0,
-                                   green * brightness / 255.0,
-                                   blue * brightness / 255.0, 0.92)
-                cr.rectangle(x, stripe_y, bar_width, stripe_h)
-                cr.fill()
+            cr.set_source_rgba(red / 255.0, green / 255.0, blue / 255.0, 1.0)
+            cr.rectangle(x, y, bar_width, bar_height)
+            cr.fill()
             cr.restore()
 
 
@@ -583,7 +579,7 @@ def run_app(visible):
         border-radius: 18px;
         color: #D8D8D8;
         padding: 14px;
-        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.28);
+        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.12);
     }
     .webos-status {
         color: #D8D8D8;
