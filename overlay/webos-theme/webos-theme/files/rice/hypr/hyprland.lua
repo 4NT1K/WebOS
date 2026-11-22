@@ -216,8 +216,11 @@ hl.animation({ leaf = "layersIn",      enabled = true, speed = 4,  bezier = "ove
 hl.animation({ leaf = "layersOut",     enabled = true, speed = 3,  bezier = "smooth",   style = "slide" })
 hl.animation({ leaf = "fadeLayersIn",  enabled = true, speed = 3,  bezier = "smooth" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3,  bezier = "soft" })
--- Smooth (no overshoot) so the workspace settles once and never sticks.
-hl.animation({ leaf = "workspaces",    enabled = true, speed = 7,  bezier = "smooth",   style = "slide 20%" })
+-- Crossfade workspaces: a slide (even 20%) physically drags windows across
+-- the screen and still reads as sticking when several switches are chained.
+hl.animation({ leaf = "workspaces",    enabled = true, speed = 7,  bezier = "smooth",   style = "fade" })
+hl.animation({ leaf = "workspacesIn",  enabled = true, speed = 7,  bezier = "smooth",   style = "fade" })
+hl.animation({ leaf = "workspacesOut", enabled = true, speed = 7,  bezier = "smooth",   style = "fade" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "smooth", style = "fade" })
 
 -- ── Per-window polish ───────────────────────────────────────────────────────
