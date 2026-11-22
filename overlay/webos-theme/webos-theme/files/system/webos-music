@@ -178,30 +178,85 @@ def to_float(value, default=0.0):
         return default
 
 
-def volume_state():
-    """Read the default sink volume/mute from wpctl as (0.0-1.0, muted)."""
+# Remembered Spotify-only volume, used for the slider while Spotify is closed.
+_spotify_volume = [1.0]
+
+
+def pactl_sink_inputs():
+    """Return pactl's sink-input listing, or '' when unavailable."""
     try:
         proc = subprocess.run(
-            ["wpctl", "get-volume", "@DEFAULT_AUDIO_SINK@"],
+            ["pactl", "list", "sink-inputs"],
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             timeout=2,
             check=False,
         )
     except (OSError, subprocess.SubprocessError):
-        return 0.0, False
-    text = proc.stdout.decode("utf-8", "replace").strip()
-    match = re.search(r"([0-9]*\.?[0-9]+)", text)
-    volume = min(max(to_float(match.group(1) if match else 0.0), 0.0), 1.0)
-    return volume, "[MUTED]" in text
+        return ""
+    if proc.returncode != 0:
+        return ""
+    return proc.stdout.decode("utf-8", "replace")
+
+
+def spotify_streams():
+    """Return Spotify's streams as [(id, volume 0.0-1.0, muted), ...].
+
+    Matching is done on the stream's application/media name only, so no
+    other application's audio is ever read or changed.
+    """
+    text = pactl_sink_inputs()
+    streams = []
+    for block in re.split(r"(?m)^Sink Input #", text)[1:]:
+        lines = block.splitlines()
+        if not lines:
+            continue
+        sid = re.match(r"(\d+)", lines[0].strip())
+        if not sid:
+            continue
+        names = re.findall(
+            r'^\s*(?:application\.name|media\.name)\s*=\s*"([^"]+)"',
+            block, re.MULTILINE,
+        )
+        if not any(name.strip().lower() == "spotify" for name in names):
+            continue
+        vol_match = re.search(r"^\s*Volume:.*?(\d+)\s*%", block, re.MULTILINE)
+        volume = to_float(vol_match.group(1) if vol_match else 100, 100) / 100.0
+        mute_match = re.search(r"^\s*Mute:\s*(yes|no)", block, re.MULTILINE)
+        muted = bool(mute_match and mute_match.group(1) == "yes")
+        streams.append((sid.group(1), min(max(volume, 0.0), 1.0), muted))
+    return streams
+
+
+def volume_state():
+    """Read Spotify's own stream volume/mute as (0.0-1.0, muted)."""
+    streams = spotify_streams()
+    if not streams:
+        return _spotify_volume[0], False
+    _spotify_volume[0] = streams[0][1]
+    return streams[0][1], all(stream[2] for stream in streams)
 
 
 def set_volume(value):
-    """Set the default sink to an absolute 0.0-1.0 fraction."""
-    run_quiet([
-        "wpctl", "set-volume", "@DEFAULT_AUDIO_SINK@",
-        "%.2f" % min(max(value, 0.0), 1.0),
-    ])
+    """Set Spotify's stream volume only - never the system default sink."""
+    value = min(max(value, 0.0), 1.0)
+    _spotify_volume[0] = value
+    streams = spotify_streams()
+    if not streams:
+        return
+    percent = "%d%%" % int(round(value * 100))
+    for sid, _volume, _muted in streams:
+        run_quiet(["pactl", "set-sink-input-volume", sid, percent])
+
+
+def toggle_spotify_mute():
+    """Toggle mute on Spotify's streams only."""
+    streams = spotify_streams()
+    if not streams:
+        return
+    target = "0" if all(stream[2] for stream in streams) else "1"
+    for sid, _volume, _muted in streams:
+        run_quiet(["pactl", "set-sink-input-mute", sid, target])
 
 
 def read_state():
@@ -710,13 +765,8 @@ def run_app(visible):
     mute_button = Gtk.Button.new_from_icon_name(
         "audio-volume-high-symbolic", Gtk.IconSize.MENU
     )
-    mute_button.set_tooltip_text("Mute / unmute")
-    mute_button.connect(
-        "clicked",
-        lambda *_: run_quiet([
-            "wpctl", "set-mute", "@DEFAULT_AUDIO_SINK@", "toggle"
-        ]),
-    )
+    mute_button.set_tooltip_text("Mute / unmute Spotify only")
+    mute_button.connect("clicked", lambda *_: toggle_spotify_mute())
     volume_row.pack_start(mute_button, False, False, 0)
 
     volume_scale = Gtk.Scale.new_with_range(
