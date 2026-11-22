@@ -9,6 +9,7 @@ Modes:
 """
 
 import atexit
+import cairo
 import hashlib
 import io
 import json
@@ -253,16 +254,6 @@ def set_volume(value):
         run_quiet(["pactl", "set-sink-input-volume", sid, percent])
 
 
-def toggle_spotify_mute():
-    """Toggle mute on Spotify's streams only."""
-    streams = spotify_streams()
-    if not streams:
-        return
-    target = "0" if all(stream[2] for stream in streams) else "1"
-    for sid, _volume, _muted in streams:
-        run_quiet(["pactl", "set-sink-input-mute", sid, target])
-
-
 def read_state():
     """Read Spotify's whole card state in one playerctl call."""
     fields = spotifyctl("metadata", "--format", META_FORMAT).split("\t")
@@ -333,45 +324,6 @@ def prepare_art(url):
         return None
 
 
-def art_palette(path, count=20):
-    """Pull a handful of recognisable colours out of the cached cover art."""
-    fallback = [(255, 255, 255)] * count
-    if not path:
-        return fallback
-    try:
-        from PIL import Image
-        image = Image.open(path).convert("RGB").resize((48, 48))
-        quantized = image.quantize(colors=6)
-        palette = quantized.getpalette() or []
-        ranked = sorted(quantized.getcolors() or [], reverse=True)
-        colours = []
-        for _used, index in ranked:
-            rgb = tuple(palette[index * 3:index * 3 + 3])
-            if len(rgb) == 3 and max(rgb) - min(rgb) >= 18 and max(rgb) >= 50:
-                colours.append(rgb)
-        if not colours:
-            return fallback
-        return [colours[i % len(colours)] for i in range(count)]
-    except Exception:
-        return fallback
-
-
-def readable_text_colour(rgb, light=False):
-    """Return lettering that stays legible over the current cover.
-
-    On dark art the cover hue is lifted toward white while keeping its tint.
-    On a fairly white cover the lettering goes black instead, so text and
-    icons do not disappear into the bright background.
-    """
-    if light:
-        return (0, 0, 0)
-    red, green, blue = rgb
-    peak = max(rgb) or 1
-    scale = min(2.4, 235.0 / peak)
-    lifted = tuple(min(255, round(channel * scale)) for channel in rgb)
-    return tuple(max(110, channel) for channel in lifted)
-
-
 def art_is_light(path):
     """True when the frosted cover is bright enough to need dark lettering."""
     if not path:
@@ -428,110 +380,70 @@ def music_node_target(player):
     return player
 
 
-class AudioVisualizer:
-    """cava-driven bars from the active MPRIS player's PipeWire node."""
+class VinylVisualizer:
+    """Rotating vinyl disc with the current cover as its centre label.
 
-    BANDS = 20
+    Inspired by the PySide6 turntable in lorenkr/Record (grooves, fixed
+    reflection), but drawn directly with the GTK/Cairo context already used by
+    the card, so no extra GUI toolkit or Spotify Web API login is needed.
+    """
+
+    FPS = 25
 
     def __init__(self, area):
         self.area = area
-        self.bars = [0.0] * self.BANDS
-        self.levels = [0.0] * self.BANDS
-        self.colours = [(255, 255, 255)] * self.BANDS
-        self.proc = None
-        self.thread = None
+        self.surface = None
+        self.angle = 0.0
+        self.playing = False
         self.running = False
-        self.target = None
-        self.config = None
+        self.timer = None
 
-    def set_colours(self, colours):
-        if colours and len(colours) >= self.BANDS:
-            self.colours = list(colours[:self.BANDS])
+    def set_art(self, path):
+        """Build a Cairo surface from the cached cover for the centre label."""
+        self.surface = None
+        if path:
+            try:
+                from PIL import Image
+                size = 256
+                image = Image.open(path).convert("RGB").resize((size, size))
+                data = bytearray()
+                for red, green, blue in image.get_flattened_data():
+                    data.extend((blue, green, red, 255))
+                self.surface = cairo.ImageSurface.create_for_data(
+                    data, cairo.FORMAT_ARGB32, size, size, size * 4
+                )
+            except Exception:
+                self.surface = None
+        self.area.queue_draw()
 
-    def set_target(self, target):
-        """Switch the capture to a different player, if it changed."""
-        if target == self.target:
-            return False
-        was_running = self.running
-        if was_running:
-            self.stop()
-        self.target = target
-        if was_running:
-            self.start()
-        return True
+    def set_playing(self, playing):
+        self.playing = bool(playing)
 
     def start(self):
-        if self.running or not self.target:
-            return
-        self.config = os.path.join(runtime_dir(), "webos-music-cava.conf")
-        try:
-            with open(self.config, "w", encoding="utf-8") as handle:
-                handle.write(
-                    "[general]\nbars = %d\n\n"
-                    "[input]\nmethod = pipewire\nsource = %s\n\n"
-                    "[output]\nmethod = raw\nraw_target = /dev/stdout\n"
-                    "data_format = ascii\nascii_max_range = 100\n"
-                    % (self.BANDS, self.target)
-                )
-            self.proc = subprocess.Popen(
-                ["cava", "-p", self.config],
-                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-            )
-        except (OSError, ValueError):
-            self.proc = None
+        if self.running:
             return
         self.running = True
-        self.thread = threading.Thread(target=self._reader, daemon=True)
-        self.thread.start()
+        from gi.repository import GLib
+        self.timer = GLib.timeout_add(1000 // self.FPS, self._tick)
 
     def stop(self):
         self.running = False
-        if self.proc is not None:
-            for action in ("terminate", "kill"):
-                try:
-                    getattr(self.proc, action)()
-                    self.proc.wait(timeout=1)
-                    break
-                except (OSError, subprocess.SubprocessError):
-                    continue
-            self.proc = None
-        if self.config:
-            try:
-                os.unlink(self.config)
-            except OSError:
-                pass
-            self.config = None
-        self.bars = [0.0] * self.BANDS
-        self.levels = [0.0] * self.BANDS
-        self.area.queue_draw()
-
-    def _reader(self):
-        while self.running and self.proc is not None:
-            try:
-                line = self.proc.stdout.readline()
-            except (OSError, ValueError):
-                break
-            if not line:
-                break
-            try:
-                values = [int(part) for part in
-                          line.decode("utf-8", "replace").strip().split(";")
-                          if part.strip()]
-            except ValueError:
-                continue
-            values = (values + [0] * self.BANDS)[:self.BANDS]
-            raw = [min(1.0, max(0.0, value / 100.0)) ** 0.85 for value in values]
-            # cava already smooths; this only takes the edge off stray frames.
-            for index, value in enumerate(raw):
-                level = self.levels[index]
-                weight = 0.35 if value > level else 0.12
-                self.levels[index] = level + (value - level) * weight
-                self.bars[index] = self.levels[index]
+        if self.timer is not None:
             try:
                 from gi.repository import GLib
-                GLib.idle_add(self.area.queue_draw)
+                GLib.source_remove(self.timer)
             except Exception:
                 pass
+            self.timer = None
+        self.area.queue_draw()
+
+    def _tick(self):
+        if not self.running:
+            return False
+        if self.playing:
+            self.angle = (self.angle + 0.018) % (2.0 * math.pi)
+            self.area.queue_draw()
+        return True
 
     def draw(self, area, cr):
         width = area.get_allocated_width()
@@ -540,36 +452,88 @@ class AudioVisualizer:
         cr.rectangle(0, 0, width, height)
         cr.fill()
 
-        gap = 3.0
-        bar_width = (width - gap * (self.BANDS - 1)) / self.BANDS
-        for index, level in enumerate(self.bars):
-            bar_height = max(2.0, level * height)
-            x = index * (bar_width + gap)
-            y = height - bar_height
-            radius = min(bar_width / 2.0, 5.0, bar_height / 2.0)
+        center_x, center_y = width / 2.0, height / 2.0
+        radius = min(width, height) / 2.0 - 1.0
+        if radius <= 4:
+            return
+        full_turn = 2.0 * math.pi
 
-            # Rounded-top bar, clipped while the vertical gradient is painted.
-            cr.new_path()
-            cr.move_to(x, y + bar_height)
-            cr.line_to(x, y + radius)
-            cr.arc(x + radius, y + radius, radius, math.pi, 1.5 * math.pi)
-            cr.line_to(x + bar_width - radius, y)
-            cr.arc(x + bar_width - radius, y + radius, radius,
-                   1.5 * math.pi, 2.0 * math.pi)
-            cr.line_to(x + bar_width, y + bar_height)
-            cr.close_path()
-            cr.save()
-            cr.clip()
+        # Drop shadow and the vinyl body.
+        cr.set_source_rgba(0.0, 0.0, 0.0, 0.45)
+        cr.arc(center_x, center_y + 3.0, radius, 0, full_turn)
+        cr.fill()
+        cr.set_source_rgba(0.045, 0.045, 0.05, 1.0)
+        cr.arc(center_x, center_y, radius, 0, full_turn)
+        cr.fill()
 
-            # The palette is forced to white in set_art(): keep the bars a
-            # solid, fully opaque white. The old 10-stripe gradient dimmed the
-            # lower half to 42% and capped alpha at 0.92, which read as grey.
-            red, green, blue = self.colours[index]
-            cr.set_source_rgba(red / 255.0, green / 255.0, blue / 255.0, 1.0)
-            cr.rectangle(x, y, bar_width, bar_height)
-            cr.fill()
-            cr.restore()
+        # Fine grooves and a brighter outer rim, as on lorenkr/Record.
+        for index in range(1, 14):
+            groove = radius * (0.48 + index * 0.036)
+            if groove >= radius * 0.97:
+                break
+            cr.set_source_rgba(0.85, 0.85, 0.9,
+                               0.09 if index % 3 == 0 else 0.05)
+            cr.set_line_width(0.7)
+            cr.arc(center_x, center_y, groove, 0, full_turn)
+            cr.stroke()
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.18)
+        cr.set_line_width(1.2)
+        cr.arc(center_x, center_y, radius - 1.0, 0, full_turn)
+        cr.stroke()
 
+        # The cover art is the label and actually spins with the record.
+        label_radius = radius * 0.42
+        cr.save()
+        cr.translate(center_x, center_y)
+        cr.rotate(self.angle)
+        cr.arc(0.0, 0.0, label_radius, 0, full_turn)
+        cr.clip()
+        if self.surface is not None:
+            scale = (2.0 * label_radius) / float(self.surface.get_width())
+            cr.scale(scale, scale)
+            cr.set_source_surface(
+                self.surface,
+                -self.surface.get_width() / 2.0,
+                -self.surface.get_height() / 2.0,
+            )
+            cr.paint()
+        else:
+            cr.set_source_rgba(0.22, 0.22, 0.24, 1.0)
+            cr.paint()
+        cr.restore()
+
+        cr.set_source_rgba(0.0, 0.0, 0.0, 0.55)
+        cr.set_line_width(2.0)
+        cr.arc(center_x, center_y, label_radius, 0, full_turn)
+        cr.stroke()
+
+        # Spindle hole.
+        hole = max(3.0, radius * 0.022)
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.arc(center_x, center_y, hole, 0, full_turn)
+        cr.fill()
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.25)
+        cr.set_line_width(1.0)
+        cr.arc(center_x, center_y, hole + 1.0, 0, full_turn)
+        cr.stroke()
+
+        # Fixed light reflection sweep (does not rotate with the disc).
+        cr.save()
+        cr.arc(center_x, center_y, radius - 1.0, 0, full_turn)
+        cr.clip()
+        shine = cairo.LinearGradient(
+            center_x - radius, center_y - radius,
+            center_x + radius, center_y + radius,
+        )
+        shine.add_color_stop_rgba(0.0, 1.0, 1.0, 1.0, 0.0)
+        shine.add_color_stop_rgba(0.42, 1.0, 1.0, 1.0, 0.0)
+        shine.add_color_stop_rgba(0.5, 1.0, 1.0, 1.0, 0.10)
+        shine.add_color_stop_rgba(0.58, 1.0, 1.0, 1.0, 0.0)
+        shine.add_color_stop_rgba(1.0, 1.0, 1.0, 1.0, 0.0)
+        cr.set_source(shine)
+        cr.rectangle(0, 0, width, height)
+        cr.fill()
+        cr.restore()
 
 def format_time(seconds):
     seconds = max(0, int(to_float(seconds)))
@@ -664,7 +628,7 @@ def run_app(visible):
         border: 1px solid rgba(232, 232, 232, 0.20);
         border-radius: 18px;
         color: #D8D8D8;
-        padding: 14px;
+        padding: 10px;
         box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.06);
     }
     .webos-status {
@@ -677,25 +641,60 @@ def run_app(visible):
     }
     .webos-title {
         color: #D8D8D8;
-        font: bold 14px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+        font: bold 16px "JetBrains Mono", "DejaVu Sans Mono", monospace;
+    }
+    .webos-artist {
+        color: #7A7A7A;
+        font: bold 13px "JetBrains Mono", "DejaVu Sans Mono", monospace;
     }
     .webos-dim {
         color: #7A7A7A;
         font: 11px "JetBrains Mono", "DejaVu Sans Mono", monospace;
     }
     button {
-        color: #D8D8D8;
-        background-color: rgba(232, 232, 232, 0.04);
-        border: 1px solid rgba(232, 232, 232, 0.20);
+        color: #FFFFFF;
+        background-color: rgba(255, 255, 255, 0.14);
+        border: 0;
+        outline: none;
         border-radius: 9px;
-        padding: 4px 10px;
+        padding: 5px 11px;
     }
     scale, scale trough, scale progress {
         background-color: rgba(232, 232, 232, 0.08);
         border-radius: 4px;
+        border: 0;
     }
     scale progress {
-        background-color: #E8E8E8;
+        background-color: #FFFFFF;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.85),
+                    0 0 12px rgba(255, 255, 255, 0.40);
+    }
+    #webos-fader {
+        background-color: transparent;
+        border: 0;
+        outline: none;
+        padding: 0 1px;
+    }
+    #webos-volume, #webos-volume trough, #webos-volume slider,
+    #webos-volume progress {
+        border: 0;
+        outline: none;
+    }
+    #webos-volume {
+        min-width: 8px;
+    }
+    #webos-volume trough {
+        min-width: 4px;
+        border-radius: 2px;
+    }
+    #webos-volume slider {
+        min-width: 8px;
+        min-height: 14px;
+        margin: 0;
+        border-radius: 4px;
+        background-color: #FFFFFF;
+        box-shadow: 0 0 6px rgba(255, 255, 255, 0.85),
+                    0 0 12px rgba(255, 255, 255, 0.40);
     }
     """
 
@@ -825,38 +824,67 @@ def run_app(visible):
         GLib.timeout_add(24, step)
         return False
 
-    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+    card = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
     card.set_name("music-card")
     card.set_size_request(PANEL_SIZE, PANEL_SIZE)
     window.add(card)
 
-    # Top row: status on the left, compact volume control on the right.
-    top_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-    card.pack_start(top_row, False, False, 0)
+    # Main body: status, controls, track info and vinyl on the left; a small
+    # plain vertical volume bar on the right. Higher handle = louder.
+    body = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    card.pack_start(body, True, True, 0)
+
+    left = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+    left.set_hexpand(True)
+    body.pack_start(left, True, True, 0)
+
+    header = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    left.pack_start(header, False, False, 0)
 
     status_label = Gtk.Label(label="STOPPED")
     status_label.set_name("music-status")
     status_label.set_halign(Gtk.Align.START)
     status_label.get_style_context().add_class("webos-status")
     status_label.set_hexpand(True)
-    top_row.pack_start(status_label, True, True, 0)
+    header.pack_start(status_label, True, True, 0)
 
-    volume_row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-    top_row.pack_start(volume_row, False, False, 0)
+    title_label = Gtk.Label(label="No track")
+    title_label.set_halign(Gtk.Align.START)
+    title_label.set_ellipsize(3)  # Pango.EllipsizeMode.END
+    title_label.set_max_width_chars(32)
+    title_label.get_style_context().add_class("webos-title")
+    left.pack_start(title_label, False, False, 0)
 
-    mute_button = Gtk.Button.new_from_icon_name(
-        "audio-volume-high-symbolic", Gtk.IconSize.MENU
-    )
-    mute_button.set_tooltip_text("Mute / unmute Spotify only")
-    mute_button.connect("clicked", lambda *_: toggle_spotify_mute())
-    volume_row.pack_start(mute_button, False, False, 0)
+    artist_label = Gtk.Label(label="")
+    artist_label.set_halign(Gtk.Align.START)
+    artist_label.set_ellipsize(3)
+    artist_label.set_max_width_chars(32)
+    artist_label.get_style_context().add_class("webos-artist")
+    left.pack_start(artist_label, False, False, 0)
+
+    # The vinyl fills the free space in the middle of the card. Its centre
+    # label is the current cover art (set_art below).
+    visual = Gtk.DrawingArea()
+    visual.set_name("music-viz")
+    visual.set_hexpand(True)
+    visual.set_vexpand(True)
+    left.pack_start(visual, True, True, 0)
+    visualizer = VinylVisualizer(visual)
+    visual.connect("draw", visualizer.draw)
+
+    fader = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    fader.set_name("webos-fader")
+    fader.set_valign(Gtk.Align.CENTER)
+    body.pack_start(fader, False, False, 0)
 
     volume_scale = Gtk.Scale.new_with_range(
-        Gtk.Orientation.HORIZONTAL, 0.0, 1.0, 0.01
+        Gtk.Orientation.VERTICAL, 0.0, 1.0, 0.01
     )
+    volume_scale.set_name("webos-volume")
+    volume_scale.set_inverted(True)
     volume_scale.set_draw_value(False)
-    volume_scale.set_size_request(90, -1)
-    volume_row.pack_start(volume_scale, False, False, 0)
+    volume_scale.set_size_request(-1, 110)
+    fader.pack_start(volume_scale, False, False, 0)
 
     volume_updating = [False]
 
@@ -866,44 +894,6 @@ def run_app(visible):
         set_volume(volume_scale.get_value())
 
     volume_scale.connect("value-changed", on_volume_changed)
-
-    title_label = Gtk.Label(label="No track")
-    title_label.set_halign(Gtk.Align.START)
-    title_label.set_ellipsize(3)  # Pango.EllipsizeMode.END
-    title_label.set_max_width_chars(32)
-    title_label.get_style_context().add_class("webos-title")
-    card.pack_start(title_label, False, False, 0)
-
-    artist_label = Gtk.Label(label="")
-    artist_label.set_halign(Gtk.Align.START)
-    artist_label.set_ellipsize(3)
-    artist_label.set_max_width_chars(32)
-    artist_label.get_style_context().add_class("webos-dim")
-    card.pack_start(artist_label, False, False, 0)
-
-    # Audio visualizer fills the middle of the square. Its bars take their
-    # colours from the current cover art (set_art below).
-    visual = Gtk.DrawingArea()
-    visual.set_name("music-viz")
-    visual.set_hexpand(True)
-    visual.set_vexpand(True)
-    card.pack_start(visual, True, True, 0)
-    visualizer = AudioVisualizer(visual)
-    visual.connect("draw", visualizer.draw)
-
-    controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-    controls.set_halign(Gtk.Align.CENTER)
-    card.pack_start(controls, False, False, 0)
-
-    def control(icon, command):
-        button = Gtk.Button.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
-        button.connect("clicked", lambda *_: spotifyctl(command))
-        controls.pack_start(button, False, False, 0)
-        return button
-
-    control("media-skip-backward-symbolic", "previous")
-    play_button = control("media-playback-start-symbolic", "play-pause")
-    control("media-skip-forward-symbolic", "next")
 
     timeline = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
     card.pack_start(timeline, False, False, 0)
@@ -921,42 +911,65 @@ def run_app(visible):
     total_label.get_style_context().add_class("webos-dim")
     timeline.pack_start(total_label, False, False, 0)
 
+    # Borderless playback buttons sit directly under the progress bar.
+    controls = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    controls.set_halign(Gtk.Align.CENTER)
+    card.pack_start(controls, False, False, 0)
+
+    def control(icon, command):
+        button = Gtk.Button.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
+        button.connect("clicked", lambda *_: spotifyctl(command))
+        controls.pack_start(button, False, False, 0)
+        return button
+
+    control("media-skip-backward-symbolic", "previous")
+    play_button = control("media-playback-start-symbolic", "play-pause")
+    control("media-skip-forward-symbolic", "next")
+
     last_art = [None]
-    last_player = [None]
     updating = [False]
     card_provider = [None]
     text_provider = [None]
     art_loading = [None]
 
-    def set_text_colour(rgb, light=False):
-        """Tint labels and controls to the song while keeping them readable."""
+    def set_text_colour(light=False):
+        """Pure black or white text, buttons and bars so everything pops."""
         if text_provider[0] is not None:
             Gtk.StyleContext.remove_provider_for_screen(screen, text_provider[0])
             text_provider[0] = None
-        colour = readable_text_colour(rgb, light)
-        hex6 = "%02x%02x%02x" % colour
+        ink = "000000" if light else "FFFFFF"
+        glow = (
+            "0 0 6px rgba(0, 0, 0, 0.60), 0 0 11px rgba(0, 0, 0, 0.28)"
+            if light else
+            "0 0 6px rgba(255, 255, 255, 0.95),"
+            " 0 0 14px rgba(255, 255, 255, 0.55)"
+        )
         if light:
-            dim = "rgba(0, 0, 0, 0.72)"
-            button_bg = "rgba(255, 255, 255, 0.30)"
-            button_border = "rgba(0, 0, 0, 0.38)"
-            button_hover = "rgba(255, 255, 255, 0.50)"
-            button_active = "rgba(255, 255, 255, 0.70)"
+            button_bg = "rgba(0, 0, 0, 0.08)"
+            button_hover = "rgba(0, 0, 0, 0.16)"
+            button_active = "rgba(0, 0, 0, 0.24)"
+            volume_trough = "rgba(0, 0, 0, 0.18)"
         else:
-            dim = "rgba(%d, %d, %d, 0.78)" % colour
-            button_bg = "rgba(%d, %d, %d, 0.10)" % colour
-            button_border = "rgba(%d, %d, %d, 0.42)" % colour
-            button_hover = "rgba(%d, %d, %d, 0.20)" % colour
-            button_active = "rgba(%d, %d, %d, 0.30)" % colour
+            button_bg = "rgba(255, 255, 255, 0.14)"
+            button_hover = "rgba(255, 255, 255, 0.24)"
+            button_active = "rgba(255, 255, 255, 0.34)"
+            volume_trough = "rgba(255, 255, 255, 0.20)"
         css = (
-            "#music-card, .webos-status, .webos-title, button, button image {"
-            " color: #%s; }"
-            ".webos-dim { color: %s; }"
-            "button { background-color: %s; border-color: %s; }"
-            "button:hover { background-color: %s; }"
-            "button:active { background-color: %s; }"
-            "scale progress { background-color: #%s; }"
-            % (hex6, dim, button_bg, button_border,
-               button_hover, button_active, hex6)
+            "#music-card, .webos-status, .webos-title, .webos-artist,"
+            " .webos-dim, button, button image { color: #%s; }"
+            "button { background-color: %s; border: 0; outline: none;"
+            " box-shadow: %s; }"
+            "button:hover { background-color: %s; box-shadow: %s; }"
+            "button:active { background-color: %s; box-shadow: %s; }"
+            "#webos-fader, #webos-volume, #webos-volume trough,"
+            " #webos-volume slider, #webos-volume progress"
+            " { border: 0; outline: none; }"
+            "#webos-volume trough { background-color: %s; }"
+            "#webos-volume slider { background-color: #%s; box-shadow: %s; }"
+            "#webos-volume progress, scale progress { background-color: #%s;"
+            " box-shadow: %s; }"
+            % (ink, button_bg, glow, button_hover, glow, button_active, glow,
+               volume_trough, ink, glow, ink, glow)
         ).encode("utf-8")
         provider = Gtk.CssProvider()
         provider.load_from_data(css)
@@ -971,19 +984,19 @@ def run_app(visible):
             Gtk.StyleContext.remove_provider_for_screen(screen, card_provider[0])
             card_provider[0] = None
         if not path:
-            visualizer.set_colours([(255, 255, 255)] * visualizer.BANDS)
-            set_text_colour((216, 216, 216))
+            visualizer.set_art(None)
+            set_text_colour(False)
             return
         css = ("#music-card { background-image: url(%s); background-size: cover; }"
                % json.dumps(path)).encode("utf-8")
-        visualizer.set_colours([(255, 255, 255)] * visualizer.BANDS)
+        visualizer.set_art(path)
         provider = Gtk.CssProvider()
         provider.load_from_data(css)
         Gtk.StyleContext.add_provider_for_screen(
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
         )
         card_provider[0] = provider
-        set_text_colour(art_palette(path, count=1)[0], art_is_light(path))
+        set_text_colour(art_is_light(path))
 
     def load_art_async(url):
         """Prepare frosted art off the GTK thread so label updates never stall."""
@@ -1032,16 +1045,10 @@ def run_app(visible):
         elapsed_label.set_text(format_time(position))
         total_label.set_text(format_time(state["length"]))
 
-        volume, muted = volume_state()
+        volume, _muted = volume_state()
         volume_updating[0] = True
         volume_scale.set_value(volume)
         volume_updating[0] = False
-        volume_icon = (
-            "audio-volume-muted-symbolic"
-            if muted or volume == 0 else "audio-volume-high-symbolic"
-        )
-        if mute_button.get_image():
-            mute_button.get_image().set_from_icon_name(volume_icon, Gtk.IconSize.BUTTON)
 
         length = state["length"]
         scale.set_sensitive(length > 0)
@@ -1060,10 +1067,7 @@ def run_app(visible):
             last_art[0] = url
             load_art_async(url)
 
-        player = active_mpris_player(state)
-        if player != last_player[0]:
-            last_player[0] = player
-            visualizer.set_target(music_node_target(player))
+        visualizer.set_playing(status == "playing")
         return True
 
     def hide_dropdown():

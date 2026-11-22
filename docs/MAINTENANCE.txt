@@ -32,9 +32,9 @@ The kernel package is NOT named sanus-kernel.
 --------------------------------------------------------------------------------
 1. REPO FACTS
 --------------------------------------------------------------------------------
-  Local source:   /home/brah/sanusos   (container mount inside builds: /sanusos)
+  Local source:   /home/brah/WebOS   (container mount inside builds: /webos)
   Git remote:     https://github.com/4NT1K/WebOS.git  (branch main)
-  Build container: webos-build  (Docker, /home/brah/sanusos mounted at /sanusos)
+  Build container: webos-build  (Docker, /home/brah/WebOS mounted at /webos)
   Version source of truth: branding/version
   Current release: WebOS 1.02 "Ashen", ISO build/webos-1.02-Ashen-amd64.iso
 
@@ -73,8 +73,8 @@ Everything hinges on this distinction.
   Keybinds, waybar modules/CSS, fastfetch card, hyprland rules, transparency,
   zram boot glue, SDDM seeding, WEBOS-INFO.txt
       -> overlay/webos-theme/webos-theme/files/
-      -> bump the theme ebuild revision (currently webos-theme-1.0-r4;
-         e.g. webos-theme-1.0-r5), regenerate Manifest if files changed.
+      -> bump the theme ebuild revision (currently webos-theme-1.0-r47;
+         next webos-theme-1.0-r48), regenerate Manifest if files changed.
 
   webos-update, webos-rice, webos-fastfetch, system helpers
       -> overlay/webos-theme/webos-theme/files/system/
@@ -169,10 +169,11 @@ Everything hinges on this distinction.
     remove plasma.desktop. SDDM must expose exactly ONE session: the one chosen
     in the installer, seeded in /var/lib/sddm/state.conf.
   * Do NOT switch the session to plain Hyprland. The intended command is
-    `Hyprland -c /home/brodie/.config/hypr/hyprland.lua` which loads the WebOS
+    `webos-session`, which starts Hyprland with ~/.config/hypr/hyprland.lua and loads the WebOS
     mono rice. Only reword misleading docs.
   * Keybinds: Super+Q kitty, Super+Shift+Return foot, Super+C close,
     Super+D / Super+R webos-menu, Super+M webos-music --toggle,
+    Super+Escape hyprlock, Super+scroll workspaces 1-5,
     Super+Shift+Escape exit, Super+Shift+S webos-shot region,
     Super+Ctrl+S move window to special.
   * Mono waybar: no network or battery module; the cpu, memory and pulseaudio

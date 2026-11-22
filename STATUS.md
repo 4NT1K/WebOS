@@ -1,12 +1,12 @@
 # WebOS build status
 
-_Last update: 2026-11-21 — v1.02 (Ashen): second maintenance rebuild; power widget, lock/idle fixes, compact music dropdown, per-song visualizer, outside-click dismissal and honest binary-first updater controls._
+_Last update: 2026-11-22 — v1.02 (Ashen): active maintenance; compact music dropdown with spinning vinyl, high-contrast controls, outside-click dismissal and honest binary-first updater controls._
 
-## Status: v1.02 — source frozen, ISO build pending
+## Status: v1.02 — active maintenance; theme r47 committed
 
 - Version 1.02; target ISO `webos-1.02-Ashen-amd64.iso`.
-- Source regression gate passes (`bash scripts/50-check.sh`: 0 problems).
-  Rootfs and ISO rebuild are the remaining release steps.
+- Theme r47 is committed on `main`. Run `bash scripts/50-check.sh` before the
+  next rootfs/ISO rebuild.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
   (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.
 - SDDM is the shipped greeter and offers exactly the session chosen in the
@@ -16,7 +16,8 @@ _Last update: 2026-11-21 — v1.02 (Ashen): second maintenance rebuild; power wi
   choose.
 - Keys: `Super+Q` terminal (kitty), `Super+Shift+Return` foot, `Super+C` close
   window, `Super+D` / `Super+R` webos-menu, `Super+M` music dropdown,
-  `Super+Shift+S` screenshot snip, `Super+Shift+Escape` exit Hyprland.
+  `Super+Shift+S` screenshot snip, `Super+Escape` hyprlock,
+  `Super+scroll` workspaces 1-5, `Super+Shift+Escape` exit Hyprland.
 - zram swap starts at boot with priority 100 (zstd with lzo-rle fallback), and
   `ananicy-cpp.initd` is enabled and started by the installer.
 - `webos-update` now updates the kernel and regenerates GRUB, not just @world.

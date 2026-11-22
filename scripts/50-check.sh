@@ -84,7 +84,7 @@ else bad "no CPU_FLAGS-sensitive rebuild in 30-rootfs.sh"; fi
 if grep -q "exclude='/var/db/repos/guru'" "${WEBOS_ROOT}/scripts/30-rootfs.sh"; then
 	bad "third-party overlays excluded from rootfs (breaks @world)"
 else good "third-party overlays shipped in rootfs"; fi
-if grep -q 'kde-frameworks/kconfig-6.32.0 qml' "${WEBOS_ROOT}/config/package.use/gaming"; then
+if grep -q 'kde-frameworks/kconfig qml' "${WEBOS_ROOT}/config/package.use/gaming"; then
 	good "kconfig qml USE preset"
 else bad "kconfig qml USE missing"; fi
 
@@ -161,7 +161,7 @@ grep -q '"ipc": false' "$RICE/waybar/config.jsonc" \
 STATS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-stats"
 grep -q 'def ram_details' "$STATS" && grep -q 'used / %.1fG' "$STATS" \
 	&& good "RAM shows used/total" || bad "RAM still percentage-only"
-grep -q 'def core_temperatures' "$STATS" && grep -q 'c%d   %d%% %s' "$STATS" \
+grep -q 'def core_temperatures' "$STATS" && grep -q '<small>c%d</small>' "$STATS" \
 	&& good "per-core usage/temp rows" || bad "per-core stats missing"
 grep -q 'webos-stats-catcher' "$STATS" && grep -q 'button-press-event' "$STATS" \
 	&& good "stats dropdown dismisses on outside click" || bad "stats dropdown has no outside-click dismiss"
@@ -173,33 +173,32 @@ grep -q 'fallback_position' "$MUSIC" && grep -q 'hl.dsp.window.move' "$MUSIC" \
 	&& good "music dropdown anchors under the bar" || bad "music dropdown can land in the middle"
 grep -q 'def slide_down' "$MUSIC" && grep -q 'PANEL_SIZE \* eased' "$MUSIC" \
 	&& good "music panel slides downwards" || bad "music panel does not slide downwards"
-grep -q 'GaussianBlur(radius=9)' "$MUSIC" \
+grep -q 'GaussianBlur(radius=2.5)' "$MUSIC" \
 	&& good "music art is lightly frosted" || bad "music art frosting is wrong"
 grep -q '#music-card { background-image: url' "$MUSIC" \
 	&& grep -q 'background-size: cover' "$MUSIC" \
 	&& good "song image fills the whole card" || bad "song image is not the card background"
-grep -q 'convert("RGB")' "$MUSIC" && ! grep -q 'convert("L")' "$MUSIC" \
+grep -q 'convert("RGB")' "$MUSIC" && grep -q 'def art_is_light' "$MUSIC" \
 	&& good "music cover art stays in colour" || bad "music cover art is still greyscale"
 grep -q 'PANEL_SIZE = 340' "$MUSIC" && grep -q 'set_default_size(PANEL_SIZE, PANEL_SIZE)' "$MUSIC" \
 	&& good "music player is a compact square" || bad "music player size is wrong"
-grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class AudioVisualizer' "$MUSIC" \
-	&& good "music player has an audio visualizer" || bad "music player lacks a visualizer"
-grep -q 'art_palette(path, visualizer.BANDS)' "$MUSIC" \
-	&& good "visualizer follows the cover colours" || bad "visualizer colours are not tied to the art"
-grep -q '"cava", "-p", self.config' "$MUSIC" \
-	&& grep -q 'method = pipewire' "$MUSIC" && grep -q 'source = %s' "$MUSIC" \
-	&& ! grep -q '@DEFAULT_SINK@.monitor' "$MUSIC" \
-	&& good "visualizer only captures the music player" || bad "visualizer captures all system audio"
+grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class VinylVisualizer' "$MUSIC" \
+	&& good "music player has a vinyl visualizer" || bad "music player lacks a vinyl visualizer"
+grep -q 'self.surface' "$MUSIC" && grep -q 'set_art(path)' "$MUSIC" \
+	&& good "vinyl label follows the cover art" || bad "vinyl label is not tied to the art"
+grep -q 'def set_volume(value)' "$MUSIC" && grep -q 'set-sink-input-volume' "$MUSIC" \
+	&& ! grep -q '@DEFAULT_AUDIO_SINK@' "$MUSIC" \
+	&& good "volume changes Spotify streams only" || bad "volume changes the system sink"
 grep -q 'webos-music-catcher' "$MUSIC" && grep -q 'button-press-event' "$MUSIC" \
 	&& good "music dropdown dismisses on outside click" || bad "music dropdown has no outside-click dismiss"
 grep -q 'for version in ("0.1", "1.0")' "$MUSIC" && grep -q 'GtkLayerShell.Edge.TOP, 100' "$MUSIC" \
 	&& good "music uses layer-shell below the top bar" || bad "music fallback leaves an empty window"
 grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \
 	&& good "music dropdown excluded from blur" || bad "music dropdown not excluded from blur"
-grep -q 'webos-theme-1.0-r4.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "ISO pins theme r4" || bad "ISO still pins an older theme"
+grep -q 'webos-theme-1.0-r47.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "ISO pins theme r47" || bad "ISO still pins an older theme"
 grep -q 'gtk-layer-shell\[introspection\]' \
-	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r4.ebuild" \
+	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r47.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
 # 9. v1.02 identity and shipped guide
@@ -216,7 +215,7 @@ done
 grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
 	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
 GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
-for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r4' \
+for pat in 'WebOS 1.02' 'WHAT CHANGED IN 1.02' 'webos-theme-1.0-r47' \
 	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
 	'WEBOS_VERSION=1.02-Ashen'; do
 	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
@@ -279,12 +278,12 @@ if grep -qF 'hyprctl dispatch dpms' "$HYPRLIDLE"; then
 else good "old dpms dispatch gone"; fi
 
 # 12. theme revision reaches installed machines
-R4="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r4.ebuild"
-[[ -f "$R4" ]] && good "r4 theme ebuild" || bad "missing r4 theme ebuild"
-grep -qF 'gui-libs/gtk-layer-shell[introspection]' "$R4" \
-	&& good "r4 ships layer-shell introspection" || bad "r4 lacks introspection dependency"
-grep -qF 'THEME_EBUILD="webos-theme-1.0-r4.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "rootfs pins r4" || bad "rootfs does not pin r4"
+THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r47.ebuild"
+[[ -f "$THEME" ]] && good "r47 theme ebuild" || bad "missing r47 theme ebuild"
+grep -qF 'gui-libs/gtk-layer-shell[introspection]' "$THEME" \
+	&& good "r47 ships layer-shell introspection" || bad "r47 lacks introspection dependency"
+grep -qF 'THEME_EBUILD="webos-theme-1.0-r47.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "rootfs pins r47" || bad "rootfs does not pin r47"
 
 # 13. binary-first updater controls, without forbidden flags
 UPDATER="${WAYBAR_DIR}/system/webos-update"
@@ -307,9 +306,9 @@ for pat in 'PANEL_SIZE = 340' 'TOP_GAP = 100' \
 	'for version in ("0.1", "1.0")' \
 	'GtkLayerShell.set_namespace(window, "webos-music")' \
 	'GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)' \
-	'webos-music-catcher' 'button-press-event' 'GaussianBlur(radius=9)' \
-	'enhance(0.72)' 'background-size: cover' 'quantize(colors=6)' \
-	'method = pipewire' 'source = %s' \
+	'webos-music-catcher' 'button-press-event' 'GaussianBlur(radius=2.5)' \
+	'enhance(1.0)' 'background-size: cover' 'art_is_light(path)' \
+	'class VinylVisualizer' 'box-shadow: %s' \
 	'run_quiet(["hyprctl", "seterror", "disable"])'; do
 	grep -qF -- "$pat" "$MUSIC" && good "music: ${pat}" || bad "music missing: ${pat}"
 done
@@ -318,7 +317,7 @@ for pat in 'for version in ("0.1", "1.0")' \
 	'GtkLayerShell.set_margin(window, GtkLayerShell.Edge.TOP, 100)' \
 	'webos-stats-catcher' 'button-press-event' \
 	'run_quiet(["hyprctl", "seterror", "disable"])' 'def ram_details' \
-	'c%d   %d%% %s'; do
+	'<small>c%d</small>'; do
 	grep -qF -- "$pat" "$STATS" && good "stats: ${pat}" || bad "stats missing: ${pat}"
 done
 if have python3; then

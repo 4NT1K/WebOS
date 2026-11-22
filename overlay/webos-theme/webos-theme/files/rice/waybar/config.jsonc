@@ -45,8 +45,11 @@
         "player": "spotify",
         "format": "{player_icon} {dynamic}",
         "format-paused": "{status_icon} <i>{dynamic}</i>",
-        "dynamic-len": 30,
+        "dynamic-len": 42,
+        "title-len": 30,
+        "artist-len": 20,
         "album-len": 0,
+        "dynamic-order": ["title", "artist"],
         "player-icons": {
             "default": "▶",
             "spotify": "▶",

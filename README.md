@@ -30,8 +30,8 @@ WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look
 - **Fixes:** repaired `webos-theme` merge collisions that could leave an ISO without `webos-shell`, waybar config, portal prefs or dark-mode defaults; portal overrides live under `/etc/xdg-desktop-portal`.
 - **Settings/devices:** `webos-settings` launcher; under Hyprland use `wdisplays` and compositor device tools (KDE device panels require a Plasma session).
 - **Branding & theme:** soft-white spiderweb WebOS logo and WebOS identity (no Gentoo welcome/identity leaks). Refined Ashen greyscale parity across Hyprland and regular Plasma (#000000 base, #D8D8D8 text, #E8E8E8 accents, #7A7A7A dim); translucent kitty (opacity 0.82, `auto` fonts) with a chafa-symbol cobweb fastfetch card, and `Super+Shift+S` screenshot snips.
-- **Hyprland UI:** near-opaque top bar (waybar) — left: workspaces and window title; centre: mpris pill that toggles the music dropdown; right: ▧ waypaper, clock, tray, ▾ performance, ⏻ power. `webos-menu` backs Super+D / Super+R, Super+M toggles a compact square music card with a per-song visualizer, and `webos-stats` opens the corner performance panel. Both dropdowns dismiss on outside click.
-- **Updates & packaging:** `webos-update` sync/@world/depclean/config/kernel+GRUB/flatpak/rice flow — no manual kernel or software updates needed. Gentoo x86-64-v3 binpkgs are used by default via `--getbinpkg`, with `--fast`, `--strict-use`, `--buildpkg` and `--no-compile` controls; third-party overlays ship in the image so @world stays resolvable.
+- **Hyprland UI:** near-opaque top bar (waybar) — left: clickable workspace boxes and window title; centre: Spotify-only mpris pill (icon, title and artist only — no stuck track time) that toggles the music dropdown; right: ▧ waypaper, ⟳ update badge, clock, tray, ▾ performance, ⏻ power. `webos-menu` backs Super+D / Super+R, Super+M toggles a compact 340×340 music card with lightly frosted cover art, a spinning vinyl whose centre label is the current cover, bold pure black/white title/artist at the top left, an elapsed/total progress bar with borderless playback buttons directly beneath it, and a small borderless vertical volume bar on the right edge. `webos-stats` opens the corner performance panel. Both dropdowns dismiss on outside click.
+- **Updates & packaging:** updates are not automatic — run `sudo webos-update` yourself when the Waybar badge appears. `webos-update` handles sync/@world/depclean/config/kernel+GRUB/flatpak/rice. Gentoo x86-64-v3 binpkgs are used by default via `--getbinpkg`, with `--fast`, `--strict-use`, `--buildpkg` and `--no-compile` controls; third-party overlays ship in the image so @world stays resolvable.
 
 > **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.02 without adding X11 session packages.
 
@@ -45,6 +45,15 @@ The Deep Black base and grey text ramp never change, so CJK glyphs and kaomoji s
 - **Back to Ashen soft-white:** `webos-accent --reset`
 
 Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install to `/usr/share/webos/colourways/`.
+
+## Recent desktop implementations (theme r41–r47)
+
+- **Spinning vinyl:** the old cava bars were replaced with a rotating vinyl record drawn in GTK/Cairo, with grooves, a fixed light reflection and the current cover as the centre label. It spins only while Spotify plays, and the cover is treated as the label rather than the whole card background.
+- **High-contrast everything:** `art_is_light()` now drives pure black or white text, buttons, the progress bar and the volume bar, all with a matching glow. On dark art they are glowing white; on light art they are black with a soft dark halo. Artwork detection never blocks the GTK thread.
+- **Faster track changes:** the card polls Spotify once every 250 ms with a single `playerctl` metadata call, and prepares artwork in a background thread. The name and cover appear much sooner without disturbing the animation.
+- **Waybar time removed:** the MPRIS pill's `{dynamic}` lists only title and artist, so the static track length/position that never moved is gone. The card keeps its elapsed/total labels and seek bar.
+- **Cleaner layout:** the title and artist are bold and slightly larger at the top left, the mute button is gone, and the glowing borderless playback buttons sit directly under the progress bar. The volume control is a slim, outline-free vertical bar on the right edge that rises to increase Spotify-only volume; no system sink is touched.
+- **Packaging:** these changes ship in `webos-theme-1.0-r47`; theme r46 also added animation to floating window toggles.
 
 ## Screenshots
 

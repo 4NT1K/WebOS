@@ -55,9 +55,13 @@ Hard constraints (NEVER violate these)
      "Power — open session menu (reboot, shut down, suspend)"
      and on-click is exactly "wlogout".
   4. Stats must show real RAM used/total and every CPU core as "c0 2% 53C".
-  5. Music dropdown: compact 340x340 square, frosted cover art, per-song cava
-     visualizer bound to the active MPRIS player's PipeWire node, outside-click
-     dismissal, and GtkLayerShell-0.1 requested before GtkLayerShell-1.0.
+  5. Music dropdown: compact 340x340 square, lightly frosted Spotify cover,
+     spinning vinyl with the cover as its centre label, pure black/white text,
+     glowing outline-free buttons and bars, bold top-left title/artist,
+     elapsed/total progress bar with glowing controls beneath it, a slim
+     outline-free Spotify volume fader on the right edge, outside-click
+     dismissal, and GtkLayerShell-0.1 before 1.0. The Waybar pill shows only
+     icon/title/artist, never track time.
   6. Installed systems receive features through `sudo webos-update`; overlay
      main must be pushed BEFORE building/publishing an ISO.
   7. Desktop notifications use ./scripts/notify-user.sh "<message>" "WebOS Release".
@@ -69,7 +73,7 @@ If you change a contract-sensitive file, update scripts/50-check.sh and rerun it
 1. REPOSITORY MAP (top level)
 ================================================================================
 
-/home/brah/sanusos/                    working checkout (branch main)
+/home/brah/WebOS/                    working checkout (branch main)
 ├── build.sh                           top-level build entry point
 │                                      usage: ./build.sh all|fetch|bootstrap|
 │                                      kernel|rootfs|iso|clean|distclean|status
@@ -398,11 +402,11 @@ overlay/webos-theme/webos-theme/
     webos-theme-1.0.ebuild       original
     webos-theme-1.0-r1.ebuild    historical installed version on v1.01 systems
     webos-theme-1.0-r2/r3.ebuild remote history, harmless
-    webos-theme-1.0-r4.ebuild    CURRENT; pins new features and r4 delivery
-  r4 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pillow, jq,
-  brightnessctl, grim/slurp/wdisplays/swaybg/waypaper, playerctl, fonts, chafa,
-  libnotify, and librsvg||imagemagick. r4 installs the rice, dotfiles profiles,
-  system fallbacks, session files, and all /usr/bin/webos-* helpers.
+    webos-theme-1.0-r47.ebuild   CURRENT; pins the vinyl music card and r47
+  r47 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
+  jq, brightnessctl, grim/slurp/wdisplays/swaybg/waypaper, playerctl, fonts,
+  chafa, libnotify, and librsvg||imagemagick. r47 installs the rice, dotfiles
+  profiles, system fallbacks, session files, and all /usr/bin/webos-* helpers.
   pkg_postinst calls webos-wallpaper and webos-rice --system (with backups).
 
   files/WEBOS-INFO.txt
@@ -419,14 +423,15 @@ overlay/webos-theme/webos-theme/
                                   foreground="##7A7A7A"; no obsolete grace/
                                   no_fade_in keys (those are CLI flags now).
     hypr/hyprpaper.conf, hyprsunset.conf
-    waybar/config.jsonc           ipc:false; mpris pill; right modules end with
-                                  custom/power. Power contract:
+    waybar/config.jsonc           ipc:false; clickable workspace boxes; mpris
+                                  pill; right modules include custom/update and
+                                  end with custom/power. Power contract:
                                     "format": "⏻"
                                     "tooltip": "Power — open session menu (reboot, shut down, suspend)"
                                     "on-click": "wlogout"
     waybar/style.css              #custom-power styling; near-opaque greyscale
-    waybar/scripts/updates.sh     counts [binary] and [ebuild] updates, so the
-                                  badge is honest under binary-first Portage.
+    webos-update-indicator      custom/update badge; counts [binary/[ebuild
+                                  lines and launches manual webos-update on click.
     waybar/scripts/gamemode.sh
     wlogout/layout                loginctl-only actions: loginctl suspend,
                                   hibernate, reboot, poweroff. No systemctl.
@@ -450,11 +455,17 @@ overlay/webos-theme/webos-theme/
   files/system/ helpers (all installed to /usr/bin unless noted)
     webos-menu              curated wofi launcher (Super+D / Super+R)
     webos-music             GTK3/gtk-layer-shell now-playing dropdown.
-                            PANEL_SIZE=340, TOP_GAP=100, frosted cover via
-                            GaussianBlur(radius=9) + enhance(0.72), palette via
-                            quantize(colors=6), cava config method=pipewire and
-                            source=%s bound by pw-dump to the MPRIS player's
-                            node, outside-click catcher, GtkLayerShell 0.1->1.0
+                            PANEL_SIZE=340, TOP_GAP=100, cover lightly frosted
+                            via GaussianBlur(radius=2.5) at full brightness
+                            with a 0.06 dark overlay. VinylVisualizer draws a
+                            rotating vinyl with the cached cover as its centre
+                            label; no cava/PipeWire capture. art_is_light()
+                            selects pure black or white text, buttons, progress
+                            and volume bars with a matching glow; all controls
+                            are outline-free. Playback buttons sit below the
+                            elapsed/total bar, volume is a slim vertical fader
+                            on the right edge. Spotify-only MPRIS/volume,
+                            outside-click catcher, GtkLayerShell 0.1->1.0
                             fallback, set_namespace(window,"webos-music").
                             run_quiet(["hyprctl","seterror","disable"]) at start.
     webos-stats             GTK3/gtk-layer-shell per-core monitor.
@@ -479,7 +490,7 @@ overlay/webos-theme/webos-theme/
     webos-plasma-setup.desktop
     webos-settings, webos-settings.desktop
     webos-shell, webos.desktop, webos-gamescope.desktop
-    webos-refresh           persists/restores Hyprland monitor modes
+    webos-refresh           pins 170 Hz by default and persists/restores monitor modes
     sddm-webos.conf, local.d-webos.start, environment.d-webos.conf,
     profile.d-webos.sh, locale.conf, waypaper-config.ini, icons-default/*,
     desktop-overrides/*     system fallbacks written by webos-rice --system
@@ -514,7 +525,7 @@ scripts/30-rootfs.sh
   Refreshes overlay/sets in chroot; emerge @base @desktop @gaming
   @webos-installer; stages installer tarball; builds installer offline;
   installs branding; unmerge+remerge webos-theme (same-version edits need a
-  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r4.ebuild"; applies
+  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r47.ebuild"; applies
   rice; rsyncs chroot -> build/rootfs excluding pseudofs/cache/src trees.
   Reuses build/chroot.backup on this machine for fast v1.02 rebuilds.
 
@@ -535,7 +546,7 @@ scripts/50-check.sh
    9 v1.02 identity, WEBOS-INFO.txt, release notes
   10 power widget in both Waybar profiles + mono migration
   11 hyprlock/hypridle/DPMS/backlight fixes
-  12 r4 theme ebuild and rootfs pin
+  12 theme ebuild revision and rootfs pin
   13 binary-first updater controls, forbidden-flag sweep
   14 music/stats dropdown details and python syntax
   15 installer, Manifest hex, kernel stamp, watchers, cargo check --offline
@@ -551,7 +562,7 @@ scripts/status-updater.sh
 
 .issue-watcher.sh, .step-watcher.sh
   Build notifiers. ISO detection uses compgen -G 'build/webos-*.iso', not a raw
-  glob test. No /home/brah/sanusos or /sanusos paths, no git pushes.
+  glob test. No /home/brah/WebOS or /webos paths, no git pushes.
 
 setup-container-build.sh
   Container helper. Uses generic /webos container paths, not hard-coded
@@ -603,11 +614,14 @@ Stats
   with usage and temp like "c0 2% 53C". Thermal fallback via thermal_temp().
 
 Music
-  webos-music is a 340x340 GTK layer-shell square under the bar. Cover art is
-  frosted and quantized to six colours. cava is generated per song with
-  method=pipewire and source=<active MPRIS node from pw-dump>. Outside clicks
-  are dismissed by a full-screen transparent catcher. GtkLayerShell 0.1 is
-  requested before 1.0.
+  webos-music is a 340x340 GTK layer-shell square under the bar. Spotify cover
+  art is lightly frosted (blur 2.5, full brightness) and also becomes the
+  rotating label of a Cairo-drawn vinyl. art_is_light() picks pure black or
+  white text, buttons and bars, each with a glow; no controls have outlines.
+  Playback buttons sit under the elapsed/total bar and the volume bar is a slim
+  vertical fader on the right edge. The Waybar pill lists only title and
+  artist. Outside clicks are dismissed by a full-screen transparent catcher.
+  GtkLayerShell 0.1 is requested before 1.0.
 
 ================================================================================
 10. UPDATER AND DELIVERY TO INSTALLED SYSTEMS
@@ -642,9 +656,9 @@ binary-only because that would reinstall hundreds of packages.
 Delivery path
   Commit/push source to origin/main first. webos-update downloads
   https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and replaces
-  /usr/local/portage/webos. The r4 theme ebuild then reaches installed systems
+  /usr/local/portage/webos. The current theme revision then reaches installed systems
   on their next `sudo webos-update`. r1 stayed historical; remote r2/r3 are
-  harmless. Rootfs pins r4 via scripts/30-rootfs.sh.
+  harmless. Rootfs pins r47 via scripts/30-rootfs.sh.
 
 Release gate for binary-first behavior
   /home/brah/release-v102.sh runs `webos-update --check` and
@@ -665,7 +679,7 @@ Preconditions
     WEBOS_KERNEL=6.12.0-webos, WEBOS_BUILD=<today>.
 
 /home/brah/release-v102.sh
-  Final gate. It verifies rootfs packages/helpers/overlays/theme r4, syncs the
+  Final gate. It verifies rootfs packages/helpers/overlays/theme r47, syncs the
   installed WEBOS-INFO.txt and Waybar fallbacks, verifies binary-first config,
   runs runtime checks in the chroot (emerge --pretend --getbinpkg vim,
   waypaper --help, webos-update --check/--fast --check, stats module import),
@@ -757,7 +771,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   app-admin/webos-installer/{Manifest,metadata.xml,webos-installer-1.0.0.ebuild}
   webos-theme/webos-theme/
     Manifest, metadata.xml,
-    webos-theme-1.0.ebuild, -r1, -r2, -r3, -r4 [C],
+    webos-theme-1.0.ebuild ... -r47 [C],
     WEBOS-INFO.txt [C],
     files/rice/ [R] (hypr/, waybar/, wlogout/, wofi/, kitty/, foot/, fish/,
       gtk-3.0/, gtk-4.0/, qt5ct/, qt6ct/, kvantum/, konsole/, konsolerc/,
@@ -782,7 +796,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   in make.conf/webos-update/docs breaks the contract. Sweep before committing.
 - Reusing stale stage labels: INSTALL_STAGES must match r.phase() order.
 - Same-version theme edits not reaching rootfs: scripts/30-rootfs.sh unmerges
-  then remerges webos-theme and pins r4.
+  then remerges webos-theme and pins r47.
 - chroot copy failing with "Directory not empty": a previous cp -a was killed
   mid-copy. Remove the partial build/chroot from inside webos-build and copy
   chroot.backup again; do not try to merge trees.
@@ -885,7 +899,7 @@ Storage/compression follow-up (hypothetical, no changes made)
 15. QUICK VERIFICATION CHEAT SHEET
 ================================================================================
 
-cd /home/brah/sanusos
+cd /home/brah/WebOS
 
 # Source gate (must print 0 problems)
 bash scripts/50-check.sh
