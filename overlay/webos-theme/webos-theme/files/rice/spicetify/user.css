@@ -1,25 +1,25 @@
-/* WebOS transparent Spotify — patterned on upstream Hazy user.css. */
+/* WebOS clean transparent Spotify — no cards, no boxes. */
 :root {
-  --webos-backdrop: rgba(20, 20, 26, .12);
-  --webos-backdrop-strong: rgba(20, 20, 26, .20);
+  --webos-tint: rgba(20, 20, 26, .08);
   --text-base: #D8D8D8 !important;
   --text-subdued: #7A7A7A !important;
   --text-bright-accent: #E8E8E8 !important;
   --essential-base: #E8E8E8 !important;
 }
 .encore-dark-theme { --background-base: transparent !important; }
-.encore-layout-themes,
-.encore-dark-theme .encore-announcement-set,
+:root, .encore-layout-themes, .encore-dark-theme .encore-announcement-set,
 .encore-bright-accent-set {
-  --background-highlight: var(--webos-backdrop) !important;
-  --background-press: var(--webos-backdrop-strong) !important;
-  --background-elevated-base: var(--webos-backdrop) !important;
-  --background-elevated-highlight: var(--webos-backdrop-strong) !important;
-  --background-elevated-press: var(--webos-backdrop) !important;
-  --background-tinted-base: var(--webos-backdrop) !important;
-  --background-tinted-highlight: var(--webos-backdrop-strong) !important;
+  --background-highlight: var(--webos-tint) !important;
+  --background-press: var(--webos-tint) !important;
+  --background-elevated-base: transparent !important;
+  --background-elevated-highlight: var(--webos-tint) !important;
+  --background-elevated-press: var(--webos-tint) !important;
+  --background-tinted-base: transparent !important;
+  --background-tinted-highlight: var(--webos-tint) !important;
+  --background-tinted-press: var(--webos-tint) !important;
+  --spice-card: transparent !important;
 }
-:root, html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
+html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
 .main-root-container, .Root__globalNav, .Root__main-view,
 .Root__right-sidebar, .main-view-container, .main-view-container__scroll-node,
 .main-view-container__scroll-node-child, .contentSpacing, .layout-container,
@@ -31,4 +31,14 @@
   background: transparent !important;
   background-color: transparent !important;
   box-shadow: none !important;
+}
+[class*="card"], [class*="Card"], [class*="box"], [class*="Box"],
+[class*="container"], [class*="Container"], [class*="panel"], [class*="Panel"],
+[class*="section"], [class*="Section"], [class*="background"],
+[class*="Background"], [class*="header"], [class*="Header"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
+  backdrop-filter: none !important;
 }
