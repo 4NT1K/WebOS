@@ -1,0 +1,251 @@
+#!/usr/bin/env python3
+"""webos-accent — retint the WebOS rice from the current wallpaper.
+
+Usage:
+  webos-accent [path/to/wallpaper]   derive accent from an image
+  webos-accent --reset               restore the stock soft-white accent
+
+With no path, the wallpaper is read from ~/.config/waypaper/config.ini.
+Waypaper can call this automatically via:
+  post_command = webos-accent "$wallpaper"
+
+Only accent/border colours change. The black base and grey text ramp are kept
+so CJK glyphs and kaomoji stay readable on every wallpaper.
+"""
+
+import configparser
+import json
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+HOME = Path(os.path.expanduser("~"))
+STATE = HOME / ".local/state/webos/accent.json"
+STOCK = "#E8E8E8"
+MARKER = "webos-dynamic-accent"
+
+COLORS_LUA = """-- WebOS palette — dynamically accented by webos-accent.
+-- Generated from the current wallpaper; black base / grey text stay fixed.
+-- Accent: {accent} ({source})
+return {{
+\tbase        = "rgb(000000)",
+\tbase_soft   = "rgb(0a0a0a)",
+
+\tsurface     = "rgba(000000eb)",
+\tsurface_hi  = "rgba(1a1a1aeb)",
+\tsurface_lo  = "rgba(000000cc)",
+
+\ttext        = "rgb(d8d8d8)",
+\ttext_dim    = "rgb(7a7a7a)",
+\ttext_faint  = "rgb(4a4a4a)",
+
+\taccent      = "rgb({hex6})",
+\taccent_soft = "rgba({hex6}33)",
+\taccent_glow = "rgba({hex6}59)",
+
+\tborder      = "rgba({hex6}33)",
+\tborder_hi   = "rgba({hex6}59)",
+
+\turgent      = "rgb(d27878)",
+\twarn        = "{accent_rgb}",
+\tgood        = "{accent_rgb}",
+}}
+"""
+
+
+def note(message):
+    print("webos-accent: " + message)
+
+
+def waypaper_wallpaper():
+    config = configparser.ConfigParser(interpolation=None)
+    path = HOME / ".config/waypaper/config.ini"
+    try:
+        config.read(path)
+        value = config.get("Settings", "wallpaper", fallback="")
+    except (configparser.Error, OSError):
+        value = ""
+    value = os.path.expandvars(os.path.expanduser(value.strip().strip('"')))
+    return value or None
+
+
+def dominant_color(path):
+    try:
+        from PIL import Image
+    except ImportError:
+        return None, "Pillow missing"
+
+    try:
+        image = Image.open(path).convert("RGB")
+        image.thumbnail((160, 90))
+        quantized = image.quantize(colors=12)
+    except Exception as exc:  # unreadable image, missing file, etc.
+        return None, str(exc)
+
+    palette = quantized.getpalette() or []
+    counts = quantized.getcolors() or []
+    best = None
+    for count, index in counts:
+        rgb = tuple(palette[index * 3:index * 3 + 3])
+        if len(rgb) != 3:
+            continue
+        high, low = max(rgb), min(rgb)
+        if high < 45:  # pure black / near-black wallpaper pixels
+            continue
+        saturation = high - low
+        score = count * (1.0 + saturation / 128.0) * (high / 255.0)
+        if best is None or score > best[0]:
+            best = (score, rgb)
+
+    if best is None:
+        return None, "no usable colour in wallpaper"
+
+    rgb = best[1]
+    # Lift the colour until it reads as an accent on a black panel, without
+    # washing out its hue (a red wallpaper should still give a red accent).
+    peak = max(rgb) or 1
+    scale = min(2.4, 238.0 / peak)
+    rgb = tuple(min(255, round(channel * scale)) for channel in rgb)
+    return rgb, Path(path).name
+
+
+def hex_of(rgb):
+    return "#%02x%02x%02x" % rgb
+
+
+def rgba_of(rgb, alpha):
+    return "rgba(%d, %d, %d, %s)" % (rgb[0], rgb[1], rgb[2], alpha)
+
+
+def patch_marked(path, body, style="css"):
+    """Replace a marker-delimited block, or append it if absent."""
+    path = Path(path)
+    if not path.is_file():
+        return False
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+
+    if style == "css":
+        begin, end = "/* %s:begin */" % MARKER, "/* %s:end */" % MARKER
+    else:
+        begin, end = "# %s:begin" % MARKER, "# %s:end" % MARKER
+
+    block = begin + "\n" + body.rstrip() + "\n" + end
+    pattern = re.compile(re.escape(begin) + r".*?" + re.escape(end), re.S)
+    if pattern.search(text):
+        text = pattern.sub(lambda _: block, text, count=1)
+    else:
+        text = text.rstrip() + "\n\n" + block + "\n"
+    try:
+        path.write_text(text, encoding="utf-8")
+        return True
+    except OSError:
+        return False
+
+
+def apply_accent(rgb, source):
+    accent = hex_of(rgb)
+    rgb_css = "%d, %d, %d" % rgb
+
+    colors = HOME / ".config/hypr/webos-colors.lua"
+    colors.parent.mkdir(parents=True, exist_ok=True)
+    colors.write_text(COLORS_LUA.format(
+        accent=accent,
+        hex6=accent[1:],
+        accent_rgb="rgb(%s)" % accent[1:],
+        source=source,
+    ), encoding="utf-8")
+
+    patch_marked(HOME / ".config/waybar/style.css",
+                 "@define-color accent %s;\n"
+                 "@define-color border %s;\n"
+                 "@define-color border-hover %s;" % (
+                     accent, rgba_of(rgb, "0.20"), rgba_of(rgb, "0.35")))
+
+    gtk_block = ("@define-color accent_color %s;\n"
+                 "@define-color accent_bg_color %s;\n"
+                 "@define-color accent_fg_color #000000;\n"
+                 "@define-color borders %s;" % (
+                     accent, accent, rgba_of(rgb, "0.25")))
+    for name in ("gtk-3.0/gtk.css", "gtk-4.0/gtk.css"):
+        patch_marked(HOME / ".config" / name, gtk_block)
+
+    patch_marked(HOME / ".config/kitty/kitty.conf",
+                 "cursor %s\nurl_color %s\ncolor15 %s" % (accent, accent, accent),
+                 style="hash")
+
+    patch_marked(HOME / ".config/wofi/style.css",
+                 "#input { caret-color: %s; }\n"
+                 "#entry:selected { color: %s; border-left: 2px solid %s; }\n"
+                 "#entry:selected #text { color: %s; }" % (
+                     accent, accent, accent, accent))
+
+    spicetify = HOME / ".config/spicetify/Themes/marketplace/user.css"
+    patch_marked(spicetify,
+                 ":root {\n"
+                 "  --text-bright-accent: %s !important;\n"
+                 "  --essential-base: %s !important;\n"
+                 "}" % (accent, accent))
+
+    patch_marked(HOME / ".config/vesktop/themes/webos-transparent.css",
+                 ":root {\n"
+                 "  --header-primary: %s !important;\n"
+                 "  --interactive-hover: %s !important;\n"
+                 "  --background-accent: %s !important;\n"
+                 "}" % (accent, accent, rgba_of(rgb, ".06")))
+
+    STATE.parent.mkdir(parents=True, exist_ok=True)
+    STATE.write_text(json.dumps({
+        "accent": accent,
+        "rgb": list(rgb),
+        "source": source,
+    }, indent=2) + "\n", encoding="utf-8")
+    return accent
+
+
+def refresh_session():
+    """Reload the compositor and bar; monitor mode is pinned in the config."""
+    subprocess.run(["hyprctl", "reload"], stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, check=False)
+    subprocess.run(["webos-refresh", "--restore"], stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, check=False)
+    subprocess.run(["pkill", "-x", "waybar"], stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL, check=False)
+    bar = subprocess.run(["sh", "-c", "command -v waybar"],
+                         stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                         check=False).stdout.decode().strip() or "waybar"
+    config = HOME / ".config/waybar/config.jsonc"
+    style = HOME / ".config/waybar/style.css"
+    subprocess.Popen([bar, "-c", str(config), "-s", str(style)],
+                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     stdin=subprocess.DEVNULL, start_new_session=True)
+
+
+def main(argv):
+    args = [arg for arg in argv if not arg.startswith("--quiet")]
+    if "--reset" in args:
+        rgb = (232, 232, 232)
+        source = "stock"
+    else:
+        path = args[0] if args else waypaper_wallpaper()
+        if not path:
+            note("no wallpaper found")
+            return 1
+        rgb, source = dominant_color(path)
+        if rgb is None:
+            note("could not read wallpaper (%s); keeping current accent" % source)
+            return 1
+
+    accent = apply_accent(rgb, source)
+    refresh_session()
+    note("accent %s from %s" % (accent, source))
+    note("kitty/GTK apps pick up the new accent on next launch")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

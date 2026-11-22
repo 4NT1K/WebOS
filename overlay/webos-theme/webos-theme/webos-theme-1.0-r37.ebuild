@@ -151,6 +151,7 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-autostart webos-autostart
 	newexe "${FILESDIR}"/system/webos-dotfiles webos-dotfiles
 	newexe "${FILESDIR}"/system/webos-wallpaper webos-wallpaper
+	newexe "${FILESDIR}"/system/webos-accent webos-accent
 
 	# Seed waypaper with the WebOS wallpaper folder + hyprpaper backend
 	insinto /etc/skel/.config/waypaper
