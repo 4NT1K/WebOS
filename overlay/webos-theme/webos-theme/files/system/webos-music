@@ -355,6 +355,20 @@ def art_palette(path, count=20):
         return fallback
 
 
+def readable_text_colour(rgb):
+    """Lift a cover-derived hue until it stays legible on the dark card.
+
+    Dark blues/reds would vanish against the artwork, so brighten while
+    preserving the hue and give every channel a floor. The result reads as
+    the song's colour but never drops below a mid-grey contrast.
+    """
+    red, green, blue = rgb
+    peak = max(rgb) or 1
+    scale = min(2.4, 235.0 / peak)
+    lifted = tuple(min(255, round(channel * scale)) for channel in rgb)
+    return tuple(max(110, channel) for channel in lifted)
+
+
 def active_mpris_player():
     """Return Spotify only, so osu!/Firefox/etc never hijack the panel."""
     return "spotify" if spotify_active() else None
@@ -839,6 +853,28 @@ def run_app(visible):
     last_player = [None]
     updating = [False]
     card_provider = [None]
+    text_provider = [None]
+
+    def set_text_colour(rgb):
+        """Tint every label to the current song while keeping it readable."""
+        if text_provider[0] is not None:
+            Gtk.StyleContext.remove_provider_for_screen(screen, text_provider[0])
+            text_provider[0] = None
+        colour = readable_text_colour(rgb)
+        hex6 = "%02x%02x%02x" % colour
+        css = (
+            "#music-card, .webos-status, .webos-title, button {"
+            " color: #%s; }"
+            ".webos-dim { color: rgba(%d, %d, %d, 0.78); }"
+            "scale progress { background-color: #%s; }"
+            % (hex6, colour[0], colour[1], colour[2], hex6)
+        ).encode("utf-8")
+        provider = Gtk.CssProvider()
+        provider.load_from_data(css)
+        Gtk.StyleContext.add_provider_for_screen(
+            screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
+        text_provider[0] = provider
 
     def set_art(path):
         # The song image fills the whole square card, frosted but recognisable.
@@ -847,6 +883,7 @@ def run_app(visible):
             card_provider[0] = None
         if not path:
             visualizer.set_colours([(255, 255, 255)] * visualizer.BANDS)
+            set_text_colour((216, 216, 216))
             return
         css = ("#music-card { background-image: url(%s); background-size: cover; }"
                % json.dumps(path)).encode("utf-8")
@@ -857,6 +894,7 @@ def run_app(visible):
             screen, provider, Gtk.STYLE_PROVIDER_PRIORITY_USER
         )
         card_provider[0] = provider
+        set_text_colour(art_palette(path, count=1)[0])
 
     def on_seek(_widget):
         if updating[0]:
