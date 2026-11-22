@@ -57,8 +57,8 @@ Hard constraints (NEVER violate these)
   4. Stats must show real RAM used/total and every CPU core as "c0 2% 53C".
   5. Music dropdown: compact 340x340 square, lightly frosted Spotify cover,
      spinning vinyl with the cover as its centre label, pure black/white text,
-     glowing outline-free buttons and bars, bold top-left title/artist,
-     elapsed/total progress bar with glowing controls beneath it, a slim
+     flat outline-free buttons and bars, bold top-left title/artist,
+     elapsed/total progress bar with flat controls beneath it, a slim
      outline-free Spotify volume fader on the right edge, outside-click
      dismissal, and GtkLayerShell-0.1 before 1.0. The Waybar pill shows only
      icon/title/artist, never track time.
@@ -461,9 +461,10 @@ overlay/webos-theme/webos-theme/
                             rotating vinyl with the cached cover as its centre
                             label; no cava/PipeWire capture. art_is_light()
                             selects pure black or white text, buttons, progress
-                            and volume bars with a matching glow; all controls
-                            are outline-free. Playback buttons sit below the
-                            elapsed/total bar, volume is a slim vertical fader
+                            and volume bars; all controls are flat, with no
+                            glow, outline or button box. Playback buttons sit
+                            below the elapsed/total bar, volume is a slim
+                            vertical fader
                             on the right edge. Spotify-only MPRIS/volume,
                             outside-click catcher, GtkLayerShell 0.1->1.0
                             fallback, set_namespace(window,"webos-music").
@@ -617,7 +618,7 @@ Music
   webos-music is a 340x340 GTK layer-shell square under the bar. Spotify cover
   art is lightly frosted (blur 2.5, full brightness) and also becomes the
   rotating label of a Cairo-drawn vinyl. art_is_light() picks pure black or
-  white text, buttons and bars, each with a glow; no controls have outlines.
+  white text, buttons and bars; no glows, outlines or button boxes.
   Playback buttons sit under the elapsed/total bar and the volume bar is a slim
   vertical fader on the right edge. The Waybar pill lists only title and
   artist. Outside clicks are dismissed by a full-screen transparent catcher.

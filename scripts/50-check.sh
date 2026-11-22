@@ -308,7 +308,7 @@ for pat in 'PANEL_SIZE = 340' 'TOP_GAP = 100' \
 	'GtkLayerShell.set_layer(window, GtkLayerShell.Layer.OVERLAY)' \
 	'webos-music-catcher' 'button-press-event' 'GaussianBlur(radius=2.5)' \
 	'enhance(1.0)' 'background-size: cover' 'art_is_light(path)' \
-	'class VinylVisualizer' 'box-shadow: %s' \
+	'class VinylVisualizer' 'box-shadow: none' \
 	'run_quiet(["hyprctl", "seterror", "disable"])'; do
 	grep -qF -- "$pat" "$MUSIC" && good "music: ${pat}" || bad "music missing: ${pat}"
 done

@@ -60,12 +60,12 @@ in (or reboot) after the update so the session picks up the new files.
 - A spinning vinyl record sits in the middle of the card, drawn in GTK/Cairo
   with grooves, a fixed reflection and the current Spotify cover as its centre
   label; it spins only while Spotify plays. Text, buttons, the progress bar and
-  the volume bar are pure black or white depending on `art_is_light()`, each
-  with a matching glow: white on dark art, black with a soft dark halo on light
-  art. The title/artist are bold and slightly larger at the top left, the mute
-  button is gone, and glowing outline-free playback buttons sit directly under
-  the elapsed/total progress bar. The slim volume bar on the right edge has no
-  outline and rises to increase volume. The Waybar pill shows only icon, title
+  the volume bar are pure black or white depending on `art_is_light()`: white
+  on dark art, black on light art, with no glow, outline or button box. The
+  title/artist are bold and slightly larger at the top left, the mute button
+  is gone, and flat playback buttons sit directly under the elapsed/total
+  progress bar. The slim flat volume bar on the right edge rises to increase
+  volume. The Waybar pill shows only icon, title
   and artist. MPRIS/volume stay Spotify-only.
 - Clicking outside `webos-music` or `webos-stats` dismisses it. The transparent
   catcher is on the TOP layer and the card is above it on OVERLAY.
@@ -92,11 +92,11 @@ RECENT THEME REVISIONS (r41-r47)
 - r47: the stuck track-length/position was removed from the Waybar MPRIS pill;
   the card keeps its elapsed/total bar. The cava bars became a spinning vinyl
   with the cover as the centre label, title/artist got bolder and larger, the
-  mute button was removed, glowing outline-free playback buttons moved below
-  the progress bar, and the volume control became a small outline-free vertical
-  bar on the right edge. Text, buttons and both bars are pure black or white
-  with a matching glow based on `art_is_light()`. Spotify remains the only
-  MPRIS player and the only audio stream the card reads or changes.
+  mute button was removed, flat playback buttons moved below the progress bar,
+  and the volume control became a small flat vertical bar on the right edge.
+  Text, buttons and both bars are pure black or white with no glow based on
+  `art_is_light()`. Spotify remains the only MPRIS player and the only audio
+  stream the card reads or changes.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -109,7 +109,7 @@ The 1.01 maintenance rebuild carries these fixes into a fresh install:
   and no aliases were added. 1.02 restores the far-right ⏻ power pill.
   `webos-menu` replaces the raw wofi launchers for Super+D and Super+R, and
   Super+M toggles the music dropdown.
-- `webos-music` (Spotify artwork, controls and pure black/white glowing text),
+- `webos-music` (Spotify artwork, controls and flat black/white text),
   `webos-stats`
   (CPU, GPU, VRAM, RAM, disk and temp) and the waypaper pill are the desktop
   panels.
@@ -480,10 +480,10 @@ is still no network or battery module. The far-right ⏻ pill opens wlogout.
 - Music (`webos-music`): a GTK3 layer-shell dropdown under the bar showing the
   current Spotify cover as a lightly frosted background, bold title/artist at
   the top left, PLAYING/PAUSED status, a spinning vinyl with the cover as its
-  centre label, a seekable elapsed/total bar and glowing outline-free playback
+  centre label, a seekable elapsed/total bar and flat outline-free playback
   buttons directly beneath it. Text, buttons and both bars switch between
-  glowing white (dark art) and black with a soft halo (light art). A slim
-  outline-free vertical volume bar sits on the right edge. The Waybar pill
+  plain white (dark art) and plain black (light art). A slim flat vertical
+  volume bar sits on the right edge. The Waybar pill
   shows only icon/title/artist. Spotify's own stream volume is the only one
   changed. No extra widget framework is required.
 - Performance (`webos-stats`): the ▾ pill opens a small corner dropdown with

@@ -49,10 +49,10 @@ Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install 
 ## Recent desktop implementations (theme r41–r47)
 
 - **Spinning vinyl:** the old cava bars were replaced with a rotating vinyl record drawn in GTK/Cairo, with grooves, a fixed light reflection and the current cover as the centre label. It spins only while Spotify plays, and the cover is treated as the label rather than the whole card background.
-- **High-contrast everything:** `art_is_light()` now drives pure black or white text, buttons, the progress bar and the volume bar, all with a matching glow. On dark art they are glowing white; on light art they are black with a soft dark halo. Artwork detection never blocks the GTK thread.
+- **High-contrast everything:** `art_is_light()` drives pure white or black text, buttons, the seek bar and the volume bar. On dark art they are plain white; on light art they are plain black. No glows, outlines or button boxes, so nothing blends into the cover. Artwork detection never blocks the GTK thread.
 - **Faster track changes:** the card polls Spotify once every 250 ms with a single `playerctl` metadata call, and prepares artwork in a background thread. The name and cover appear much sooner without disturbing the animation.
 - **Waybar time removed:** the MPRIS pill's `{dynamic}` lists only title and artist, so the static track length/position that never moved is gone. The card keeps its elapsed/total labels and seek bar.
-- **Cleaner layout:** the title and artist are bold and slightly larger at the top left, the mute button is gone, and the glowing borderless playback buttons sit directly under the progress bar. The volume control is a slim, outline-free vertical bar on the right edge that rises to increase Spotify-only volume; no system sink is touched.
+- **Cleaner layout:** the title and artist are bold and slightly larger at the top left, the mute button is gone, and flat playback buttons sit directly under the progress bar. The volume control is a slim, flat vertical bar on the right edge that rises to increase Spotify-only volume; no system sink is touched.
 - **Packaging:** these changes ship in `webos-theme-1.0-r47`; theme r46 also added animation to floating window toggles.
 
 ## Screenshots
