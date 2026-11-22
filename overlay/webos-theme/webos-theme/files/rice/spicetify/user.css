@@ -1,34 +1,34 @@
-/* WebOS transparent Spotify — matches the Firefox/terminal tint (20,20,26).
-   Applied via Spicetify theme `user.css`. */
-:root, html, body {
-  --background-base: rgba(20, 20, 26, .5) !important;
-  --background-press: rgba(20, 20, 26, .11) !important;
-  --background-elevated-base: rgba(20, 20, 26, .9) !important;
-  --background-elevated-highlight: rgba(232, 232, 232, .04) !important;
+/* WebOS transparent Spotify — patterned on upstream Hazy user.css. */
+:root {
+  --webos-backdrop: rgba(20, 20, 26, .12);
+  --webos-backdrop-strong: rgba(20, 20, 26, .20);
   --text-base: #D8D8D8 !important;
   --text-subdued: #7A7A7A !important;
   --text-bright-accent: #E8E8E8 !important;
   --essential-base: #E8E8E8 !important;
-  --decorative-subdued: rgba(232, 232, 232, .06) !important;
 }
-.Root__globalNav, .Root__main-view, .Root__right-sidebar,
-.main-view-container, .main-view-container__scroll-node,
-.main-view-container__scroll-node-child, .contentSpacing,
-.layout-container, .navBar, .root__player, .player,
-.main-nowPlayingBar-container, .view-playerScrollable,
-.GenericModal, .Modal__inner, .dropdownMenu, .context-menu {
+.encore-dark-theme { --background-base: transparent !important; }
+.encore-layout-themes,
+.encore-dark-theme .encore-announcement-set,
+.encore-bright-accent-set {
+  --background-highlight: var(--webos-backdrop) !important;
+  --background-press: var(--webos-backdrop-strong) !important;
+  --background-elevated-base: var(--webos-backdrop) !important;
+  --background-elevated-highlight: var(--webos-backdrop-strong) !important;
+  --background-elevated-press: var(--webos-backdrop) !important;
+  --background-tinted-base: var(--webos-backdrop) !important;
+  --background-tinted-highlight: var(--webos-backdrop-strong) !important;
+}
+:root, html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
+.main-root-container, .Root__globalNav, .Root__main-view,
+.Root__right-sidebar, .main-view-container, .main-view-container__scroll-node,
+.main-view-container__scroll-node-child, .contentSpacing, .layout-container,
+.navBar, .root__player, .player, .main-nowPlayingBar-container,
+.view-playerScrollable, .GenericModal, .Modal__inner, .dropdownMenu,
+.context-menu, .Root__top-bar, .main-topBar-container, .GlobalNav,
+.top-bar, .main-topBar-background, .main-topBar-overlay,
+.main-actionBarBackground-background, .playlist-playlist-actionBarBackground-background {
   background: transparent !important;
   background-color: transparent !important;
   box-shadow: none !important;
 }
-.main-root-container { background: rgba(20, 20, 26, .18) !important; }
-.Root__top-bar, .main-topBar-container, .GlobalNav,
-.top-bar, .main-topBar-background {
-  background: transparent !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-}
-
-.main-root-container { background: transparent !important; }
-
-html, body, #main, .Root, .os-padding, .os-viewport, .os-content { background: transparent !important; }

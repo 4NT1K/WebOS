@@ -243,6 +243,7 @@ apply_web_themes() {
 	if [[ -f "$vs" ]]; then
 		(( dry )) || sed -i 's/"transparent"[[:space:]]*:[[:space:]]*false/"transparent": true/' "$vs"
 		(( dry )) || sed -i 's/"enabledThemes"[[:space:]]*:[[:space:]]*\[\]/"enabledThemes": ["webos-transparent.css"]/' "$vs"
+		(( dry )) || sed -i 's/"transparent"[[:space:]]*:[[:space:]]*false/"transparent": true/' "$vs"
 	fi
 	ini="$home/.config/spicetify/config-xpui.ini"
 	[[ -f "$ini" ]] || return 0
