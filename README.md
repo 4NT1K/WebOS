@@ -46,6 +46,20 @@ The Deep Black base and grey text ramp never change, so CJK glyphs and kaomoji s
 
 Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install to `/usr/share/webos/colourways/`.
 
+## Screenshots
+
+| Terminal | Top bar |
+|---|---|
+| ![WebOS fastfetch card and health check](docs/screenshots/01-terminal.png) | ![Waybar](docs/screenshots/02-waybar.png) |
+
+| Music card | Music over wallpaper |
+|---|---|
+| ![Music card](docs/screenshots/03-music-card.png) | ![Music over wallpaper](docs/screenshots/06-music-background.png) |
+
+| Performance | Launcher |
+|---|---|
+| ![Performance panel](docs/screenshots/04-stats.png) | ![Curated application launcher](docs/screenshots/05-launcher.png) |
+
 ## Key features
 
 - **Two desktop experiences:** Hyprland (Wayland) by default, with regular Plasma available through the opt-in profile.
