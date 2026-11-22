@@ -130,6 +130,9 @@ hl.config({
 
 	animations = {
 		enabled = true,
+		-- Keep 5 -> 1 wraps instant; a long slide across every workspace felt
+		-- like a window sticking during Super + scroll.
+		workspace_wraparound = false,
 	},
 
 	dwindle = {
@@ -196,7 +199,9 @@ hl.curve("linear",   { type = "bezier", points = { {0.00, 0.00}, {1.00, 1.00} } 
 hl.animation({ leaf = "windows",       enabled = true, speed = 5,  bezier = "overshot", style = "slide" })
 hl.animation({ leaf = "windowsIn",     enabled = true, speed = 5,  bezier = "overshot", style = "popin 92%" })
 hl.animation({ leaf = "windowsOut",    enabled = true, speed = 4,  bezier = "smooth",   style = "popin 94%" })
-hl.animation({ leaf = "windowsMove",   enabled = true, speed = 5,  bezier = "smooth",   style = "slide" })
+-- Fade moving windows instead of sliding them: a slide can leave a window
+-- visibly hanging mid-motion when workspaces are switched in quick succession.
+hl.animation({ leaf = "windowsMove",   enabled = true, speed = 7,  bezier = "smooth",   style = "fade" })
 hl.animation({ leaf = "border",        enabled = true, speed = 6,  bezier = "smooth" })
 hl.animation({ leaf = "borderangle",   enabled = true, speed = 30, bezier = "linear",   style = "loop" })
 hl.animation({ leaf = "fade",          enabled = true, speed = 4,  bezier = "soft" })
@@ -207,7 +212,8 @@ hl.animation({ leaf = "layersIn",      enabled = true, speed = 4,  bezier = "ove
 hl.animation({ leaf = "layersOut",     enabled = true, speed = 3,  bezier = "smooth",   style = "slide" })
 hl.animation({ leaf = "fadeLayersIn",  enabled = true, speed = 3,  bezier = "smooth" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 3,  bezier = "soft" })
-hl.animation({ leaf = "workspaces",    enabled = true, speed = 5,  bezier = "overshot", style = "slide 20%" })
+-- Smooth (no overshoot) so the workspace settles once and never sticks.
+hl.animation({ leaf = "workspaces",    enabled = true, speed = 7,  bezier = "smooth",   style = "slide 20%" })
 hl.animation({ leaf = "specialWorkspace", enabled = true, speed = 5, bezier = "smooth", style = "fade" })
 
 -- ── Per-window polish ───────────────────────────────────────────────────────
@@ -226,6 +232,31 @@ hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "
 -- black surface. Force compositor alpha so wallpaper + blur always show through.
 hl.window_rule({ match = { class = "^(vesktop|discord)$" }, opacity = "0.88 0.84" })
 hl.window_rule({ match = { class = "^(spotify)$" },          opacity = "0.95 0.92" })
+
+-- A fresh boot can race Electron/kitty startup: the window maps before the
+-- compositor has finished applying static rules and paints an opaque surface.
+-- Re-assert alpha the moment the window opens so transparency is there from
+-- the first frame, every boot, without touching app-level CSS.
+local BOOT_ALPHA = {
+	kitty      = "1.0 override 1.0 override",  -- kitty draws its own alpha
+	foot       = "0.86 override 0.80 override",
+	Alacritty  = "0.90 override 0.85 override",
+	wezterm    = "0.92 override 0.88 override",
+	vesktop    = "0.88 override 0.84 override",
+	discord    = "0.88 override 0.84 override",
+	spotify    = "0.95 override 0.92 override",
+}
+hl.on("window.open_early", function(w)
+	if not w then
+		return
+	end
+	local value = BOOT_ALPHA[w.class] or BOOT_ALPHA[w.initial_class]
+	if value then
+		hl.dispatch(hl.dsp.window.set_prop({
+			window = w.address, prop = "opacity", value = value,
+		}))
+	end
+end)
 
 -- Utilities should not be transparent at all.
 hl.window_rule({
