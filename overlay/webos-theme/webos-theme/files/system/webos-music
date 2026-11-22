@@ -314,9 +314,9 @@ def prepare_art(url):
         # crop the soft edge away. Keep it bright enough to recognise the art.
         overscan = PANEL_SIZE + 48
         frost = ImageOps.fit(image, (overscan, overscan), resample)
-        frost = frost.filter(ImageFilter.GaussianBlur(radius=5))
+        frost = frost.filter(ImageFilter.GaussianBlur(radius=2.5))
         frost = frost.crop((24, 24, 24 + PANEL_SIZE, 24 + PANEL_SIZE))
-        frost = ImageEnhance.Brightness(frost).enhance(0.92)
+        frost = ImageEnhance.Brightness(frost).enhance(1.0)
         frost.save(cached, format="PNG")
 
         # Drop the older greyscale/dual-image caches for this track.
@@ -579,7 +579,7 @@ def run_app(visible):
         border-radius: 18px;
         color: #D8D8D8;
         padding: 14px;
-        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.12);
+        box-shadow: inset 0 0 0 1000px rgba(0, 0, 0, 0.06);
     }
     .webos-status {
         color: #D8D8D8;
