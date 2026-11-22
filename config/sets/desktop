@@ -79,7 +79,6 @@ media-video/pipewire
 media-video/wireplumber
 media-sound/pavucontrol
 media-sound/pulsemixer
-media-sound/cava
 media-video/mpv
 media-video/ffmpeg
 media-sound/playerctl

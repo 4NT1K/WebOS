@@ -55,7 +55,6 @@ tooltip label {
 #mpris,
 #tray,
 #custom-waypaper,
-#custom-visualizer,
 #custom-perf,
 #custom-power {
     background: @surface;
@@ -64,18 +63,6 @@ tooltip label {
     color: @text;
     padding: 0 10px;
     margin: 6px 3px;
-}
-
-/* Spotify spectrum: flat block glyphs, no colour, no glow. */
-#custom-visualizer {
-    color: @accent;
-    padding: 0 8px;
-    font-size: 12px;
-    letter-spacing: 1px;
-}
-
-#custom-visualizer.silent {
-    color: @dim;
 }
 
 /* ── workspaces: rounded keys, soft white when focused ─────────────────── */
@@ -128,8 +115,6 @@ tooltip label {
 /* ── centre: media player (click toggles the dropdown) ─────────────────── */
 #mpris {
     padding: 0 12px;
-    /* Balance the spectrum on the left so this pill sits at screen centre. */
-    margin-right: 128px;
 }
 
 #mpris.playing {

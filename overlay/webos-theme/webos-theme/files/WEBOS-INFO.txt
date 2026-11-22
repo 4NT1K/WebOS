@@ -36,7 +36,7 @@ WHAT CHANGED IN 1.02
 --------------------
 The 1.02 maintenance rebuild is delivered to existing 1.01 machines by
 `sudo webos-update`. The WebOS overlay is refreshed from GitHub, the theme is
-upgraded to `webos-theme-1.0-r50`, and the rice is re-applied. Log out and back
+upgraded to `webos-theme-1.0-r51`, and the rice is re-applied. Log out and back
 in (or reboot) after the update so the session picks up the new files.
 
 - The far-right ⏻ power button is now present in the "mono" dotfiles profile as
@@ -67,10 +67,8 @@ in (or reboot) after the update so the session picks up the new files.
   progress bar. The slim flat volume bar stays on the right edge: dragging up
   raises the volume and dragging down lowers it, applied live while dragging.
   Dragging the seek previews it and seeks once on
-  release. The Waybar pill shows only icon, title
-  and artist, with a flat cava-style Spotify spectrum beside it that is hidden
-  until playback starts and can never fall back to the microphone.
-  MPRIS/volume stay Spotify-only.
+  release. The centred Waybar pill shows only icon, title and artist.
+  MPRIS/volume stay Spotify-only. No audio visualizer is installed.
 - Clicking outside `webos-music` or `webos-stats` dismisses it. The transparent
   catcher is on the TOP layer and the card is above it on OVERLAY.
 - Both dropdowns try `GtkLayerShell-0.1.typelib` before `1.0`, which is the
@@ -82,9 +80,9 @@ in (or reboot) after the update so the session picks up the new files.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
   were corrected, and the shipped guide and release notes now describe 1.02.
 
-RECENT THEME REVISIONS (r41-r50)
+RECENT THEME REVISIONS (r41-r51)
 --------------------------------
-- r41/r42: cava bars became solid opaque white and the cover was lightly frosted
+- r41/r42: spectrum bars became solid opaque white and the cover was lightly frosted
   instead of heavily dimmed, so the artwork stayed recognisable.
 - r43/r44: labels, buttons and slider fill follow a readable colour derived from
   the current cover (black on a fairly white cover); track changes are faster
@@ -94,7 +92,7 @@ RECENT THEME REVISIONS (r41-r50)
   elapsed-time sync work is superseded by r47.
 - r46: floating windows animate when toggled.
 - r47: the stuck track-length/position was removed from the Waybar MPRIS pill;
-  the card keeps its elapsed/total bar. The cava bars became a spinning vinyl
+  the card keeps its elapsed/total bar. The old spectrum bars became a spinning vinyl
   with the cover as the centre label, title/artist got bolder and larger, the
   mute button was removed, flat playback buttons moved below the progress bar,
   and the volume control became a small flat vertical bar on the right edge.
@@ -104,19 +102,17 @@ RECENT THEME REVISIONS (r41-r50)
 - r48: dragging the seek bar previews it; dropping seeks once to that point and
   playback continues from there instead of the bar sliding or snapping back.
   Volume drags are previewed and eased in small steps, still Spotify-only. A
-  long song title wraps onto a second line instead of being cut off. The top
-  bar gained a flat monochrome cava-style spectrum that reads only the
-  Spotify PipeWire node, with heavier smoothing so the bars do not flicker.
+  long song title wraps onto a second line instead of being cut off.
 - r49: the volume control stays a slim flat vertical bar on the right edge,
   but now changes Spotify's level continuously while dragging (up louder,
-  down quieter) rather than only on release. The
-  Waybar spectrum checks its real PipeWire links, so it never captures the mic
-  or another app when the Spotify node is gone, and it stays hidden until
-  Spotify is actually playing.
+  down quieter) rather than only on release.
 - r50: `webos-update` also removes retired Vesktop entries from custom Portage
   sets. Older images left one in `/etc/portage/sets/desktop`, so `@world`
   reinstalled it every run and the update badge never cleared even though the
   update itself succeeded.
+- r51: removed the Waybar spectrum module and its helper, and dropped cava from
+  the theme/desktop dependencies and Portage set. The music pill is centred on
+  its own again; no audio visualizer is installed or planned.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -741,7 +737,7 @@ as part of a release; only reboot when you deliberately test the new kernel.
 
 Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.02"`).
 Maintenance fixes that must reach installed machines need a new package
-revision (`webos-theme-1.0-r50`) and a new tag; `webos-update` refreshes the
+revision (`webos-theme-1.0-r51`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.
 Before wiping another OS's drive, keep a verified backup and confirm WebOS
 boots and installs from its own SSD.

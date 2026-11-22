@@ -46,18 +46,18 @@ The Deep Black base and grey text ramp never change, so CJK glyphs and kaomoji s
 
 Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install to `/usr/share/webos/colourways/`.
 
-## Recent desktop implementations (theme r41–r50)
+## Recent desktop implementations (theme r41–r51)
 
-- **Spinning vinyl:** the old cava bars were replaced with a rotating vinyl record drawn in GTK/Cairo, with grooves, a fixed light reflection and the current cover as the centre label. It spins only while Spotify plays, and the cover is treated as the label rather than the whole card background.
+- **Spinning vinyl:** a rotating vinyl record drawn in GTK/Cairo has grooves, a fixed light reflection and the current cover as the centre label. It spins only while Spotify plays, and the cover is treated as the label rather than the whole card background.
 - **High-contrast everything:** `art_is_light()` drives pure white or black text, buttons, the seek bar and the volume bar. On dark art they are plain white; on light art they are plain black. No glows, outlines or button boxes, so nothing blends into the cover. Artwork detection never blocks the GTK thread.
 - **Faster track changes:** the card polls Spotify once every 250 ms with a single `playerctl` metadata call, and prepares artwork in a background thread. The name and cover appear much sooner without disturbing the animation.
 - **Waybar time removed:** the MPRIS pill's `{dynamic}` lists only title and artist, so the static track length/position that never moved is gone. The card keeps its elapsed/total labels and seek bar.
 - **Cleaner layout:** the title and artist are bold and slightly larger at the top left, the mute button is gone, and flat playback buttons sit directly under the progress bar. The volume control is a slim, flat vertical bar on the right edge; dragging it up raises Spotify-only volume and down lowers it, applied live while dragging. No system sink is touched.
 - **Smoother interaction:** dragging the seek bar only previews it; on release Spotify seeks to that point and playback continues from there without the bar snapping back. Volume changes are applied continuously during the drag (up = louder, down = quieter), without touching the system sink.
 - **Long titles:** a title too wide for the card wraps onto a second line instead of being cut off.
-- **Waybar spectrum:** a flat, monochrome cava-style visualizer sits in the top bar on the left of a centred music pill, reading only the Spotify PipeWire node; the graph is verified continuously so a missing stream can never fall back to the mic, and the module stays hidden until Spotify is actually playing. Heavier smoothing keeps the bars from flickering.
+- **Centred music pill:** the Spotify MPRIS pill sits alone at the centre of the top bar and shows only icon, title and artist. No audio visualizer is installed.
 - **Cleaner updater:** retired Vesktop entries are removed from custom Portage sets as well as `world`, so `@world` stops reinstalling it and the update badge clears after a successful run.
-- **Packaging:** these changes ship in `webos-theme-1.0-r50`; theme r46 also added animation to floating window toggles.
+- **Packaging:** these changes ship in `webos-theme-1.0-r51`; theme r46 also added animation to floating window toggles.
 
 ## Screenshots
 

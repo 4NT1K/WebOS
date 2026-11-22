@@ -63,9 +63,8 @@ Hard constraints (NEVER violate these)
      volume fader on the right edge, outside-click dismissal, and
      GtkLayerShell-0.1 before 1.0. Dragging the seek previews it and seeks on
      release; volume applies continuously while dragging. The Waybar pill is
-     centred with a flat monochrome Spotify-only cava-style spectrum to its
-     left; the spectrum hides until playback starts and is guarded against
-     mic fallback. It shows only icon/title/artist, never track time.
+     centred on its own and shows only icon/title/artist, never track time.
+     No audio visualizer is installed.
   6. Installed systems receive features through `sudo webos-update`; overlay
      main must be pushed BEFORE building/publishing an ISO.
   7. Desktop notifications use ./scripts/notify-user.sh "<message>" "WebOS Release".
@@ -386,7 +385,7 @@ overlay/webos-base/webos-base/webos-base-1.0.ebuild
   Base metapackage: OpenRC, NetworkManager, core services.
 
 overlay/webos-desktop/webos-desktop/webos-desktop-1.0.ebuild
-  Desktop metapackage: Hyprland, SDDM, Waybar, wlogout, portals, fonts, cava,
+  Desktop metapackage: Hyprland, SDDM, Waybar, wlogout, portals, fonts,
   Pipewire, Kvantum, Qt6ct, etc. IUSE bluetooth,browser. Does NOT pull Plasma.
   Keeps webos-theme as RDEPEND.
 
@@ -406,11 +405,11 @@ overlay/webos-theme/webos-theme/
     webos-theme-1.0.ebuild       original
     webos-theme-1.0-r1.ebuild    historical installed version on v1.01 systems
     webos-theme-1.0-r2/r3.ebuild remote history, harmless
-    webos-theme-1.0-r50.ebuild   CURRENT; pins live volume drag, guarded
-                                  and hidden Spotify-only spectrum, r50
-  r50 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
+    webos-theme-1.0-r51.ebuild   CURRENT; pins live volume drag, guarded
+                                  and hidden Spotify-only spectrum, r51
+  r51 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
   jq, brightnessctl, grim/slurp/wdisplays/swaybg/waypaper, playerctl, fonts,
-  chafa, libnotify, and librsvg||imagemagick. r50 installs the rice, dotfiles
+  chafa, libnotify, and librsvg||imagemagick. r51 installs the rice, dotfiles
   profiles, system fallbacks, session files, and all /usr/bin/webos-* helpers.
   pkg_postinst calls webos-wallpaper and webos-rice --system (with backups).
 
@@ -464,7 +463,7 @@ overlay/webos-theme/webos-theme/
                             via GaussianBlur(radius=2.5) at full brightness
                             with a 0.06 dark overlay. VinylVisualizer draws a
                             rotating vinyl with the cached cover as its centre
-                            label; no cava/PipeWire capture. art_is_light()
+                            label; no audio capture at all. art_is_light()
                             selects pure black or white text, buttons, progress
                             and volume bars; all controls are flat, with no
                             glow, outline or button box. Playback buttons sit
@@ -474,11 +473,6 @@ overlay/webos-theme/webos-theme/
                             outside-click catcher, GtkLayerShell 0.1->1.0
                             fallback, set_namespace(window,"webos-music").
                             run_quiet(["hyprctl","seterror","disable"]) at start.
-    webos-visualizer        continuous Waybar custom module; cava raw ASCII
-                            from the Spotify PipeWire node only, converted to
-                            flat block glyphs and one JSON line per frame.
-                            45 fps, noise_reduction=90 and waves=1 keep it
-                            smooth; no osu!/Firefox capture.
     webos-stats             GTK3/gtk-layer-shell per-core monitor.
                             read_core_ids(), ram_details(), core_temperatures();
                             output line "c%d   %d%% %s"; outside-click catcher;
@@ -536,7 +530,7 @@ scripts/30-rootfs.sh
   Refreshes overlay/sets in chroot; emerge @base @desktop @gaming
   @webos-installer; stages installer tarball; builds installer offline;
   installs branding; unmerge+remerge webos-theme (same-version edits need a
-  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r50.ebuild"; applies
+  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r51.ebuild"; applies
   rice; rsyncs chroot -> build/rootfs excluding pseudofs/cache/src trees.
   Reuses build/chroot.backup on this machine for fast v1.02 rebuilds.
 
@@ -670,7 +664,7 @@ Delivery path
   https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and replaces
   /usr/local/portage/webos. The current theme revision then reaches installed systems
   on their next `sudo webos-update`. r1 stayed historical; remote r2/r3 are
-  harmless. Rootfs pins r50 via scripts/30-rootfs.sh.
+  harmless. Rootfs pins r51 via scripts/30-rootfs.sh.
 
 Release gate for binary-first behavior
   /home/brah/release-v102.sh runs `webos-update --check` and
@@ -691,7 +685,7 @@ Preconditions
     WEBOS_KERNEL=6.12.0-webos, WEBOS_BUILD=<today>.
 
 /home/brah/release-v102.sh
-  Final gate. It verifies rootfs packages/helpers/overlays/theme r50, syncs the
+  Final gate. It verifies rootfs packages/helpers/overlays/theme r51, syncs the
   installed WEBOS-INFO.txt and Waybar fallbacks, verifies binary-first config,
   runs runtime checks in the chroot (emerge --pretend --getbinpkg vim,
   waypaper --help, webos-update --check/--fast --check, stats module import),
@@ -783,7 +777,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   app-admin/webos-installer/{Manifest,metadata.xml,webos-installer-1.0.0.ebuild}
   webos-theme/webos-theme/
     Manifest, metadata.xml,
-    webos-theme-1.0.ebuild ... -r50 [C],
+    webos-theme-1.0.ebuild ... -r51 [C],
     WEBOS-INFO.txt [C],
     files/rice/ [R] (hypr/, waybar/, wlogout/, wofi/, kitty/, foot/, fish/,
       gtk-3.0/, gtk-4.0/, qt5ct/, qt6ct/, kvantum/, konsole/, konsolerc/,
@@ -808,7 +802,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   in make.conf/webos-update/docs breaks the contract. Sweep before committing.
 - Reusing stale stage labels: INSTALL_STAGES must match r.phase() order.
 - Same-version theme edits not reaching rootfs: scripts/30-rootfs.sh unmerges
-  then remerges webos-theme and pins r50.
+  then remerges webos-theme and pins r51.
 - chroot copy failing with "Directory not empty": a previous cp -a was killed
   mid-copy. Remove the partial build/chroot from inside webos-build and copy
   chroot.backup again; do not try to merge trees.

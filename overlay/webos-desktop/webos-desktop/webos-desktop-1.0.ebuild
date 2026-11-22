@@ -47,7 +47,6 @@ RDEPEND="
 	media-fonts/noto-cjk
 	media-gfx/imv
 	media-gfx/swayimg
-	media-sound/cava
 	media-sound/pavucontrol
 	media-sound/playerctl
 	media-sound/pulsemixer
