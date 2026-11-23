@@ -18,6 +18,11 @@ command -v gtk-launch >/dev/null 2>&1 || exit 0
 # Application directories, most specific first.
 DATA_DIRS="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 DATA_DIRS="$DATA_DIRS:/usr/local/share/applications:/usr/share/applications"
+# Flatpaks export their launchers here, not into the dirs above. Include both
+# scopes so a newly installed Flatpak shows up without copying its .desktop.
+# Keep these last so a local override of the same desktop id still wins.
+DATA_DIRS="$DATA_DIRS:${XDG_DATA_HOME:-$HOME/.local/share}/flatpak/exports/share/applications"
+DATA_DIRS="$DATA_DIRS:/var/lib/flatpak/exports/share/applications"
 
 work=$(mktemp -d "${TMPDIR:-/tmp}/webos-menu.XXXXXX") || exit 1
 trap 'rm -rf "$work"' EXIT HUP INT TERM
