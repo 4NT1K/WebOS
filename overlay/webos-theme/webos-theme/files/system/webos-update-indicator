@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # webos-update-indicator — Waybar update badge for WebOS.
 # Outputs JSON for Waybar: an icon when updates are available, empty otherwise.
+# The count is cached, but the cache is invalidated when Portage changes
+# packages or when the update is launched from this badge, so a completed
+# update never leaves a stale icon behind.
 set -u
 
 CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/webos"
 CACHE="$CACHE_DIR/update-indicator.count"
 LOCK="$CACHE_DIR/update-indicator.lock"
-MAX_AGE="${WEBOS_UPDATE_CHECK_AGE:-1800}"
+BUSY="$CACHE_DIR/update-indicator.busy"
+UPDATE_LOG="/var/log/webos-update.log"
+MAX_AGE="${WEBOS_UPDATE_CHECK_AGE:-300}"
 
 count_updates() {
 	local n flat
@@ -26,14 +31,33 @@ refresh() {
 	) >/dev/null 2>&1 &
 }
 
+clear_cache() {
+	rm -f "$CACHE" "$BUSY"
+}
+
+notify_waybar() {
+	local pids
+	pids="$(pgrep -u "$(id -un)" waybar 2>/dev/null || true)"
+	[[ -z "$pids" ]] || kill -s RTMIN+8 $pids 2>/dev/null || true
+}
+
 case "${1:---check}" in
 	--check)
+		# While the updater window is open, show nothing instead of a stale count.
+		if [[ -e "$BUSY" ]]; then
+			printf '{"text":"","tooltip":"Update in progress","class":"none"}\n'
+			exit 0
+		fi
 		n=0
 		age=$MAX_AGE
 		if [[ -r "$CACHE" ]]; then
 			read -r n <"$CACHE" || n=0
 			ts="$(stat -c %Y "$CACHE" 2>/dev/null || printf '0')"
+			uts="$(stat -c %Y "$UPDATE_LOG" 2>/dev/null || printf '0')"
 			age=$(( $(date +%s) - ts ))
+			# A newer update log means Portage changed packages since the cached
+			# count was taken, including updates started outside the badge.
+			(( uts > ts )) && age=$MAX_AGE
 		fi
 		[[ "$n" =~ ^[0-9]+$ ]] || n=0
 		if (( age >= MAX_AGE )); then refresh; fi
@@ -44,7 +68,23 @@ case "${1:---check}" in
 		fi
 		;;
 	--update)
+		clear_cache
+		: >"$BUSY"
+		notify_waybar
 		setsid kitty --title 'WebOS Update' -e sudo webos-update --fast --buildpkg >/dev/null 2>&1 &
+		pid=$!
+		(
+			wait "$pid" 2>/dev/null || true
+			clear_cache
+			refresh
+			sleep 2
+			notify_waybar
+		) >/dev/null 2>&1 &
+		;;
+	--clear)
+		clear_cache
+		refresh
+		notify_waybar
 		;;
 	*)
 		printf '{"text":"","tooltip":"","class":"none"}\n'

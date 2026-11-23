@@ -123,7 +123,14 @@ grep -q 'reboot with: loginctl reboot' "$UPDATER" \
 	&& good "logind reboot hint" || bad "stale reboot hint"
 grep -qF '/^\[(ebuild|binary)/' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/waybar/scripts/updates.sh" \
 	&& good "binary-aware update counter" || bad "update counter ignores binaries"
+INDICATOR="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-update-indicator"
+grep -qF -- '--clear)' "$INDICATOR" \
+	&& grep -qF 'update-indicator.busy' "$INDICATOR" \
+	&& grep -qF '/var/log/webos-update.log' "$INDICATOR" \
+	&& good "update badge invalidates stale cache" || bad "update badge can show a stale count"
 RICE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice"
+grep -A8 '"custom/update":' "$RICE/waybar/config.jsonc" | grep -q '"interval": 60' \
+	&& good "update badge polls quickly" || bad "update badge poll interval too slow"
 if grep -Rq 'systemctl' "$RICE/hypr/hypridle.conf" "$RICE/wlogout/layout"; then
 	bad "stale systemctl power action"
 else good "power actions use loginctl only"; fi

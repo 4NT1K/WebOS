@@ -90,7 +90,7 @@
         "format": "{}",
         "exec": "webos-update-indicator --check",
         "on-click": "webos-update-indicator --update",
-        "interval": 1800,
+        "interval": 60,
         "signal": 8,
         "hide-empty-text": true,
         "tooltip": true,
