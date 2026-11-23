@@ -79,7 +79,7 @@ Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install 
 - **Two desktop experiences:** Hyprland (Wayland) by default, with regular Plasma available through the opt-in profile.
 - **Gaming-oriented stack:** gamescope, gamemode, MangoHud, vkBasalt, vkd3d-proton, Lutris, Heroic, PipeWire/WirePlumber, Vulkan/Mesa tooling (and NVIDIA driver support option).
 - **Prebuilt essentials:** Firefox, Discord, OpenCode, Spotify, BetterSoundCloud (ad-free SoundCloud client), Dolphin, kitty, waybar, wofi, mako, mpv/imv and more (no compile during install for included apps).
-- **Music everywhere:** the Super+M card and vinyl show Spotify first, then fall back to BetterSoundCloud tracks through a small bundled bridge; BetterSoundCloud itself ships a matching black/JetBrains Mono WebOS theme.
+- **Music everywhere:** the Super+M card and vinyl show Spotify first, then fall back to BetterSoundCloud tracks through a small bundled bridge; BetterSoundCloud itself ships a matching black/JetBrains Mono WebOS theme with Discord-level compositor transparency.
 - **WebOS tooling:** `webos-installer`, `webos-update`, `webos-rice`, `webos-fastfetch`, `webos-shell`, `webos-session`, `webos-wallpaper`, `webos-shot`, `webos-gaming`, `webos-plasma-setup`, `webos-settings`.
 
 ## Install
