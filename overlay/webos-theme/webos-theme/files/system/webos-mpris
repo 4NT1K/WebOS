@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+"""Publish Spotify or BetterSoundCloud as one tidy MPRIS player for Waybar.
+
+The bar pill follows ``org.mpris.MediaPlayer2.webos``. Spotify wins while it
+is playing; otherwise the track comes from BetterSoundCloud's now-playing
+bridge, which already splits the real artist from the uploader/playlist name.
+Chromium's own MPRIS is deliberately not used: it reports the uploader as the
+artist and the playlist as the album.
+"""
+import json
+import os
+import subprocess
+
+import dbus
+import dbus.service
+from dbus.mainloop.glib import DBusGMainLoop
+from gi.repository import GLib
+
+BUS_NAME = "org.mpris.MediaPlayer2.webos"
+PATH = "/org/mpris/MediaPlayer2"
+ROOT_IFACE = "org.mpris.MediaPlayer2"
+PLAYER_IFACE = "org.mpris.MediaPlayer2.Player"
+PROPS_IFACE = "org.freedesktop.DBus.Properties"
+META_FORMAT = "{{status}}\t{{title}}\t{{artist}}\t{{mpris:length}}\t{{mpris:artUrl}}"
+
+CONFIG_HOME = os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config")
+BSC_FILE = os.path.join(CONFIG_HOME, "BetterSoundCloud", "plugin-data", "webos-now-playing.json")
+
+
+def run(*args):
+    try:
+        proc = subprocess.run(args, capture_output=True, text=True, timeout=2)
+        return proc.stdout if proc.returncode == 0 else None
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+
+
+def spotify_state():
+    """Spotify's current song, only when it is actually playing or paused."""
+    raw = run("playerctl", "--player=spotify", "metadata", "--format", META_FORMAT)
+    if raw is None:
+        return None
+    parts = raw.rstrip("\n").split("\t")
+    if len(parts) < 5:
+        return None
+    status, title, artist, length, art = parts[:5]
+    status = status.strip().lower()
+    title = title.strip()
+    if status not in ("playing", "paused") or not title:
+        return None
+    try:
+        microseconds = int(float(length or 0))
+    except ValueError:
+        microseconds = 0
+    return {
+        "title": title,
+        "artist": artist.strip(),
+        "length": microseconds,
+        "art": art.strip(),
+        "status": status,
+    }
+
+
+def bsc_state():
+    """BetterSoundCloud's current song from the small now-playing plugin."""
+    try:
+        with open(BSC_FILE, "r", encoding="utf-8") as handle:
+            data = json.load(handle)
+    except (OSError, ValueError):
+        return None
+    track = data.get("track") if isinstance(data, dict) else None
+    if not isinstance(track, dict):
+        return None
+    title = str(track.get("title") or "").strip()
+    if not title:
+        return None
+    try:
+        microseconds = int(float(track.get("duration") or 0) * 1_000_000)
+    except (TypeError, ValueError):
+        microseconds = 0
+    return {
+        "title": title,
+        "artist": str(track.get("artist") or "").strip(),
+        "length": microseconds,
+        "art": str(track.get("artwork") or "").strip(),
+        "status": "playing" if track.get("playing") is True else "paused",
+    }
+
+
+class Player(dbus.service.Object):
+    def __init__(self, bus):
+        dbus.service.Object.__init__(self, bus, PATH)
+        self.status = "Stopped"
+        self.metadata = dbus.Dictionary({}, signature="sv")
+
+    def _props(self, interface):
+        if interface == ROOT_IFACE:
+            return dbus.Dictionary({
+                "Identity": "WebOS music",
+                "DesktopEntry": "bettersoundcloud",
+                "SupportedMprisInterfaces": dbus.Array([ROOT_IFACE, PLAYER_IFACE], signature="s"),
+                "CanQuit": False,
+                "CanRaise": False,
+                "HasTrackList": False,
+            }, signature="sv")
+        return dbus.Dictionary({
+            "PlaybackStatus": self.status,
+            "Metadata": self.metadata,
+            "CanGoNext": False,
+            "CanGoPrevious": False,
+            "CanPlay": False,
+            "CanPause": False,
+            "CanSeek": False,
+            "Volume": 0.0,
+        }, signature="sv")
+
+    @dbus.service.method(PROPS_IFACE, in_signature="ss", out_signature="v")
+    def Get(self, interface, name):
+        return self._props(interface)[name]
+
+    @dbus.service.method(PROPS_IFACE, in_signature="s", out_signature="a{sv}")
+    def GetAll(self, interface):
+        return self._props(interface)
+
+    @dbus.service.signal(PROPS_IFACE, signature="sa{sv}as")
+    def PropertiesChanged(self, interface, changed, invalidated):
+        pass
+
+    @dbus.service.method(ROOT_IFACE)
+    def Raise(self):
+        pass
+
+    @dbus.service.method(ROOT_IFACE)
+    def Quit(self):
+        pass
+
+    def update(self, state):
+        if state is None:
+            status = "Stopped"
+            metadata = dbus.Dictionary({}, signature="sv")
+        else:
+            status = "Playing" if state["status"] == "playing" else "Paused"
+            metadata = dbus.Dictionary({
+                "xesam:title": state["title"],
+                "xesam:artist": dbus.Array([state["artist"]] if state["artist"] else [], signature="s"),
+                "mpris:length": dbus.Int64(state["length"]),
+                "mpris:artUrl": state["art"],
+                "mpris:trackid": dbus.ObjectPath("/org/webos/Track/0"),
+            }, signature="sv")
+        if status == self.status and metadata == self.metadata:
+            return
+        self.status = status
+        self.metadata = metadata
+        self.PropertiesChanged(
+            PLAYER_IFACE,
+            dbus.Dictionary({"PlaybackStatus": status, "Metadata": metadata}, signature="sv"),
+            dbus.Array([], signature="s"),
+        )
+
+
+def main():
+    DBusGMainLoop(set_as_default=True)
+    bus = dbus.SessionBus()
+    dbus.service.BusName(BUS_NAME, bus)
+    player = Player(bus)
+
+    def poll():
+        player.update(spotify_state() or bsc_state())
+        return True
+
+    poll()
+    GLib.timeout_add(1000, poll)
+    GLib.MainLoop().run()
+
+
+if __name__ == "__main__":
+    main()

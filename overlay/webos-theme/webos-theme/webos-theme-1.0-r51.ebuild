@@ -172,6 +172,7 @@ src_install() {
 	newexe "${FILESDIR}"/system/webos-menu webos-menu
 	newexe "${FILESDIR}"/system/webos-chafa-logo webos-chafa-logo
 	newexe "${FILESDIR}"/system/webos-music webos-music
+	newexe "${FILESDIR}"/system/webos-mpris webos-mpris
 	newexe "${FILESDIR}"/system/webos-workspace-scroll webos-workspace-scroll
 	# Waybar IPC shim: rewrites legacy workspace dispatches for Hyprland 0.57.
 	insinto /usr/lib/webos

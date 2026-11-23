@@ -86,6 +86,15 @@ elif command -v pipewire-pulse >/dev/null 2>&1; then
 fi
 
 # ── shell ───────────────────────────────────────────────────────────────────
+# The mpris pill follows this single bridge: Spotify first, then the
+# BetterSoundCloud now-playing track. It also hides Firefox/Chromium playlists
+# and keeps the real artist instead of the uploader name.
+if running webos-mpris; then
+	note "webos-mpris already running"
+elif command -v webos-mpris >/dev/null 2>&1; then
+	note "starting webos-mpris"
+	webos-mpris >>"$log" 2>&1 &
+fi
 if running waybar; then
 	note "waybar already running"
 elif command -v waybar >/dev/null 2>&1; then

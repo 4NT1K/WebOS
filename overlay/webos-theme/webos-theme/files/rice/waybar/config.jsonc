@@ -42,7 +42,9 @@
     },
 
     "mpris": {
-        "player": "spotify",
+        // webos-mpris publishes Spotify first, then BetterSoundCloud's real
+        // song/artist (never a playlist or the uploader name) as one player.
+        "player": "webos",
         "format": "{player_icon} {dynamic}",
         "format-paused": "{status_icon} <i>{dynamic}</i>",
         "dynamic-len": 42,
@@ -53,6 +55,8 @@
         "player-icons": {
             "default": "▶",
             "spotify": "▶",
+            "chromium": "▶",
+            "bettersoundcloud": "▶",
             "firefox": "▶",
             "mpv": "▶"
         },
