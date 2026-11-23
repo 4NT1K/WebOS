@@ -67,8 +67,7 @@ Hard constraints (NEVER violate these)
      No audio visualizer is installed.
   6. Installed systems receive features through `sudo webos-update`; overlay
      main must be pushed BEFORE building/publishing an ISO.
-  7. Desktop notifications use ./scripts/notify-user.sh "<message>" "WebOS Release".
-  8. Never shut the machine down as part of a release. Leave it powered on.
+  7. Never shut the machine down as part of a release. Leave it powered on.
 
 If you change a contract-sensitive file, update scripts/50-check.sh and rerun it.
 
@@ -97,9 +96,6 @@ If you change a contract-sensitive file, update scripts/50-check.sh and rerun it
 ├── overlay/                           the ::webos Gentoo overlay (see §7)
 ├── scripts/                           build pipeline stages (see §8)
 ├── assets/                            logo PNG sources
-├── .issue-watcher.sh                  long-running build-issue notifier
-├── .step-watcher.sh                   build-step notifier
-├── .finalize-rootfs.sh                post-rootfs helper
 ├── .post-iso.sh                       post-ISO helper
 ├── setup-container-build.sh           container bootstrap/helper script
 
@@ -554,20 +550,7 @@ scripts/50-check.sh
   12 theme ebuild revision and rootfs pin
   13 binary-first updater controls, forbidden-flag sweep
   14 music/stats dropdown details and python syntax
-  15 installer, Manifest hex, kernel stamp, watchers, cargo check --offline
-
-scripts/notify-user.sh
-  Desktop notifications with canberra/paplay/aplay sound fallback and
-  notify-send/kdialog/zenity fallback. Always call it as:
-  ./scripts/notify-user.sh "<message>" "WebOS Release"
-
-scripts/status-updater.sh
-  Opt-in with WEBOS_STATUS_UPDATER=1. Local snapshot only; git add/commit/push
-  were removed. Do not reintroduce auto-commit.
-
-.issue-watcher.sh, .step-watcher.sh
-  Build notifiers. ISO detection uses compgen -G 'build/webos-*.iso', not a raw
-  glob test. No /home/brah/WebOS or /webos paths, no git pushes.
+  15 installer, Manifest hex, kernel stamp, cargo check --offline
 
 setup-container-build.sh
   Container helper. Uses generic /webos container paths, not hard-coded
@@ -610,9 +593,6 @@ Legacy migration
   webos-rice migrate_legacy_waybar() detects the known old mono config hash,
   backs it up once with .webos-orig, then writes the new config with the power
   widget. User edits are never silently destroyed.
-
-Notifications
-  Use scripts/notify-user.sh, not ad-hoc notify-send. Sound fallback included.
 
 Stats
   webos-stats shows actual RAM used/total (not cached math) and every CPU core
@@ -725,8 +705,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   ROADMAP.md [D]                      roadmap
   AUDIT.md, AUDIT_FINAL_REPORT.md [D] audit history
   LICENSE [D]
-  .issue-watcher.sh, .step-watcher.sh [X] notifiers
-  .finalize-rootfs.sh, .post-iso.sh [X] helpers
+  .post-iso.sh [X] helper
   setup-container-build.sh [B]
 
 [branding/] - [C] identity
@@ -788,8 +767,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
 
 [scripts/] - [B]
   00-fetch.sh, 10-bootstrap.sh, 20-kernel.sh, 30-rootfs.sh,
-  40-iso.sh, 50-check.sh, notify-user.sh, status-updater.sh,
-  lib/common.sh, lib/mkmanifest.sh
+  40-iso.sh, 50-check.sh, lib/common.sh, lib/mkmanifest.sh
 
 [assets/] - [X]
   webos-cobweb-logo.png, webos-cobweb-logo-512.png
@@ -817,8 +795,6 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   on the target Ryzen 5 5600X. Keep the v3 flag list.
 - Native Steam: impossible with ABI_X86=64; keep the Flatpak fallback wording.
 - Manifest digests: EBUILD/MISC lines must be 128-hex-char BLAKE2B/SHA512.
-- Watchers: never add git push or hard-coded /home/brah paths.
-- Notifications: use notify-user.sh; do not invent another mechanism.
 - Do not shut down. Seriously.
 
 ================================================================================
@@ -911,7 +887,7 @@ cd /home/brah/WebOS
 bash scripts/50-check.sh
 
 # Syntax / data
-bash -n build.sh setup-container-build.sh .issue-watcher.sh .step-watcher.sh scripts/*.sh
+bash -n build.sh setup-container-build.sh scripts/*.sh
 PYTHONPYCACHEPREFIX=/tmp/opencode/webos-pycache python3 -m py_compile \
   overlay/webos-theme/webos-theme/files/system/webos-music \
   overlay/webos-theme/webos-theme/files/system/webos-stats
@@ -927,9 +903,6 @@ docker exec webos-build bash -lc 'cd /sanusos && ./build.sh status'
 docker exec webos-build bash -lc 'cd /sanusos && ./build.sh rootfs > build/v102-rootfs.log 2>&1; echo $? > build/v102-rootfs.rc'
 # Final gate
 /home/brah/release-v102.sh
-
-# Notifications
-./scripts/notify-user.sh "message" "WebOS Release"
 
 Remember: push main before release, publish only after all checks pass, leave
 the machine powered on.

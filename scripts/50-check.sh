@@ -400,17 +400,9 @@ grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/overlay/sys-kernel/webos-kernel/
 	&& good "kernel fragment stamp" || bad "kernel fragment stamp missing"
 grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/scripts/20-kernel.sh" \
 	&& good "kernel rebuild checks stamp" || bad "kernel rebuild ignores stamp"
-for s in setup-container-build.sh .issue-watcher.sh .step-watcher.sh; do
-	grep -qF "compgen -G 'build/webos-*.iso'" "${WEBOS_ROOT}/${s}" \
-		&& good "ISO glob uses compgen in ${s}" || bad "invalid ISO glob test in ${s}"
-done
-grep -qF 'WEBOS_STATUS_UPDATER' "${WEBOS_ROOT}/scripts/status-updater.sh" \
-	&& good "status updater is opt-in" || bad "status updater auto-runs"
-if grep -REq '/home/brah/sanusos|/sanusos|git add|git commit|git push' \
-	"${WEBOS_ROOT}/.issue-watcher.sh" "${WEBOS_ROOT}/.step-watcher.sh" \
-	"${WEBOS_ROOT}/scripts/status-updater.sh"; then
-	bad "watchers still use foreign paths or auto-commit"
-else good "watchers are path-independent and non-committing"; fi
+grep -qF "compgen -G 'build/webos-*.iso'" "${WEBOS_ROOT}/setup-container-build.sh" \
+	&& good "ISO glob uses compgen in setup-container-build.sh" \
+	|| bad "invalid ISO glob test in setup-container-build.sh"
 ISO_SCRIPT="${WEBOS_ROOT}/scripts/40-iso.sh"
 for pat in 'name __pycache__ -prune' 'name '\''*.pyc'\'' -delete' \
 	'webos-visualizer' '/etc/cava'; do
