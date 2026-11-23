@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
+<pkgmetadata>
+	<maintainer type="project">
+		<email>4NT1K@users.noreply.github.com</email>
+		<name>WebOS</name>
+	</maintainer>
+	<upstream>
+		<remote-id type="github">AlirezaKJ/BetterSoundCloud</remote-id>
+	</upstream>
+	<longdescription>
+		BetterSoundCloud is a free, open-source desktop client for SoundCloud.
+		It runs SoundCloud's own web player and adds synced lyrics, Discord rich
+		presence, Last.fm scrobbling, an equaliser, themes, plugins, and removes
+		the audio ads between tracks. WebOS extracts the upstream AppImage so no
+		FUSE installation is required.
+	</longdescription>
+</pkgmetadata>
