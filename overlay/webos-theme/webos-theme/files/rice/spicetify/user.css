@@ -51,3 +51,50 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
   background: transparent !important;
   border-color: transparent !important;
 }
+
+/* Menus are the exception: the app stays glassy, but context menus, dropdowns
+   and dialogs need a readable surface and obvious hover/focus states. These
+   selectors are later and more specific than the blanket transparency above. */
+:is([role="menu"], [role="listbox"], [role="dialog"], [role="tooltip"],
+    .context-menu, .dropdownMenu, .main-contextMenu-menu,
+    .encore-context-menu, [data-testid="context-menu"],
+    [data-testid="popup-menu"], .GenericModal, .Modal__inner,
+    .encore-modal, .popover, .Popover, .x-menu, .menu) {
+  background: rgba(12, 12, 16, .96) !important;
+  background-color: rgba(12, 12, 16, .96) !important;
+  border: 1px solid rgba(232, 232, 232, .2) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, .8) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+:is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+    [role="option"], .context-menu__item, .main-contextMenu-menuItem,
+    .dropdownMenu a, .dropdownMenu button,
+    [data-testid*="menu-item"], [data-testid*="menuitem"]) {
+  background-color: rgba(232, 232, 232, .04) !important;
+  border-radius: 6px !important;
+  color: #E8E8E8 !important;
+}
+
+:is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+    [role="option"], .context-menu__item, .main-contextMenu-menuItem,
+    .dropdownMenu a, .dropdownMenu button,
+    [data-testid*="menu-item"], [data-testid*="menuitem"]):hover,
+:is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+    [role="option"], .context-menu__item, .main-contextMenu-menuItem,
+    .dropdownMenu a, .dropdownMenu button,
+    [data-testid*="menu-item"], [data-testid*="menuitem"]):focus-visible,
+:is([role="menuitem"], [role="menuitemcheckbox"], [role="menuitemradio"],
+    [role="option"], .context-menu__item, .main-contextMenu-menuItem,
+    .dropdownMenu a, .dropdownMenu button,
+    [data-testid*="menu-item"], [data-testid*="menuitem"])[aria-checked="true"] {
+  background-color: rgba(232, 232, 232, .18) !important;
+  color: #fff !important;
+}
+
+:is([role="menu"], .context-menu, .dropdownMenu) [role="separator"],
+:is([role="menu"], .context-menu, .dropdownMenu) hr {
+  background-color: rgba(232, 232, 232, .16) !important;
+  border-color: rgba(232, 232, 232, .16) !important;
+}
