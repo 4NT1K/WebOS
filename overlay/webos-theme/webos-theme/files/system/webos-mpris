@@ -106,13 +106,54 @@ class Player(dbus.service.Object):
         return dbus.Dictionary({
             "PlaybackStatus": self.status,
             "Metadata": self.metadata,
-            "CanGoNext": False,
-            "CanGoPrevious": False,
-            "CanPlay": False,
-            "CanPause": False,
-            "CanSeek": False,
+            "CanControl": True,
+            "CanGoNext": True,
+            "CanGoPrevious": True,
+            "CanPlay": True,
+            "CanPause": True,
+            "CanSeek": True,
             "Volume": 0.0,
         }, signature="sv")
+
+    @staticmethod
+    def _target():
+        """Forward controls to whichever app currently owns the track."""
+        return "spotify" if spotify_state() is not None else "chromium"
+
+    def _control(self, command, *args):
+        run("playerctl", "--player=" + self._target(), command, *args)
+
+    @dbus.service.method(PLAYER_IFACE)
+    def Play(self):
+        self._control("play")
+
+    @dbus.service.method(PLAYER_IFACE)
+    def Pause(self):
+        self._control("pause")
+
+    @dbus.service.method(PLAYER_IFACE)
+    def PlayPause(self):
+        self._control("play-pause")
+
+    @dbus.service.method(PLAYER_IFACE)
+    def Stop(self):
+        self._control("stop")
+
+    @dbus.service.method(PLAYER_IFACE)
+    def Next(self):
+        self._control("next")
+
+    @dbus.service.method(PLAYER_IFACE)
+    def Previous(self):
+        self._control("previous")
+
+    @dbus.service.method(PLAYER_IFACE, in_signature="x")
+    def Seek(self, offset):
+        self._control("position", "%dms" % (int(offset) // 1000))
+
+    @dbus.service.method(PLAYER_IFACE, in_signature="ox")
+    def SetPosition(self, track_id, position):
+        self._control("position", "%dms" % (int(position) // 1000))
 
     @dbus.service.method(PROPS_IFACE, in_signature="ss", out_signature="v")
     def Get(self, interface, name):
@@ -161,7 +202,9 @@ class Player(dbus.service.Object):
 def main():
     DBusGMainLoop(set_as_default=True)
     bus = dbus.SessionBus()
-    dbus.service.BusName(BUS_NAME, bus)
+    # Keep the BusName object alive: if it is garbage-collected, the name is
+    # released and Waybar silently loses the pill.
+    name = dbus.service.BusName(BUS_NAME, bus)
     player = Player(bus)
 
     def poll():

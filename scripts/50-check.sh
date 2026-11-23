@@ -334,7 +334,7 @@ for pat in 'PANEL_SIZE = 340' 'TOP_GAP = 100' \
 	'class VinylVisualizer' 'box-shadow: none' \
 	'def preview_at(self, x)' 'def on_volume(value)' \
 	'title_label.set_line_wrap(True)' 'title_label.set_lines(2)' \
-	'class FlatVolumeBar' 'THROTTLE = 0.05' 'spotifyctl("position", "%.2f" % target)' \
+	'class FlatVolumeBar' 'THROTTLE = 0.05' '("position", "%.2f" % target)' \
 	'run_quiet(["hyprctl", "seterror", "disable"])'; do
 	grep -qF -- "$pat" "$MUSIC" && good "music: ${pat}" || bad "music missing: ${pat}"
 done

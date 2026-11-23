@@ -168,6 +168,13 @@ def spotifyctl(*args):
     return playerctl("--player=spotify", *args)
 
 
+def statectl(*args):
+    """Send playback commands to whichever app the card is currently showing."""
+    if read_state().get("player") == "bsc":
+        return playerctl("--player=chromium", *args)
+    return spotifyctl(*args)
+
+
 def bsc_state():
     """Read the track published by BetterSoundCloud's now-playing plugin.
 
@@ -1168,7 +1175,7 @@ def run_app(visible):
 
     def control(icon, command):
         button = Gtk.Button.new_from_icon_name(icon, Gtk.IconSize.BUTTON)
-        button.connect("clicked", lambda *_: spotifyctl(command))
+        button.connect("clicked", lambda *_: statectl(command))
         controls.pack_start(button, False, False, 0)
         return button
 
@@ -1290,7 +1297,7 @@ def run_app(visible):
         if length <= 0:
             return
         target = max(0.0, min(float(position), length))
-        spotifyctl("position", "%.2f" % target)
+        statectl("position", "%.2f" % target)
         anchor_at(target, state)
         seek_bar.set_value(target / length)
         elapsed_label.set_text(format_time(target))
