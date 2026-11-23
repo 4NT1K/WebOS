@@ -1,0 +1,187 @@
+/**
+ * @name WebOS
+ * @author 4NT1K
+ * @version 1.0.0
+ * @mode dark
+ * @description Black, keyboard-driven WebOS rice: pure black surfaces, hairline white borders, JetBrains Mono text and Spotify-style monochrome accents.
+ * @preview #000000 #0a0a0a #e8e8e8 #7a7a7a #ffffff
+ * @license MIT
+ */
+
+/* WebOS rice for BetterSoundCloud.
+ * Matches the black/transparent Waybar, music card and SDDM palette:
+ *   background #000000, border rgba(232,232,232,.20),
+ *   primary #E8E8E8, secondary #7A7A7A, accent #FFFFFF.
+ * No orange: the rice is deliberately monochrome. */
+
+/* @target all */
+* {
+  border-color: rgba(232, 232, 232, 0.16) !important;
+  scrollbar-color: #333333 #000000 !important;
+}
+
+html,
+body,
+#app {
+  background: #000000 !important;
+  color: #d8d8d8 !important;
+  font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace !important;
+}
+
+/* SoundCloud's page and its frames */
+#app > .l-container,
+#app > header,
+#app > .playControls > section,
+#app > .playControls > section > .playControls__wrapper > .playControls__bg,
+.header__logo,
+.visualSound__wrapper,
+.addToPlaylistItem__content,
+.g-modal-section,
+.tabs__tabs,
+.commentForm__input,
+.dropbar__content,
+.tileGallery__sliderButton {
+  background: #000000 !important;
+  background-color: #000000 !important;
+  border-color: rgba(232, 232, 232, 0.16) !important;
+}
+
+#app > header {
+  border-bottom: 1px solid rgba(232, 232, 232, 0.16) !important;
+}
+
+#app > .playControls > section,
+#app > .playControls > section > .playControls__wrapper > .playControls__bg {
+  border-top: 1px solid rgba(232, 232, 232, 0.16) !important;
+}
+
+/* Text: bright where it matters, dim where it should recede. */
+.sc-link-dark,
+.commentItem__usernameLink,
+.commentItem__body,
+.commentItem__controls,
+.commentItem__replyButton,
+.playControls__elements .playbackTimeline * {
+  color: #e8e8e8 !important;
+}
+
+.sc-truncate,
+.playbackSoundBadge .playbackSoundBadge__titleContextContainer .playbackSoundBadge__titleLink,
+.g-tabs-link {
+  color: #7a7a7a !important;
+}
+
+.playbackSoundBadge .playbackSoundBadge__titleContextContainer .playbackSoundBadge__lightLink:hover,
+.playbackSoundBadge .playbackSoundBadge__titleContextContainer .playbackSoundBadge__titleLink:hover,
+.sc-link-dark:hover {
+  color: #ffffff !important;
+}
+
+.g-tabs-link.active,
+.sc-buttonActive,
+.sc-button-selected {
+  color: #ffffff !important;
+  border-color: rgba(232, 232, 232, 0.6) !important;
+}
+
+/* Inputs and buttons: flat, bordered, no fills. */
+.headerSearch__input,
+.sc-input,
+.commentForm__input {
+  background: #000000 !important;
+  color: #e8e8e8 !important;
+  border: 1px solid rgba(232, 232, 232, 0.24) !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+}
+
+.sc-button {
+  background: transparent !important;
+  color: #e8e8e8 !important;
+  border: 1px solid rgba(232, 232, 232, 0.24) !important;
+  border-radius: 9px !important;
+  box-shadow: none !important;
+}
+
+.sc-button:hover,
+.tileGallery__sliderButton:hover {
+  background: rgba(232, 232, 232, 0.10) !important;
+  color: #ffffff !important;
+}
+
+.tileGallery__sliderButton::after {
+  border-color: #e8e8e8 !important;
+}
+
+/* No coloured progress: the WebOS card uses flat white bars. */
+.playbackTimeline__progress,
+.playbackTimeline__progressBuffer,
+.playbackTimeline__seekTarget {
+  background-color: #ffffff !important;
+  border-radius: 2px !important;
+}
+
+.soundBadge__additional {
+  background: transparent !important;
+}
+
+/* @target chrome */
+:root {
+  --bsc-bg-primary: #000000;
+  --bsc-bg-secondary: #000000;
+  --bsc-bg-hover: rgba(232, 232, 232, 0.10);
+  --bsc-text-primary: #e8e8e8;
+  --bsc-text-secondary: #7a7a7a;
+  --bsc-text-disabled: #4a4a4a;
+  --bsc-border: rgba(232, 232, 232, 0.20);
+  --bsc-accent: #ffffff;
+}
+
+/* @target header */
+header,
+.toolbar,
+.titlebar {
+  background: #000000 !important;
+  border-bottom: 1px solid rgba(232, 232, 232, 0.16) !important;
+  font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace !important;
+}
+
+/* @target settings */
+:root {
+  --bsc-bg-primary: #000000;
+  --bsc-bg-secondary: #0a0a0a;
+  --bsc-bg-hover: rgba(232, 232, 232, 0.10);
+  --bsc-text-primary: #e8e8e8;
+  --bsc-text-secondary: #7a7a7a;
+  --bsc-text-disabled: #4a4a4a;
+  --bsc-border: rgba(232, 232, 232, 0.20);
+  --bsc-accent: #ffffff;
+}
+
+/* @target menu */
+:root {
+  --bsc-bg-primary: #000000;
+  --bsc-bg-secondary: #0a0a0a;
+  --bsc-text-primary: #e8e8e8;
+  --bsc-text-secondary: #7a7a7a;
+  --bsc-border: rgba(232, 232, 232, 0.20);
+  --bsc-accent: #ffffff;
+}
+
+/* @target lyrics */
+:root {
+  --bsc-bg-primary: #000000;
+  --bsc-text-primary: #e8e8e8;
+  --bsc-text-secondary: #7a7a7a;
+  --bsc-border: rgba(232, 232, 232, 0.20);
+  --bsc-accent: #ffffff;
+}
+
+/* @target status */
+:root {
+  --bsc-bg-primary: #000000;
+  --bsc-text-primary: #e8e8e8;
+  --bsc-text-secondary: #7a7a7a;
+  --bsc-border: rgba(232, 232, 232, 0.20);
+  --bsc-accent: #ffffff;
+}

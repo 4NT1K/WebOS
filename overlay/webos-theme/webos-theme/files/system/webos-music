@@ -41,6 +41,14 @@ RUNTIME = runtime_dir()
 PIDFILE = os.path.join(RUNTIME, "webos-music.pid")
 ART_DIR = os.path.join(RUNTIME, "webos-music-art")
 
+# BetterSoundCloud publishes its current track here through the bundled
+# "webos-now-playing" plugin. It is a plain JSON file so the card can show
+# SoundCloud songs without turning BSC into an MPRIS player.
+BSC_DATA = os.path.join(
+    os.environ.get("XDG_CONFIG_HOME") or os.path.join(os.path.expanduser("~"), ".config"),
+    "BetterSoundCloud", "plugin-data", "webos-now-playing.json",
+)
+
 # Fallback geometry when gtk-layer-shell's introspection typelib is missing.
 PANEL_SIZE = 340
 TOP_GAP = 100  # below the 46 px waybar plus margins
@@ -160,6 +168,51 @@ def spotifyctl(*args):
     return playerctl("--player=spotify", *args)
 
 
+def bsc_state():
+    """Read the track published by BetterSoundCloud's now-playing plugin.
+
+    Returns the same shape as read_state() so the rest of the card does not
+    care which app is playing. Sampled time is stored so synced_position()
+    advances the elapsed label between plugin updates.
+    """
+    sampled_at = time.monotonic()
+    empty = {
+        "player": "bsc", "status": "stopped", "title": "", "artist": "",
+        "length": 0.0, "position": 0.0, "art_url": "", "track_id": "",
+        "sampled_at": sampled_at,
+    }
+    try:
+        with open(BSC_DATA, "r", encoding="utf-8") as handle:
+            stored = json.load(handle)
+    except (OSError, ValueError):
+        return empty
+    track = stored.get("track") if isinstance(stored, dict) else None
+    if not isinstance(track, dict) or not (track.get("title") or track.get("artist")):
+        return empty
+    length = to_float(track.get("duration"))
+    position = to_float(track.get("elapsed"))
+    if length > 0:
+        position = min(position, length)
+    status = "playing" if track.get("playing") is True else "paused"
+    return {
+        "player": "bsc",
+        "status": status,
+        "title": str(track.get("title") or ""),
+        "artist": str(track.get("artist") or ""),
+        "length": length,
+        "position": position,
+        "art_url": str(track.get("artwork") or ""),
+        "track_id": str(track.get("url") or track.get("title") or ""),
+        "sampled_at": sampled_at,
+    }
+
+
+def bsc_active():
+    """True when BetterSoundCloud has published a track we can display."""
+    state = bsc_state()
+    return bool(state["title"] or state["artist"])
+
+
 def hyprctl(*args):
     try:
         proc = subprocess.run(
@@ -254,7 +307,7 @@ def set_volume(value):
         run_quiet(["pactl", "set-sink-input-volume", sid, percent])
 
 
-def read_state():
+def _read_spotify_state():
     """Read Spotify's whole card state in one playerctl call."""
     fields = spotifyctl("metadata", "--format", META_FORMAT).split("\t")
     sampled_at = time.monotonic()
@@ -266,6 +319,7 @@ def read_state():
     position = to_float(position_raw) / 1000000.0 if position_raw else 0.0
     status = status.strip().lower()
     return {
+        "player": "spotify",
         "status": status if status in ("playing", "paused") else "stopped",
         "title": title,
         "artist": artist,
@@ -275,6 +329,18 @@ def read_state():
         "track_id": track_id,
         "sampled_at": sampled_at,
     }
+
+
+def read_state():
+    """Spotify first, then BetterSoundCloud when Spotify has no track.
+
+    Both return the same fields, so the card, vinyl and progress bar need no
+    per-app branches. Volume control stays Spotify-only by design.
+    """
+    spotify = _read_spotify_state()
+    if spotify["status"] != "stopped" or spotify["title"]:
+        return spotify
+    return bsc_state()
 
 
 def prepare_art(url):
@@ -340,11 +406,18 @@ def art_is_light(path):
 
 
 def active_mpris_player(state=None):
-    """Return Spotify only, so osu!/Firefox/etc never hijack the panel."""
+    """Spotify, or BetterSoundCloud when Spotify has no track.
+
+    Firefox/osu!/other MPRIS players are still ignored; only the two apps the
+    rice supports can drive the card.
+    """
     if state is not None:
-        return "spotify" if (state["status"] != "stopped" or
-                             state["title"]) else None
-    return "spotify" if spotify_active() else None
+        if state["status"] != "stopped" or state["title"]:
+            return state.get("player", "spotify")
+        return None
+    if spotify_active():
+        return "spotify"
+    return "bsc" if bsc_active() else None
 
 
 def music_node_target(player):

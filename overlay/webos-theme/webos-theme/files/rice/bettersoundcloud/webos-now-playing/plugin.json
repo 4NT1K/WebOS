@@ -1,0 +1,9 @@
+{
+  "id": "webos-now-playing",
+  "name": "WebOS now playing",
+  "version": "1.0.0",
+  "author": "4NT1K",
+  "description": "Publishes the current track to WebOS so the Super+M music card can show BetterSoundCloud songs like Spotify.",
+  "main": "index.js",
+  "permissions": ["nowPlaying"]
+}

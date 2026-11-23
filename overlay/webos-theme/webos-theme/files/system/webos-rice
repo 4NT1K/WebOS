@@ -225,7 +225,7 @@ apply_tree() {
 
 apply_web_themes() {
 	# $1 = home, $2 = force, $3 = dry-run
-	local home="$1" force="$2" dry="$3" mf profile pref theme ini
+	local home="$1" force="$2" dry="$3" mf profile pref theme ini bsc
 	mf="$(manifest_of "$home")"
 	for profile in "$home"/.config/mozilla/firefox/*.default*; do
 		[[ -d "$profile" ]] || continue
@@ -243,6 +243,26 @@ apply_web_themes() {
 			"$home/.local/share/applications/com.github.wwmm.easyeffects.desktop" "$mf" "$force" "$dry"
 	fi
 	install_file "${RICE_SRC}/spotify/spotify" "$home/.local/bin/spotify" "$mf" "$force" "$dry"
+	# BetterSoundCloud: WebOS theme plus the now-playing bridge that lets the
+	# Super+M card show SoundCloud songs when Spotify has no track.
+	bsc="$home/.config/BetterSoundCloud"
+	if [[ -d "$bsc" && -f "${RICE_SRC}/bettersoundcloud/webos.css" ]]; then
+		mkdir -p "$bsc/themes" "$bsc/plugins/webos-now-playing"
+		install_file "${RICE_SRC}/bettersoundcloud/webos.css" "$bsc/themes/webos.css" "$mf" "$force" "$dry"
+		install_file "${RICE_SRC}/bettersoundcloud/webos-now-playing/plugin.json" \
+			"$bsc/plugins/webos-now-playing/plugin.json" "$mf" "$force" "$dry"
+		install_file "${RICE_SRC}/bettersoundcloud/webos-now-playing/index.js" \
+			"$bsc/plugins/webos-now-playing/index.js" "$mf" "$force" "$dry"
+		(( dry )) || {
+			# Only override a built-in theme choice; a deliberate pick is kept.
+			if grep -qE '"appearance\.theme"[[:space:]]*:[[:space:]]*"(darkcloud|nocturnal|glassmorphism|hover|postmorphic|vanilla)"' "$bsc/settings.json" 2>/dev/null; then
+				sed -i -E 's/("appearance\.theme"[[:space:]]*:[[:space:]]*")[^"]*"/\1webos"/' "$bsc/settings.json"
+			fi
+			if [[ -f "$bsc/plugins.json" ]] && ! grep -q 'webos-now-playing' "$bsc/plugins.json"; then
+				sed -i -E 's/"plugins"[[:space:]]*:[[:space:]]*\{/"plugins":{"webos-now-playing":{"enabled":true,"granted":["nowPlaying"]},/' "$bsc/plugins.json"
+			fi
+		}
+	fi
 	# Vesktop was removed from the image; drop the launcher and wrapper left
 	# by older rice versions. Keep a Hidden=true stub: that is how the
 	# root-owned system entry is suppressed until the package is unmerged.
