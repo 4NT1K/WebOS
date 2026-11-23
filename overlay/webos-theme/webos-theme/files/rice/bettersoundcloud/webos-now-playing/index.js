@@ -4,15 +4,26 @@
  * file we can read from the rice: ~/.config/BetterSoundCloud/plugin-data/
  * webos-now-playing.json. webos-music and webos-mpris watch that file.
  *
- * SoundCloud's own title is often "<uploader> - <song> #tag" with the uploader
- * repeated as the artist, which looks like a playlist in the bar. Use the
- * track URL to recover the real artist and song before publishing.
+ * SoundCloud titles are usually "Artist - Song". Two cases need care:
+ *   - "mandy - mascara", uploader mandy-archive: "mandy" is the uploader, and
+ *     the real artist is encoded in the URL slug (jaydes-addict -> jaydes).
+ *   - "Lucy bedroque - Urr mad", uploader selftoincubation: the prefix is the
+ *     real artist, so the URL slug (urr-mad) must not be split into artist/song.
+ * Compare the title prefix with the uploader account before trusting the slug.
  */
 
+function normalize(value) {
+  return decodeURIComponent(String(value || ""))
+    .toLowerCase()
+    .replace(/[-_]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 function cleanTrack(nowPlaying) {
-  const title = String(nowPlaying.title || "");
-  let artist = String(nowPlaying.artist || "");
-  let song = title;
+  const rawArtist = String(nowPlaying.artist || "");
+  let song = String(nowPlaying.title || "").replace(/\s+#\S+.*$/, "").trim();
+  let artist = rawArtist;
 
   let account = "";
   let slug = "";
@@ -26,28 +37,35 @@ function cleanTrack(nowPlaying) {
     /* No URL: keep the values SoundCloud gave us. */
   }
 
-  const accountName = decodeURIComponent(account).replace(/[-_]+/g, " ").trim();
+  const accountName = normalize(account);
   const separator = song.indexOf(" - ");
-  if (accountName && separator > 0) {
+  if (separator > 0) {
     const prefix = song.slice(0, separator).trim();
-    if (prefix.toLowerCase() === accountName.toLowerCase()) {
-      song = song.slice(separator + 3).trim();
-    }
-  }
+    const remainder = song.slice(separator + 3).trim();
+    const normalizedPrefix = normalize(prefix);
+    const isUploader =
+      accountName &&
+      (normalizedPrefix === accountName ||
+        accountName.indexOf(normalizedPrefix + " ") === 0 ||
+        normalizedPrefix.indexOf(accountName + " ") === 0);
 
-  // Trailing hashtags are promo tags, not part of the song name.
-  song = song.replace(/\s+#\S+.*$/, "").trim();
-
-  // "/mandy-archive/jaydes-addict" means artist "jaydes", song "addict".
-  if (slug) {
-    const bits = decodeURIComponent(slug).split("-");
-    if (bits.length > 1) {
-      const guessedArtist = bits[0].replace(/_/g, " ").trim();
-      const guessedSong = bits.slice(1).join("-").replace(/_/g, " ").trim();
-      if (guessedSong && song.toLowerCase().includes(guessedSong.toLowerCase())) {
-        artist = guessedArtist;
-        song = guessedSong;
+    if (isUploader) {
+      // The prefix is just the uploader's name. Recover the real artist from
+      // the slug, but only when it is not the uploader itself.
+      const bits = decodeURIComponent(slug || "").split("-");
+      const slugArtist = bits.length > 1 ? bits[0].replace(/_/g, " ").trim() : "";
+      artist = slugArtist && normalize(slugArtist) !== accountName ? slugArtist : rawArtist;
+      const slugSong = bits.length > 1 ? bits.slice(1).join("-").replace(/_/g, " ").trim() : "";
+      if (slugSong && normalize(remainder).indexOf(normalize(slugSong)) >= 0) {
+        song = slugSong;
+      } else {
+        song = remainder;
       }
+    } else {
+      // A genuine "Artist - Song" credit: use it verbatim. Never split the
+      // URL slug here, or "Urr mad" becomes artist "urr", song "mad".
+      artist = prefix;
+      song = remainder;
     }
   }
 
