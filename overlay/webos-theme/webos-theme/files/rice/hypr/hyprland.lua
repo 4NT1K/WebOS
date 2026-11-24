@@ -30,6 +30,9 @@ hl.on("hyprland.start", function()
 	-- Portals, polkit, the mono shell (waybar+mako) and the wallpaper all
 	-- start from one helper, so every WebOS session behaves the same.
 	hl.exec_cmd("webos-autostart hyprland")
+	-- The bar pill follows this bridge. Start it here too so a stale root-owned
+	-- webos-autostart cannot leave Waybar showing only Discord.
+	hl.exec_cmd("dbus-send --session --print-reply --dest=org.freedesktop.DBus /org/freedesktop/DBus org.freedesktop.DBus.GetNameOwner string:org.mpris.MediaPlayer2.webos 2>/dev/null | grep -q 'string' || webos-mpris >>/tmp/webos-mpris.log 2>&1 &")
 	hl.exec_cmd("nm-applet --indicator")
 	hl.exec_cmd("blueman-applet")
 	hl.exec_cmd("wl-paste --type text --watch cliphist store")

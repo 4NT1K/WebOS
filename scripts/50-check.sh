@@ -76,6 +76,9 @@ done < <(
 for f in desktop/hypr/hyprland.lua desktop/hypr/webos-colors.lua desktop/waybar/config.jsonc desktop/wofi/config; do
 	[[ -f "${WEBOS_ROOT}/${f}" ]] && good "rice ${f}" || bad "missing rice file ${f}"
 done
+grep -Fq 'org.mpris.MediaPlayer2.webos' "${WEBOS_ROOT}/desktop/hypr/hyprland.lua" \
+	&& good "hyprland autostarts the mpris pill bridge" \
+	|| bad "hyprland mpris bridge autostart missing"
 
 # 7. regressions that broke the 1.01 release: CPU-FLAGS binaries and overlays
 if grep -q 'dev-python/numpy dev-cpp/eigen' "${WEBOS_ROOT}/scripts/30-rootfs.sh"; then
