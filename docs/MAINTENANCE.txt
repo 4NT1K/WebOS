@@ -13,8 +13,8 @@ The kernel package is NOT named sanus-kernel.
   Current and correct names:
     sys-kernel/webos-kernel
     sys-kernel/webos-kernel-sources
-    kernel release string: 6.12-webos
-    installed image:      /boot/vmlinuz-6.12-webos
+    kernel release string: 6.12.119-webos
+    installed image:      /boot/vmlinuz-6.12.119-webos
     installed modules:    /usr/src/linux-6.12 (source dir)
 
   "sanus-kernel" / "sanus-kernel-sources" are the OLD pre-rebrand names. They

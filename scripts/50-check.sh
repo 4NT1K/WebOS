@@ -399,8 +399,25 @@ while IFS= read -r m; do
 	fi
 done < <(find "${WEBOS_ROOT}/overlay" -name Manifest -print | sort)
 ((manifest_bad == 0)) && good "all Manifest digests hex"
-grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/overlay/sys-kernel/webos-kernel/webos-kernel-6.12.ebuild" \
-	&& good "kernel fragment stamp" || bad "kernel fragment stamp missing"
+fragment_stamp=1
+for ebuild_file in "${WEBOS_ROOT}"/overlay/sys-kernel/webos-kernel/webos-kernel-*.ebuild; do
+	[[ -e ${ebuild_file} ]] || continue
+	grep -qF 'webos-fragment.sha256' "${ebuild_file}" || fragment_stamp=0
+done
+((fragment_stamp)) && good "kernel fragment stamp" || bad "kernel fragment stamp missing"
+kernel_dist="linux-6.12.119.tar.xz"
+dist_ok=1
+security_ok=1
+for ebuild_file in \
+	"${WEBOS_ROOT}"/overlay/sys-kernel/webos-kernel/webos-kernel-*.ebuild \
+	"${WEBOS_ROOT}"/overlay/sys-kernel/webos-kernel-sources/webos-kernel-sources-*.ebuild; do
+	[[ -e ${ebuild_file} ]] || continue
+	grep -qF "${kernel_dist}" "${ebuild_file}" || dist_ok=0
+	grep -qF 'K_SECURITY_UNSUPPORTED' "${ebuild_file}" && security_ok=0
+done
+((dist_ok)) && good "kernel ebuilds pin ${kernel_dist}" || bad "kernel ebuilds disagree on ${kernel_dist}"
+((security_ok)) && good "kernel ebuilds not marked security-unsupported" \
+	|| bad "kernel ebuilds still mark K_SECURITY_UNSUPPORTED"
 grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/scripts/20-kernel.sh" \
 	&& good "kernel rebuild checks stamp" || bad "kernel rebuild ignores stamp"
 grep -qF "compgen -G 'build/webos-*.iso'" "${WEBOS_ROOT}/setup-container-build.sh" \

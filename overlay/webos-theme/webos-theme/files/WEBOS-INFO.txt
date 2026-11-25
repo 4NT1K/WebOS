@@ -9,7 +9,7 @@ RELEASE / IDENTITY
 ------------------
 - Version      : WebOS 1.03 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
-- Kernel       : sys-kernel/webos-kernel 6.12 LTS, localversion "-webos"
+- Kernel       : sys-kernel/webos-kernel 6.12.119 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
 - Desktops     : Hyprland with the monochrome rice (default); regular Plasma
                  6.8.3 (Wayland) is an opt-in profile, never installed into a

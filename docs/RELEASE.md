@@ -119,7 +119,7 @@ ISO path and its SHA-256 when it finishes.
 Confirm the kernel that went in:
 
 ```bash
-cat build/.kernel-release        # e.g. 6.12.0-webos
+cat build/.kernel-release        # e.g. 6.12.119-webos
 ```
 
 ---
@@ -174,7 +174,7 @@ A short template:
 ```markdown
 # WebOS 1.03 "Ashen"
 
-Kernel: 6.12.0-webos (stock LTS + WebOS config fragment)
+Kernel: 6.12.119-webos (stock LTS + WebOS config fragment)
 Base:   Gentoo <snapshot date>, profile webos:default/linux/amd64/webos
 Desktop: Hyprland (Wayland), SDDM
 Installer: webos-installer 1.0.0
@@ -260,6 +260,17 @@ git tag -s v1.03 -m "WebOS 1.03 (Ashen)"
 git push origin v1.03
 ```
 
+A source-only patch release does not change the ISO identity. Tag it
+`v1.03.1` (annotated when no signing key is available), publish
+`docs/releases/v1.03.1.md`, and attach no ISO assets — installed machines get
+the fix through `webos-update`:
+
+```bash
+git tag -a v1.03.1 -m "WebOS 1.03.1 (Ashen) — kernel security update"
+git push origin v1.03.1
+gh release create v1.03.1 --notes-file docs/releases/v1.03.1.md --latest
+```
+
 Then upload the artefacts from §7 to the release page, and update:
 
 * the website's download page and signing-key page;
@@ -283,9 +294,11 @@ sees new WebOS ebuilds. `webos-update` fixes that by refreshing the overlay
 from `https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz` before it
 resolves updates. To ship a kernel security fix:
 
-1. Add the patched tarball/patch to `overlay/sys-kernel/webos-kernel/files/`
-   and bump the ebuild revision (e.g. `webos-kernel-6.12-r1.ebuild`). Update
-   the `Manifest` with `ebuild ... manifest`.
+1. Move both kernel ebuilds to the new upstream LTS version (for example
+   `webos-kernel-6.12.119.ebuild` and
+   `webos-kernel-sources-6.12.119.ebuild`), point `SRC_URI` / `S` at the
+   matching `linux-6.12.119.tar.xz`, and update both `Manifest` files. A
+   narrow CVE backport on the same base stays a revision bump instead.
 2. Commit and push to `main`. No ISO rebuild is required for existing users.
 3. Users run `sudo webos-update`. It pulls the new overlay, emerges the new
    kernel revision (the kernel is intentionally not in `@world`, so it is

@@ -4,7 +4,6 @@ ETYPE="sources"
 
 K_NOUSENAME="yes"
 K_NOSETEXTRAVERSION="yes"
-K_SECURITY_UNSUPPORTED="1"
 K_DEBLOB_AVAILABLE="0"
 
 inherit kernel-2
@@ -15,14 +14,14 @@ inherit webos-kernel
 
 DESCRIPTION="WebOS Linux kernel sources (upstream LTS + the WebOS patch series)"
 HOMEPAGE="https://github.com/4NT1K/WebOS/ https://www.kernel.org/"
-SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz"
+SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.119.tar.xz"
 
 LICENSE="GPL-2"
 SLOT="6.12"
 KEYWORDS="~amd64 ~arm64"
 IUSE=""
 
-S="${WORKDIR}/linux-6.12"
+S="${WORKDIR}/linux-6.12.119"
 
 RDEPEND="
 	>=sys-devel/bc-1.06.95
@@ -45,7 +44,9 @@ src_prepare() {
 }
 
 src_install() {
-	local srcdir="/usr/src/linux-${PV}"
+	# Keep the build-tree path stable across patch releases: build.sh prepares
+	# /usr/src/linux-${WEBOS_KERNEL_SERIES} for DKMS/NVIDIA module builds.
+	local srcdir="/usr/src/linux-${SLOT}"
 	dodir "${srcdir}"
 	cp -a . "${ED}${srcdir}/" || die "failed to install kernel sources"
 	rm -f "${ED}${srcdir}/.config" "${ED}${srcdir}/vmlinux" "${ED}${srcdir}/Module.symvers" 2>/dev/null || true

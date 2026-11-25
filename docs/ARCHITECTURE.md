@@ -126,7 +126,7 @@ hash is never rewritten; a mismatch aborts the build.
 
 No patches are enabled for 6.12: the BORE, Wine `fsync`/`ntsync` and BBRv3
 entries in `patchset.conf` are commented out because their upstream URLs are
-unavailable, so the image ships a stock 6.12 LTS with the WebOS config
+unavailable, so the image ships a stock 6.12.119 LTS with the WebOS config
 fragment. The fragment still sets `CONFIG_SCHED_BORE` and
 `CONFIG_TCP_CONG_BBR3`; kconfig drops symbols the tree does not provide.
 
@@ -141,7 +141,7 @@ symbol in the fragment **replaces** whatever the base said, including a prior
 The fragment sets `CONFIG_LOCALVERSION="-webos"`, `CONFIG_HZ=1000`,
 `CONFIG_PREEMPT_DYNAMIC=y`, `CONFIG_SCHED_CLASS_EXT=y` (sched-ext),
 `CONFIG_SCHED_BORE=y` (harmless if the patch is absent) and the usual desktop
-knobs. The installed release string is therefore `6.12.0-webos`.
+knobs. The installed release string is therefore `6.12.119-webos`.
 
 ### Eclass
 
@@ -349,7 +349,7 @@ firmware → GRUB (hybrid) → vmlinuz-webos + initramfs-webos.img
 ### Installed system
 
 ```
-firmware → GRUB → vmlinuz-6.12.0-webos + initramfs
+firmware → GRUB → vmlinuz-6.12.119-webos + initramfs
         → root=UUID=… [rd.luks.name=…] rootflags=subvol=@
         → OpenRC → SDDM → webos-session → Hyprland
 ```

@@ -47,6 +47,11 @@ kernel/fetch-patches.sh --series 6.12 --list
 4. Bump `sys-kernel/webos-kernel-sources` version in the overlay.
 5. Rebuild: `sudo ./build.sh kernel`.
 
+A stable point release **within** the series (for example 6.12 → 6.12.119)
+does not change `WEBOS_KERNEL_SERIES`. Rename both ebuilds to the new `PV`,
+update `SRC_URI` / `S`, refresh both `Manifest` files, and keep the
+`/usr/src/linux-6.12` build-tree path stable for out-of-tree module builds.
+
 ## What is deliberately *not* enabled
 
 * `CONFIG_MODULE_SIG` — modules are unsigned so DKMS/NVIDIA builds work.

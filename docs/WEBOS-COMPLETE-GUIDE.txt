@@ -29,7 +29,7 @@ Identity
   Version:         1.03 (marketing version from branding/version)
   Full version:    1.03-Ashen
   ID:              webos
-  Kernel:          6.12.0-webos (vanilla LTS + WebOS config fragment)
+  Kernel:          6.12.119-webos (vanilla LTS + WebOS config fragment)
   Init:            OpenRC + elogind (no systemd)
   Desktop:         Hyprland (Wayland) with the Ashen greyscale rice
   Greeter:         SDDM
@@ -309,14 +309,14 @@ overlay/eclass/webos-kernel.eclass
   webos_apply_patchset, webos_merge_config (strict CONFIG_* replacement),
   webos_kernel_make, webos_kernel_release, webos_kernel_install.
 
-overlay/sys-kernel/webos-kernel/webos-kernel-6.12.ebuild
+overlay/sys-kernel/webos-kernel/webos-kernel-6.12.119.ebuild
   Builds/installs vmlinuz, modules and a header tree; writes a fragment stamp
   via newins to /boot/webos-fragment.sha256 so scripts/20-kernel.sh can detect
   config changes and rebuild deterministically. Do not replace newins with a
   raw ${ED}/boot write.
 
-overlay/sys-kernel/webos-kernel-sources/webos-kernel-sources-6.12.ebuild
-  Ships patched tree under /usr/src/linux-<PV> plus the fragment.
+overlay/sys-kernel/webos-kernel-sources/webos-kernel-sources-6.12.119.ebuild
+  Ships patched tree under the stable /usr/src/linux-6.12 path plus the fragment.
 
 overlay/virtual/linux-sources/linux-sources-3-r9.ebuild
   Virtual provider; we do not use dist-kernels.
@@ -358,7 +358,7 @@ Boot flow (live)
   -> webos-live-session -> webos-installer.
 
 Boot flow (installed)
-  firmware -> GRUB -> vmlinuz-6.12.0-webos -> root=UUID=... [LUKS]
+  firmware -> GRUB -> vmlinuz-6.12.119-webos -> root=UUID=... [LUKS]
   rootflags=subvol=@ -> OpenRC -> SDDM -> webos-session -> Hyprland.
 
 ================================================================================
@@ -662,7 +662,7 @@ Preconditions
     forbidden-flag sweep, git diff --check, cargo check --offline all pass.
   - Rootfs stage rc=0 and log contains "rootfs exported".
   - ISO /webos/version contains WEBOS_VERSION=1.03-Ashen,
-    WEBOS_KERNEL=6.12.0-webos, WEBOS_BUILD=<today>.
+    WEBOS_KERNEL=6.12.119-webos, WEBOS_BUILD=<today>.
 
 /home/brah/release-v102.sh
   Final gate. It verifies rootfs packages/helpers/overlays/theme r51, syncs the
@@ -745,10 +745,10 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   profiles/default/linux/arm64/webos/{eapi,make.defaults,parent,use.mask}
   eclass/webos-kernel.eclass
   sys-apps/pacman/{Manifest,metadata.xml,pacman-6.0.1.ebuild,files/pacman.conf}
-  sys-kernel/webos-kernel/{Manifest,metadata.xml,webos-kernel-6.12.ebuild,
+  sys-kernel/webos-kernel/{Manifest,metadata.xml,webos-kernel-6.12.119.ebuild,
     files/webos-fragment.config}
   sys-kernel/webos-kernel-sources/{Manifest,metadata.xml,
-    webos-kernel-sources-6.12.ebuild,files/README.webos}
+    webos-kernel-sources-6.12.119.ebuild,files/README.webos}
   virtual/linux-sources/{Manifest,metadata.xml,linux-sources-3-r9.ebuild}
   webos-base/webos-base/{Manifest,metadata.xml,webos-base-1.0.ebuild}
   webos-desktop/webos-desktop/{Manifest,metadata.xml,webos-desktop-1.0.ebuild}

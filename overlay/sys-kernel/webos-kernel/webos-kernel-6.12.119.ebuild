@@ -4,7 +4,6 @@ ETYPE="sources"
 
 K_NOUSENAME="yes"
 K_NOSETEXTRAVERSION="yes"
-K_SECURITY_UNSUPPORTED="1"
 K_DEBLOB_AVAILABLE="0"
 
 inherit kernel-2
@@ -15,14 +14,14 @@ inherit webos-kernel
 
 DESCRIPTION="WebOS Linux kernel — gaming tuned build"
 HOMEPAGE="https://github.com/4NT1K/WebOS/ https://www.kernel.org/"
-SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.tar.xz"
+SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.119.tar.xz"
 
 LICENSE="GPL-2"
 SLOT="6.12"
 KEYWORDS="~amd64 ~arm64"
 IUSE="+initramfs +zstd savedconfig debug"
 
-S="${WORKDIR}/linux-6.12"
+S="${WORKDIR}/linux-6.12.119"
 
 RDEPEND="
 	initramfs? ( sys-kernel/dracut )
@@ -49,20 +48,18 @@ src_prepare() {
 	default
 	webos_apply_patchset
 	# GCC 15+ defaults to C23, where bool/true/false are keywords.  Kernel
-	# 6.12 headers are C11.  Two boot subtrees overwrite KBUILD_CFLAGS and
-	# drop the top-level -std=gnu11, so with a C23-default compiler they fail
-	# with "cannot use keyword 'false' as enumeration constant" /
-	# "'bool' cannot be defined via 'typedef'":
-	#   arch/x86/boot/compressed/Makefile   (decompressor)
-	#   drivers/firmware/efi/libstub/Makefile (EFI stub; x86 drops KBUILD_CFLAGS)
-	# Force gnu11 in both, mirroring the upstream CC_FLAGS_DIALECT fix.
+	# 6.12 headers are C11.  The decompressor in 6.12.119 already carries the
+	# upstream CC_FLAGS_DIALECT fix (KBUILD_CFLAGS += -std=gnu11); the EFI
+	# stub still resets KBUILD_CFLAGS and drops it.  Keep gnu11 in both and
+	# silence GCC 16's new warning in each subtree.
 	sed -i \
-		's|^KBUILD_CFLAGS := -m$(BITS) -O2 $(CLANG_FLAGS)$|& -std=gnu11 -Wno-unterminated-string-initialization|' \
+		'/^KBUILD_CFLAGS += -std=gnu11$/ s/$/ -Wno-unterminated-string-initialization/' \
 		arch/x86/boot/compressed/Makefile || die "failed to patch compressed boot Makefile"
-	grep -q '^KBUILD_CFLAGS := .*-std=gnu11' arch/x86/boot/compressed/Makefile \
-		|| die "compressed boot Makefile still lacks -std=gnu11"
+	grep -q '^KBUILD_CFLAGS += -std=gnu11 -Wno-unterminated-string-initialization' \
+		arch/x86/boot/compressed/Makefile \
+		|| die "compressed boot Makefile still lacks C11 flags"
 	sed -i \
-		'/^KBUILD_CFLAGS.*subst.*CC_FLAGS_FTRACE/ s/ \\$/ -std=gnu11 \\/' \
+		'/^KBUILD_CFLAGS.*subst.*CC_FLAGS_FTRACE/ s/ \\$/ -std=gnu11 -Wno-unterminated-string-initialization \\/' \
 		drivers/firmware/efi/libstub/Makefile || die "failed to patch EFI libstub Makefile"
 	grep -q '^KBUILD_CFLAGS.*subst.*-std=gnu11' drivers/firmware/efi/libstub/Makefile \
 		|| die "EFI libstub Makefile still lacks -std=gnu11"
@@ -81,7 +78,7 @@ src_compile() {
 src_install() {
 	local release
 	release="$(webos_kernel_release)"
-	[[ -n ${release} ]] || release="6.12-webos"
+	[[ -n ${release} ]] || release="${PV}-webos"
 
 	local arch image
 	arch="$(tc-arch-kernel)"

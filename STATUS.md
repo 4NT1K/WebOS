@@ -1,10 +1,11 @@
 # WebOS build status
 
-_Last update: 2026-11-22 — v1.03 (Ashen): active maintenance; compact music dropdown with spinning vinyl, live volume drag, Spotify-guarded hidden spectrum and honest binary-first updater controls._
+_Last update: 2026-11-25 — v1.03.1 (Ashen): source-only security update; kernel 6.12.119 LTS ships through the overlay. The 1.03 ISO identity is unchanged._
 
-## Status: v1.03 — active maintenance; theme r51 committed
+## Status: v1.03.1 — active maintenance; theme r51 committed
 
-- Version 1.03; target ISO `webos-1.03-Ashen-amd64.iso`.
+- Version 1.03 ISO `webos-1.03-Ashen-amd64.iso`; v1.03.1 is a source/kernel
+  patch release, not a new ISO. Installed systems get it with `sudo webos-update`.
 - Theme r51 is committed on `main`. Run `bash scripts/50-check.sh` before the
   next rootfs/ISO rebuild.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
@@ -63,7 +64,7 @@ _Last update: 2026-11-22 — v1.03 (Ashen): active maintenance; compact music dr
   - 32-char machine-id; dbus machine-id symlink resolves to same id
   - user groups include `wheel,audio,video,render,input,plugdev,gamemode,usb,kvm,seat`
   - ESP contains `EFI/WebOS/grubx64.efi` and `EFI/BOOT/BOOTX64.EFI`
-  - `display-manager` = `sddm`; kernel `6.12.0-webos` + initramfs present
+  - `display-manager` = `sddm`; kernel `6.12.119-webos` + initramfs present
 - Ventoy USB updated and checksum-verified, unmounted
 - GitHub release not updated (awaiting approval)
 

@@ -118,7 +118,7 @@ webos_kernel_make() {
 
 # @FUNCTION: webos_kernel_release
 # @DESCRIPTION:
-#   Echo the kernel release string, e.g. 6.12.0-webos.
+#   Echo the kernel release string, e.g. 6.12.119-webos.
 webos_kernel_release() {
 	cd "${S}" || die
 	"${S}"/scripts/setlocalversion --save-scmversion 2>/dev/null || true
