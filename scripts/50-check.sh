@@ -427,6 +427,17 @@ done
 	|| bad "kernel Manifests missing base tarball or 6.12.119 patch"
 ((security_ok)) && good "kernel ebuilds not marked security-unsupported" \
 	|| bad "kernel ebuilds still mark K_SECURITY_UNSUPPORTED"
+updater="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-update"
+for pat in \
+	'prepare_kernel_build_tree()' \
+	'SKIP_KERNEL_CHECK=1' \
+	'KERNEL_DIR=' \
+	'emerge -1 --usepkg=n --getbinpkg=n x11-drivers/nvidia-drivers' \
+	'dracut --force --kver' \
+	'GRUB_DEFAULT=\"WebOS GNU/Linux, with Linux' ; do
+	grep -qF -- "$pat" "$updater" \
+		&& good "webos-update has ${pat}" || bad "webos-update missing: ${pat}"
+done
 grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/scripts/20-kernel.sh" \
 	&& good "kernel rebuild checks stamp" || bad "kernel rebuild ignores stamp"
 grep -qF "compgen -G 'build/webos-*.iso'" "${WEBOS_ROOT}/setup-container-build.sh" \
