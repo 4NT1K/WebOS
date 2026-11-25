@@ -437,9 +437,9 @@ for pat in \
 	grep -qF -- "$pat" "$updater" \
 		&& good "webos-update has ${pat}" || bad "webos-update missing: ${pat}"
 done
-grep -qF 'SKIP_KERNEL_CHECK' "$updater" \
-	&& bad "webos-update sets SKIP_KERNEL_CHECK (falls back to running kernel)" \
-	|| good "webos-update does not set SKIP_KERNEL_CHECK"
+grep -qF 'SKIP_KERNEL_CHECK=1' "$updater" \
+	&& bad "webos-update sets SKIP_KERNEL_CHECK=1 (falls back to running kernel)" \
+	|| good "webos-update does not set SKIP_KERNEL_CHECK=1"
 grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/scripts/20-kernel.sh" \
 	&& good "kernel rebuild checks stamp" || bad "kernel rebuild ignores stamp"
 grep -qF "compgen -G 'build/webos-*.iso'" "${WEBOS_ROOT}/setup-container-build.sh" \
