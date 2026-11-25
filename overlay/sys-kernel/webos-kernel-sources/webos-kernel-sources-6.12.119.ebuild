@@ -14,7 +14,9 @@ inherit webos-kernel
 
 DESCRIPTION="WebOS Linux kernel sources (upstream LTS + the WebOS patch series)"
 HOMEPAGE="https://github.com/4NT1K/WebOS/ https://www.kernel.org/"
-SRC_URI="https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.12.119.tar.xz"
+# kernel-2.eclass handles three-component versions as base tarball + stable
+# patch. Let detect_version() supply both; do not pin the combined tarball.
+SRC_URI="${KERNEL_URI}"
 
 LICENSE="GPL-2"
 SLOT="6.12"

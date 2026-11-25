@@ -126,9 +126,9 @@ This is the long stage: it builds the toolchain and the base system from source.
    series into `/var/cache/webos/patches` (the eclass reads it from there).
 2. Runs `egencache` so the freshly-copied ebuilds are visible.
 3. Regenerates the Manifests for `sys-kernel/webos-kernel-sources` and
-   `sys-kernel/webos-kernel` with `ebuild … manifest`. The committed Manifest
-   pins the exact `linux-6.12.119.tar.xz` digest; regeneration re-verifies it,
-   and the download lands in `DISTDIR` for the emerge that follows.
+   `sys-kernel/webos-kernel` with `ebuild … manifest`. The committed Manifests
+   pin `linux-6.12.tar.xz` and `patch-6.12.119.xz`; `kernel-2.eclass` unpacks
+   the base tarball and applies the stable patch to reach 6.12.119.
 4. Emerges `sys-kernel/webos-kernel-sources` and `sys-kernel/webos-kernel`.
 5. Writes the installed release (e.g. `6.12.119-webos`) to
    `build/.kernel-release`.

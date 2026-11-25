@@ -261,14 +261,14 @@ git push origin v1.03
 ```
 
 A source-only patch release does not change the ISO identity. Tag it
-`v1.03.1` (annotated when no signing key is available), publish
-`docs/releases/v1.03.1.md`, and attach no ISO assets — installed machines get
+`v1.03.2` (annotated when no signing key is available), publish
+`docs/releases/v1.03.2.md`, and attach no ISO assets — installed machines get
 the fix through `webos-update`:
 
 ```bash
-git tag -a v1.03.1 -m "WebOS 1.03.1 (Ashen) — kernel security update"
-git push origin v1.03.1
-gh release create v1.03.1 --notes-file docs/releases/v1.03.1.md --latest
+git tag -a v1.03.2 -m "WebOS 1.03.2 (Ashen) — corrected kernel security update"
+git push origin v1.03.2
+gh release create v1.03.2 --notes-file docs/releases/v1.03.2.md --latest
 ```
 
 Then upload the artefacts from §7 to the release page, and update:
@@ -296,9 +296,10 @@ resolves updates. To ship a kernel security fix:
 
 1. Move both kernel ebuilds to the new upstream LTS version (for example
    `webos-kernel-6.12.119.ebuild` and
-   `webos-kernel-sources-6.12.119.ebuild`), point `SRC_URI` / `S` at the
-   matching `linux-6.12.119.tar.xz`, and update both `Manifest` files. A
-   narrow CVE backport on the same base stays a revision bump instead.
+   `webos-kernel-sources-6.12.119.ebuild`), keep `SRC_URI="${KERNEL_URI}"`
+   so `kernel-2.eclass` uses the base tarball plus incremental patch, and
+   refresh both `Manifest` files. A narrow CVE backport on the same base
+   stays a revision bump instead.
 2. Commit and push to `main`. No ISO rebuild is required for existing users.
 3. Users run `sudo webos-update`. It pulls the new overlay, emerges the new
    kernel revision (the kernel is intentionally not in `@world`, so it is

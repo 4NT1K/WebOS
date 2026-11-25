@@ -23,10 +23,10 @@ cp -a "${CACHE_DIR}/kernel-patches/." "${CHROOT}/var/cache/webos/patches/" 2>/de
 # egencache so the new ebuild is visible immediately.
 chroot_sh "egencache --repo=webos --update --jobs=${WEBOS_JOBS} >/dev/null 2>&1 || true"
 
-# The committed Manifest pins the exact kernel tarball digest. Regenerate the
-# kernel Manifests here so a reused chroot sees the current ebuild revision;
-# this also downloads linux-6.12.119.tar.xz into DISTDIR, which the emerge
-# below would have done anyway.
+# The committed Manifests pin the base tarball and stable patch digests.
+# Regenerate the kernel Manifests here so a reused chroot sees the current
+# ebuild; this also downloads linux-6.12.tar.xz and patch-6.12.119.xz into
+# DISTDIR, which the emerge below would have done anyway.
 step "kernel: refreshing overlay manifests"
 chroot_sh 'for p in sys-kernel/webos-kernel-sources sys-kernel/webos-kernel; do
 	e=$(ls /usr/local/portage/webos/$p/*.ebuild 2>/dev/null | head -n1)

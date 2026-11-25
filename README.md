@@ -19,9 +19,9 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 | **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
 | **ISO** | `webos-1.03-Ashen-amd64.iso` |
 
-**Security update `v1.03.1`** ships the 6.12.119 LTS kernel through the WebOS
-overlay. The 1.03 ISO identity is unchanged; installed systems pick up the new
-kernel with `sudo webos-update`.
+**Security update `v1.03.2`** ships the 6.12.119 LTS kernel through the WebOS
+overlay and supersedes the broken `v1.03.1` ebuilds. The 1.03 ISO identity is
+unchanged; installed systems pick up the new kernel with `sudo webos-update`.
 
 WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look — floating rounded top-bar capsules, near-opaque panels and rounded windows — prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
 

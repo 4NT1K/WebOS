@@ -1,11 +1,13 @@
 # WebOS build status
 
-_Last update: 2026-11-25 — v1.03.1 (Ashen): source-only security update; kernel 6.12.119 LTS ships through the overlay. The 1.03 ISO identity is unchanged._
+_Last update: 2026-11-25 — v1.03.2 (Ashen): corrected source-only security update; kernel 6.12.119 LTS ships through the overlay via kernel-2 base tarball + stable patch. The 1.03 ISO identity is unchanged._
 
-## Status: v1.03.1 — active maintenance; theme r51 committed
+## Status: v1.03.2 — active maintenance; theme r51 committed
 
-- Version 1.03 ISO `webos-1.03-Ashen-amd64.iso`; v1.03.1 is a source/kernel
+- Version 1.03 ISO `webos-1.03-Ashen-amd64.iso`; v1.03.2 is a source/kernel
   patch release, not a new ISO. Installed systems get it with `sudo webos-update`.
+- v1.03.1 was superseded: its ebuilds pinned the combined 6.12.119 tarball,
+  while `kernel-2.eclass` expects base tarball + incremental patch.
 - Theme r51 is committed on `main`. Run `bash scripts/50-check.sh` before the
   next rootfs/ISO rebuild.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua

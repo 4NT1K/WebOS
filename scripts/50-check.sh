@@ -405,17 +405,26 @@ for ebuild_file in "${WEBOS_ROOT}"/overlay/sys-kernel/webos-kernel/webos-kernel-
 	grep -qF 'webos-fragment.sha256' "${ebuild_file}" || fragment_stamp=0
 done
 ((fragment_stamp)) && good "kernel fragment stamp" || bad "kernel fragment stamp missing"
-kernel_dist="linux-6.12.119.tar.xz"
-dist_ok=1
+kernel_uri_ok=1
 security_ok=1
 for ebuild_file in \
 	"${WEBOS_ROOT}"/overlay/sys-kernel/webos-kernel/webos-kernel-*.ebuild \
 	"${WEBOS_ROOT}"/overlay/sys-kernel/webos-kernel-sources/webos-kernel-sources-*.ebuild; do
 	[[ -e ${ebuild_file} ]] || continue
-	grep -qF "${kernel_dist}" "${ebuild_file}" || dist_ok=0
+	grep -qF 'SRC_URI="${KERNEL_URI}"' "${ebuild_file}" || kernel_uri_ok=0
 	grep -qF 'K_SECURITY_UNSUPPORTED' "${ebuild_file}" && security_ok=0
 done
-((dist_ok)) && good "kernel ebuilds pin ${kernel_dist}" || bad "kernel ebuilds disagree on ${kernel_dist}"
+((kernel_uri_ok)) && good "kernel ebuilds use kernel-2 KERNEL_URI" \
+	|| bad "kernel ebuilds bypass kernel-2 KERNEL_URI"
+dist_ok=1
+for m in \
+	"${WEBOS_ROOT}/overlay/sys-kernel/webos-kernel/Manifest" \
+	"${WEBOS_ROOT}/overlay/sys-kernel/webos-kernel-sources/Manifest"; do
+	grep -qF 'DIST linux-6.12.tar.xz' "${m}" || dist_ok=0
+	grep -qF 'DIST patch-6.12.119.xz' "${m}" || dist_ok=0
+done
+((dist_ok)) && good "kernel Manifests pin base tarball + 6.12.119 patch" \
+	|| bad "kernel Manifests missing base tarball or 6.12.119 patch"
 ((security_ok)) && good "kernel ebuilds not marked security-unsupported" \
 	|| bad "kernel ebuilds still mark K_SECURITY_UNSUPPORTED"
 grep -qF 'webos-fragment.sha256' "${WEBOS_ROOT}/scripts/20-kernel.sh" \

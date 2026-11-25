@@ -49,7 +49,8 @@ kernel/fetch-patches.sh --series 6.12 --list
 
 A stable point release **within** the series (for example 6.12 → 6.12.119)
 does not change `WEBOS_KERNEL_SERIES`. Rename both ebuilds to the new `PV`,
-update `SRC_URI` / `S`, refresh both `Manifest` files, and keep the
+keep `SRC_URI="${KERNEL_URI}"` so `kernel-2.eclass` fetches the base tarball
+and incremental patch, refresh both `Manifest` files, and keep the
 `/usr/src/linux-6.12` build-tree path stable for out-of-tree module builds.
 
 ## What is deliberately *not* enabled

@@ -130,6 +130,12 @@ unavailable, so the image ships a stock 6.12.119 LTS with the WebOS config
 fragment. The fragment still sets `CONFIG_SCHED_BORE` and
 `CONFIG_TCP_CONG_BBR3`; kconfig drops symbols the tree does not provide.
 
+Both kernel ebuilds keep `SRC_URI="${KERNEL_URI}"`. For a three-component
+version such as 6.12.119, `detect_version()` resolves that to
+`linux-6.12.tar.xz` plus `patch-6.12.119.xz`; `kernel-2.eclass` unpacks the
+tarball and applies the patch. Pinning the combined `linux-6.12.119.tar.xz`
+directly breaks `src_unpack`.
+
 ### Config fragment
 
 The kernel is configured by merging `webos-fragment.config` over upstream
