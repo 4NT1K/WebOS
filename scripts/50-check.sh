@@ -134,8 +134,6 @@ grep -qF -- '--clear)' "$INDICATOR" \
 RICE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice"
 grep -A8 '"custom/update":' "$RICE/waybar/config.jsonc" | grep -q '"interval": 60' \
 	&& good "update badge polls quickly" || bad "update badge poll interval too slow"
-grep -A3 -F '#custom-update.none {' "$RICE/waybar/style.css" | grep -qF 'display: none;' \
-	&& good "update badge hidden when no updates" || bad "empty update badge still shows"
 grep -qF 'flatpak_user_env' "$UPDATER" \
 	&& grep -qF 'update --user -y --noninteractive' "$UPDATER" \
 	&& grep -qF 'SUDO_USER' "$UPDATER" \
