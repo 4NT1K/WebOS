@@ -72,6 +72,11 @@ tooltip label {
     border-color: rgba(255, 255, 255, 0.75);
 }
 
+/* Hide the whole pill when the indicator reports no updates. */
+#custom-update.none {
+    display: none;
+}
+
 #custom-update.available {
     color: #FFFFFF;
     border-color: rgba(255, 255, 255, 0.95);

@@ -71,6 +71,28 @@ need_root() {
 	[ "$(id -u)" -eq 0 ] || die "webos-update must run as root (try: sudo webos-update)"
 }
 
+# Flatpaks can be installed system-wide and in the invoking user's private
+# store. Running under sudo otherwise only touches the system store, so the
+# Waybar badge (which counts the user store) never clears. Route user-store
+# commands back to SUDO_USER with the right runtime/session environment.
+flatpak_user_env() {
+	local user="${SUDO_USER:-}"
+	[ -n "$user" ] && [ "$user" != root ] || return 0
+	id -u "$user" >/dev/null 2>&1 || return 0
+	local uid runtime
+	uid="$(id -u "$user")"
+	runtime="/run/user/${uid}"
+	local -a env_args=(XDG_RUNTIME_DIR="$runtime")
+	if [ -S "$runtime/bus" ]; then
+		env_args+=("DBUS_SESSION_BUS_ADDRESS=unix:path=${runtime}/bus")
+	fi
+	if command -v runuser >/dev/null 2>&1; then
+		runuser -u "$user" -- env "${env_args[@]}" flatpak "$@"
+	else
+		su -s /bin/bash -c "env ${env_args[*]} flatpak $*" "$user"
+	fi
+}
+
 # Resolve the binary-acceptance flags once so the dry run and every apply step
 # make exactly the same choices.
 build_emerge_extra() {
@@ -281,6 +303,13 @@ if [ "$CHECK" -eq 1 ]; then
 		say "Kernel (updated separately from @world)"
 		emerge --pretend --update --newuse "${EMERGE_EXTRA[@]}" sys-kernel/webos-kernel 2>/dev/null | sed 's/^/      /' || true
 	fi
+	if [ "$DO_FLATPAK" -eq 1 ] && command -v flatpak >/dev/null 2>&1; then
+		say "Flatpaks (system + ${SUDO_USER:-user})"
+		{
+			flatpak remote-ls --updates 2>/dev/null || true
+			flatpak_user_env remote-ls --updates 2>/dev/null || true
+		} | sort -u | sed 's/^/      /'
+	fi
 	say "Summary"
 	note "run 'sudo webos-update' to apply"
 	[ "$FAILED" -eq 0 ] || exit 1
@@ -354,8 +383,9 @@ fi
 
 # ------------------------------------------------------------- 5. flatpak ---
 if [ "$DO_FLATPAK" -eq 1 ] && command -v flatpak >/dev/null 2>&1; then
-	say "[5/8] Updating Flatpaks"
-	if flatpak update -y --noninteractive >/dev/null 2>&1; then
+	say "[5/8] Updating Flatpaks (system + ${SUDO_USER:-user})"
+	if flatpak update -y --noninteractive >/dev/null 2>&1 &&
+		flatpak_user_env update --user -y --noninteractive >/dev/null 2>&1; then
 		ok "flatpaks up to date"
 	else
 		step_fail "flatpak update reported an error"
