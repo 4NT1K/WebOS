@@ -403,7 +403,10 @@ if [ "$DO_KERNEL" -eq 1 ]; then
 
 		if command -v qlist >/dev/null 2>&1 && \
 			qlist -Iq x11-drivers/nvidia-drivers >/dev/null 2>&1; then
-			if env SKIP_KERNEL_CHECK=1 KERNEL_DIR="$kdir" \
+			# Never set SKIP_KERNEL_CHECK here: linux-info would skip
+			# get_version() and fall back to the *running* kernel's build
+			# tree instead of the new release.
+			if env KERNEL_DIR="$kdir" \
 				emerge -1 --usepkg=n --getbinpkg=n x11-drivers/nvidia-drivers; then
 				ok "NVIDIA modules rebuilt for ${newest}"
 			else
