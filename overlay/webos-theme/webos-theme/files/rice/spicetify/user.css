@@ -1,6 +1,6 @@
-/* WebOS Spotify — near-transparent glass, faint outlines. */
+/* WebOS Spotify — kitty-like glass: no filled surfaces, faint outlines. */
 :root {
-  --webos-glass: rgba(20, 20, 26, .01);
+  --webos-glass: rgba(20, 20, 26, .005);
   --webos-outline: rgba(232, 232, 232, .06);
   --text-base: #D8D8D8 !important;
   --text-subdued: #7A7A7A !important;
@@ -16,6 +16,15 @@
   --background-tinted-highlight: var(--webos-glass) !important;
   --background-tinted-press: var(--webos-glass) !important;
   --spice-card: transparent !important;
+  --spice-main: transparent !important;
+  --spice-main-elevated: transparent !important;
+  --spice-sidebar: transparent !important;
+  --spice-player: transparent !important;
+  --background-base-20: transparent !important;
+  --background-base-70: transparent !important;
+  --background-base-min-contrast: transparent !important;
+  --section-background-base: transparent !important;
+  --background-noise: none !important;
 }
 .encore-dark-theme,
 .encore-layout-themes,

@@ -219,8 +219,10 @@ grep -q '#music-card { background-image: url' "$MUSIC" \
 grep -q 'convert("RGB")' "$MUSIC" && grep -q 'def art_is_light' "$MUSIC" \
 	&& good "music cover art stays in colour" || bad "music cover art is still greyscale"
 SPOTIFY_CSS="${RICE}/spicetify/user.css"
-grep -q '^  --webos-glass: rgba(20, 20, 26, \.01);$' "$SPOTIFY_CSS" \
+grep -q '^  --webos-glass: rgba(20, 20, 26, \.005);$' "$SPOTIFY_CSS" \
 	&& grep -q -- '--webos-outline: rgba(232, 232, 232, .06)' "$SPOTIFY_CSS" \
+	&& grep -Fq -- '--spice-main: transparent !important;' "$SPOTIFY_CSS" \
+	&& grep -Fq -- '--spice-sidebar: transparent !important;' "$SPOTIFY_CSS" \
 	&& grep -Fq 'border: 1px solid var(--webos-outline)' "$SPOTIFY_CSS" \
 	&& good "Spotify has transparent glass with faint outlines" \
 	|| bad "Spotify transparency or outlines are wrong"
