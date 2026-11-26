@@ -174,6 +174,11 @@ grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
 	&& good "WebOS greyscale glass Kvantum theme" || bad "WebOS Kvantum theme missing"
 grep -q '^BackgroundNormal=0,0,0,0$' "${RICE}/color-schemes/DeepBlack.colors" \
 	&& good "Deep Black view is transparent" || bad "Deep Black view still opaque"
+ACCENT="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-accent"
+grep -Fq 'def apply_icon_accent(rgb):' "$ACCENT" \
+	&& grep -Fq 'BLUE_ICON_RE' "$ACCENT" \
+	&& grep -Fq 'gtk-update-icon-cache' "$ACCENT" \
+	&& good "wallpaper-driven folder icon accents" || bad "folder icon accents missing"
 grep -qE '^kde-apps/ark$' "${WEBOS_ROOT}/config/sets/desktop" \
 	&& grep -qE '^kde-apps/ark zip$' "${WEBOS_ROOT}/config/package.use/00-global" \
 	&& good "archive extraction via ark" || bad "ark missing zip support"
