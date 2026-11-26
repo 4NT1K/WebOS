@@ -166,11 +166,23 @@ grep -q 'plasma/dolphinrc' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/
 grep -Fq 'class = "^(org\\.kde\\.dolphin|dolphin)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '["org.kde.dolphin"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
 	&& good "Dolphin translucency rule" || bad "Dolphin translucency rule missing"
+SPOTCSS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/spicetify/user.css"
 grep -Fq 'class = "^(spotify|Spotify)$"' "$RICE/hypr/hyprland.lua" \
-	&& grep -Fq 'opacity = "0.30 override 0.26 override"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'opacity = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'prop = "opacity_override"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'prop = "opacity_inactive_override"' "$RICE/hypr/hyprland.lua" \
-	&& good "Spotify uses kitty-like compositor alpha" || bad "Spotify still has a grey veil"
+	&& grep -Fq '.Root__now-playing-bar,' "$SPOTCSS" \
+	&& grep -Fq '[aria-hidden="true"] > div' "$SPOTCSS" \
+	&& good "Spotify subtle glass, no grey veil, solid white text" || bad "Spotify still has a grey veil"
+DISCSS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/discord/webos-discord.css"
+DISCSH="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-discord-theme"
+grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'opacity = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq '["discord-canary"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'Vencord' "$DISCSH" \
+	&& grep -Fq 'color: #FFFFFF !important;' "$DISCSS" \
+	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
+	&& good "Discord and Canary use Vencord glass like Spotify" || bad "Discord glass injection missing"
 KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
 grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
 	&& [[ -f "$KVWEB" && -f "${KVWEB%.kvconfig}.svg" ]] \

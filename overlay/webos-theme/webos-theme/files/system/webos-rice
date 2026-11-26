@@ -629,6 +629,10 @@ main() {
 			;;
 		user)
 			apply_home "$HOME" "$FORCE" 0
+			if command -v webos-discord-theme >/dev/null 2>&1; then
+				webos-discord-theme || skip "Discord glass injection failed"
+			fi
+			note "restart Discord and Discord Canary to load their glass CSS"
 			note "restart the compositor or run: hyprctl reload"
 			;;
 		system) system_all "$FORCE" ;;

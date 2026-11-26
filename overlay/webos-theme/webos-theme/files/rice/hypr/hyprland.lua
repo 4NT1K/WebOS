@@ -241,11 +241,12 @@ hl.window_rule({ match = { class = "^(firefox|zen|chromium)$" },     opacity = "
 hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "0.97 0.95" })
 -- Electron apps can ignore app-level transparency and still paint an opaque
 -- black surface. Force compositor alpha so wallpaper + blur always show through.
-hl.window_rule({ match = { class = "^(discord|bettersoundcloud)$" }, opacity = "0.88 0.84" })
+hl.window_rule({ match = { class = "^(discord|discord-canary)$" }, opacity = "0.88 override 0.84 override" })
+hl.window_rule({ match = { class = "^(bettersoundcloud)$" },      opacity = "0.88 0.84" })
 -- Spotify's CEF surface stays opaque on Wayland, so CSS alone cannot show the
--- wallpaper. Match both class casings and use the same effective alpha as
--- kitty's own glass instead of leaving a grey veil over the desktop.
-hl.window_rule({ match = { class = "^(spotify|Spotify)$" },   opacity = "0.30 override 0.26 override" })
+-- wallpaper. Keep a subtle slice of glass, not a washed-out window: the grey
+-- gradient layers are removed in user.css and the text stays solid white.
+hl.window_rule({ match = { class = "^(spotify|Spotify)$" },   opacity = "0.88 override 0.84 override" })
 
 -- A fresh boot can race Electron/kitty startup: the window maps before the
 -- compositor has finished applying static rules and paints an opaque surface.
@@ -259,9 +260,10 @@ local BOOT_ALPHA = {
 	["org.kde.dolphin"] = "0.88 override 0.84 override",
 	dolphin    = "0.88 override 0.84 override",
 	discord    = "0.88 override 0.84 override",
+	["discord-canary"] = "0.88 override 0.84 override",
 	bettersoundcloud = "0.88 override 0.84 override",
-	spotify    = "0.30 override 0.26 override",
-	Spotify    = "0.30 override 0.26 override",
+	spotify    = "0.88 override 0.84 override",
+	Spotify    = "0.88 override 0.84 override",
 }
 local function apply_boot_alpha(w)
 	if not w then

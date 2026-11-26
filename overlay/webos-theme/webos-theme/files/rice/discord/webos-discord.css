@@ -1,0 +1,89 @@
+/* WebOS Discord — kitty-like glass: no filled surfaces, faint outlines. */
+:root {
+  --webos-outline: rgba(232, 232, 232, .06);
+  --webos-outline-hover: rgba(232, 232, 232, .14);
+}
+
+html, body,
+[class*="app"], [class*="App"],
+[class*="container"], [class*="Container"],
+[class*="sidebar"], [class*="Sidebar"],
+[class*="guilds"], [class*="Guilds"],
+[class*="chat"], [class*="Chat"],
+[class*="scroller"], [class*="Scroller"],
+[class*="layer"], [class*="Layer"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Discord paints many surfaces with plain div backgrounds. Keep images and
+   avatars intact, but remove the flat fills and heavy shadows. */
+*:not(img):not(svg):not(video):not(canvas) {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+*:not(img):not(svg):not(video):not(canvas)::before,
+*:not(img):not(svg):not(video):not(canvas)::after {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* Buttons were disappearing against the glass: make every control white. */
+button, [role="button"], button *, [role="button"] * {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
+}
+button svg, [role="button"] svg, button svg *, [role="button"] svg * {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
+}
+
+/* A hairline keeps cards and panels readable on the wallpaper. */
+:is(
+  [class*="card"], [class*="Card"],
+  [class*="panel"], [class*="Panel"],
+  [class*="tile"], [class*="Tile"],
+  [role="listitem"]
+) {
+  border: 1px solid var(--webos-outline) !important;
+  border-radius: 8px !important;
+}
+:is(
+  [class*="card"], [class*="Card"],
+  [class*="panel"], [class*="Panel"],
+  [class*="tile"], [class*="Tile"],
+  [role="listitem"]
+):hover {
+  border-color: var(--webos-outline-hover) !important;
+}
+
+/* Menus and dialogs stay readable; the app itself stays glassy. */
+:is(
+  [class*="popout"], [class*="Popout"],
+  [class*="modal"], [class*="Modal"],
+  [class*="tooltip"], [class*="Tooltip"],
+  [role="dialog"], [role="menu"], [role="listbox"]
+) {
+  background: rgba(12, 12, 16, .96) !important;
+  background-color: rgba(12, 12, 16, .96) !important;
+  border: 1px solid rgba(232, 232, 232, .2) !important;
+  border-radius: 10px !important;
+}
+
+/* Solid white text against arbitrary wallpapers — no see-through lettering. */
+[class*="text"], [class*="Text"],
+[class*="name"], [class*="Name"],
+[class*="title"], [class*="Title"],
+[class*="message"], [class*="Message"] {
+  color: #FFFFFF !important;
+}
+/* Kill the opaque gradient sheets Discord paints behind the chat. */
+[aria-hidden="true"] > div,
+[class*="background"], [class*="Background"] {
+  background-image: none !important;
+}

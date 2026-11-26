@@ -186,6 +186,7 @@ src_install() {
 	newexe "${FILESDIR}"/system/discord-launcher discord
 	exeinto /usr/bin
 	newexe "${FILESDIR}"/system/webos-refresh webos-refresh
+	newexe "${FILESDIR}"/system/webos-discord-theme webos-discord-theme
 	newexe "${FILESDIR}"/system/webos-stats webos-stats
 	newexe "${FILESDIR}"/system/webos-update-indicator webos-update-indicator
 

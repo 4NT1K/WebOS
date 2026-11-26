@@ -2,10 +2,10 @@
 :root {
   --webos-glass: rgba(20, 20, 26, .005);
   --webos-outline: rgba(232, 232, 232, .06);
-  --text-base: #D8D8D8 !important;
-  --text-subdued: #7A7A7A !important;
-  --text-bright-accent: #E8E8E8 !important;
-  --essential-base: #E8E8E8 !important;
+  --text-base: #E8E8E8 !important;
+  --text-subdued: #A8A8A8 !important;
+  --text-bright-accent: #FFFFFF !important;
+  --essential-base: #FFFFFF !important;
   --background-base: transparent !important;
   --background-highlight: var(--webos-glass) !important;
   --background-press: var(--webos-glass) !important;
@@ -84,6 +84,20 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
 [class*="Container"], [class*="panel"], [class*="Panel"] {
   background: transparent !important;
   border-color: transparent !important;
+}
+
+/* The big grey veil is three decorative gradient layers placed under an
+   aria-hidden wrapper in the right sidebar/playlist header. Target them by
+   structure so hashed class names can change with Spotify updates. Real
+   artwork uses <img> or inline url() backgrounds and is left alone. */
+[aria-hidden="true"] > div {
+  background: transparent !important;
+  background-image: none !important;
+}
+/* Known hashed names from the current xpui build, for good measure. */
+.LEsMhVH3q1yp3Ld6vWLQ, .ZN1cU8QFqgia2LLdYOBz, .rCDFzTV9kPqFiMm_Q5Kl {
+  background: transparent !important;
+  background-image: none !important;
 }
 
 /* Buttons were disappearing against the glass: make every control white. */
@@ -167,4 +181,16 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
 :is([role="menu"], .context-menu, .dropdownMenu) hr {
   background-color: rgba(232, 232, 232, .16) !important;
   border-color: rgba(232, 232, 232, .16) !important;
+}
+
+/* Solid white text everywhere in the player bar, including the bottom-right
+   time and volume controls. The grey lives in the surfaces, not the text. */
+.main-trackInfo-name,
+.main-trackInfo-name *,
+.main-trackInfo-artists,
+.main-trackInfo-artists *,
+.Root__now-playing-bar,
+.Root__now-playing-bar * {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
 }
