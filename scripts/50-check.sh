@@ -159,7 +159,7 @@ grep -q '"custom/power"' "$MONO/config.jsonc" \
 grep -q '#custom-power' "$MONO/style.css" \
 	&& good "mono dotfiles power widget styled" || bad "mono dotfiles power widget unstyled"
 DOLPHIN="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/plasma/dolphinrc"
-grep -q '^ColorScheme=Deep Black$' "$DOLPHIN" \
+grep -q '^ColorScheme=DeepBlack$' "$DOLPHIN" \
 	&& good "Dolphin uses Deep Black" || bad "Dolphin color scheme missing"
 grep -q 'plasma/dolphinrc' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-rice" \
 	&& good "Dolphin config is rice-managed" || bad "Dolphin config not installed"
