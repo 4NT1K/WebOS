@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Build the small LD_AUDIT shim that makes Spotify's native CEF window
+# transparent. Spotify hardcodes an opaque #121212 browser background and CEF
+# does not request an ARGB window; CSS cannot change either. The shim patches
+# those two constants in memory at process start (MIT sources are shipped in
+# /usr/share/webos/rice/spotify/transparency).
+#
+# Nothing is patched on disk: removing ~/.local/lib/webos-spotify-transparency.so
+# or clearing LD_AUDIT restores the stock, opaque client.
+set -Eeuo pipefail
+
+home_dir="${HOME:-/home/brah}"
+src="${WEBOS_RICE_SRC:-/usr/share/webos/rice/spotify/transparency}"
+[[ -f "$src/patcher_lib.cc" ]] || src="/home/brah/WebOS/overlay/webos-theme/webos-theme/files/rice/spotify/transparency"
+for f in patcher_lib.cc pmparser.c pmparser.h; do
+	[[ -f "$src/$f" ]] || { printf 'warn: Spotify transparency source missing (%s)\n' "$f" >&2; exit 0; }
+done
+command -v g++ >/dev/null 2>&1 || { printf 'warn: g++ missing; Spotify window stays opaque\n' >&2; exit 0; }
+command -v gcc >/dev/null 2>&1 || { printf 'warn: gcc missing; Spotify window stays opaque\n' >&2; exit 0; }
+
+out="$home_dir/.local/lib/webos-spotify-transparency.so"
+build="$(mktemp -d)"
+trap 'rm -rf "$build"' EXIT
+cp "$src"/patcher_lib.cc "$src"/pmparser.c "$src"/pmparser.h "$build"/
+(
+	cd "$build"
+	gcc -std=gnu99 -O2 -I. -c pmparser.c -o pmparser.o
+	g++ -O3 -Wall -Wno-parentheses -I. -std=c++23 -shared -fPIC -z defs \
+		-o webos-spotify-transparency.so patcher_lib.cc pmparser.o -lc
+)
+install -Dm755 "$build/webos-spotify-transparency.so" "$out"
+printf 'done: Spotify transparency shim installed (%s)\n' "$out"

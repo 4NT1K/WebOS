@@ -167,13 +167,21 @@ grep -Fq 'class = "^(org\\.kde\\.dolphin|dolphin)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '["org.kde.dolphin"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
 	&& good "Dolphin translucency rule" || bad "Dolphin translucency rule missing"
 SPOTCSS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/spicetify/user.css"
+SPOTSHIM="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-spotify-transparency"
+SPOTLAUNCH="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/spotify/spotify"
 grep -Fq 'class = "^(spotify|Spotify)$"' "$RICE/hypr/hyprland.lua" \
-	&& grep -Fq 'opacity = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'opacity = "1.0 override 1.0 override"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'prop = "opacity_override"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'prop = "opacity_inactive_override"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '.Root__now-playing-bar,' "$SPOTCSS" \
 	&& grep -Fq '[aria-hidden="true"] > div' "$SPOTCSS" \
-	&& good "Spotify subtle glass, no grey veil, solid white text" || bad "Spotify still has a grey veil"
+	&& grep -Fq '#main {' "$SPOTCSS" \
+	&& grep -Fq 'rgba(0, 0, 0, .82)' "$SPOTCSS" \
+	&& grep -Fq 'LD_AUDIT' "$SPOTLAUNCH" \
+	&& grep -Fq -- '--ozone-platform=x11' "$SPOTLAUNCH" \
+	&& grep -Fq 'webos-spotify-transparency' "$SPOTSHIM" \
+	&& grep -q 'webos-spotify-transparency' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
+	&& good "Spotify transparent window, glass veil, solid white text" || bad "Spotify still has a grey veil"
 DISCSS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/discord/webos-discord.css"
 DISCSH="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-discord-theme"
 grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \

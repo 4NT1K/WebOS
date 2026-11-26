@@ -243,10 +243,10 @@ hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "
 -- black surface. Force compositor alpha so wallpaper + blur always show through.
 hl.window_rule({ match = { class = "^(discord|discord-canary)$" }, opacity = "0.88 override 0.84 override" })
 hl.window_rule({ match = { class = "^(bettersoundcloud)$" },      opacity = "0.88 0.84" })
--- Spotify's CEF surface stays opaque on Wayland, so CSS alone cannot show the
--- wallpaper. Keep a subtle slice of glass, not a washed-out window: the grey
--- gradient layers are removed in user.css and the text stays solid white.
-hl.window_rule({ match = { class = "^(spotify|Spotify)$" },   opacity = "0.88 override 0.84 override" })
+-- Spotify's CEF window is made genuinely transparent by the LD_AUDIT shim in
+-- ~/.local/lib, so no compositor alpha is needed: text stays 100% solid and
+-- the glass veil in user.css supplies the subtle wallpaper tint.
+hl.window_rule({ match = { class = "^(spotify|Spotify)$" },   opacity = "1.0 override 1.0 override" })
 
 -- A fresh boot can race Electron/kitty startup: the window maps before the
 -- compositor has finished applying static rules and paints an opaque surface.
@@ -262,8 +262,8 @@ local BOOT_ALPHA = {
 	discord    = "0.88 override 0.84 override",
 	["discord-canary"] = "0.88 override 0.84 override",
 	bettersoundcloud = "0.88 override 0.84 override",
-	spotify    = "0.88 override 0.84 override",
-	Spotify    = "0.88 override 0.84 override",
+	spotify    = "1.0 override 1.0 override",
+	Spotify    = "1.0 override 1.0 override",
 }
 local function apply_boot_alpha(w)
 	if not w then

@@ -31,6 +31,13 @@
   --gradient-color-bottom: transparent !important;
   --bgColor: transparent !important;
 }
+
+/* The patched native window is genuinely transparent now. This neutral veil
+   (not Spotify's #121212 grey) is what makes it glass: the wallpaper shows
+   faintly behind the app while the text and controls stay solid. */
+#main {
+  background: rgba(0, 0, 0, .82) !important;
+}
 .encore-dark-theme,
 .encore-layout-themes,
 .encore-dark-theme .encore-announcement-set,

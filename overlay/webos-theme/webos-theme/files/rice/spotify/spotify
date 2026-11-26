@@ -1,5 +1,16 @@
 #!/usr/bin/env bash
-# WebOS: launch Spotify with Electron transparency enabled (PATH shim).
+# WebOS: Spotify glass.
+#
+# Spotify's CEF surface is painted opaque #121212 and its X11 window is created
+# without an ARGB visual, so CSS alone can never show the wallpaper. When the
+# transparency shim is present we run through Xwayland with --enable-transparent-visuals
+# so the patched window really has alpha. Until then, keep native Wayland.
 flags=(--enable-transparent-visuals --disable-gpu)
-[[ -n ${WAYLAND_DISPLAY:-} ]] && flags+=(--enable-features=UseOzonePlatform --ozone-platform=wayland)
+shim="${HOME:-/home/brah}/.local/lib/webos-spotify-transparency.so"
+if [[ -f "$shim" ]]; then
+	export LD_AUDIT="$shim${LD_AUDIT:+:$LD_AUDIT}"
+	flags+=(--enable-features=UseOzonePlatform --ozone-platform=x11)
+elif [[ -n ${WAYLAND_DISPLAY:-} ]]; then
+	flags+=(--enable-features=UseOzonePlatform --ozone-platform=wayland)
+fi
 exec /usr/sbin/spotify "${flags[@]}" "$@"
