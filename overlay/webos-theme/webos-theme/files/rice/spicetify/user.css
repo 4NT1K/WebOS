@@ -1,6 +1,7 @@
-/* WebOS maximum-transparent Spotify — nothing opaque, no boxes. */
+/* WebOS Spotify — near-transparent glass, faint outlines. */
 :root {
-  --webos-glass: rgba(20, 20, 26, .03);
+  --webos-glass: rgba(20, 20, 26, .01);
+  --webos-outline: rgba(232, 232, 232, .06);
   --text-base: #D8D8D8 !important;
   --text-subdued: #7A7A7A !important;
   --text-bright-accent: #E8E8E8 !important;
@@ -50,6 +51,29 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
 [class*="Container"], [class*="panel"], [class*="Panel"] {
   background: transparent !important;
   border-color: transparent !important;
+}
+
+/* No filled surfaces: a hairline keeps cards readable on the wallpaper. */
+:is(
+  .Root__right-sidebar,
+  .main-topBar-container,
+  .main-nowPlayingBar-container,
+  [class*="card"], [class*="Card"],
+  [class*="tile"], [class*="Tile"],
+  [class*="panel"], [class*="Panel"],
+  [data-testid*="card"], [data-testid="tracklist-row"],
+  .tracklist-row
+) {
+  border: 1px solid var(--webos-outline) !important;
+  border-radius: 8px !important;
+}
+:is(
+  [class*="card"], [class*="Card"],
+  [class*="tile"], [class*="Tile"],
+  [data-testid*="card"], [data-testid="tracklist-row"],
+  .tracklist-row
+):hover {
+  border-color: rgba(232, 232, 232, .14) !important;
 }
 
 /* Menus are the exception: the app stays glassy, but context menus, dropdowns

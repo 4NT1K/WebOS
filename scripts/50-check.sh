@@ -218,6 +218,12 @@ grep -q '#music-card { background-image: url' "$MUSIC" \
 	&& good "song image fills the whole card" || bad "song image is not the card background"
 grep -q 'convert("RGB")' "$MUSIC" && grep -q 'def art_is_light' "$MUSIC" \
 	&& good "music cover art stays in colour" || bad "music cover art is still greyscale"
+SPOTIFY_CSS="${RICE}/spicetify/user.css"
+grep -q '^  --webos-glass: rgba(20, 20, 26, \.01);$' "$SPOTIFY_CSS" \
+	&& grep -q -- '--webos-outline: rgba(232, 232, 232, .06)' "$SPOTIFY_CSS" \
+	&& grep -Fq 'border: 1px solid var(--webos-outline)' "$SPOTIFY_CSS" \
+	&& good "Spotify has transparent glass with faint outlines" \
+	|| bad "Spotify transparency or outlines are wrong"
 grep -q 'PANEL_SIZE = 340' "$MUSIC" && grep -q 'set_default_size(PANEL_SIZE, PANEL_SIZE)' "$MUSIC" \
 	&& good "music player is a compact square" || bad "music player size is wrong"
 grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class VinylVisualizer' "$MUSIC" \
