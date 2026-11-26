@@ -57,6 +57,7 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
 }
 *:not(img):not(svg):not(video):not(canvas) {
   background-color: transparent !important;
+  background-image: none !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
 }
@@ -84,6 +85,18 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
 [class*="Container"], [class*="panel"], [class*="Panel"] {
   background: transparent !important;
   border-color: transparent !important;
+}
+
+/* Buttons were disappearing against the glass: make every control white. */
+button, [role="button"], button *, [role="button"] * {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
+}
+button svg, [role="button"] svg, button svg *, [role="button"] svg * {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
 }
 
 /* No filled surfaces: a hairline keeps cards readable on the wallpaper. */

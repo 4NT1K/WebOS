@@ -225,6 +225,8 @@ grep -q '^  --webos-glass: rgba(20, 20, 26, \.005);$' "$SPOTIFY_CSS" \
 	&& grep -Fq -- '--spice-sidebar: transparent !important;' "$SPOTIFY_CSS" \
 	&& grep -Fq 'background-image: none !important;' "$SPOTIFY_CSS" \
 	&& grep -Fq '::after {' "$SPOTIFY_CSS" \
+	&& grep -Fq -- 'button, [role="button"], button *, [role="button"] * {' "$SPOTIFY_CSS" \
+	&& grep -Fq -- 'fill: #fff !important;' "$SPOTIFY_CSS" \
 	&& grep -Fq 'border: 1px solid var(--webos-outline)' "$SPOTIFY_CSS" \
 	&& good "Spotify has transparent glass with faint outlines" \
 	|| bad "Spotify transparency or outlines are wrong"
