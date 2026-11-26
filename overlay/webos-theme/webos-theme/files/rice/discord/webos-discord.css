@@ -1,8 +1,4 @@
-/* WebOS Discord — kitty-like glass: no filled surfaces, faint outlines. */
-:root {
-  --webos-outline: rgba(232, 232, 232, .06);
-  --webos-outline-hover: rgba(232, 232, 232, .14);
-}
+/* WebOS Discord — kitty-like glass: no filled surfaces, no box outlines. */
 
 html, body,
 [class*="app"], [class*="App"],
@@ -43,23 +39,15 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
   stroke: #fff !important;
 }
 
-/* A hairline keeps cards and panels readable on the wallpaper. */
+/* No box outlines anywhere in the app. Menus keep their own border below. */
 :is(
   [class*="card"], [class*="Card"],
   [class*="panel"], [class*="Panel"],
   [class*="tile"], [class*="Tile"],
   [role="listitem"]
 ) {
-  border: 1px solid var(--webos-outline) !important;
-  border-radius: 8px !important;
-}
-:is(
-  [class*="card"], [class*="Card"],
-  [class*="panel"], [class*="Panel"],
-  [class*="tile"], [class*="Tile"],
-  [role="listitem"]
-):hover {
-  border-color: var(--webos-outline-hover) !important;
+  border: 0 !important;
+  box-shadow: none !important;
 }
 
 /* Menus and dialogs stay readable; the app itself stays glassy. */
@@ -71,7 +59,7 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
 ) {
   background: rgba(12, 12, 16, .96) !important;
   background-color: rgba(12, 12, 16, .96) !important;
-  border: 1px solid rgba(232, 232, 232, .2) !important;
+  border: 0 !important;
   border-radius: 10px !important;
 }
 
