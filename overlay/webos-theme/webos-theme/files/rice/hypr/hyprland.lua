@@ -242,7 +242,10 @@ hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "
 -- Electron apps can ignore app-level transparency and still paint an opaque
 -- black surface. Force compositor alpha so wallpaper + blur always show through.
 hl.window_rule({ match = { class = "^(discord|bettersoundcloud)$" }, opacity = "0.88 0.84" })
-hl.window_rule({ match = { class = "^(spotify)$" },          opacity = "0.95 0.92" })
+-- Spotify's CEF surface stays opaque on Wayland, so CSS alone cannot show the
+-- wallpaper. Match both class casings and use the same effective alpha as
+-- kitty's own glass instead of leaving a grey veil over the desktop.
+hl.window_rule({ match = { class = "^(spotify|Spotify)$" },   opacity = "0.30 override 0.26 override" })
 
 -- A fresh boot can race Electron/kitty startup: the window maps before the
 -- compositor has finished applying static rules and paints an opaque surface.
@@ -257,7 +260,8 @@ local BOOT_ALPHA = {
 	dolphin    = "0.88 override 0.84 override",
 	discord    = "0.88 override 0.84 override",
 	bettersoundcloud = "0.88 override 0.84 override",
-	spotify    = "0.95 override 0.92 override",
+	spotify    = "0.30 override 0.26 override",
+	Spotify    = "0.30 override 0.26 override",
 }
 local function apply_boot_alpha(w)
 	if not w then
@@ -265,8 +269,15 @@ local function apply_boot_alpha(w)
 	end
 	local value = BOOT_ALPHA[w.class] or BOOT_ALPHA[w.initial_class]
 	if value then
+		-- "opacity" is read-only; the writable props are the *_override pair.
+		local active, inactive = value:match("^(%d+%.%d+)%s+(%d+%.%d+)")
+		active = active or value
+		inactive = inactive or active
 		hl.dispatch(hl.dsp.window.set_prop({
-			window = w.address, prop = "opacity", value = value,
+			window = w, prop = "opacity_override", value = active,
+		}))
+		hl.dispatch(hl.dsp.window.set_prop({
+			window = w, prop = "opacity_inactive_override", value = inactive,
 		}))
 	end
 end

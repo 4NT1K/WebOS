@@ -166,6 +166,11 @@ grep -q 'plasma/dolphinrc' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/
 grep -Fq 'class = "^(org\\.kde\\.dolphin|dolphin)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '["org.kde.dolphin"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
 	&& good "Dolphin translucency rule" || bad "Dolphin translucency rule missing"
+grep -Fq 'class = "^(spotify|Spotify)$"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'opacity = "0.30 override 0.26 override"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'prop = "opacity_override"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq 'prop = "opacity_inactive_override"' "$RICE/hypr/hyprland.lua" \
+	&& good "Spotify uses kitty-like compositor alpha" || bad "Spotify still has a grey veil"
 KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
 grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
 	&& [[ -f "$KVWEB" && -f "${KVWEB%.kvconfig}.svg" ]] \
