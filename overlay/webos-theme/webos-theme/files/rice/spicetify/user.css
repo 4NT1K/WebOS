@@ -23,8 +23,13 @@
   --background-base-20: transparent !important;
   --background-base-70: transparent !important;
   --background-base-min-contrast: transparent !important;
+  --background-base-high-contrast: transparent !important;
   --section-background-base: transparent !important;
   --background-noise: none !important;
+  --home-chip-highlight-color: transparent !important;
+  --home-chip-highlight-gradient: none !important;
+  --gradient-color-bottom: transparent !important;
+  --bgColor: transparent !important;
 }
 .encore-dark-theme,
 .encore-layout-themes,
@@ -54,6 +59,25 @@ html, body, #main, .Root, .os-padding, .os-viewport, .os-content,
   background-color: transparent !important;
   box-shadow: none !important;
   backdrop-filter: none !important;
+}
+
+/* Spotify's grey veil is mostly gradient overlays on pseudo-elements. */
+*:not(img):not(svg):not(video):not(canvas)::before,
+*:not(img):not(svg):not(video):not(canvas)::after {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+:is(
+  .main-home-homeHeader,
+  [class*="homeHeader"],
+  [class*="nowPlayingView-contextItemInfo"],
+  [class*="nowPlayingView-canvasVisualEnhancement"],
+  [class*="BackgroundGradient"]
+) {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
 }
 [class*="background"], [class*="Background"], [class*="card"],
 [class*="Card"], [class*="box"], [class*="Box"], [class*="container"],
