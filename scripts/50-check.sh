@@ -163,6 +163,9 @@ grep -q '^ColorScheme=Deep Black$' "$DOLPHIN" \
 	&& good "Dolphin uses Deep Black" || bad "Dolphin color scheme missing"
 grep -q 'plasma/dolphinrc' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-rice" \
 	&& good "Dolphin config is rice-managed" || bad "Dolphin config not installed"
+grep -Fq 'class = "^(org\\.kde\\.dolphin|dolphin)$"' "$RICE/hypr/hyprland.lua" \
+	&& grep -Fq '["org.kde.dolphin"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
+	&& good "Dolphin translucency rule" || bad "Dolphin translucency rule missing"
 grep -qE '^kde-apps/ark$' "${WEBOS_ROOT}/config/sets/desktop" \
 	&& grep -qE '^kde-apps/ark zip$' "${WEBOS_ROOT}/config/package.use/00-global" \
 	&& good "archive extraction via ark" || bad "ark missing zip support"

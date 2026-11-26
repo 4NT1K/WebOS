@@ -236,6 +236,7 @@ hl.window_rule({ match = { class = "^(foot)$" },                     opacity = "
 hl.window_rule({ match = { class = "^(Alacritty)$" },                opacity = "0.90 0.85" })
 hl.window_rule({ match = { class = "^(wezterm)$" },                  opacity = "0.92 0.88" })
 hl.window_rule({ match = { class = "^(org.gnome.Nautilus|pcmanfm|Thunar)$" }, opacity = "0.94 0.90" })
+hl.window_rule({ match = { class = "^(org\\.kde\\.dolphin|dolphin)$" }, opacity = "0.88 override 0.84 override" })
 hl.window_rule({ match = { class = "^(firefox|zen|chromium)$" },     opacity = "0.95 0.92" })
 hl.window_rule({ match = { class = "^(mpv|imv|swayimg)$" },          opacity = "0.97 0.95" })
 -- Electron apps can ignore app-level transparency and still paint an opaque
@@ -252,6 +253,8 @@ local BOOT_ALPHA = {
 	foot       = "0.86 override 0.80 override",
 	Alacritty  = "0.90 override 0.85 override",
 	wezterm    = "0.92 override 0.88 override",
+	["org.kde.dolphin"] = "0.88 override 0.84 override",
+	dolphin    = "0.88 override 0.84 override",
 	discord    = "0.88 override 0.84 override",
 	bettersoundcloud = "0.88 override 0.84 override",
 	spotify    = "0.95 override 0.92 override",
