@@ -106,6 +106,16 @@ button path, button circle, button rect, button g,
   outline-offset: 2px !important;
   border-radius: 50% !important;
 }
+/* Fallback for builds where the outline helper is not rendered: outline the
+   speaking voice user's avatar itself. Scoped to voiceUser_ so PTT indicators
+   and stage tiles don't get a stray green ring. */
+[class*="voiceUser_"][class*="speaking_"] [class*="avatar_"],
+[class*="voiceUser_"][class*="speaking_"] [class*="Avatar_"],
+[class*="voiceUser_"][class*="speaking_"] img {
+  outline: 2px solid #23a559 !important;
+  outline-offset: 2px !important;
+  border-radius: 50% !important;
+}
 [class*="voiceUser_"][class*="speaking_"] {
   opacity: 1 !important;
 }

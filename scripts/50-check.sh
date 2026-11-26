@@ -194,6 +194,7 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'data-slate-editor="true"' "$DISCSS" \
 	&& grep -Fq 'data-slate-leaf' "$DISCSS" \
 	&& grep -Fq 'avatarSpeakingOutline_' "$DISCSS" \
+	&& grep -Fq '[class*="voiceUser_"][class*="speaking_"] [class*="avatar_"]' "$DISCSS" \
 	&& grep -Fq '#23a559' "$DISCSS" \
 	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
 	&& good "Discord glass, white buttons, dim composer, green speaking ring" || bad "Discord glass injection missing"
