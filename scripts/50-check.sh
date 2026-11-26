@@ -190,8 +190,10 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'Vencord' "$DISCSH" \
 	&& grep -Fq 'color: #FFFFFF !important;' "$DISCSS" \
 	&& grep -Fq '[class*="button"] svg *' "$DISCSS" \
-	&& grep -Fq 'rgba(255, 255, 255, .72)' "$DISCSS" \
+	&& grep -Fq 'rgba(255, 255, 255, .68)' "$DISCSS" \
 	&& grep -Fq 'data-slate-editor="true"' "$DISCSS" \
+	&& grep -Fq 'data-slate-leaf' "$DISCSS" \
+	&& grep -Fq 'avatarSpeakingOutline_' "$DISCSS" \
 	&& grep -Fq '#23a559' "$DISCSS" \
 	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
 	&& good "Discord glass, white buttons, dim composer, green speaking ring" || bad "Discord glass injection missing"

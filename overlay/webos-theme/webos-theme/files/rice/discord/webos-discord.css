@@ -80,22 +80,32 @@ button path, button circle, button rect, button g,
   background-image: none !important;
 }
 
-/* Typed text in the composer is deliberately dimmer than messages. Discord's
-   editor uses data-slate-editor plus these hashed class names. */
+/* Typed composer text is deliberately dimmer than chat messages. Discord's
+   current editor is Slate; cover the editor element AND its text leaves so
+   inherited colour cannot be overwritten by a child rule. */
 [contenteditable="true"],
 [data-slate-editor="true"],
 [role="textbox"],
 [class*="editorTextArea_"],
-[class*="textArea_LoqBEX"],
+[class*="textArea_"],
+[class*="TextArea"],
 [class*="channelTextArea_"],
-[class*="messageTextArea_"] {
-  color: rgba(255, 255, 255, .72) !important;
+[class*="messageTextArea_"],
+[data-slate-string],
+[data-slate-node="text"],
+[data-slate-leaf] {
+  color: rgba(255, 255, 255, .68) !important;
   caret-color: #FFFFFF !important;
 }
 
-/* Restore the green speaking ring that the global box-shadow reset removed.
-   Discord marks the talking avatar with a hashed `speaking_` class. */
-[class*="speaking"], [class*="Speaking"], [data-speaking="true"] {
-  box-shadow: 0 0 0 2px #23a559 !important;
+/* Discord draws the voice speaking ring with exactly:
+   .speaking_ieJ4Sq .avatarSpeakingOutline_ieJ4Sq { outline: 1px solid ... }
+   Target that pair directly and make the green edge clearly visible again. */
+[class*="speaking_"] [class*="avatarSpeakingOutline_"] {
+  outline: 2px solid #23a559 !important;
+  outline-offset: 2px !important;
   border-radius: 50% !important;
+}
+[class*="voiceUser_"][class*="speaking_"] {
+  opacity: 1 !important;
 }

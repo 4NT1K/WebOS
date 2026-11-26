@@ -7,9 +7,14 @@
 set -Eeuo pipefail
 
 home_dir="${HOME:-/home/brah}"
-rice_src="${WEBOS_RICE_SRC:-/usr/share/webos/rice/discord}"
-[[ -f "$rice_src/webos-discord.css" ]] || rice_src="/home/brah/WebOS/overlay/webos-theme/webos-theme/files/rice/discord"
-css_src="$rice_src/webos-discord.css"
+sys_src="${WEBOS_RICE_SRC:-/usr/share/webos/rice/discord}/webos-discord.css"
+repo_src="/home/brah/WebOS/overlay/webos-theme/webos-theme/files/rice/discord/webos-discord.css"
+# Use the newer of the installed system copy and the git working copy. This
+# prevents a stale root-owned /usr/share copy from shadowing a fresh repo edit.
+css_src="$sys_src"
+if [[ -f "$repo_src" ]] && { [[ ! -f "$sys_src" ]] || [[ "$repo_src" -nt "$sys_src" ]]; }; then
+	css_src="$repo_src"
+fi
 [[ -f "$css_src" ]] || { printf 'fail: Discord CSS source missing\n' >&2; exit 1; }
 
 settings_dir="$home_dir/.config/Vencord/settings"
