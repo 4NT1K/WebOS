@@ -166,6 +166,14 @@ grep -q 'plasma/dolphinrc' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/
 grep -Fq 'class = "^(org\\.kde\\.dolphin|dolphin)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '["org.kde.dolphin"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
 	&& good "Dolphin translucency rule" || bad "Dolphin translucency rule missing"
+KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
+grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
+	&& [[ -f "$KVWEB" && -f "${KVWEB%.kvconfig}.svg" ]] \
+	&& grep -q '^transparent_dolphin_view=true$' "$KVWEB" \
+	&& grep -q '^window.color=#00000000$' "$KVWEB" \
+	&& good "WebOS greyscale glass Kvantum theme" || bad "WebOS Kvantum theme missing"
+grep -q '^BackgroundNormal=0,0,0,0$' "${RICE}/color-schemes/DeepBlack.colors" \
+	&& good "Deep Black view is transparent" || bad "Deep Black view still opaque"
 grep -qE '^kde-apps/ark$' "${WEBOS_ROOT}/config/sets/desktop" \
 	&& grep -qE '^kde-apps/ark zip$' "${WEBOS_ROOT}/config/package.use/00-global" \
 	&& good "archive extraction via ark" || bad "ark missing zip support"
