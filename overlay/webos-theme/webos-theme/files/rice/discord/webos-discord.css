@@ -27,16 +27,20 @@ html, body,
   box-shadow: none !important;
 }
 
-/* Buttons were disappearing against the glass: make every control white. */
-button, [role="button"], button *, [role="button"] * {
-  color: #fff !important;
-  fill: #fff !important;
-  stroke: #fff !important;
+/* Every control stays white: text, icons, pseudo glyphs and Discord's many
+   <div class="...button..."> controls that are not real <button>s. */
+button, button *, button::before, button::after,
+[role="button"], [role="button"] *, [role="button"]::before, [role="button"]::after,
+[class*="button"], [class*="button"] *, [class*="Button"], [class*="Button"] * {
+  color: #FFFFFF !important;
 }
-button svg, [role="button"] svg, button svg *, [role="button"] svg * {
-  color: #fff !important;
-  fill: #fff !important;
-  stroke: #fff !important;
+button svg, button svg *, [role="button"] svg, [role="button"] svg *,
+[class*="button"] svg, [class*="button"] svg *,
+[class*="Button"] svg, [class*="Button"] svg *,
+button path, button circle, button rect, button g,
+[role="button"] path, [role="button"] circle, [role="button"] rect, [role="button"] g {
+  fill: #FFFFFF !important;
+  stroke: #FFFFFF !important;
 }
 
 /* No box outlines anywhere in the app. Menus keep their own border below. */
@@ -74,4 +78,24 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
 [aria-hidden="true"] > div,
 [class*="background"], [class*="Background"] {
   background-image: none !important;
+}
+
+/* Typed text in the composer is deliberately dimmer than messages. Discord's
+   editor uses data-slate-editor plus these hashed class names. */
+[contenteditable="true"],
+[data-slate-editor="true"],
+[role="textbox"],
+[class*="editorTextArea_"],
+[class*="textArea_LoqBEX"],
+[class*="channelTextArea_"],
+[class*="messageTextArea_"] {
+  color: rgba(255, 255, 255, .72) !important;
+  caret-color: #FFFFFF !important;
+}
+
+/* Restore the green speaking ring that the global box-shadow reset removed.
+   Discord marks the talking avatar with a hashed `speaking_` class. */
+[class*="speaking"], [class*="Speaking"], [data-speaking="true"] {
+  box-shadow: 0 0 0 2px #23a559 !important;
+  border-radius: 50% !important;
 }

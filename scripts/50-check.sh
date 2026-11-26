@@ -189,8 +189,12 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '["discord-canary"] = "0.88 override 0.84 override"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'Vencord' "$DISCSH" \
 	&& grep -Fq 'color: #FFFFFF !important;' "$DISCSS" \
+	&& grep -Fq '[class*="button"] svg *' "$DISCSS" \
+	&& grep -Fq 'rgba(255, 255, 255, .72)' "$DISCSS" \
+	&& grep -Fq 'data-slate-editor="true"' "$DISCSS" \
+	&& grep -Fq '#23a559' "$DISCSS" \
 	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
-	&& good "Discord and Canary use Vencord glass like Spotify" || bad "Discord glass injection missing"
+	&& good "Discord glass, white buttons, dim composer, green speaking ring" || bad "Discord glass injection missing"
 KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
 grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
 	&& [[ -f "$KVWEB" && -f "${KVWEB%.kvconfig}.svg" ]] \
