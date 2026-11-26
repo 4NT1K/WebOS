@@ -363,6 +363,7 @@ install_plasma_user() {
 	mf="$(manifest_of "$home")"
 	[[ -d "${RICE_SRC}/plasma" ]] || return 0
 	[[ -f "${RICE_SRC}/plasma/kdeglobals" ]] && install_file "${RICE_SRC}/plasma/kdeglobals" "${home}/.config/kdeglobals" "$mf" "$force" "$dry"
+	[[ -f "${RICE_SRC}/plasma/dolphinrc" ]] && install_file "${RICE_SRC}/plasma/dolphinrc" "${home}/.config/dolphinrc" "$mf" "$force" "$dry"
 	[[ -f "${RICE_SRC}/plasma/kcminputrc" ]] && install_file "${RICE_SRC}/plasma/kcminputrc" "${home}/.config/kcminputrc" "$mf" "$force" "$dry"
 	[[ -f "${RICE_SRC}/plasma/kwinrc" ]] && install_file "${RICE_SRC}/plasma/kwinrc" "${home}/.config/kwinrc" "$mf" "$force" "$dry"
 	[[ -f "${RICE_SRC}/plasma/kwinrulesrc" ]] && install_file "${RICE_SRC}/plasma/kwinrulesrc" "${home}/.config/kwinrulesrc" "$mf" "$force" "$dry"

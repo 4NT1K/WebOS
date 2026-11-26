@@ -101,6 +101,7 @@ www-client/firefox-bin
 
 # File manager and KDE settings (available in Hyprland too)
 kde-apps/dolphin
+kde-apps/ark
 kde-plasma/systemsettings
 
 # GPU: NVIDIA proprietary/open driver. Inert on AMD/Intel systems; the

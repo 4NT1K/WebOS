@@ -158,6 +158,14 @@ grep -q '"custom/power"' "$MONO/config.jsonc" \
 	&& good "mono dotfiles power widget present" || bad "mono dotfiles power widget missing"
 grep -q '#custom-power' "$MONO/style.css" \
 	&& good "mono dotfiles power widget styled" || bad "mono dotfiles power widget unstyled"
+DOLPHIN="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/plasma/dolphinrc"
+grep -q '^ColorScheme=Deep Black$' "$DOLPHIN" \
+	&& good "Dolphin uses Deep Black" || bad "Dolphin color scheme missing"
+grep -q 'plasma/dolphinrc' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-rice" \
+	&& good "Dolphin config is rice-managed" || bad "Dolphin config not installed"
+grep -qE '^kde-apps/ark$' "${WEBOS_ROOT}/config/sets/desktop" \
+	&& grep -qE '^kde-apps/ark zip$' "${WEBOS_ROOT}/config/package.use/00-global" \
+	&& good "archive extraction via ark" || bad "ark missing zip support"
 LOCK="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/hypr/hyprlock.conf"
 grep -q 'placeholder_text = <span foreground="##' "$LOCK" \
 	&& good "hyprlock placeholder color escaped" || bad "hyprlock placeholder markup truncated"
