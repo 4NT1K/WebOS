@@ -18,7 +18,10 @@
   --spice-card: transparent !important;
   --spice-main: transparent !important;
   --spice-main-elevated: transparent !important;
-  --spice-sidebar: transparent !important;
+  /* Keep this OPAQUE: Spotify uses --spice-sidebar as the solid stop in its
+     text-fade mask gradients. Setting it to transparent erased the song title
+     and artist text. Surfaces stay transparent via the explicit rules below. */
+  --spice-sidebar: #000000 !important;
   --spice-player: transparent !important;
   --background-base-20: transparent !important;
   --background-base-70: transparent !important;
