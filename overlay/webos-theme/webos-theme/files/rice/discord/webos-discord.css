@@ -383,6 +383,22 @@ section[role="dialog"][aria-label*="Picker" i],
   box-shadow: none !important;
 }
 
+/* CDP-verified: the selected GIF/Stickers/Emoji tab is
+   div.navButtonActive_58b0l2 inside the Expression Picker. The global
+   transparent reset removed its plate, leaving a floating white word. Give
+   that little pill a faint grey backing so it reads as a selected tab. */
+[role="dialog"][aria-label*="Picker" i] [class*="navButtonActive"],
+[role="dialog"][aria-label*="Picker" i] [class*="navButton_"][class*="active"],
+[role="dialog"][aria-label*="Picker" i] [class*="navItemActive"] {
+  background: rgba(255, 255, 255, .16) !important;
+  background-color: rgba(255, 255, 255, .16) !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  box-shadow: none !important;
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
 /* Profile / account popout: a faint readable grey plate. */
 [class*="accountPopout"][role="dialog"],
 [class*="popoutContainer"][role="dialog"] {
