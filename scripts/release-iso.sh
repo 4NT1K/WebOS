@@ -39,7 +39,10 @@ export WEBOS_FORCE="${WEBOS_FORCE:-1}"
 cd "${WEBOS_ROOT}"
 
 if [[ ${FRESH} -eq 1 ]]; then
-	step "release: full build (fetch -> bootstrap -> kernel -> rootfs -> iso)"
+	step "release: full clean build (distclean -> fetch -> bootstrap -> kernel -> rootfs -> iso)"
+	# bootstrap deliberately skips stage3 unpack when ${CHROOT}/etc exists,
+	# so 'all' alone would reuse the old tree. Remove it for a real fresh build.
+	./build.sh distclean
 	./build.sh all
 else
 	step "release: incremental build (kernel -> rootfs -> iso, reusing chroot)"
