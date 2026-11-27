@@ -351,3 +351,56 @@ button path, button circle, button rect, button g,
   background-color: rgba(239, 68, 68, .14) !important;
   border-radius: 6px !important;
 }
+
+/* ---------------------------------------------------------------------------
+   v1.034 follow-up: the dark glass on GIF/emoji/sticker menus was still
+   covering Discord's oversized positioning wrapper. Do not try to enumerate
+   every wrapper class name - client builds rename them. Instead:
+     1. every ancestor of a picker/menu is transparent;
+     2. only the INNERMOST element containing the picker paints the glass.
+   The nested :has() identifies that innermost element, so the surface always
+   hugs the real menu instead of the wrapper around it.
+--------------------------------------------------------------------------- */
+*:not(img):not(svg):not(video):not(canvas):has(
+  [class*="expressionPicker"], [class*="ExpressionPicker"],
+  [class*="emojiPicker"], [class*="EmojiPicker"],
+  [class*="gifPicker"], [class*="GifPicker"],
+  [class*="stickerPicker"], [class*="StickerPicker"],
+  [class*="menuContainer"], [class*="MenuContainer"],
+  [class*="submenu"], [class*="Submenu"],
+  [role="menu"], [role="listbox"]
+) {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+*:not(img):not(svg):not(video):not(canvas):has(
+  [class*="expressionPicker"], [class*="ExpressionPicker"],
+  [class*="emojiPicker"], [class*="EmojiPicker"],
+  [class*="gifPicker"], [class*="GifPicker"],
+  [class*="stickerPicker"], [class*="StickerPicker"],
+  [class*="menuContainer"], [class*="MenuContainer"],
+  [class*="submenu"], [class*="Submenu"],
+  [role="menu"], [role="listbox"]
+):not(:has(
+  *:has(
+    [class*="expressionPicker"], [class*="ExpressionPicker"],
+    [class*="emojiPicker"], [class*="EmojiPicker"],
+    [class*="gifPicker"], [class*="GifPicker"],
+    [class*="stickerPicker"], [class*="StickerPicker"],
+    [class*="menuContainer"], [class*="MenuContainer"],
+    [class*="submenu"], [class*="Submenu"],
+    [role="menu"], [role="listbox"]
+  )
+)) {
+  background: rgba(12, 12, 16, .96) !important;
+  background-color: rgba(12, 12, 16, .96) !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
