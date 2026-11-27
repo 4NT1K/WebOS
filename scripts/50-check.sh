@@ -201,8 +201,11 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'rgba(59, 130, 246, .22)' "$DISCSS" \
 	&& grep -Fq -- '--message-mentioned-background-default: rgba(239, 68, 68, .18)' "$DISCSS" \
 	&& grep -Fq 'inset 3px 0 0 #F23F42' "$DISCSS" \
+	&& grep -Fq '[role="option"]' "$DISCSS" \
+	&& grep -Fq ':focus-visible' "$DISCSS" \
+	&& grep -Fq 'outline-offset: -1px' "$DISCSS" \
 	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
-	&& good "Discord glass, white buttons, dim composer, green ring, blue mentions, red pings" || bad "Discord glass injection missing"
+	&& good "Discord glass, white buttons, dim composer, green ring, blue mentions, red pings, keyboard outlines" || bad "Discord glass injection missing"
 KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
 grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
 	&& [[ -f "$KVWEB" && -f "${KVWEB%.kvconfig}.svg" ]] \

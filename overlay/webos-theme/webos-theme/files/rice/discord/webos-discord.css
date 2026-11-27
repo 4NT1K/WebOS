@@ -171,3 +171,20 @@ button path, button circle, button rect, button g,
   border-color: rgba(248, 113, 113, .95) !important;
   color: #FECACA !important;
 }
+
+/* Arrow-key navigation through autocomplete, slash commands and dropdowns
+   marks the active row with aria-selected/data-selected/focused. Give that
+   row a thin inset outline instead of relying on Discord's removed fills. */
+:is(
+  [role="option"], [role="listitem"],
+  [class*="option"], [class*="Option"],
+  [class*="suggestion"], [class*="Suggestion"],
+  [class*="item_"], [class*="Item_"]
+):is(
+  [aria-selected="true"], [data-selected="true"], [data-selected],
+  [class*="focused_"], [class*="selected_"], :focus-visible
+) {
+  outline: 1px solid rgba(96, 165, 250, .9) !important;
+  outline-offset: -1px !important;
+  border-radius: 4px !important;
+}
