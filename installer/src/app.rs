@@ -20,6 +20,7 @@ use crate::config::{
 use crate::disk::{self, Disk};
 use crate::exec::{Msg, Runner};
 use crate::install;
+use crate::region;
 
 /// The pages, in order.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -179,6 +180,8 @@ pub struct App {
     pub yes: bool,
     pub log_path: PathBuf,
     pub prefilled: bool,
+    /// Where the seeded timezone/keymap came from, shown on the Region page.
+    pub region_source: String,
 
     rx: Option<Receiver<Msg>>,
 }
@@ -196,13 +199,13 @@ impl App {
         let disks = disk::enumerate();
         // The firmware we booted from is the best guess for the firmware we
         // should install for; the user can override it with `f`.
-        let cfg = InstallConfig {
-            firmware: if disk::is_efi() {
-                Firmware::Uefi
-            } else {
-                Firmware::Bios
-            },
-            ..Default::default()
+        // Region detection only seeds defaults; a loaded --config replaces the
+        // whole struct later, so unattended installs stay deterministic.
+        let (mut cfg, region_source) = region::default_with_detection();
+        cfg.firmware = if disk::is_efi() {
+            Firmware::Uefi
+        } else {
+            Firmware::Bios
         };
 
         Ok(Self {
@@ -229,6 +232,7 @@ impl App {
             yes,
             log_path: log.unwrap_or_else(|| PathBuf::from("/var/log/webos-install.log")),
             prefilled: false,
+            region_source,
             list_area: None,
             rx: None,
         })
@@ -240,6 +244,16 @@ impl App {
         self.prefilled = true;
         self.goto(Step::Summary);
         Ok(())
+    }
+
+    /// Re-run best-effort region detection from the Region page. Only the two
+    /// detected fields change; locale and everything the user already chose
+    /// are left alone.
+    pub fn redetect_region(&mut self) {
+        let (cfg, source) = region::default_with_detection();
+        self.cfg.timezone = cfg.timezone;
+        self.cfg.keymap = cfg.keymap;
+        self.region_source = source;
     }
 
     // ── the event-loop contract ──────────────────────────────────────────
@@ -433,18 +447,23 @@ impl App {
         }
     }
 
-    pub fn field_help(&self, step: Step, i: usize) -> &'static str {
-        match (step, i) {
+    pub fn field_help(&self, step: Step, i: usize) -> String {
+        let base = match (step, i) {
             (Step::Encryption, 0) => "at least 8 characters; required to unlock the disk at boot",
-            (Step::Locale, 0) => "e.g. Europe/Berlin",
+            (Step::Locale, 0) => "e.g. Europe/London",
             (Step::Locale, 1) => "e.g. en_US.UTF-8",
-            (Step::Locale, 2) => "e.g. us, de, dvorak",
+            (Step::Locale, 2) => "e.g. us, gb, de, dvorak",
             (Step::User, 0) => "only used for display",
             (Step::User, 1) => "lowercase letters, digits, _ and -",
             (Step::User, 2) => "the name of this machine",
             (Step::User, 3) => "used to log in and to sudo",
             (Step::User, 4) => "leave empty to disable the root account",
             _ => "",
+        };
+        match (step, i) {
+            (Step::Locale, 0) => format!("{base} · auto: {} · r re-detects", self.region_source),
+            (Step::Locale, 2) => format!("{base} · suggested from region; edit freely"),
+            _ => base.to_string(),
         }
     }
 
@@ -831,6 +850,7 @@ impl App {
             }
             KeyCode::BackTab => self.field = self.field.saturating_sub(1),
             KeyCode::Enter => self.begin_edit(),
+            KeyCode::Char('r') if self.step == Step::Locale => self.redetect_region(),
             KeyCode::Esc => self.goto(self.step.prev()),
             _ => {}
         }

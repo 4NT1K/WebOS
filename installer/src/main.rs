@@ -19,6 +19,7 @@ mod disk;
 mod exec;
 mod gui;
 mod install;
+mod region;
 mod rootfs;
 mod theme;
 mod ui;
@@ -68,6 +69,7 @@ KEYS:
     Tab / Shift-Tab   next / previous field
     ↑ ↓ ← →           move the selection
     Enter             confirm the page and continue
+    r (Region page)   re-detect timezone and suggested keymap
     Esc               go back a page
     Ctrl-C            quit without touching the disk
 

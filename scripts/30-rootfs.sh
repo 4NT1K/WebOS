@@ -201,6 +201,18 @@ done
 chroot_sh "test -x /usr/bin/webos-installer" || die "installer binary missing"
 info "installer: $(chroot_sh 'webos-installer --version' | tr -d '\r')"
 
+# The live medium must also keep time correctly while the wizard is open;
+# otherwise `hwclock --systohc` copies a drifted clock onto the new system.
+install -d "${CHROOT}/etc/chrony"
+cat > "${CHROOT}/etc/chrony/chrony.conf" <<'EOF'
+pool pool.ntp.org iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+EOF
+chroot_sh "if [ -x /etc/init.d/chronyd ]; then rc-update add chronyd default >/dev/null 2>&1 || true; fi" || true
+
 # ---------------------------------------------------------- branding ---------
 step "rootfs: installing branding"
 install -d "${CHROOT}/etc" "${CHROOT}/usr/lib/os-release.d" "${CHROOT}/etc/skel"

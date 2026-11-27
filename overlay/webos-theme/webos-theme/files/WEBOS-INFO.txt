@@ -26,7 +26,8 @@ QUICK START
 1. Boot the ISO (Ventoy, Rufus, balenaEtcher or dd). The live menu appears on
    tty1: 1) install, 2) root shell, 3) inspect hardware.
 2. Installer: choose disk, filesystem, swap, profile, dotfiles profile,
-   account, timezone/locale/keymap, then confirm the summary.
+   account, timezone/locale/keymap (timezone and keymap are auto-detected;
+   press `r` on the Region page to re-detect), then confirm the summary.
 3. Reboot, remove the medium, log in at SDDM (or the console for Minimal).
 4. First login applies the rice; waybar, wallpaper, notifications, portals and
    the polkit agent start automatically.
@@ -49,7 +50,10 @@ initramfs, newest kernel as GRUB default), together with theme r52.
 - Waybar: the centred MPRIS pill shows only icon, title and artist. Workspace
   click/scroll behaviour, Super+Escape lock, the SDDM dropdown and 170 Hz
   persistence are unchanged.
-- Existing installs receive the same tree with `sudo webos-update`.
+- Clock: `chronyd` is installed and enabled by default on the live medium and
+  on installed systems. The Region page auto-detects the timezone (local zone
+  first, then IP geolocation) and suggests a console keymap; both are editable.
+- Existing installs receive the same rice/tree with `sudo webos-update`.
 
 WHAT CHANGED IN 1.03
 --------------------

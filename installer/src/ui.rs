@@ -782,7 +782,10 @@ fn footer_keys(step: Step) -> &'static str {
         Step::Disk => "↑↓ choose    f firmware    Enter next    Esc back",
         Step::Filesystem => "↑↓ choose    Enter next    Esc back",
         Step::Encryption => "↑↓ choose    Enter next    Esc back",
-        Step::Locale | Step::User => {
+        Step::Locale => {
+            "↑↓ field    Enter edit    r re-detect    Tab next    Esc back    Ctrl-C quit"
+        }
+        Step::User => {
             "↑↓ field    Enter edit    Tab next    Esc back    Ctrl-C quit"
         }
         Step::Options => "↑↓ choose    Enter/Space cycle    Tab extras    Esc back",

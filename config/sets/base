@@ -9,6 +9,7 @@ sys-apps/man-db
 sys-apps/man-pages
 sys-apps/which
 net-misc/iputils
+net-misc/chrony
 sys-process/procps
 sys-process/psmisc
 sys-process/time

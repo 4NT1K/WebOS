@@ -614,6 +614,21 @@ chmod 444 /etc/machine-id /var/lib/dbus/machine-id 2>/dev/null || true
     s.push_str(&format!("echo '{}' > /etc/timezone\n", cfg.timezone));
     s.push_str("hwclock --systohc --utc || true\n\n");
 
+    // Keep the installed clock correct from first boot. `makestep` allows the
+    // large first correction on a fresh image without waiting for a slow slew,
+    // then chrony stays in normal slew mode.
+    s.push_str(
+        "if [ -d /etc/chrony ]; then\n\
+           cat > /etc/chrony/chrony.conf <<'EOF'\n\
+         pool pool.ntp.org iburst\n\
+         driftfile /var/lib/chrony/drift\n\
+         makestep 1.0 3\n\
+         rtcsync\n\
+         logdir /var/log/chrony\n\
+         EOF\n\
+         fi\n\n",
+    );
+
     // ── console keymap (OpenRC) ──────────────────────────────────────────
     s.push_str(&format!(
         "cat > /etc/conf.d/keymaps <<'EOF'\nkeymap=\"{k}\"\nwindowkeys=\"yes\"\nEOF\n\n",
@@ -705,6 +720,7 @@ printf 'Gaming stack was not selected during installation.\n' > /etc/webos/gamin
         "dbus",
         "elogind",
         "NetworkManager",
+        "chronyd",
         "syslog-ng",
         "acpid",
         "webos",

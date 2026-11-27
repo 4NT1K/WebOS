@@ -522,6 +522,31 @@ grep -qF 'Steam as a Flatpak fallback' "$CFG" \
 	&& good "Steam wording is honest" || bad "Steam wording still promises native install"
 grep -qF 'Flatpak is enabled by default' "$INSTALL" \
 	&& good "Flatpak Steam fallback recorded" || bad "Flatpak Steam fallback missing"
+
+# 15b. clock sync and region defaults must be part of a fresh image.
+MAIN="${WEBOS_ROOT}/installer/src/main.rs"
+REGION="${WEBOS_ROOT}/installer/src/region.rs"
+BASESET="${WEBOS_ROOT}/config/sets/base"
+ROOTFS="${WEBOS_ROOT}/scripts/30-rootfs.sh"
+grep -Fqx 'net-misc/chrony' "$BASESET" \
+	&& good "base set installs chrony" || bad "base set is missing chrony"
+grep -Fq '"chronyd",' "$INSTALL" \
+	&& good "installed target enables chronyd" || bad "installer does not enable chronyd"
+grep -Fq 'pool pool.ntp.org iburst' "$INSTALL" \
+	&& grep -Fq 'pool pool.ntp.org iburst' "$ROOTFS" \
+	&& good "live and installed targets get working chrony configs" \
+	|| bad "chrony config missing from live or installed target"
+grep -Fq 'rc-update add chronyd default' "$ROOTFS" \
+	&& good "live ISO enables chronyd" || bad "live ISO clock sync not enabled"
+grep -Fq 'mod region;' "$MAIN" \
+	&& good "installer includes region detection module" || bad "region module not compiled"
+grep -Fq 'pub fn detect() -> RegionGuess' "$REGION" \
+	&& good "timezone auto-detection present" || bad "timezone auto-detection missing"
+grep -Fq 'ipapi.co/json/' "$REGION" \
+	&& good "geolocation fallback present" || bad "geolocation fallback missing"
+grep -Fq 'pub fn redetect_region' "$APP" \
+	&& good "Region page can re-detect" || bad "Region re-detect missing"
+
 manifest_bad=0
 while IFS= read -r m; do
 	if grep -E '^(EBUILD|MISC) ' "$m" \
