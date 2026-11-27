@@ -183,7 +183,7 @@ container (see `AUDIT.md` → "Final build": ISO built and verified).
 **Option A: Use a Gentoo Host (Recommended)**
 ```bash
 # On a Gentoo Linux system with root access:
-cd /home/brah/sanusos
+cd /home/brah/WebOS
 sudo emerge sys-fs/squashfs-tools app-cdr/xorriso
 sudo ./build.sh all
 ```
@@ -194,7 +194,7 @@ sudo ./build.sh all
 sudo pacman -S squashfs-tools libisoburn
 
 # Run with force flag (likely to fail):
-cd /home/brah/sanusos
+cd /home/brah/WebOS
 sudo WEBOS_FORCE=1 ./build.sh all
 ```
 

@@ -12,7 +12,7 @@ assert_stage_order rootfs
 trap_umount
 mount_chroot
 
-# Legacy cleanup: earlier builds used sanus-* names. A reused chroot still has
+# Legacy cleanup: earlier builds used pre-rebrand names. A reused chroot still has
 # those packages installed, which would leave duplicate services/files next to
 # the new webos-* ones.
 # The legacy kernel packages are removed in 20-kernel.sh before the new

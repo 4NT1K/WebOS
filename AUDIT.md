@@ -86,7 +86,7 @@ To complete Phase 7, you need:
 2. **Root/sudo access** with password
 3. **Install tools**: `sudo pacman -S squashfs-tools libisoburn` (on CachyOS)
    OR `sudo emerge sys-fs/squashfs-tools app-cdr/xorriso` (on Gentoo)
-4. **Run**: `cd /home/brah/sanusos && sudo ./build.sh all` (or with WEBOS_FORCE=1 on non-Gentoo)
+4. **Run**: `cd /home/brah/WebOS && sudo ./build.sh all` (or with WEBOS_FORCE=1 on non-Gentoo)
 
 ---
 
@@ -248,7 +248,7 @@ The codebase is production-ready for building on a proper Gentoo host.
 
 Host cannot build the ISO (no root, no ISO tooling), so the build is being run
 inside a privileged Gentoo stage3 container with the repo bind-mounted at
-`/sanusos`.
+`/WebOS`.
 
 Container build fixes applied so far:
 

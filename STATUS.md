@@ -34,7 +34,7 @@ _Last update: 2026-11-27 — v1.034 (Ashen): fresh ISO with kernel 6.12.119 LTS,
 - The installer progress panel lists finished stages, shows the real stage
   count, and captures helper output into the progress/log panel so nothing
   paints over the TUI.
-- All `sanus-*` names renamed to `webos-*` (packages, binaries, paths, overlay).
+- All legacy pre-rebrand names renamed to `webos-*` (packages, binaries, paths, overlay).
 - Installer toggles: Firefox (firefox-bin), Discord, OpenCode, Spotify — prebuilt.
 - Steam/Wine/winetricks/protontricks/goverlay dropped: image is 64-bit only
   (`ABI_X86="64"`); Steam needs multilib. Kernel has IA32 emulation, so Flatpak
@@ -44,7 +44,7 @@ _Last update: 2026-11-27 — v1.034 (Ashen): fresh ISO with kernel 6.12.119 LTS,
   modules, framed in a soft-white box with greyscale output/separators.
 - `/usr/share/webos/WEBOS-INFO.txt` ships a full system brief for OpenCode.
 - Reused chroot: Portage config refreshed, profile symlink repointed, legacy
-  `sanus-*` packages removed.
+  Legacy pre-rebrand packages removed.
 
 ### Historical v1.01 ISO artifact (superseded by v1.03)
 

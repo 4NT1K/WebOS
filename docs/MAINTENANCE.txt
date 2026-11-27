@@ -8,7 +8,7 @@ installer, shipping updates, or cutting a release. Read this before editing.
 --------------------------------------------------------------------------------
 0. CRITICAL NAMING FACT - READ FIRST
 --------------------------------------------------------------------------------
-The kernel package is NOT named sanus-kernel.
+The kernel package is named webos-kernel.
 
   Current and correct names:
     sys-kernel/webos-kernel
@@ -17,17 +17,18 @@ The kernel package is NOT named sanus-kernel.
     installed image:      /boot/vmlinuz-6.12.119-webos
     installed modules:    /usr/src/linux-6.12 (source dir)
 
-  "sanus-kernel" / "sanus-kernel-sources" are the OLD pre-rebrand names. They
-  appear in exactly one place: the legacy-cleanup lines in
-  scripts/20-kernel.sh and scripts/30-rootfs.sh, whose JOB is to unmerge those
-  stale packages from a reused build chroot. They MUST keep the old spelling or
-  the cleanup breaks and the new kernel hits a file collision on /boot/vmlinuz-*
-  and /usr/src/linux-6.12. Do not "modernize" those strings.
+  The old pre-rebrand kernel package names are retained ONLY in the
+  legacy-cleanup lines in scripts/20-kernel.sh and scripts/30-rootfs.sh, whose
+  JOB is to unmerge stale packages from a reused build chroot. They must keep
+  the old spelling or the cleanup breaks and the new kernel hits a file
+  collision on /boot/vmlinuz-* and /usr/src/linux-6.12. Those strings are
+  build-time only and are never installed in the ISO.
 
   There is no package called "web-kernel" either. It is webos-kernel.
 
-  A clean build has zero sanus-* packages installed. The shipped ISO, overlay,
-  installer source, branding and config contain NO sanus references at all.
+  A clean build has zero legacy pre-rebrand packages installed. The shipped
+  ISO, overlay, installer source, branding and config contain no references
+  to the old product name.
 
 --------------------------------------------------------------------------------
 1. REPO FACTS
@@ -38,10 +39,8 @@ The kernel package is NOT named sanus-kernel.
   Version source of truth: branding/version
   Current release: WebOS 1.034 "Ashen", ISO build/webos-1.034-Ashen-amd64.iso
 
-  NOTE: the local folder is still named "sanusos" for historical reasons. It is
-  only a local path, not part of the product. Rename it to /home/brah/webos (and
-  the container mount to /webos) only when no build is running, updating every
-  path reference in docs/ and the helper scripts. Do not do it mid-build.
+  NOTE: the local source folder is /home/brah/WebOS (container mount /webos).
+  It is only a local path, not part of the product. Do not rename it mid-build.
 
 --------------------------------------------------------------------------------
 2. THE TWO UPDATE CHANNELS
@@ -136,8 +135,8 @@ Everything hinges on this distinction.
      (it pulls main, so push first). Check /var/log/webos-update.log.
 
   e) For Channel B changes, rebuild inside the container:
-       docker exec -w /sanusos webos-build ./build.sh rootfs
-       docker exec -w /sanusos webos-build ./build.sh iso
+       docker exec -w /webos webos-build ./build.sh rootfs
+       docker exec -w /webos webos-build ./build.sh iso
      or the full pipeline: ./build.sh all
      Stages: fetch, bootstrap, kernel, rootfs, iso. Output is
      build/webos-1.034-Ashen-amd64.iso.
@@ -161,7 +160,7 @@ Everything hinges on this distinction.
 --------------------------------------------------------------------------------
   * Kernel fragment change needs a forced kernel rebuild; 20-kernel.sh checks
     the installed image against the fragment.
-  * Reused chroots must have legacy sanus-* kernel packages removed first or
+  * Reused chroots must have legacy pre-rebrand kernel packages removed first or
     webos-kernel collides on /boot/vmlinuz-* (fixed in 20-kernel.sh).
   * webos-kernel-sources Manifest BLAKE2B must be HEX, not base64, or Portage
     renames the distfile and unpack fails. webos-kernel/Manifest is fine.

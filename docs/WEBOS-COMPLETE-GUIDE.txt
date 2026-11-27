@@ -116,7 +116,7 @@ Maintainer-machine context (outside the repo)
   /home/brah/release-v102.sh           final release script for v1.021
   /dev/sdc1, label Ventoy               USB target
   /run/media/brah/Ventoy               Ventoy mountpoint (exFAT)
-  docker container webos-build          build container; root is /sanusos
+  docker container webos-build          build container; root is /webos
   GitHub repo 4NT1K/WebOS              releases v1.0, v1.01; v1.021 to publish
 
 ================================================================================
@@ -901,8 +901,8 @@ grep -RIn --exclude-dir=.git --exclude-dir=build -- '--binpkg-respect-use=n\|--g
 
 # Build container / stages
 docker start webos-build
-docker exec webos-build bash -lc 'cd /sanusos && ./build.sh status'
-docker exec webos-build bash -lc 'cd /sanusos && ./build.sh rootfs > build/v102-rootfs.log 2>&1; echo $? > build/v102-rootfs.rc'
+docker exec webos-build bash -lc 'cd /webos && ./build.sh status'
+docker exec webos-build bash -lc 'cd /webos && ./build.sh rootfs > build/v102-rootfs.log 2>&1; echo $? > build/v102-rootfs.rc'
 # Final gate
 /home/brah/release-v102.sh
 

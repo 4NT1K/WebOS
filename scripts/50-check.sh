@@ -355,6 +355,16 @@ grep -qF 'copy /b webos-1.034-Ashen-amd64.iso.part-* webos-1.034-Ashen-amd64.iso
 grep -qF 'WEBOS_VERSION_FULL' "${WEBOS_ROOT}/scripts/release-iso.sh" \
 	&& good "release helper derives ISO name from branding" || bad "release helper hard-codes the ISO name"
 
+# 9b. nothing that ships in the ISO may carry the old product name. The only
+# permitted occurrences are build-time legacy-cleanup strings in 20-kernel.sh
+# and 30-rootfs.sh, which are intentionally excluded from the shipped scope.
+SHIPPED_SCOPE=(overlay branding config installer/src kernel)
+if git -C "${WEBOS_ROOT}" grep -in -e 'sanus' -- "${SHIPPED_SCOPE[@]}" >/dev/null 2>&1; then
+	bad "shipped tree still references the old product name"
+else
+	good "shipped tree has no old-product references"
+fi
+
 # 10. power widget in both profiles, with safe mono migration
 WAYBAR_DIR="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files"
 for cfg in "${WAYBAR_DIR}/rice/waybar/config.jsonc" \
