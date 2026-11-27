@@ -420,3 +420,22 @@ nav[aria-label="Servers sidebar"] [class*="item_"][class*="visible_"]:not([class
   width: 8px !important;
   height: 8px !important;
 }
+
+/* Live CDP showed these indicator elements are still see-through: the channel
+   unread pill (unreadPill_*), new-content dots and the guild notification
+   circles (numberBadge_*) all lose their paint to the global transparent
+   reset. Paint them opaque white so they stay visible on the wallpaper. */
+[class*="unreadPill"],
+[class*="indicatorDot"],
+[class*="newContentDot"],
+nav[aria-label="Servers sidebar"] [class*="numberBadge"],
+nav[aria-label="Servers sidebar"] [class*="lowerBadge"] > * {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  color: transparent !important;
+  font-size: 0 !important;
+}
