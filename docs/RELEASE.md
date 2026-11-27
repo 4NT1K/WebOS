@@ -12,15 +12,15 @@ The single source of truth is `branding/version`:
 ```sh
 WEBOS_NAME="WebOS"
 WEBOS_CODENAME="Ashen"
-WEBOS_VERSION="1.03"
-WEBOS_VERSION_FULL="1.03-Ashen"
+WEBOS_VERSION="1.034"
+WEBOS_VERSION_FULL="1.034-Ashen"
 WEBOS_ID="webos"
 WEBOS_HOME="https://github.com/4NT1K/WebOS"
 WEBOS_KERNEL_SERIES="6.12"
 ```
 
-* `WEBOS_VERSION` — the marketing version (`1.03`). Used in the ISO label.
-* `WEBOS_VERSION_FULL` — `WEBOS_VERSION` + codename (`1.03-Ashen`). Used in
+* `WEBOS_VERSION` — the marketing version (`1.034`). Used in the ISO label.
+* `WEBOS_VERSION_FULL` — `WEBOS_VERSION` + codename (`1.034-Ashen`). Used in
   `os-release`, the ISO filename, and the live GRUB menu.
 * `WEBOS_CODENAME` — the release name (`Ashen`).
 
@@ -28,7 +28,7 @@ The ISO filename is derived, not written down anywhere:
 
 ```
 build/${WEBOS_ID}-${WEBOS_VERSION_FULL}-${WEBOS_ARCH}.iso
-→ build/webos-1.03-Ashen-amd64.iso
+→ build/webos-1.034-Ashen-amd64.iso
 ```
 
 **The installer has its own version.** `installer/Cargo.toml`'s `version`
@@ -129,7 +129,7 @@ cat build/.kernel-release        # e.g. 6.12.119-webos
 Never publish an ISO you have not booted.
 
 ```bash
-qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/webos-1.03-Ashen-amd64.iso -boot d
+qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/webos-1.034-Ashen-amd64.iso -boot d
 ```
 
 - [ ] GRUB menu appears with the three WebOS entries and the "first hard
@@ -144,7 +144,7 @@ qemu-system-x86_64 -m 4096 -enable-kvm -cdrom build/webos-1.03-Ashen-amd64.iso -
 - [ ] The installed system does **not** autologin and does **not** show the
       live menu (`/etc/webos-live` is gone, `/etc/inittab` is restored).
 - [ ] `uname -r` reports `…-webos`.
-- [ ] `cat /etc/os-release` reports `ID=webos`, `VERSION="1.03 (Ashen)"`.
+- [ ] `cat /etc/os-release` reports `ID=webos`, `VERSION="1.034 (Ashen)"`.
 - [ ] `webos-rice --doctor` is clean; the desktop is black with near-opaque
       greyscale panels and no ice-blue accents.
 - [ ] Flatpak Steam installs and launches from Flathub
@@ -172,7 +172,7 @@ Write notes that say what changed, not what the ISO contains. Include:
 A short template:
 
 ```markdown
-# WebOS 1.03 "Ashen"
+# WebOS 1.034 "Ashen"
 
 Kernel: 6.12.119-webos (stock LTS + WebOS config fragment)
 Base:   Gentoo <snapshot date>, profile webos:default/linux/amd64/webos
@@ -197,28 +197,28 @@ Installer: webos-installer 1.0.0
 
 ## 7. Checksums and signing
 
-`40-iso.sh` already writes `build/webos-1.03-Ashen-amd64.iso.sha256`. Verify it,
+`40-iso.sh` already writes `build/webos-1.034-Ashen-amd64.iso.sha256`. Verify it,
 then produce stronger artefacts:
 
 ```bash
 cd build
-sha256sum -c webos-1.03-Ashen-amd64.iso.sha256
+sha256sum -c webos-1.034-Ashen-amd64.iso.sha256
 
 # BLAKE2b alongside SHA-256
-b2sum webos-1.03-Ashen-amd64.iso > webos-1.03-Ashen-amd64.iso.b2
+b2sum webos-1.034-Ashen-amd64.iso > webos-1.034-Ashen-amd64.iso.b2
 
 # Detached, ASCII-armoured signature
-gpg --armor --detach-sign webos-1.03-Ashen-amd64.iso
+gpg --armor --detach-sign webos-1.034-Ashen-amd64.iso
 ```
 
 Publish, together:
 
 ```
-webos-1.03-Ashen-amd64.iso
-webos-1.03-Ashen-amd64.iso.sha256
-webos-1.03-Ashen-amd64.iso.b2
-webos-1.03-Ashen-amd64.iso.asc
-RELEASE-NOTES-1.03-Ashen.md
+webos-1.034-Ashen-amd64.iso
+webos-1.034-Ashen-amd64.iso.sha256
+webos-1.034-Ashen-amd64.iso.b2
+webos-1.034-Ashen-amd64.iso.asc
+RELEASE-NOTES-1.034-Ashen.md
 ```
 
 Announce the **signing key fingerprint** in the release notes and on the
@@ -256,8 +256,8 @@ enough to verify a download, not to reproduce it.
 From the project's git checkout:
 
 ```bash
-git tag -s v1.03 -m "WebOS 1.03 (Ashen)"
-git push origin v1.03
+git tag -s v1.034 -m "WebOS 1.034 (Ashen)"
+git push origin v1.034
 ```
 
 A source-only patch release does not change the ISO identity. Tag it

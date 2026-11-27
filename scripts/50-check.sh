@@ -180,7 +180,7 @@ grep -Fq 'class = "^(spotify|Spotify)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'LD_AUDIT' "$SPOTLAUNCH" \
 	&& grep -Fq -- '--ozone-platform=x11' "$SPOTLAUNCH" \
 	&& grep -Fq 'webos-spotify-transparency' "$SPOTSHIM" \
-	&& grep -q 'webos-spotify-transparency' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
+	&& grep -q 'webos-spotify-transparency' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r52.ebuild" \
 	&& good "Spotify transparent window, glass veil, solid white text" || bad "Spotify still has a grey veil"
 DISCSS="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/rice/discord/webos-discord.css"
 DISCSH="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/system/webos-discord-theme"
@@ -206,7 +206,7 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '[role="option"]' "$DISCSS" \
 	&& grep -Fq ':focus-visible' "$DISCSS" \
 	&& grep -Fq 'outline-offset: -1px' "$DISCSS" \
-	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
+	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r52.ebuild" \
 	&& good "Discord glass, white buttons, dim composer, blue ring, blue mentions, red pings, keyboard outlines" || bad "Discord glass injection missing"
 grep -Fq '[class*="volume_"] [class*="progressFill_"]' "$DISCSS" \
 	&& grep -Fq '[class*="progressKnob_"]' "$DISCSS" \
@@ -316,13 +316,13 @@ grep -q 'for version in ("0.1", "1.0")' "$MUSIC" && grep -q 'GtkLayerShell.Edge.
 	&& good "music uses layer-shell below the top bar" || bad "music fallback leaves an empty window"
 grep -Fq 'class = "^(webos-music)$"' "$RICE/hypr/hyprland.lua" \
 	&& good "music dropdown excluded from blur" || bad "music dropdown not excluded from blur"
-grep -q 'webos-theme-1.0-r51.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "ISO pins theme r51" || bad "ISO still pins an older theme"
+grep -q 'webos-theme-1.0-r52.ebuild' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "ISO pins theme r52" || bad "ISO still pins an older theme"
 grep -q 'gtk-layer-shell\[introspection\]' \
-	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
+	"${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r52.ebuild" \
 	&& good "theme requires layer-shell introspection" || bad "theme can install without introspection"
 
-# 9. v1.03 identity and shipped guide
+# 9. v1.034 identity and shipped guide
 for f in branding/version branding/os-release branding/lsb-release branding/issue \
 	config/make.conf overlay/profiles/default/linux/amd64/webos/make.defaults \
 	overlay/profiles/default/linux/arm64/webos/make.defaults \
@@ -330,21 +330,26 @@ for f in branding/version branding/os-release branding/lsb-release branding/issu
 	overlay/webos-theme/webos-theme/files/system/webos-update \
 	overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc \
 	installer/src/main.rs; do
-	grep -q '1\.03' "${WEBOS_ROOT}/${f}" \
-		&& good "v1.03 identity ${f}" || bad "stale version in ${f}"
+	grep -q '1\.034' "${WEBOS_ROOT}/${f}" \
+		&& good "v1.034 identity ${f}" || bad "stale version in ${f}"
 done
 grep -qF 'ANSI_COLOR="38;2;216;216;216"' "${WEBOS_ROOT}/branding/os-release" \
 	&& good "greyscale ANSI_COLOR" || bad "ANSI_COLOR is not greyscale"
 GUIDE="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt"
-for pat in 'WebOS 1.03' 'WHAT CHANGED IN 1.03' 'webos-theme-1.0-r51' \
+for pat in 'WebOS 1.034' 'WHAT CHANGED IN 1.034' 'webos-theme-1.0-r52' \
 	'--binpkg-changed-deps=n' 'loginctl' 'per-core CPU' \
-	'WEBOS_VERSION=1.03-Ashen'; do
+	'WEBOS_VERSION=1.034-Ashen'; do
 	grep -qF -- "$pat" "$GUIDE" && good "guide: ${pat}" || bad "guide missing: ${pat}"
 done
-[[ -f "${WEBOS_ROOT}/docs/releases/v1.03.md" ]] \
-	&& good "v1.03 release notes" || bad "missing docs/releases/v1.03.md"
-grep -qF 'webos-1.03-Ashen-amd64.iso' "${WEBOS_ROOT}/docs/releases/v1.03.md" \
-	&& good "v1.03 asset names" || bad "v1.03 notes have wrong asset names"
+[[ -f "${WEBOS_ROOT}/docs/releases/v1.034.md" ]] \
+	&& good "v1.034 release notes" || bad "missing docs/releases/v1.034.md"
+NOTES="${WEBOS_ROOT}/docs/releases/v1.034.md"
+grep -qF 'webos-1.034-Ashen-amd64.iso' "$NOTES" \
+	&& good "v1.034 asset names" || bad "v1.034 notes have wrong asset names"
+grep -qF 'cat webos-1.034-Ashen-amd64.iso.part-* > webos-1.034-Ashen-amd64.iso' "$NOTES" \
+	&& good "v1.034 Linux reassembly command" || bad "v1.034 notes lack Linux reassembly"
+grep -qF 'copy /b webos-1.034-Ashen-amd64.iso.part-* webos-1.034-Ashen-amd64.iso' "$NOTES" \
+	&& good "v1.034 Windows reassembly command" || bad "v1.034 notes lack Windows reassembly"
 
 # 10. power widget in both profiles, with safe mono migration
 WAYBAR_DIR="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/files"
@@ -399,18 +404,18 @@ if grep -qF 'hyprctl dispatch dpms' "$HYPRLIDLE"; then
 else good "old dpms dispatch gone"; fi
 
 # 12. theme revision reaches installed machines
-THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild"
-[[ -f "$THEME" ]] && good "r51 theme ebuild" || bad "missing r51 theme ebuild"
+THEME="${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r52.ebuild"
+[[ -f "$THEME" ]] && good "r52 theme ebuild" || bad "missing r52 theme ebuild"
 grep -qF 'gui-libs/gtk-layer-shell[introspection]' "$THEME" \
-	&& good "r51 ships layer-shell introspection" || bad "r51 lacks introspection dependency"
-grep -qF 'THEME_EBUILD="webos-theme-1.0-r51.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
-	&& good "rootfs pins r51" || bad "rootfs does not pin r51"
+	&& good "r52 ships layer-shell introspection" || bad "r52 lacks introspection dependency"
+grep -qF 'THEME_EBUILD="webos-theme-1.0-r52.ebuild"' "${WEBOS_ROOT}/scripts/30-rootfs.sh" \
+	&& good "rootfs pins r52" || bad "rootfs does not pin r52"
 if grep -qF 'media-sound/cava' "$THEME"; then
-	bad "r51 still depends on cava"
-else good "r51 has no cava dependency"; fi
+	bad "r52 still depends on cava"
+else good "r52 has no cava dependency"; fi
 if grep -qF 'webos-visualizer' "$THEME"; then
-	bad "r51 still installs webos-visualizer"
-else good "r51 does not install webos-visualizer"; fi
+	bad "r52 still installs webos-visualizer"
+else good "r52 does not install webos-visualizer"; fi
 if grep -qE '^media-sound/cava$' "${WEBOS_ROOT}/config/sets/desktop"; then
 	bad "fresh installs still pull in cava"
 else good "fresh installs omit cava"; fi

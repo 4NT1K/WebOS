@@ -45,7 +45,7 @@ use config::InstallConfig;
 
 // The WebOS release version is the user-facing installer version. Keep the
 // crate version in Cargo.toml for dependency bookkeeping only.
-const VERSION: &str = "1.03";
+const VERSION: &str = "1.034";
 
 const USAGE: &str = "\
 WebOS installer

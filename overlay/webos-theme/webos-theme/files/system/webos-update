@@ -28,7 +28,7 @@
 #   webos-update --quiet         only warnings and the summary
 set -uo pipefail
 
-VERSION="1.03.3"
+VERSION="1.034"
 LOG="/var/log/webos-update.log"
 STAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 

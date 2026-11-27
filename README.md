@@ -8,7 +8,7 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 
 | | |
 |---|---|
-| **Version** | 1.03 (Ashen) |
+| **Version** | 1.034 (Ashen) |
 | **Base** | Gentoo (OpenRC + elogind, WebOS overlay/profile) |
 | **Kernel** | `sys-kernel/webos-kernel` — 6.12.119 LTS + gaming-oriented tuning, `-webos` localversion |
 | **Init** | OpenRC (default) |
@@ -17,17 +17,19 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 | **Filesystem** | btrfs (default, subvolumes), ext4, xfs; LUKS2 option |
 | **Bootloader** | GRUB2 (BIOS + UEFI) |
 | **Arch** | amd64 (64-bit image, `ABI_X86="64"`) |
-| **ISO** | `webos-1.03-Ashen-amd64.iso` |
+| **ISO** | `webos-1.034-Ashen-amd64.iso` |
 
-**Security update `v1.03.2`** ships the 6.12.119 LTS kernel through the WebOS
-overlay and supersedes the broken `v1.03.1` ebuilds. The 1.03 ISO identity is
-unchanged; installed systems pick up the new kernel with `sudo webos-update`.
+**`v1.034` is a fresh ISO.** It folds in the 6.12.119 LTS security kernel and the
+corrected boot chain from `v1.03.1`–`v1.03.3`, plus the newest rice: fitted
+Discord/Spotify glass menus, a blue speaking ring, red `@mention` rows and
+solid-white player text. Existing 1.03 systems get the same tree with
+`sudo webos-update`.
 
 WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look — floating rounded top-bar capsules, near-opaque panels and rounded windows — prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
 
-## What’s in 1.03
+## What’s in 1.034
 
-- **Clean rebuild:** built from a fresh stage3 chroot populated only from this repository, so no maintainer accounts, browser profiles, game saves or local overrides are baked into the image. The theme is `webos-theme-1.0-r51` with `webos-theme-1.0-r49` installers still upgradeable via `sudo webos-update`.
+- **Clean rebuild:** built from a fresh stage3 chroot populated only from this repository, so no maintainer accounts, browser profiles, game saves or local overrides are baked into the image. The theme is `webos-theme-1.0-r52` with `webos-theme-1.0-r49` installers still upgradeable via `sudo webos-update`.
 - **Hyprland config that actually loads:** Hyprland 0.57 reads `~/.config/hypr/hyprland.lua` and ignores `hyprland.conf`. The rice is now a Lua config plus a `webos-colors.lua` palette module, with `~/.config/hypr/local.lua` loaded for personal tweaks.
 - **Session reliability:** SDDM shows exactly the one session chosen in the installer (WebOS or regular Plasma), seeded in `/var/lib/sddm/state.conf`. Portals and a polkit agent start from `webos-portals` on OpenRC; `webos-session` applies the rice before launch; waybar and fastfetch have system-wide fallbacks and reliable autostart.
 - **One look, no appearance page:** the refined Ashen greyscale rice — floating rounded top-bar capsules on a near-opaque bar, rounded windows — is the only WebOS appearance and is applied to every install. `webos-dotfiles` remains available for advanced users but the installer no longer asks.
@@ -38,7 +40,7 @@ WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look
 - **Hyprland UI:** near-opaque top bar (waybar) — left: clickable workspace boxes and window title; centre: mpris pill (icon, title and artist only — no stuck track time, no playlist name) that follows Spotify first and then BetterSoundCloud, and toggles the music dropdown; right: ▧ waypaper, ⟳ update badge, clock, tray, ▾ performance, ⏻ power. `webos-menu` backs Super+D / Super+R, Super+M toggles a compact 340×340 music card with lightly frosted cover art, a spinning vinyl whose centre label is the current cover, bold pure black/white title/artist at the top left, an elapsed/total progress bar with borderless playback buttons directly beneath it, and a slim flat vertical volume bar on the right edge. `webos-stats` opens the corner performance panel. Both dropdowns dismiss on outside click.
 - **Updates & packaging:** updates are not automatic — run `sudo webos-update` yourself when the Waybar badge appears. `webos-update` handles sync/@world/depclean/config/kernel+GRUB/flatpak/rice. Gentoo x86-64-v3 binpkgs are used by default via `--getbinpkg`, with `--fast`, `--strict-use`, `--buildpkg` and `--no-compile` controls; third-party overlays ship in the image so @world stays resolvable.
 
-> **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.03 without adding X11 session packages.
+> **Plasma & X11:** regular Plasma 6.8.3 in this image is **Wayland-only** (`startplasma-wayland`, no `startplasma-x11` / Plasma X11 session). X11 Plasma is not available in 1.034 without adding X11 session packages.
 
 ## Colourways (dynamic accents)
 
@@ -51,7 +53,7 @@ The Deep Black base and grey text ramp never change, so CJK glyphs and kaomoji s
 
 Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install to `/usr/share/webos/colourways/`.
 
-## Recent desktop implementations (theme r41–r51)
+## Recent desktop implementations (theme r41–r52)
 
 - **Spinning vinyl:** a rotating vinyl record drawn in GTK/Cairo has grooves, a fixed light reflection and the current cover as the centre label. It spins only while Spotify plays, and the cover is treated as the label rather than the whole card background.
 - **High-contrast everything:** `art_is_light()` drives pure white or black text, buttons, the seek bar and the volume bar. On dark art they are plain white; on light art they are plain black. No glows, outlines or button boxes, so nothing blends into the cover. Artwork detection never blocks the GTK thread.
@@ -62,7 +64,7 @@ Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install 
 - **Long titles:** a title too wide for the card wraps onto a second line instead of being cut off.
 - **Centred music pill:** the Spotify MPRIS pill sits alone at the centre of the top bar and shows only icon, title and artist. No audio visualizer is installed.
 - **Cleaner updater:** retired Vesktop entries are removed from custom Portage sets as well as `world`, so `@world` stops reinstalling it and the update badge clears after a successful run.
-- **Packaging:** these changes ship in `webos-theme-1.0-r51`; theme r46 also added animation to floating window toggles.
+- **Packaging:** these changes ship in `webos-theme-1.0-r52`; theme r46 also added animation to floating window toggles.
 
 ## Screenshots
 
@@ -92,13 +94,13 @@ Download the latest release ISO (split parts + checksums): **[Releases](https://
 
 Reassemble and verify (Linux/macOS):
 ```bash
-cat webos-1.03-Ashen-amd64.iso.part-* > webos-1.03-Ashen-amd64.iso
+cat webos-1.034-Ashen-amd64.iso.part-* > webos-1.034-Ashen-amd64.iso
 sha256sum -c SHA256SUMS.txt
 ```
 
 Windows (PowerShell/CMD):
 ```bat
-copy /b webos-1.03-Ashen-amd64.iso.part-* webos-1.03-Ashen-amd64.iso
+copy /b webos-1.034-Ashen-amd64.iso.part-* webos-1.034-Ashen-amd64.iso
 ```
 
 Flash with Ventoy, Rufus, balenaEtcher, or `dd` (UEFI supported). Boot the live medium and run:
@@ -167,7 +169,7 @@ sudo ./build.sh iso        # squashfs/initramfs/GRUB hybrid ISO
 sudo ./build.sh all
 ```
 
-Output: `build/webos-1.03-Ashen-amd64.iso`
+Output: `build/webos-1.034-Ashen-amd64.iso`
 
 See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md), and [`docs/RELEASE.md`](docs/RELEASE.md) for details. If you are maintaining WebOS or pushing out updates, start with [`docs/MAINTENANCE.txt`](docs/MAINTENANCE.txt).
 
@@ -180,7 +182,7 @@ See [`docs/BUILD.md`](docs/BUILD.md), [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE
 
 ## Roadmap
 
-Planned work beyond 1.03 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
+Planned work beyond 1.034 is tracked in [`ROADMAP.md`](ROADMAP.md) (multilib/native Steam, encryption/install UX improvements, handheld support, richer UI shell experiments, etc.).
 
 ## License
 

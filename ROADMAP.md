@@ -1,6 +1,6 @@
 # WebOS roadmap
 
-Planned work beyond **v1.03 (Ashen)**. Nothing here is a promise of a date; items
+Planned work beyond **v1.034 (Ashen)**. Nothing here is a promise of a date; items
 move up when they unblock gaming or the install experience.
 
 ## Next release (priority)

@@ -1,5 +1,5 @@
 ================================================================================
-WEBOS 1.03 "ASHEN" - MAINTENANCE / UPDATE HANDOFF
+WEBOS 1.034 "ASHEN" - MAINTENANCE / UPDATE HANDOFF
 ================================================================================
 
 Audience: a future AI assistant (or the maintainer) tasked with changing the
@@ -36,7 +36,7 @@ The kernel package is NOT named sanus-kernel.
   Git remote:     https://github.com/4NT1K/WebOS.git  (branch main)
   Build container: webos-build  (Docker, /home/brah/WebOS mounted at /webos)
   Version source of truth: branding/version
-  Current release: WebOS 1.03 "Ashen", ISO build/webos-1.03-Ashen-amd64.iso
+  Current release: WebOS 1.034 "Ashen", ISO build/webos-1.034-Ashen-amd64.iso
 
   NOTE: the local folder is still named "sanusos" for historical reasons. It is
   only a local path, not part of the product. Rename it to /home/brah/webos (and
@@ -73,8 +73,8 @@ Everything hinges on this distinction.
   Keybinds, waybar modules/CSS, fastfetch card, hyprland rules, transparency,
   zram boot glue, SDDM seeding, WEBOS-INFO.txt
       -> overlay/webos-theme/webos-theme/files/
-      -> bump the theme ebuild revision (currently webos-theme-1.0-r51;
-         next webos-theme-1.0-r51), regenerate Manifest if files changed.
+      -> bump the theme ebuild revision (currently webos-theme-1.0-r52;
+         next webos-theme-1.0-r53), regenerate Manifest if files changed.
 
   webos-update, webos-rice, webos-fastfetch, system helpers
       -> overlay/webos-theme/webos-theme/files/system/
@@ -140,7 +140,7 @@ Everything hinges on this distinction.
        docker exec -w /sanusos webos-build ./build.sh iso
      or the full pipeline: ./build.sh all
      Stages: fetch, bootstrap, kernel, rootfs, iso. Output is
-     build/webos-1.03-Ashen-amd64.iso.
+     build/webos-1.034-Ashen-amd64.iso.
 
 --------------------------------------------------------------------------------
 6. CUTTING A NEW RELEASE VERSION

@@ -1,4 +1,4 @@
-WebOS 1.03 "Ashen" — system information
+WebOS 1.034 "Ashen" — system information
 ========================================
 
 Everything important about this installed system, in one file.
@@ -7,7 +7,7 @@ Repo copy:      overlay/webos-theme/webos-theme/files/WEBOS-INFO.txt
 
 RELEASE / IDENTITY
 ------------------
-- Version      : WebOS 1.03 "Ashen"
+- Version      : WebOS 1.034 "Ashen"
 - Base         : Gentoo Linux, OpenRC + elogind (no systemd)
 - Kernel       : sys-kernel/webos-kernel 6.12.119 LTS, localversion "-webos"
 - Architecture : amd64, 64-bit only (ABI_X86="64", no multilib)
@@ -17,9 +17,9 @@ RELEASE / IDENTITY
 - Installer    : webos-installer (Rust TUI + optional egui GUI)
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
-- ISO          : webos-1.03-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
+- ISO          : webos-1.034-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
 - Source       : https://github.com/4NT1K/WebOS
-- Release file : /etc/os-release and /etc/webos-release both report 1.03
+- Release file : /etc/os-release and /etc/webos-release both report 1.034
 
 QUICK START
 -----------
@@ -32,11 +32,30 @@ QUICK START
    the polkit agent start automatically.
 5. Update with `sudo webos-update`.
 
+WHAT CHANGED IN 1.034
+---------------------
+This is a fresh ISO release that supersedes the 1.03 medium. It ships the
+6.12.119 LTS kernel and the corrected boot chain from the source-only
+v1.03.1-v1.03.3 updates (prepared build tree, rebuilt NVIDIA modules, verified
+initramfs, newest kernel as GRUB default), together with theme r52.
+
+- Discord: the glass surface now hugs the real emoji/GIF/sticker menu instead
+  of the oversized popout wrapper; the speaking ring is blue and visible;
+  messages that @you get a lighter red row; ordinary @user/#channel/role/file
+  mentions keep their blue chip; buttons stay white and composer text dimmed.
+- Spotify: the transparent window, faint outlines and neutral veil are kept,
+  while the song title/artist are solid white in the bottom-left widget and in
+  the caption under the artwork on the right. Native grey is gone.
+- Waybar: the centred MPRIS pill shows only icon, title and artist. Workspace
+  click/scroll behaviour, Super+Escape lock, the SDDM dropdown and 170 Hz
+  persistence are unchanged.
+- Existing installs receive the same tree with `sudo webos-update`.
+
 WHAT CHANGED IN 1.03
 --------------------
 This is a clean maintenance rebuild of the Ashen image, built from a fresh
 stage3 chroot rather than from a maintainer's installed system. It ships the
-current source tree: `webos-theme-1.0-r51`, the redesigned music card, the
+current source tree: `webos-theme-1.0-r52`, the redesigned music card, the
 spotlight performance panel, full transparency support, no cava widget, and
 the updater fix for the stale Vesktop entry. Existing 1.02 machines receive
 the same tree with `sudo webos-update`. Log out and back in (or reboot) after
@@ -81,9 +100,9 @@ a theme update so the session picks up the new files.
   and `--no-compile`. It still refuses to force a binary with wrong USE flags:
   `-G`, `-K` and `--binpkg-respect-use=n` are deliberately not used.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
-  were corrected, and the shipped guide and release notes now describe 1.03.
+  were corrected, and the shipped guide and release notes now describe 1.034.
 
-RECENT THEME REVISIONS (r41-r51)
+RECENT THEME REVISIONS (r41-r52)
 --------------------------------
 - r41/r42: spectrum bars became solid opaque white and the cover was lightly frosted
   instead of heavily dimmed, so the artwork stayed recognisable.
@@ -116,6 +135,11 @@ RECENT THEME REVISIONS (r41-r51)
 - r51: removed the Waybar spectrum module and its helper, and dropped cava from
   the theme/desktop dependencies and Portage set. The music pill is centred on
   its own again; no audio visualizer is installed or planned.
+- r52: scoped glass fixes for both Discord clients and Spotify. Picker/emoji/
+  GIF/sticker submenu surfaces now fit the menu instead of the popout wrapper;
+  the speaking ring is blue and visible; @mention rows show a red highlight;
+  normal mention chips stay blue; and the compact player's song title/artist
+  are solid white in the bottom-left widget and under the right-side artwork.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -269,7 +293,7 @@ First stable release, rebuilt from the 1.022 tree with the final audit fixes:
 EXPECTED BEHAVIOUR
 ------------------
 Boot / live medium
-- The banner reads "WebOS 1.03 (Ashen) — live medium".
+- The banner reads "WebOS 1.034 (Ashen) — live medium".
 - Nothing is written to disk until the summary is confirmed.
 - The installer progress panel stays inside its border, keeps the "%" sign,
   and shows one consistent bar: red 0-25%, light red/orange 26-50%, yellow
@@ -727,20 +751,20 @@ WebOS system, as root:
   ./build.sh kernel
   ./build.sh rootfs             # includes this WEBOS-INFO.txt via webos-theme
   bash scripts/50-check.sh      # source regression guards: must report 0 problems
-  ./build.sh iso                # build/webos-1.03-Ashen-amd64.iso
+  ./build.sh iso                # build/webos-1.034-Ashen-amd64.iso
 
 Verify before publishing: `webos-update --check`, `waypaper --help`,
 `webos-stats` core/RAM output, and that the ISO's `webos/version` matches
-`WEBOS_VERSION=1.03-Ashen`. Keep the USB stick mounted, then copy the ISO over
+`WEBOS_VERSION=1.034-Ashen`. Keep the USB stick mounted, then copy the ISO over
 the old one on Ventoy (and refresh `webos-version.txt`), split it for GitHub,
-verify `sha256sum -c SHA256SUMS.txt`, and publish a **new** `v1.03` release with
-`gh release create v1.03 --notes-file docs/releases/v1.03.md --latest ...`.
-Keep `v1.01` untouched as the historical release. Never shut the machine down
+verify `sha256sum -c SHA256SUMS.txt`, and publish a **new** `v1.034` release with
+`gh release create v1.034 --notes-file docs/releases/v1.034.md --latest ...`.
+Keep `v1.01` and `v1.03` untouched as historical releases. Never shut the machine down
 as part of a release; only reboot when you deliberately test the new kernel.
 
-Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.03"`).
+Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.034"`).
 Maintenance fixes that must reach installed machines need a new package
-revision (`webos-theme-1.0-r51`) and a new tag; `webos-update` refreshes the
+revision (`webos-theme-1.0-r52`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.
 Before wiping another OS's drive, keep a verified backup and confirm WebOS
 boots and installs from its own SSD.

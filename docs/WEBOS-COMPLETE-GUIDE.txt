@@ -1,7 +1,7 @@
 ================================================================================
 WEBOS - COMPLETE SOURCE / DISTRO GUIDE
 Audience: a future OpenCode instance working on the real WebOS source tree.
-Version described: WebOS 1.03 "Ashen" (ISO webos-1.03-Ashen-amd64.iso)
+Version described: WebOS 1.034 "Ashen" (ISO webos-1.034-Ashen-amd64.iso)
 ================================================================================
 
 PURPOSE OF THIS FILE
@@ -26,15 +26,15 @@ WEBOS-INFO.txt (installed as /usr/share/webos/WEBOS-INFO.txt).
 Identity
   Name:            WebOS
   Codename:        Ashen
-  Version:         1.03 (marketing version from branding/version)
-  Full version:    1.03-Ashen
+  Version:         1.034 (marketing version from branding/version)
+  Full version:    1.034-Ashen
   ID:              webos
   Kernel:          6.12.119-webos (vanilla LTS + WebOS config fragment)
   Init:            OpenRC + elogind (no systemd)
   Desktop:         Hyprland (Wayland) with the Ashen greyscale rice
   Greeter:         SDDM
   Arch:            amd64 (ABI_X86="64", x86-64-v3 baseline)
-  ISO:             webos-1.03-Ashen-amd64.iso
+  ISO:             webos-1.034-Ashen-amd64.iso
   Upstream:        https://github.com/4NT1K/WebOS
   Maintainer acct: 4NT1K
 
@@ -126,14 +126,14 @@ Maintainer-machine context (outside the repo)
 branding/version
   The single source of version truth. Contains WEBOS_NAME, WEBOS_CODENAME,
   WEBOS_VERSION, WEBOS_VERSION_FULL, WEBOS_ID, WEBOS_HOME, WEBOS_KERNEL_SERIES.
-  Do not hard-code 1.01 anywhere; all identity checks expect 1.03.
+  Do not hard-code 1.01 anywhere; all identity checks expect 1.034.
 
 branding/os-release
-  ID=webos, NAME="WebOS", PRETTY_NAME="WebOS 1.03 (Ashen)", ANSI_COLOR greyscale
+  ID=webos, NAME="WebOS", PRETTY_NAME="WebOS 1.034 (Ashen)", ANSI_COLOR greyscale
   (ANSI_COLOR="38;2;216;216;216"). Installer/kcm/docs mirror this.
 
 branding/issue, branding/lsb-release
-  Console/login banners; both carry 1.03.
+  Console/login banners; both carry 1.034.
 
 branding/logo.svg, webos-logo.png, webos-logo-512.png, wallpaper.png
   Artwork. The rice uses /usr/share/webos/logo.svg (the 512x512 cobweb mark),
@@ -178,10 +178,10 @@ overlay/profiles/default/linux/{amd64,arm64}/webos/
   eapi, parent, make.defaults, use.mask, profiles.desc, repo_name, categories.
   make.defaults repeats key policy: elogind/-systemd, wayland+X, gaming USE,
   -dist-kernel, ABI_X86=64, GRUB_PLATFORMS="efi-64 pc", L10N/LINGUAS=en.
-  amd64 make.defaults carries WEBOS_VERSION=1.03.
+  amd64 make.defaults carries WEBOS_VERSION=1.034.
 
 overlay/webos-theme/webos-theme/files/system/xdg/kcm-about-distrorc
-  KDE About dialog branding; carries 1.03.
+  KDE About dialog branding; carries 1.034.
 
 installer/src/main.rs also carries version identity (installer-facing).
 
@@ -204,17 +204,18 @@ docs/RELEASE.md
 docs/MAINTENANCE.txt
   Long-form maintenance notes.
 
-docs/RELEASE.md + docs/releases/v1.0.md, v1.01.md, v1.03.md, v1.022.md
-  v1.01.md is historical. v1.03.md is the current release notes and names the
-  v1.03 assets. v1.022.md is an older intermediate historical note; do not
-  treat it as current.
+docs/RELEASE.md + docs/releases/v1.0.md, v1.01.md, v1.022.md, v1.03.md,
+  docs/releases/v1.034.md
+  v1.034.md is the current ISO release notes and names the v1.034 assets.
+  v1.03.md describes the previous ISO; v1.03.1/.2/.3 are source-only kernel
+  and boot-chain patch notes. v1.01.md and v1.022.md are historical.
 
 docs/FIXLOG-v1.01.txt was deliberately deleted: it made false post-release
 claims. Do not recreate it.
 
 WEBOS-INFO.txt (in overlay/webos-theme/webos-theme/files/)
   Shipped system brief, installed to /usr/share/webos/WEBOS-INFO.txt. Contains
-  "WHAT CHANGED IN 1.03", power restoration, per-core CPU details, binary-first
+  "WHAT CHANGED IN 1.034", power restoration, per-core CPU details, binary-first
   updater guidance, ".webos-orig" backup suffix, and maintainer workflow.
   Keep it in sync with source changes.
 
@@ -349,7 +350,7 @@ scripts/40-iso.sh
   3. build/live-root = build/rootfs + livecd/
   4. mksquashfs zstd, 1 MiB blocks -> /live/webos.squashfs
   5. writes /webos/version, substitutes GRUB template variables
-  6. grub-mkrescue -> build/webos-1.03-Ashen-amd64.iso + .sha256
+  6. grub-mkrescue -> build/webos-1.034-Ashen-amd64.iso + .sha256
   It normalizes ownership without stripping setuid/setgid bits.
 
 Boot flow (live)
@@ -401,11 +402,11 @@ overlay/webos-theme/webos-theme/
     webos-theme-1.0.ebuild       original
     webos-theme-1.0-r1.ebuild    historical installed version on v1.01 systems
     webos-theme-1.0-r2/r3.ebuild remote history, harmless
-    webos-theme-1.0-r51.ebuild   CURRENT; pins live volume drag, guarded
-                                  and hidden Spotify-only spectrum, r51
-  r51 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
+    webos-theme-1.0-r52.ebuild   CURRENT; pins live volume drag, guarded
+                                  and hidden Spotify-only spectrum, r52
+  r52 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
   jq, brightnessctl, grim/slurp/wdisplays/swaybg/waypaper, playerctl, fonts,
-  chafa, libnotify, and librsvg||imagemagick. r51 installs the rice, dotfiles
+  chafa, libnotify, and librsvg||imagemagick. r52 installs the rice, dotfiles
   profiles, system fallbacks, session files, and all /usr/bin/webos-* helpers.
   pkg_postinst calls webos-wallpaper and webos-rice --system (with backups).
 
@@ -526,7 +527,7 @@ scripts/30-rootfs.sh
   Refreshes overlay/sets in chroot; emerge @base @desktop @gaming
   @webos-installer; stages installer tarball; builds installer offline;
   installs branding; unmerge+remerge webos-theme (same-version edits need a
-  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r51.ebuild"; applies
+  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r52.ebuild"; applies
   rice; rsyncs chroot -> build/rootfs excluding pseudofs/cache/src trees.
   Reuses build/chroot.backup on this machine for fast v1.021 rebuilds.
 
@@ -544,7 +545,7 @@ scripts/50-check.sh
    6 core rice files exist
    7 v1.01 regressions (CPU_FLAGS, overlays shipped, kconfig[qml])
    8 binary-package updater, logind power, ⏻ widget, detailed stats
-   9 v1.03 identity, WEBOS-INFO.txt, release notes
+   9 v1.034 identity, WEBOS-INFO.txt, release notes
   10 power widget in both Waybar profiles + mono migration
   11 hyprlock/hypridle/DPMS/backlight fixes
   12 theme ebuild revision and rootfs pin
@@ -614,7 +615,7 @@ Music
 ================================================================================
 
 overlay/webos-theme/webos-theme/files/system/webos-update (installed /usr/bin/webos-update)
-  VERSION=1.03, log /var/log/webos-update.log.
+  VERSION=1.034, log /var/log/webos-update.log.
   Steps:
     [0/8] --no-compile preflight (pretend with --getbinpkg; abort if source builds)
     [1/8] sync repos + refresh WebOS overlay from GitHub main tarball
@@ -644,7 +645,7 @@ Delivery path
   https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and replaces
   /usr/local/portage/webos. The current theme revision then reaches installed systems
   on their next `sudo webos-update`. r1 stayed historical; remote r2/r3 are
-  harmless. Rootfs pins r51 via scripts/30-rootfs.sh.
+  harmless. Rootfs pins r52 via scripts/30-rootfs.sh.
 
 Release gate for binary-first behavior
   /home/brah/release-v102.sh runs `webos-update --check` and
@@ -661,30 +662,31 @@ Preconditions
   - scripts/50-check.sh = 0 problems; bash -n, py_compile, JSONC parse,
     forbidden-flag sweep, git diff --check, cargo check --offline all pass.
   - Rootfs stage rc=0 and log contains "rootfs exported".
-  - ISO /webos/version contains WEBOS_VERSION=1.03-Ashen,
+  - ISO /webos/version contains WEBOS_VERSION=1.034-Ashen,
     WEBOS_KERNEL=6.12.119-webos, WEBOS_BUILD=<today>.
 
 /home/brah/release-v102.sh
-  Final gate. It verifies rootfs packages/helpers/overlays/theme r51, syncs the
+  Final gate. It verifies rootfs packages/helpers/overlays/theme r52, syncs the
   installed WEBOS-INFO.txt and Waybar fallbacks, verifies binary-first config,
   runs runtime checks in the chroot (emerge --pretend --getbinpkg vim,
   waypaper --help, webos-update --check/--fast --check, stats module import),
   builds the ISO, verifies version/sha256, copies to Ventoy, splits assets,
-  creates/updates GitHub v1.03 as Latest, and never shuts down.
+  creates/updates GitHub v1.034 as Latest, and never shuts down.
 
 Ventoy
   Device /dev/sdc1, label Ventoy, mount /run/media/brah/Ventoy (exFAT).
-  Keep cachyos-desktop-linux-260809.iso. Write webos-1.03-Ashen-amd64.iso and
+  Keep cachyos-desktop-linux-260809.iso. Write webos-1.034-Ashen-amd64.iso and
   webos-version.txt with ISO name + SHA256. Historical v1.01 sha256:
   e8351089a4aaefe0d1d4afa11f2d939f94d54bc5979fabfa0355bf77157f3d90
 
 GitHub
-  Repo 4NT1K/WebOS, tag/release v1.03, title WebOS 1.03 "Ashen".
+  Repo 4NT1K/WebOS, tag/release v1.034, title WebOS 1.034 "Ashen".
   Assets: README.txt, SHA256SUMS.txt, and split parts
-  webos-1.03-Ashen-amd64.iso.part-00, -01, ... (PART_SIZE=2086666240).
-  Reassembly: cat webos-*.part-* > webos-1.03-Ashen-amd64.iso
+  webos-1.034-Ashen-amd64.iso.part-00, -01, ... (PART_SIZE=2086666240).
+  Linux/macOS: cat webos-1.034-Ashen-amd64.iso.part-* > webos-1.034-Ashen-amd64.iso
+  Windows:     copy /b webos-1.034-Ashen-amd64.iso.part-* webos-1.034-Ashen-amd64.iso
   Verify: sha256sum -c SHA256SUMS.txt
-  v1.01 remains historical; v1.03 becomes Latest.
+  v1.01 and v1.03 remain historical; v1.034 becomes Latest.
 
 Power policy
   Leave the PC powered on. Do not issue shutdown/reboot/poweroff as part of
@@ -721,7 +723,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
 
 [docs/] - [D]
   ARCHITECTURE.md, BUILD.md, RELEASE.md, MAINTENANCE.txt,
-  releases/v1.0.md, releases/v1.01.md, releases/v1.03.md,
+  releases/v1.0.md, releases/v1.01.md, releases/v1.03.md, releases/v1.034.md,
   releases/v1.022.md, WEBOS-COMPLETE-GUIDE.txt (this file)
 
 [installer/] - [I]
@@ -756,7 +758,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   app-admin/webos-installer/{Manifest,metadata.xml,webos-installer-1.0.0.ebuild}
   webos-theme/webos-theme/
     Manifest, metadata.xml,
-    webos-theme-1.0.ebuild ... -r51 [C],
+    webos-theme-1.0.ebuild ... -r52 [C],
     WEBOS-INFO.txt [C],
     files/rice/ [R] (hypr/, waybar/, wlogout/, wofi/, kitty/, foot/, fish/,
       gtk-3.0/, gtk-4.0/, qt5ct/, qt6ct/, kvantum/, konsole/, konsolerc/,
@@ -780,7 +782,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   in make.conf/webos-update/docs breaks the contract. Sweep before committing.
 - Reusing stale stage labels: INSTALL_STAGES must match r.phase() order.
 - Same-version theme edits not reaching rootfs: scripts/30-rootfs.sh unmerges
-  then remerges webos-theme and pins r51.
+  then remerges webos-theme and pins r52.
 - chroot copy failing with "Directory not empty": a previous cp -a was killed
   mid-copy. Remove the partial build/chroot from inside webos-build and copy
   chroot.backup again; do not try to merge trees.
