@@ -119,3 +119,55 @@ button path, button circle, button rect, button g,
 [class*="voiceUser_"][class*="speaking_"] {
   opacity: 1 !important;
 }
+/* Some builds put the speaking modifier on a wrapper that has no voiceUser_
+   class. Ring any speaking user's avatar, not the row itself, so the green
+   edge still appears when the helper element is absent. */
+[class*="speaking_"] [class*="avatar"],
+[class*="speaking_"] [class*="Avatar"],
+[class*="speaking_"][class*="avatar"],
+[class*="speaking_"][class*="Avatar"] {
+  outline: 2px solid #23a559 !important;
+  outline-offset: 2px !important;
+  border-radius: 50% !important;
+}
+
+/* Mentions are blue boxes by default. Discord's own token keeps inline styles
+   in step; the explicit rule wins over the global transparent-surface reset. */
+:root {
+  --mention-background: rgba(59, 130, 246, .22) !important;
+  --mention-foreground: #BFDBFE !important;
+  --message-mentioned-background-default: rgba(239, 68, 68, .18) !important;
+  --message-mentioned-background-hover: rgba(239, 68, 68, .26) !important;
+}
+.mention,
+[class*="fileMention_"],
+[class*="selectedMention_"] {
+  background-color: rgba(59, 130, 246, .22) !important;
+  border: 1px solid rgba(96, 165, 250, .85) !important;
+  border-radius: 4px !important;
+  color: #BFDBFE !important;
+  padding: 0 3px !important;
+}
+
+/* When the message actually pings you, Discord turns the whole row yellow.
+   Make that row red instead, and make its mention chips red rather than blue. */
+:is([class*="message"], [class*="Message"], [role="listitem"]):is(
+  .mentioned, [class*="mentioned"], [class*="Mentioned"], [data-mentioned="true"]
+),
+:is([class*="message"], [class*="Message"]):has(
+  :is(.mentioned, [class*="mentioned"], [class*="Mentioned"], [data-mentioned="true"])
+) {
+  background-color: rgba(239, 68, 68, .18) !important;
+  box-shadow: inset 3px 0 0 #F23F42 !important;
+  border-radius: 4px !important;
+}
+:is([class*="message"], [class*="Message"]):is(
+  .mentioned, [class*="mentioned"], [class*="Mentioned"], [data-mentioned="true"]
+) .mention,
+:is([class*="message"], [class*="Message"]):has(
+  :is(.mentioned, [class*="mentioned"], [class*="Mentioned"], [data-mentioned="true"])
+) .mention {
+  background-color: rgba(239, 68, 68, .24) !important;
+  border-color: rgba(248, 113, 113, .95) !important;
+  color: #FECACA !important;
+}
