@@ -236,3 +236,50 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
   visibility: visible !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, .95) !important;
 }
+
+/* The compact player renders the song title/byline with hashed classes and
+   semantic grey tokens outside .main-trackInfo-*. Force the real text leaves
+   white in the bottom-left widget as well as its containers. */
+[data-testid="now-playing-widget-v2"],
+[data-testid="now-playing-widget-v2"] *,
+[data-testid="now-playing-widget-v2-byline"],
+[data-testid="now-playing-widget-v2-byline"] *,
+.rvGmx9eIIf9TuyA5xAdZ,
+.rvGmx9eIIf9TuyA5xAdZ *,
+.BwtmcYQhSVBsN0yWymTw,
+.BwtmcYQhSVBsN0yWymTw *,
+.tjMGEOzAnXT1AZJ9vmXM,
+.tjMGEOzAnXT1AZJ9vmXM *,
+.UPVhNYAxMWS9yVbPOwBw,
+.Dxf6oNsReqbCik8hkrsH,
+.Dxf6oNsReqbCik8hkrsH *,
+.PL4uJ8Sctssp1aP57lw0,
+.PL4uJ8Sctssp1aP57lw0 *,
+.vZwhMFs89cs6IsGXj3Lw,
+.vZwhMFs89cs6IsGXj3Lw * {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95) !important;
+}
+
+/* Right-side now-playing panel: the caption under the album art uses the
+   context-item-info title/subtitle hashes plus native grey artist links. */
+.main-trackInfo-container,
+.main-trackInfo-container *,
+.main-trackInfo-name a,
+.main-trackInfo-artists a,
+.main-trackInfo-artists a:link,
+.main-trackInfo-artists a:visited,
+.Wav7VpTM84N1u68MDOru,
+.SG3osGBUkqQfT4ZznThG,
+.GWsRxbIt__hse7gWiQs7,
+.F6hcrWI_crypz9aJ3zYA,
+.HNzFeK50zqX2IHsc8XIA,
+.Nor_T8XZMFTJNQgsxt3Q {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95) !important;
+}

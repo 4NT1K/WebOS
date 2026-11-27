@@ -196,7 +196,8 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'avatarSpeakingOutline_' "$DISCSS" \
 	&& grep -Fq '[class*="voiceUser_"][class*="speaking_"] [class*="avatar_"]' "$DISCSS" \
 	&& grep -Fq '[class*="speaking_"] [class*="avatar"]' "$DISCSS" \
-	&& grep -Fq '#23a559' "$DISCSS" \
+	&& grep -Fq '#5865F2' "$DISCSS" \
+	&& ! grep -Fq '#23a559' "$DISCSS" \
 	&& grep -Fq '.mention,' "$DISCSS" \
 	&& grep -Fq 'rgba(59, 130, 246, .22)' "$DISCSS" \
 	&& grep -Fq '[class*="message"][class*="mentioned"] .mention' "$DISCSS" \
@@ -206,7 +207,7 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq ':focus-visible' "$DISCSS" \
 	&& grep -Fq 'outline-offset: -1px' "$DISCSS" \
 	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
-	&& good "Discord glass, white buttons, dim composer, green ring, blue mentions, red pings, keyboard outlines" || bad "Discord glass injection missing"
+	&& good "Discord glass, white buttons, dim composer, blue ring, blue mentions, red pings, keyboard outlines" || bad "Discord glass injection missing"
 grep -Fq '[class*="volume_"] [class*="progressFill_"]' "$DISCSS" \
 	&& grep -Fq '[class*="progressKnob_"]' "$DISCSS" \
 	&& grep -Fq '#create-join-button svg path' "$DISCSS" \
@@ -214,10 +215,15 @@ grep -Fq '[class*="volume_"] [class*="progressFill_"]' "$DISCSS" \
 	&& grep -Fq 'clip-path: inset(8.33% round 3px)' "$DISCSS" \
 	&& grep -Fq '[aria-label*="gif" i] svg path' "$DISCSS" \
 	&& grep -Fq '[class*="menuContainer_"]' "$DISCSS" \
+	&& grep -Fq '[class*="expressionPicker"]' "$DISCSS" \
+	&& grep -Fq '[class*="stickerPicker"]' "$DISCSS" \
+	&& grep -Fq '[class*="expressionPicker"] [class*="popout"]' "$DISCSS" \
 	&& grep -Fq '[class*="animatedHalfPillContainer_"]' "$DISCSS" \
 	&& grep -Fq '[data-list-item-id^="guildsnav"] [class*="badge"]' "$DISCSS" \
-	&& grep -Fq 'rgba(239, 68, 68, .10)' "$DISCSS" \
-	&& good "Discord volume, add/GIF/emoji icons, compact picker, server dots, lighter ping rows" \
+	&& grep -Fq '[class*="message"][class*="mentioned"]' "$DISCSS" \
+	&& grep -Fq 'rgba(239, 68, 68, .14)' "$DISCSS" \
+	&& ! grep -Fq '):not([class*="mention"]):is(' "$DISCSS" \
+	&& good "Discord volume, add/GIF/emoji icons, fitted picker submenus, server dots, red ping rows" \
 	|| bad "Discord scoped icon/indicator fixes missing"
 KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
 grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
@@ -287,8 +293,14 @@ grep -Fq '[data-testid="volume-bar"] .x-progressBar-progressBarBg' "$SPOTIFY_CSS
 	&& grep -Fq '[data-testid="volume-bar"] .x-progressBar-fillColor' "$SPOTIFY_CSS" \
 	&& grep -Fq '.progress-bar__slider' "$SPOTIFY_CSS" \
 	&& grep -Fq 'text-shadow: 0 1px 3px rgba(0, 0, 0, .95)' "$SPOTIFY_CSS" \
-	&& good "Spotify white song text and visible white volume slider" \
-	|| bad "Spotify title or volume slider still hidden"
+	&& grep -Fq '[data-testid="now-playing-widget-v2"]' "$SPOTIFY_CSS" \
+	&& grep -Fq '[data-testid="now-playing-widget-v2-byline"]' "$SPOTIFY_CSS" \
+	&& grep -Fq '.UPVhNYAxMWS9yVbPOwBw' "$SPOTIFY_CSS" \
+	&& grep -Fq '.vZwhMFs89cs6IsGXj3Lw' "$SPOTIFY_CSS" \
+	&& grep -Fq '.main-trackInfo-artists a:link' "$SPOTIFY_CSS" \
+	&& grep -Fq '.Wav7VpTM84N1u68MDOru' "$SPOTIFY_CSS" \
+	&& good "Spotify white song text (bottom-left + right panel) and visible white volume slider" \
+	|| bad "Spotify title/artist text or volume slider still hidden"
 grep -q 'PANEL_SIZE = 340' "$MUSIC" && grep -q 'set_default_size(PANEL_SIZE, PANEL_SIZE)' "$MUSIC" \
 	&& good "music player is a compact square" || bad "music player size is wrong"
 grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class VinylVisualizer' "$MUSIC" \

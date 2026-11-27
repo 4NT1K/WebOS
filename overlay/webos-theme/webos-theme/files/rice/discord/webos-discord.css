@@ -98,37 +98,30 @@ button path, button circle, button rect, button g,
   caret-color: #FFFFFF !important;
 }
 
-/* Discord draws the voice speaking ring with exactly:
-   .speaking_ieJ4Sq .avatarSpeakingOutline_ieJ4Sq { outline: 1px solid ... }
-   Target that pair directly and make the green edge clearly visible again. */
-[class*="speaking_"] [class*="avatarSpeakingOutline_"] {
-  outline: 2px solid #23a559 !important;
+/* Speaking ring: Discord paints a green edge either as an outline on the
+   avatarSpeakingOutline_ helper or as a box-shadow on the avatar itself.
+   Force a clear blue ring on the avatar only (never the whole row), in every
+   client build. Box-shadow is cleared on the helper so the two never stack. */
+[class*="speaking_"] [class*="avatarSpeakingOutline_"],
+[class*="avatarSpeakingOutline_"][class*="speaking_"] {
+  outline: 2px solid #5865F2 !important;
   outline-offset: 2px !important;
+  box-shadow: none !important;
   border-radius: 50% !important;
 }
-/* Fallback for builds where the outline helper is not rendered: outline the
-   speaking voice user's avatar itself. Scoped to voiceUser_ so PTT indicators
-   and stage tiles don't get a stray green ring. */
 [class*="voiceUser_"][class*="speaking_"] [class*="avatar_"],
 [class*="voiceUser_"][class*="speaking_"] [class*="Avatar_"],
-[class*="voiceUser_"][class*="speaking_"] img {
-  outline: 2px solid #23a559 !important;
+[class*="voiceUser_"][class*="speaking_"] img,
+[class*="speaking_"] [class*="avatar"],
+[class*="speaking_"] [class*="Avatar"],
+[class*="speaking_"][class*="avatar"],
+[class*="speaking_"][class*="Avatar"] {
+  outline: 2px solid #5865F2 !important;
   outline-offset: 2px !important;
   border-radius: 50% !important;
 }
 [class*="voiceUser_"][class*="speaking_"] {
   opacity: 1 !important;
-}
-/* Some builds put the speaking modifier on a wrapper that has no voiceUser_
-   class. Ring any speaking user's avatar, not the row itself, so the green
-   edge still appears when the helper element is absent. */
-[class*="speaking_"] [class*="avatar"],
-[class*="speaking_"] [class*="Avatar"],
-[class*="speaking_"][class*="avatar"],
-[class*="speaking_"][class*="Avatar"] {
-  outline: 2px solid #23a559 !important;
-  outline-offset: 2px !important;
-  border-radius: 50% !important;
 }
 
 /* Mentions are blue boxes by default. Keep this scoped to the mention chips
@@ -195,15 +188,16 @@ button path, button circle, button rect, button g,
 }
 
 /* Speaking ring: module 556525 sets boxShadow inline, which the global
-   box-shadow:none reset removes. Restore it with an important scoped rule. */
+   box-shadow:none reset removes. Restore a blue ring with an important scoped
+   rule, matching the avatarSpeakingOutline_ block above. */
 *:not(img):not(svg):not(video):not(canvas)[class*="speaking_"] [class*="avatarSpeakingOutline_"],
 *:not(img):not(svg):not(video):not(canvas)[class*="voiceUser_"][class*="speaking_"] [class*="avatar_"],
 *:not(img):not(svg):not(video):not(canvas)[class*="voiceUser_"][class*="speaking_"] [class*="Avatar_"],
 *:not(img):not(svg):not(video):not(canvas)[class*="voiceUser_"][class*="speaking_"] img,
 *:not(img):not(svg):not(video):not(canvas)[class*="speaking_"] [class*="avatar"],
 *:not(img):not(svg):not(video):not(canvas)[class*="speaking_"] [class*="Avatar"] {
-  box-shadow: 0 0 0 2px #23a559 !important;
-  outline: 2px solid #23a559 !important;
+  box-shadow: 0 0 0 2px #5865F2 !important;
+  outline: 2px solid #5865F2 !important;
   outline-offset: 2px !important;
   border-radius: 50% !important;
 }
@@ -253,23 +247,50 @@ button path, button circle, button rect, button g,
   stroke: none !important;
 }
 
-/* Expression picker: only the actual menu owns the grey surface. Nested
-   popout wrappers stay transparent so the background hugs the menu. */
-*:not(img):not(svg):not(video):not(canvas)[class*="popout"]:has([class*="expressionPicker_"]),
-*:not(img):not(svg):not(video):not(canvas)[class*="popout"]:has([class*="emojiPicker_"]),
-*:not(img):not(svg):not(video):not(canvas)[class*="Popout"]:has([class*="expressionPicker_"]),
-*:not(img):not(svg):not(video):not(canvas)[class*="Popout"]:has([class*="gifPicker_"]),
-*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker_"] [class*="popout"]:not([class*="menuContainer_"]),
-*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker_"] [class*="Popout"]:not([class*="menuContainer_"]),
-*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker_"] [role="listbox"]:not([class*="menuContainer_"]) {
+/* Expression / emoji / GIF / sticker pickers and every nested submenu:
+   Discord's popout positioning wrappers are far larger than the visible menu.
+   Keep every wrapper transparent so the dark glass hugs only the real menu.
+   Covers both old and new picker class spellings across client versions. */
+*:not(img):not(svg):not(video):not(canvas)[class*="popout"]:has(
+  [class*="expressionPicker"], [class*="ExpressionPicker"],
+  [class*="emojiPicker"], [class*="EmojiPicker"],
+  [class*="gifPicker"], [class*="GifPicker"],
+  [class*="stickerPicker"], [class*="StickerPicker"],
+  [class*="menuContainer"], [class*="MenuContainer"],
+  [role="listbox"]
+),
+*:not(img):not(svg):not(video):not(canvas)[class*="Popout"]:has(
+  [class*="expressionPicker"], [class*="ExpressionPicker"],
+  [class*="emojiPicker"], [class*="EmojiPicker"],
+  [class*="gifPicker"], [class*="GifPicker"],
+  [class*="stickerPicker"], [class*="StickerPicker"],
+  [class*="menuContainer"], [class*="MenuContainer"],
+  [role="listbox"]
+),
+*:not(img):not(svg):not(video):not(canvas)[class*="layer"]:has(
+  [class*="expressionPicker"], [class*="emojiPicker"],
+  [class*="gifPicker"], [class*="stickerPicker"]
+),
+*:not(img):not(svg):not(video):not(canvas)[class*="Layer"]:has(
+  [class*="expressionPicker"], [class*="emojiPicker"],
+  [class*="gifPicker"], [class*="stickerPicker"]
+),
+*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker"] [class*="popout"],
+*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker"] [class*="Popout"],
+*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker"] [role="listbox"] {
   background: transparent !important;
   background-color: transparent !important;
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
 }
+/* Only the innermost menu paints the glass surface, so its size matches the
+   actual emoji/GIF/sticker content instead of the oversized popout wrapper. */
 *:not(img):not(svg):not(video):not(canvas)[class*="menuContainer_"],
-*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker_"] {
+*:not(img):not(svg):not(video):not(canvas)[class*="expressionPicker_"],
+*:not(img):not(svg):not(video):not(canvas)[class*="emojiPicker_"],
+*:not(img):not(svg):not(video):not(canvas)[class*="gifPicker_"],
+*:not(img):not(svg):not(video):not(canvas)[class*="stickerPicker_"] {
   background: rgba(12, 12, 16, .96) !important;
   background-color: rgba(12, 12, 16, .96) !important;
   border: 0 !important;
@@ -315,19 +336,18 @@ button path, button circle, button rect, button g,
 }
 
 /* Messages that mention you or reply to you get a lighter red row than the
-   mention chip. Normal blue mentions and all other rows are untouched. */
-*:not(img):not(svg):not(video):not(canvas)[class*="message"]:not([class*="mention"]):is(
-  [class*="mentioned"],
-  [class*="replying"],
-  [class*="replyTo"],
-  [data-mentioned="true"]
-),
-*:not(img):not(svg):not(video):not(canvas)[class*="message_"]:not([class*="mention"]):has(
+   mention chip. Normal blue mentions and all other rows are untouched.
+   Do NOT exclude [class*="mention"] here: the message row's own class is
+   "mentioned", which contains "mention", so that exclusion killed the rule. */
+*:not(img):not(svg):not(video):not(canvas)[class*="message"][class*="mentioned"],
+*:not(img):not(svg):not(video):not(canvas)[class*="message_"][class*="mentioned_"],
+*:not(img):not(svg):not(video):not(canvas)[class*="message"][data-mentioned="true"],
+*:not(img):not(svg):not(video):not(canvas)[class*="message_"]:has(
   [class*="replyContext_"],
   [class*="replyBar_"],
   [class*="replyTo_"],
   [class*="mentioned_"]
 ) {
-  background-color: rgba(239, 68, 68, .10) !important;
+  background-color: rgba(239, 68, 68, .14) !important;
   border-radius: 6px !important;
 }
