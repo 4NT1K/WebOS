@@ -548,6 +548,13 @@ grep -Fq 'pool pool.ntp.org iburst' "$INSTALL" \
 	|| bad "chrony config missing from live or installed target"
 grep -Fq 'rc-update add chronyd default' "$ROOTFS" \
 	&& good "live ISO enables chronyd" || bad "live ISO clock sync not enabled"
+grep -Fq 'emerge --quiet-build=y --noreplace net-misc/chrony' "$ROOTFS" \
+	&& good "live image force-installs chrony" \
+	|| bad "live image does not force-install chrony"
+grep -Fq 'command -v chronyd >/dev/null 2>&1' "$ROOTFS" \
+	&& grep -Fq 'test -e /etc/runlevels/default/chronyd' "$ROOTFS" \
+	&& good "build asserts chronyd is installed and enabled" \
+	|| bad "build does not assert chronyd is installed and enabled"
 grep -Fq 'mod region;' "$MAIN" \
 	&& good "installer includes region detection module" || bad "region module not compiled"
 grep -Fq 'pub fn detect() -> RegionGuess' "$REGION" \

@@ -201,6 +201,12 @@ done
 chroot_sh "test -x /usr/bin/webos-installer" || die "installer binary missing"
 info "installer: $(chroot_sh 'webos-installer --version' | tr -d '\r')"
 
+# The large set merge can abort on unrelated desktop USE conflicts, which
+# would leave a chrony config with no actual chronyd behind. Install it
+# explicitly so the live medium really can discipline the clock.
+chroot_sh "emerge --quiet-build=y --noreplace net-misc/chrony" \
+	|| die "chrony emerge failed"
+
 # The live medium must also keep time correctly while the wizard is open;
 # otherwise `hwclock --systohc` copies a drifted clock onto the new system.
 install -d "${CHROOT}/etc/chrony"
@@ -212,6 +218,8 @@ rtcsync
 logdir /var/log/chrony
 EOF
 chroot_sh "if [ -x /etc/init.d/chronyd ]; then rc-update add chronyd default >/dev/null 2>&1 || true; fi" || true
+chroot_sh "command -v chronyd >/dev/null 2>&1 && test -x /etc/init.d/chronyd && test -e /etc/runlevels/default/chronyd" \
+	|| die "chronyd is not installed and enabled in the live rootfs"
 
 # ---------------------------------------------------------- branding ---------
 step "rootfs: installing branding"
