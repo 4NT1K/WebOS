@@ -352,6 +352,16 @@ grep -qF 'cat webos-1.034-Ashen-amd64.iso.part-* > webos-1.034-Ashen-amd64.iso' 
 	&& good "v1.034 Linux reassembly command" || bad "v1.034 notes lack Linux reassembly"
 grep -qF 'copy /b webos-1.034-Ashen-amd64.iso.part-* webos-1.034-Ashen-amd64.iso' "$NOTES" \
 	&& good "v1.034 Windows reassembly command" || bad "v1.034 notes lack Windows reassembly"
+for note in 'Automatic clock sync and region detection' \
+	'Press `r` in the TUI or GUI' \
+	'Spotify text mask' \
+	'Discord popouts and indicators' \
+	'idle update pill stays hidden' \
+	'BetterSoundCloud artist fix' \
+	'old product naming is gone'; do
+	grep -qF -- "$note" "$NOTES" \
+		&& good "release notes mention: ${note}" || bad "release notes missing: ${note}"
+done
 [[ -x "${WEBOS_ROOT}/scripts/release-iso.sh" ]] \
 	&& good "ISO release helper present" || bad "missing scripts/release-iso.sh"
 grep -qF 'WEBOS_VERSION_FULL' "${WEBOS_ROOT}/scripts/release-iso.sh" \
