@@ -283,3 +283,23 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
   visibility: visible !important;
   text-shadow: 0 1px 3px rgba(0, 0, 0, .95) !important;
 }
+
+/* Verified against the live Spotify DOM (CDP): song titles and artist names
+   are native /track, /album and /artist anchors. The grey lives in Spotify's
+   encore "subdued" token on those anchors (bottom card rail and the caption
+   under the album art in the right now-playing panel). Force the whole link
+   and its text leaves white instead of guessing hashed class names. */
+a[href^="/artist/"],
+a[href^="/album/"],
+a[href^="/track/"],
+a[href^="/artist/"] *,
+a[href^="/album/"] *,
+a[href^="/track/"] *,
+.main-trackInfo-overlay,
+.main-trackInfo-overlay * {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95) !important;
+}

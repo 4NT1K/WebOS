@@ -353,23 +353,16 @@ button path, button circle, button rect, button g,
 }
 
 /* ---------------------------------------------------------------------------
-   v1.034 follow-up: the dark glass on GIF/emoji/sticker menus was still
-   covering Discord's oversized positioning wrapper. Do not try to enumerate
-   every wrapper class name - client builds rename them. Instead:
-     1. every ancestor of a picker/menu is transparent;
-     2. only the INNERMOST element containing the picker paints the glass.
-   The nested :has() identifies that innermost element, so the surface always
-   hugs the real menu instead of the wrapper around it.
+   Verified against the live Discord DOM (CDP), not guessed:
+   * GIF/emoji/sticker picker wrapper: section[role="dialog"] with
+     aria-label "Expression Picker" and class positionContainer_*. It fills
+     1474x486 while the real menu is its child drawerSizingWrapper_* (498x486).
+   * Profile popout: div[role="dialog"].popoutContainer_*.accountPopout_*.
+   Paint only the real picker drawer; leave the wrapper transparent.
 --------------------------------------------------------------------------- */
-*:not(img):not(svg):not(video):not(canvas):has(
-  [class*="expressionPicker"], [class*="ExpressionPicker"],
-  [class*="emojiPicker"], [class*="EmojiPicker"],
-  [class*="gifPicker"], [class*="GifPicker"],
-  [class*="stickerPicker"], [class*="StickerPicker"],
-  [class*="menuContainer"], [class*="MenuContainer"],
-  [class*="submenu"], [class*="Submenu"],
-  [role="menu"], [role="listbox"]
-) {
+section[role="dialog"][aria-label*="Picker" i],
+[role="dialog"][aria-label*="Expression Picker" i],
+[class*="positionContainer_"][role="dialog"]:has([class*="drawerSizingWrapper"]) {
   background: transparent !important;
   background-color: transparent !important;
   background-image: none !important;
@@ -379,52 +372,51 @@ button path, button circle, button rect, button g,
   backdrop-filter: none !important;
 }
 
-*:not(img):not(svg):not(video):not(canvas):has(
-  [class*="expressionPicker"], [class*="ExpressionPicker"],
-  [class*="emojiPicker"], [class*="EmojiPicker"],
-  [class*="gifPicker"], [class*="GifPicker"],
-  [class*="stickerPicker"], [class*="StickerPicker"],
-  [class*="menuContainer"], [class*="MenuContainer"],
-  [class*="submenu"], [class*="Submenu"],
-  [role="menu"], [role="listbox"]
-):not(:has(
-  *:has(
-    [class*="expressionPicker"], [class*="ExpressionPicker"],
-    [class*="emojiPicker"], [class*="EmojiPicker"],
-    [class*="gifPicker"], [class*="GifPicker"],
-    [class*="stickerPicker"], [class*="StickerPicker"],
-    [class*="menuContainer"], [class*="MenuContainer"],
-    [class*="submenu"], [class*="Submenu"],
-    [role="menu"], [role="listbox"]
-  )
-)) {
+[role="dialog"][aria-label*="Picker" i] [class*="drawerSizingWrapper"],
+[role="dialog"][aria-label*="Picker" i] [class*="contentWrapper_"],
+[class*="positionContainer_"][role="dialog"]:has([class*="drawerSizingWrapper"])
+  [class*="drawerSizingWrapper"] {
   background: rgba(12, 12, 16, .96) !important;
   background-color: rgba(12, 12, 16, .96) !important;
   border: 0 !important;
-  border-radius: 10px !important;
+  border-radius: 8px !important;
   box-shadow: none !important;
 }
 
-/* Profile / user popouts and ordinary context menus need a faint grey plate
-   so their text is readable over any wallpaper. Picker menus are excluded:
-   their wrappers must stay transparent so the glass hugs the real menu. */
-*:not(img):not(svg):not(video):not(canvas):is(
-  [role="menu"], [role="listbox"],
-  [class*="menu_"], [class*="Menu_"],
-  [class*="menuContainer"], [class*="MenuContainer"],
-  [class*="contextMenu"], [class*="ContextMenu"],
-  [class*="userPopout"], [class*="UserPopout"],
-  [class*="profilePopout"], [class*="ProfilePopout"],
-  [class*="popout_"], [class*="Popout_"], [class*="popout"], [class*="Popout"]
-):not(:has(
-  [class*="expressionPicker"], [class*="ExpressionPicker"],
-  [class*="emojiPicker"], [class*="EmojiPicker"],
-  [class*="gifPicker"], [class*="GifPicker"],
-  [class*="stickerPicker"], [class*="StickerPicker"]
-)) {
+/* Profile / account popout: a faint readable grey plate. */
+[class*="accountPopout"][role="dialog"],
+[class*="popoutContainer"][role="dialog"] {
   background: rgba(28, 28, 32, .74) !important;
   background-color: rgba(28, 28, 32, .74) !important;
   border: 0 !important;
   border-radius: 10px !important;
   box-shadow: none !important;
+}
+
+/* Verified against the live Discord DOM (CDP): the server rail indicator is
+   span[class*="item_"] inside nav[aria-label="Servers sidebar"]. The selected
+   one adds [class*="selected_"] (8x40 pill); unread servers add
+   [class*="visible_"] (8x8 dot). Older builds used animatedHalfPillContainer/
+   selectedPill, so those rules never matched this client and the indicator
+   stayed see-through. Paint both states opaque white. */
+nav[aria-label="Servers sidebar"] [class*="item_"][class*="selected_"],
+nav[aria-label="Servers sidebar"] [class*="item_"][class*="visible_"]:not([class*="selected_"]) {
+  background: #FFFFFF !important;
+  background-color: #FFFFFF !important;
+  border: 0 !important;
+  border-radius: 0 4px 4px 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  inset-inline-start: 0 !important;
+  left: 0 !important;
+  min-width: 8px !important;
+}
+nav[aria-label="Servers sidebar"] [class*="item_"][class*="selected_"] {
+  width: 8px !important;
+  height: 40px !important;
+}
+nav[aria-label="Servers sidebar"] [class*="item_"][class*="visible_"]:not([class*="selected_"]) {
+  width: 8px !important;
+  height: 8px !important;
 }
