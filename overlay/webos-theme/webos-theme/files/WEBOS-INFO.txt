@@ -41,9 +41,9 @@ v1.03.1-v1.03.3 updates (prepared build tree, rebuilt NVIDIA modules, verified
 initramfs, newest kernel as GRUB default), together with theme r52.
 
 - Discord: the glass surface now hugs the real emoji/GIF/sticker menu instead
-  of the oversized popout wrapper; the speaking ring is blue and visible;
-  messages that @you get a lighter red row; ordinary @user/#channel/role/file
-  mentions keep their blue chip; buttons stay white and composer text dimmed.
+  of the oversized popout wrapper; messages that @you get a lighter red row;
+  ordinary @user/#channel/role/file mentions keep their blue chip; buttons stay
+  white and composer text dimmed.
 - Spotify: the transparent window, faint outlines and neutral veil are kept,
   while the song title/artist are solid white in the bottom-left widget and in
   the caption under the artwork on the right. Native grey is gone.
@@ -141,9 +141,9 @@ RECENT THEME REVISIONS (r41-r53)
   its own again; no audio visualizer is installed or planned.
 - r52: scoped glass fixes for both Discord clients and Spotify. Picker/emoji/
   GIF/sticker submenu surfaces now fit the menu instead of the popout wrapper;
-  the speaking ring is blue and visible; @mention rows show a red highlight;
-  normal mention chips stay blue; and the compact player's song title/artist
-  are solid white in the bottom-left widget and under the right-side artwork.
+  @mention rows show a red highlight; normal mention chips stay blue; and the
+  compact player's song title/artist are solid white in the bottom-left widget
+  and under the right-side artwork.
 - r53: post-release maintenance for installed systems. `webos-rice` restores
   Firefox as the default browser for `http`, `https`, `text/html` and XHTML via
   `xdg-mime`/`xdg-settings`, while leaving custom handlers such as Discord and

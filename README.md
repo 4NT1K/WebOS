@@ -21,8 +21,8 @@ A lightweight, source-built gaming operating system based on **Gentoo** (OpenRC)
 
 **`v1.034` is a fresh ISO.** It folds in the 6.12.119 LTS security kernel and the
 corrected boot chain from `v1.03.1`–`v1.03.3`, plus the newest rice: fitted
-Discord/Spotify glass menus, a blue speaking ring, red `@mention` rows and
-solid-white player text. Existing 1.03 systems get the same tree with
+Discord/Spotify glass menus, red `@mention` rows and solid-white player text.
+Existing 1.03 systems get the same tree with
 `sudo webos-update`.
 
 WebOS aims for a fast, gaming-focused desktop with one consistent greyscale look — floating rounded top-bar capsules, near-opaque panels and rounded windows — prebuilt desktop/gaming essentials, and a simple update flow on top of Gentoo/Portage.
