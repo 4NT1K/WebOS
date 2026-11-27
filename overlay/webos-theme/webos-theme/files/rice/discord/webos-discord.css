@@ -219,27 +219,38 @@ button path, button circle, button rect, button g,
   color: #0B0B0E !important;
 }
 
-/* GIF/emoji controls: white plates with dark glyphs, always clickable. */
+/* GIF/emoji controls: the button plate stays transparent. The GIF icon is a
+   single evenodd path, so its letters are holes; a dark backing clipped to the
+   icon makes them read black while the badge itself stays white. */
 *:not(img):not(svg):not(video):not(canvas)[class*="expressionPickerButton_"],
 *:not(img):not(svg):not(video):not(canvas)[class*="emojiButton_"],
 *:not(img):not(svg):not(video):not(canvas)[class*="gifButton_"],
 *:not(img):not(svg):not(video):not(canvas)[aria-label*="emoji" i],
 *:not(img):not(svg):not(video):not(canvas)[aria-label*="gif" i] {
-  background-color: #FFFFFF !important;
+  background-color: transparent !important;
   opacity: 1 !important;
   pointer-events: auto !important;
 }
-[class*="expressionPickerButton_"] svg path,
-[class*="emojiButton_"] svg path,
-[class*="gifButton_"] svg path,
-[aria-label*="emoji" i] svg path,
+[aria-label*="gif" i] svg,
+[class*="gifButton_"] svg {
+  background-color: #0B0B0E !important;
+  clip-path: inset(8.33% round 3px) !important;
+  border-radius: 3px !important;
+}
 [aria-label*="gif" i] svg path,
-[class*="expressionPickerButton_"] svg polygon,
-[class*="emojiButton_"] svg polygon,
-[class*="gifButton_"] svg polygon {
-  fill: #0B0B0E !important;
-  stroke: #0B0B0E !important;
-  color: #0B0B0E !important;
+[class*="gifButton_"] svg path {
+  fill: #FFFFFF !important;
+  stroke: none !important;
+}
+[aria-label*="emoji" i] svg,
+[class*="emojiButton_"] svg {
+  background-color: transparent !important;
+}
+[aria-label*="emoji" i] svg path,
+[class*="emojiButton_"] svg path,
+[class*="expressionPickerButton_"] svg path:not([fill-rule="evenodd"]) {
+  fill: #FFFFFF !important;
+  stroke: none !important;
 }
 
 /* Expression picker: only the actual menu owns the grey surface. Nested

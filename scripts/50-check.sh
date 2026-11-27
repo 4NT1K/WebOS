@@ -210,7 +210,9 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 grep -Fq '[class*="volume_"] [class*="progressFill_"]' "$DISCSS" \
 	&& grep -Fq '[class*="progressKnob_"]' "$DISCSS" \
 	&& grep -Fq '#create-join-button svg path' "$DISCSS" \
-	&& grep -Fq '[class*="expressionPickerButton_"] svg path' "$DISCSS" \
+	&& grep -Fq '[aria-label*="gif" i] svg' "$DISCSS" \
+	&& grep -Fq 'clip-path: inset(8.33% round 3px)' "$DISCSS" \
+	&& grep -Fq '[aria-label*="gif" i] svg path' "$DISCSS" \
 	&& grep -Fq '[class*="menuContainer_"]' "$DISCSS" \
 	&& grep -Fq '[class*="animatedHalfPillContainer_"]' "$DISCSS" \
 	&& grep -Fq '[data-list-item-id^="guildsnav"] [class*="badge"]' "$DISCSS" \
