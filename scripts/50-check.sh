@@ -199,8 +199,9 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq '#23a559' "$DISCSS" \
 	&& grep -Fq '.mention,' "$DISCSS" \
 	&& grep -Fq 'rgba(59, 130, 246, .22)' "$DISCSS" \
-	&& grep -Fq -- '--message-mentioned-background-default: rgba(239, 68, 68, .18)' "$DISCSS" \
-	&& grep -Fq 'inset 3px 0 0 #F23F42' "$DISCSS" \
+	&& grep -Fq '[class*="message"][class*="mentioned"] .mention' "$DISCSS" \
+	&& ! grep -Fq 'inset 3px 0 0 #F23F42' "$DISCSS" \
+	&& ! grep -Fq -- '--message-mentioned-background-default' "$DISCSS" \
 	&& grep -Fq '[role="option"]' "$DISCSS" \
 	&& grep -Fq ':focus-visible' "$DISCSS" \
 	&& grep -Fq 'outline-offset: -1px' "$DISCSS" \
