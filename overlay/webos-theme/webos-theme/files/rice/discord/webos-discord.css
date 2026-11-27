@@ -404,3 +404,27 @@ button path, button circle, button rect, button g,
   border-radius: 10px !important;
   box-shadow: none !important;
 }
+
+/* Profile / user popouts and ordinary context menus need a faint grey plate
+   so their text is readable over any wallpaper. Picker menus are excluded:
+   their wrappers must stay transparent so the glass hugs the real menu. */
+*:not(img):not(svg):not(video):not(canvas):is(
+  [role="menu"], [role="listbox"],
+  [class*="menu_"], [class*="Menu_"],
+  [class*="menuContainer"], [class*="MenuContainer"],
+  [class*="contextMenu"], [class*="ContextMenu"],
+  [class*="userPopout"], [class*="UserPopout"],
+  [class*="profilePopout"], [class*="ProfilePopout"],
+  [class*="popout_"], [class*="Popout_"], [class*="popout"], [class*="Popout"]
+):not(:has(
+  [class*="expressionPicker"], [class*="ExpressionPicker"],
+  [class*="emojiPicker"], [class*="EmojiPicker"],
+  [class*="gifPicker"], [class*="GifPicker"],
+  [class*="stickerPicker"], [class*="StickerPicker"]
+)) {
+  background: rgba(28, 28, 32, .74) !important;
+  background-color: rgba(28, 28, 32, .74) !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  box-shadow: none !important;
+}
