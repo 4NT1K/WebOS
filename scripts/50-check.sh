@@ -281,7 +281,7 @@ SPOTIFY_CSS="${RICE}/spicetify/user.css"
 grep -q '^  --webos-glass: rgba(20, 20, 26, \.005);$' "$SPOTIFY_CSS" \
 	&& grep -q -- '--webos-outline: rgba(232, 232, 232, .06)' "$SPOTIFY_CSS" \
 	&& grep -Fq -- '--spice-main: transparent !important;' "$SPOTIFY_CSS" \
-	&& grep -Fq -- '--spice-sidebar: transparent !important;' "$SPOTIFY_CSS" \
+	&& grep -Fq -- '--spice-sidebar: #000000 !important;' "$SPOTIFY_CSS" \
 	&& grep -Fq 'background-image: none !important;' "$SPOTIFY_CSS" \
 	&& grep -Fq '::after {' "$SPOTIFY_CSS" \
 	&& grep -Fq -- 'button, [role="button"], button *, [role="button"] * {' "$SPOTIFY_CSS" \
@@ -290,6 +290,8 @@ grep -q '^  --webos-glass: rgba(20, 20, 26, \.005);$' "$SPOTIFY_CSS" \
 	&& good "Spotify has transparent glass with faint outlines" \
 	|| bad "Spotify transparency or outlines are wrong"
 grep -Fq '[data-testid="volume-bar"] .x-progressBar-progressBarBg' "$SPOTIFY_CSS" \
+	&& grep -Fq -- '--spice-sidebar: #000000 !important;' "$SPOTIFY_CSS" \
+	&& grep -Fq 'Keep this OPAQUE' "$SPOTIFY_CSS" \
 	&& grep -Fq '[data-testid="volume-bar"] .x-progressBar-fillColor' "$SPOTIFY_CSS" \
 	&& grep -Fq '.progress-bar__slider' "$SPOTIFY_CSS" \
 	&& grep -Fq 'text-shadow: 0 1px 3px rgba(0, 0, 0, .95)' "$SPOTIFY_CSS" \
