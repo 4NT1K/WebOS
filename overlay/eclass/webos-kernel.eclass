@@ -1,6 +1,6 @@
 # @ECLASS: webos-kernel.eclass
 # @MAINTAINER:
-#   WebOS <4NT1K@users.noreply.github.com>
+#   WebOS <ugss96@users.noreply.github.com>
 # @SUPPORTED_EAPIS: 8
 # @BLURB: Shared helpers for the WebOS kernel packages.
 # @DESCRIPTION:

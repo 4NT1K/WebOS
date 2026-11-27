@@ -15,7 +15,7 @@ WEBOS_CODENAME="Ashen"
 WEBOS_VERSION="1.034"
 WEBOS_VERSION_FULL="1.034-Ashen"
 WEBOS_ID="webos"
-WEBOS_HOME="https://github.com/4NT1K/WebOS"
+WEBOS_HOME="https://github.com/ugss96/WebOS"
 WEBOS_KERNEL_SERIES="6.12"
 ```
 
@@ -291,7 +291,7 @@ Then upload the artefacts from §7 to the release page, and update:
 Installed systems keep the WebOS overlay as a plain local repo at
 `/usr/local/portage/webos` with `auto-sync = no`, so `emerge --sync` alone never
 sees new WebOS ebuilds. `webos-update` fixes that by refreshing the overlay
-from `https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz` before it
+from `https://github.com/ugss96/WebOS/archive/refs/heads/main.tar.gz` before it
 resolves updates. To ship a kernel security fix:
 
 1. Move both kernel ebuilds to the new upstream LTS version (for example

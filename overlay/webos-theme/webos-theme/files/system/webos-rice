@@ -22,6 +22,17 @@ readonly RICE_SRC="/usr/share/webos/rice"
 readonly WALL_DIR="/usr/share/webos/wallpaper"
 readonly VERSION="1.034"
 
+# XDG defaults restored by `webos-rice`, and therefore by `webos-update`.
+# We set only WebOS-owned keys so custom handlers (Discord, Mornye, ...) stay.
+readonly XDG_BROWSER_DESKTOP="firefox-bin.desktop"
+XDG_BROWSER_TYPES=(
+	x-scheme-handler/http
+	x-scheme-handler/https
+	text/html
+	application/xhtml+xml
+)
+readonly -a XDG_BROWSER_TYPES
+
 MODE="user"
 FORCE=0
 QUIET=0
@@ -329,9 +340,10 @@ apply_home() {
 	fi
 
 	apply_tree "$home" "$force" "$dry"
-	# gtk/plasma defaults live outside the managed tree dirs
+	# gtk/plasma/XDG defaults live outside the managed tree dirs
 	install_gtk_user "$home" "$force" "$dry"
 	install_plasma_user "$home" "$force" "$dry"
+	install_xdg_defaults "$home" "$dry"
 	apply_web_themes "$home" "$force" "$dry"
 	# When --system runs as root, the state dir and manifest are created by
 	# root. Hand them back to the account that owns the home directory, or
@@ -369,6 +381,49 @@ install_plasma_user() {
 	[[ -f "${RICE_SRC}/plasma/kwinrulesrc" ]] && install_file "${RICE_SRC}/plasma/kwinrulesrc" "${home}/.config/kwinrulesrc" "$mf" "$force" "$dry"
 	[[ -f "${RICE_SRC}/konsolerc/konsolerc" ]] && install_file "${RICE_SRC}/konsolerc/konsolerc" "${home}/.config/konsolerc" "$mf" "$force" "$dry"
 	(( dry )) || mkdir -p "${home}/.config/autostart" 2>/dev/null || true
+}
+
+# Restore the WebOS XDG defaults without clobbering unrelated handlers.
+install_xdg_defaults() {
+	local home="$1" dry="$2" user
+	if (( dry )); then
+		say "would apply Firefox XDG defaults for ${home}"
+		return 0
+	fi
+	command -v xdg-mime >/dev/null 2>&1 || {
+		skip "xdg-mime not installed; skipping XDG defaults"
+		return 0
+	}
+	mkdir -p "${home}/.config" 2>/dev/null || true
+
+	if (( EUID != 0 )) || [[ "$home" == /root || "$home" == /etc/skel ]]; then
+		env -u BROWSER HOME="$home" XDG_CONFIG_HOME="${home}/.config" \
+			xdg-mime default "$XDG_BROWSER_DESKTOP" "${XDG_BROWSER_TYPES[@]}" || {
+			skip "xdg-mime failed for ${home}"
+			return 0
+		}
+		if command -v xdg-settings >/dev/null 2>&1; then
+			env -u BROWSER HOME="$home" XDG_CONFIG_HOME="${home}/.config" \
+				xdg-settings set default-web-browser "$XDG_BROWSER_DESKTOP" >/dev/null 2>&1 || true
+		fi
+	else
+		user="$(basename "$home")"
+		id -u "$user" >/dev/null 2>&1 || return 0
+		if ! command -v runuser >/dev/null 2>&1; then
+			skip "runuser unavailable; skipping XDG defaults for ${user}"
+			return 0
+		fi
+		runuser -u "$user" -- env -u BROWSER HOME="$home" XDG_CONFIG_HOME="${home}/.config" \
+			xdg-mime default "$XDG_BROWSER_DESKTOP" "${XDG_BROWSER_TYPES[@]}" || {
+			skip "xdg-mime failed for ${user}"
+			return 0
+		}
+		if command -v xdg-settings >/dev/null 2>&1; then
+			runuser -u "$user" -- env -u BROWSER HOME="$home" XDG_CONFIG_HOME="${home}/.config" \
+				xdg-settings set default-web-browser "$XDG_BROWSER_DESKTOP" >/dev/null 2>&1 || true
+		fi
+	fi
+	note "Firefox XDG defaults applied for ${home}"
 }
 
 # ── system-wide bits (run as root) ──────────────────────────────────────────

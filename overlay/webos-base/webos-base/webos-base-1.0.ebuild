@@ -1,7 +1,7 @@
 EAPI=8
 
 DESCRIPTION="WebOS base system — init, networking, storage, diagnostics"
-HOMEPAGE="https://github.com/4NT1K/WebOS/"
+HOMEPAGE="https://github.com/ugss96/WebOS/"
 SRC_URI=""
 
 LICENSE="metapackage"

@@ -73,7 +73,7 @@ if ! grep -qF 'WEBOS_KERNEL=6.12.119-webos' "${verify_dir}/version"; then
 	exit 0
 fi
 
-if gh release view "v${VER}" --repo 4NT1K/WebOS >/dev/null 2>&1; then
+if gh release view "v${VER}" --repo ugss96/WebOS >/dev/null 2>&1; then
 	log "release v${VER} already exists; nothing to do"
 	touch "${MARK}"
 	exit 0
@@ -89,14 +89,14 @@ git -C "${REPO}" push origin "v${VER}" >/dev/null 2>&1 || {
 log "publishing v${VER} with ${#parts[@]} ISO parts"
 cd "${WORK}"
 if gh release create "v${VER}" \
-	--repo 4NT1K/WebOS \
+	--repo ugss96/WebOS \
 	--verify-tag \
 	--latest \
 	--title "WebOS ${VER} \"Ashen\"" \
 	--notes-file "${REPO}/docs/releases/v${VER}.md" \
 	README.txt SHA256SUMS.txt "${NAME}.b2" "${NAME}".part-*; then
 	touch "${MARK}"
-	log "PUBLISHED https://github.com/4NT1K/WebOS/releases/tag/v${VER}"
+	log "PUBLISHED https://github.com/ugss96/WebOS/releases/tag/v${VER}"
 else
 	log "gh release create failed; will retry on the next check"
 fi

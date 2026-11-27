@@ -90,7 +90,7 @@ Presets live in `overlay/webos-theme/webos-theme/files/colourways/` and install 
 
 ## Install
 
-Download the latest release ISO (split parts + checksums): **[Releases](https://github.com/4NT1K/WebOS/releases)**
+Download the latest release ISO (split parts + checksums): **[Releases](https://github.com/ugss96/WebOS/releases)**
 
 Reassemble and verify (Linux/macOS):
 ```bash
@@ -159,7 +159,7 @@ WebOS/
 WebOS is built on a Gentoo-capable host with the required tools and disk space.
 
 ```bash
-git clone https://github.com/4NT1K/WebOS && cd WebOS
+git clone https://github.com/ugss96/WebOS && cd WebOS
 sudo ./build.sh fetch      # stage3, snapshots, overlays, patchset, vendor deps
 sudo ./build.sh bootstrap  # unpack/apply config/base system
 sudo ./build.sh kernel     # build webos-kernel

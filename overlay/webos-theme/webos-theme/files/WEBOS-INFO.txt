@@ -18,7 +18,7 @@ RELEASE / IDENTITY
 - Filesystems  : btrfs (default, subvolumes + zstd), ext4, xfs; optional LUKS2
 - Bootloader   : GRUB2 (BIOS and UEFI)
 - ISO          : webos-1.034-Ashen-amd64.iso (split parts + SHA256SUMS.txt)
-- Source       : https://github.com/4NT1K/WebOS
+- Source       : https://github.com/ugss96/WebOS
 - Release file : /etc/os-release and /etc/webos-release both report 1.034
 
 QUICK START
@@ -59,7 +59,7 @@ WHAT CHANGED IN 1.03
 --------------------
 This is a clean maintenance rebuild of the Ashen image, built from a fresh
 stage3 chroot rather than from a maintainer's installed system. It ships the
-current source tree: `webos-theme-1.0-r52`, the redesigned music card, the
+current source tree: `webos-theme-1.0-r53`, the redesigned music card, the
 spotlight performance panel, full transparency support, no cava widget, and
 the updater fix for the stale Vesktop entry. Existing 1.02 machines receive
 the same tree with `sudo webos-update`. Log out and back in (or reboot) after
@@ -106,7 +106,7 @@ a theme update so the session picks up the new files.
 - Installer, Manifest, kernel-fragment, build-script and watcher audit defects
   were corrected, and the shipped guide and release notes now describe 1.034.
 
-RECENT THEME REVISIONS (r41-r52)
+RECENT THEME REVISIONS (r41-r53)
 --------------------------------
 - r41/r42: spectrum bars became solid opaque white and the cover was lightly frosted
   instead of heavily dimmed, so the artwork stayed recognisable.
@@ -144,6 +144,11 @@ RECENT THEME REVISIONS (r41-r52)
   the speaking ring is blue and visible; @mention rows show a red highlight;
   normal mention chips stay blue; and the compact player's song title/artist
   are solid white in the bottom-left widget and under the right-side artwork.
+- r53: post-release maintenance for installed systems. `webos-rice` restores
+  Firefox as the default browser for `http`, `https`, `text/html` and XHTML via
+  `xdg-mime`/`xdg-settings`, while leaving custom handlers such as Discord and
+  Mornye alone. `webos-update` re-applies those XDG defaults on every run.
+  v1.034 ISOs still ship r52; r53 reaches them through the normal updater.
 
 WHAT CHANGED IN 1.01
 --------------------
@@ -746,7 +751,7 @@ MAINTAINER / RELEASE WORKFLOW (FROM WEBOS ITSELF)
 You do not need to boot another distro to publish an update. On a running
 WebOS system, as root:
 
-  git clone https://github.com/4NT1K/WebOS.git
+  git clone https://github.com/ugss96/WebOS.git
   cd WebOS
   emerge -av dev-vcs/git dev-lang/rust app-arch/p7zip dev-util/github-cli  # build/publish tools
   gh auth login                 # authenticate once for release uploads
@@ -768,14 +773,14 @@ as part of a release; only reboot when you deliberately test the new kernel.
 
 Source of truth for identity is `branding/version` (`WEBOS_VERSION="1.034"`).
 Maintenance fixes that must reach installed machines need a new package
-revision (`webos-theme-1.0-r52`) and a new tag; `webos-update` refreshes the
+revision (`webos-theme-1.0-r53`) and a new tag; `webos-update` refreshes the
 overlay from `main`, so commit and push the source before publishing assets.
 Before wiping another OS's drive, keep a verified backup and confirm WebOS
 boots and installs from its own SSD.
 
 LINKS
 -----
-Source and releases : https://github.com/4NT1K/WebOS
+Source and releases : https://github.com/ugss96/WebOS
 Installed guide     : /usr/share/webos/WEBOS-INFO.txt (this file)
 Roadmap             : ROADMAP.md
 Architecture        : docs/ARCHITECTURE.md

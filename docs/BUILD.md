@@ -32,7 +32,7 @@ kernel, the tools above, and the network.
 ## 2. Quick start
 
 ```bash
-git clone https://github.com/4NT1K/WebOS && cd WebOS
+git clone https://github.com/ugss96/WebOS && cd WebOS
 sudo ./build.sh fetch       # stage3 + portage snapshot + kernel patchset + vendor
 sudo ./build.sh bootstrap   # unpack stage3, apply config/, emerge @world
 sudo ./build.sh kernel      # build sys-kernel/webos-kernel

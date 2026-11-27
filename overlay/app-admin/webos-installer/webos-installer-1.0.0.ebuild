@@ -1,7 +1,7 @@
 EAPI=8
 
 DESCRIPTION="WebOS installer — a black, keyboard-driven TUI wizard"
-HOMEPAGE="https://github.com/4NT1K/WebOS/"
+HOMEPAGE="https://github.com/ugss96/WebOS/"
 SRC_URI="webos-installer-${PV}.tar.gz"
 S="${WORKDIR}/webos-installer-${PV}"
 

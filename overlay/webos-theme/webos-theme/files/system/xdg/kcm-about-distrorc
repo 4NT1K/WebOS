@@ -1,6 +1,6 @@
 [General]
 Name=WebOS
 LogoPath=/usr/share/webos/logo.svg
-Website=https://github.com/4NT1K/WebOS
+Website=https://github.com/ugss96/WebOS
 Version=1.034 "Ashen"
 Variant=Hyprland / KDE Plasma

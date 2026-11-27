@@ -13,7 +13,7 @@ detect_arch
 inherit webos-kernel
 
 DESCRIPTION="WebOS Linux kernel — gaming tuned build"
-HOMEPAGE="https://github.com/4NT1K/WebOS/ https://www.kernel.org/"
+HOMEPAGE="https://github.com/ugss96/WebOS/ https://www.kernel.org/"
 # kernel-2.eclass handles three-component versions as base tarball + stable
 # patch. Let detect_version() supply both; do not pin the combined tarball.
 SRC_URI="${KERNEL_URI}"

@@ -173,7 +173,7 @@ count_plan() {
 # revisions — are published in the GitHub repo. Fetch the overlay directory
 # from main and swap it in before resolving updates. A failed/offline fetch
 # keeps the existing local copy and only produces a warning.
-OVERLAY_URL="https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz"
+OVERLAY_URL="https://github.com/ugss96/WebOS/archive/refs/heads/main.tar.gz"
 sync_webos_overlay() {
 	local tmp ov
 	tmp="$(mktemp -d)" || return 1

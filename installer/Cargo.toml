@@ -5,8 +5,8 @@ edition = "2021"
 rust-version = "1.75"
 description = "WebOS installer — a black, mouse- and keyboard-driven install wizard"
 license = "MIT"
-authors = ["The WebOS Project <4NT1K@users.noreply.github.com>"]
-repository = "https://github.com/4NT1K/WebOS"
+authors = ["The WebOS Project <ugss96@users.noreply.github.com>"]
+repository = "https://github.com/ugss96/WebOS"
 readme = "README.md"
 
 [[bin]]

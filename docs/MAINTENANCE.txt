@@ -34,7 +34,7 @@ The kernel package is named webos-kernel.
 1. REPO FACTS
 --------------------------------------------------------------------------------
   Local source:   /home/brah/WebOS   (container mount inside builds: /webos)
-  Git remote:     https://github.com/4NT1K/WebOS.git  (branch main)
+  Git remote:     https://github.com/ugss96/WebOS.git  (branch main)
   Build container: webos-build  (Docker, /home/brah/WebOS mounted at /webos)
   Version source of truth: branding/version
   Current release: WebOS 1.034 "Ashen", ISO build/webos-1.034-Ashen-amd64.iso
@@ -50,7 +50,7 @@ Everything hinges on this distinction.
   CHANNEL A - reaches installed machines through `sudo webos-update`
   ---------------------------------------------------------------
   `webos-update` first downloads the latest overlay tarball from
-  https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and swaps it
+  https://github.com/ugss96/WebOS/archive/refs/heads/main.tar.gz and swaps it
   into /usr/local/portage/webos (the local repo is auto-sync = no, so plain
   `emerge --sync` never sees new WebOS ebuilds). It then rebuilds @world,
   explicitly emerges sys-kernel/webos-kernel (NOT in @world), regenerates GRUB
@@ -72,8 +72,8 @@ Everything hinges on this distinction.
   Keybinds, waybar modules/CSS, fastfetch card, hyprland rules, transparency,
   zram boot glue, SDDM seeding, WEBOS-INFO.txt
       -> overlay/webos-theme/webos-theme/files/
-      -> bump the theme ebuild revision (currently webos-theme-1.0-r52;
-         next webos-theme-1.0-r53), regenerate Manifest if files changed.
+      -> bump the theme ebuild revision (currently webos-theme-1.0-r53;
+         next webos-theme-1.0-r54), regenerate Manifest if files changed.
 
   webos-update, webos-rice, webos-fastfetch, system helpers
       -> overlay/webos-theme/webos-theme/files/system/

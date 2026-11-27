@@ -84,7 +84,7 @@ WebOS ${WEBOS_VERSION} "Ashen" (amd64)
 Linux/macOS reassemble: cat ${NAME}.part-* > ${NAME}
 Windows reassemble:     copy /b ${NAME}.part-* ${NAME}
 Verify: sha256sum -c SHA256SUMS.txt
-Source: https://github.com/4NT1K/WebOS
+Source: https://github.com/ugss96/WebOS
 EOF
 sha256sum "${NAME}".part-* > SHA256SUMS.txt
 
@@ -94,7 +94,7 @@ info "SHA256:     $(cut -d' ' -f1 "${ISO}.sha256")"
 info "Parts:      $(printf '%s\n' "${NAME}".part-* | wc -l) x 2086666240 bytes max"
 info "Assets:     ${WORK}"
 info "Notes:      ${WEBOS_ROOT}/docs/releases/v${WEBOS_VERSION}.md"
-info "Publish with: gh release create v${WEBOS_VERSION} --repo 4NT1K/WebOS --verify-tag \\"
+info "Publish with: gh release create v${WEBOS_VERSION} --repo ugss96/WebOS --verify-tag \\"
 info "  --title 'WebOS ${WEBOS_VERSION} \"Ashen\"' \\"
 info "  --notes-file ${WEBOS_ROOT}/docs/releases/v${WEBOS_VERSION}.md \\"
 info "  ${WORK}/README.txt ${WORK}/SHA256SUMS.txt ${WORK}/${NAME}.b2 ${WORK}/${NAME}.part-*"

@@ -35,8 +35,8 @@ Identity
   Greeter:         SDDM
   Arch:            amd64 (ABI_X86="64", x86-64-v3 baseline)
   ISO:             webos-1.034-Ashen-amd64.iso
-  Upstream:        https://github.com/4NT1K/WebOS
-  Maintainer acct: 4NT1K
+  Upstream:        https://github.com/ugss96/WebOS
+  Maintainer acct: ugss96
 
 Release state at the time this guide was written
   - v1.021 source is frozen, committed and pushed to origin/main at 49829b6;
@@ -117,7 +117,7 @@ Maintainer-machine context (outside the repo)
   /dev/sdc1, label Ventoy               USB target
   /run/media/brah/Ventoy               Ventoy mountpoint (exFAT)
   docker container webos-build          build container; root is /webos
-  GitHub repo 4NT1K/WebOS              releases v1.0, v1.01; v1.021 to publish
+  GitHub repo ugss96/WebOS              releases v1.0, v1.01; v1.021 to publish
 
 ================================================================================
 2. BRANDING / IDENTITY FILES
@@ -402,12 +402,14 @@ overlay/webos-theme/webos-theme/
     webos-theme-1.0.ebuild       original
     webos-theme-1.0-r1.ebuild    historical installed version on v1.01 systems
     webos-theme-1.0-r2/r3.ebuild remote history, harmless
-    webos-theme-1.0-r52.ebuild   CURRENT; pins live volume drag, guarded
-                                  and hidden Spotify-only spectrum, r52
-  r52 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
+    webos-theme-1.0-r53.ebuild   CURRENT; pins live volume drag, guarded
+                                  and hidden Spotify-only spectrum, r53
+  r53 RDEPEND includes gui-libs/gtk-layer-shell[introspection], pycairo, pillow,
   jq, brightnessctl, grim/slurp/wdisplays/swaybg/waypaper, playerctl, fonts,
-  chafa, libnotify, and librsvg||imagemagick. r52 installs the rice, dotfiles
+  chafa, libnotify, and librsvg||imagemagick. r53 installs the rice, dotfiles
   profiles, system fallbacks, session files, and all /usr/bin/webos-* helpers.
+  r53 also makes webos-rice restore Firefox XDG defaults, so webos-update fixes
+  the default browser without overwriting custom Discord/Mornye handlers.
   pkg_postinst calls webos-wallpaper and webos-rice --system (with backups).
 
   files/WEBOS-INFO.txt
@@ -527,7 +529,7 @@ scripts/30-rootfs.sh
   Refreshes overlay/sets in chroot; emerge @base @desktop @gaming
   @webos-installer; stages installer tarball; builds installer offline;
   installs branding; unmerge+remerge webos-theme (same-version edits need a
-  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r52.ebuild"; applies
+  forced reinstall); pins THEME_EBUILD="webos-theme-1.0-r53.ebuild"; applies
   rice; rsyncs chroot -> build/rootfs excluding pseudofs/cache/src trees.
   Reuses build/chroot.backup on this machine for fast v1.021 rebuilds.
 
@@ -642,10 +644,10 @@ binary-only because that would reinstall hundreds of packages.
 
 Delivery path
   Commit/push source to origin/main first. webos-update downloads
-  https://github.com/4NT1K/WebOS/archive/refs/heads/main.tar.gz and replaces
+  https://github.com/ugss96/WebOS/archive/refs/heads/main.tar.gz and replaces
   /usr/local/portage/webos. The current theme revision then reaches installed systems
   on their next `sudo webos-update`. r1 stayed historical; remote r2/r3 are
-  harmless. Rootfs pins r52 via scripts/30-rootfs.sh.
+  harmless. Rootfs pins r53 via scripts/30-rootfs.sh.
 
 Release gate for binary-first behavior
   /home/brah/release-v102.sh runs `webos-update --check` and
@@ -666,7 +668,7 @@ Preconditions
     WEBOS_KERNEL=6.12.119-webos, WEBOS_BUILD=<today>.
 
 /home/brah/release-v102.sh
-  Final gate. It verifies rootfs packages/helpers/overlays/theme r52, syncs the
+  Final gate. It verifies rootfs packages/helpers/overlays/theme r53, syncs the
   installed WEBOS-INFO.txt and Waybar fallbacks, verifies binary-first config,
   runs runtime checks in the chroot (emerge --pretend --getbinpkg vim,
   waypaper --help, webos-update --check/--fast --check, stats module import),
@@ -680,7 +682,7 @@ Ventoy
   e8351089a4aaefe0d1d4afa11f2d939f94d54bc5979fabfa0355bf77157f3d90
 
 GitHub
-  Repo 4NT1K/WebOS, tag/release v1.034, title WebOS 1.034 "Ashen".
+  Repo ugss96/WebOS, tag/release v1.034, title WebOS 1.034 "Ashen".
   Assets: README.txt, SHA256SUMS.txt, and split parts
   webos-1.034-Ashen-amd64.iso.part-00, -01, ... (PART_SIZE=2086666240).
   Linux/macOS: cat webos-1.034-Ashen-amd64.iso.part-* > webos-1.034-Ashen-amd64.iso
@@ -758,7 +760,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   app-admin/webos-installer/{Manifest,metadata.xml,webos-installer-1.0.0.ebuild}
   webos-theme/webos-theme/
     Manifest, metadata.xml,
-    webos-theme-1.0.ebuild ... -r52 [C],
+    webos-theme-1.0.ebuild ... -r53 [C],
     WEBOS-INFO.txt [C],
     files/rice/ [R] (hypr/, waybar/, wlogout/, wofi/, kitty/, foot/, fish/,
       gtk-3.0/, gtk-4.0/, qt5ct/, qt6ct/, kvantum/, konsole/, konsolerc/,
@@ -782,7 +784,7 @@ Legend: [C] contract-sensitive, [B] build, [R] runtime/theme, [I] installer,
   in make.conf/webos-update/docs breaks the contract. Sweep before committing.
 - Reusing stale stage labels: INSTALL_STAGES must match r.phase() order.
 - Same-version theme edits not reaching rootfs: scripts/30-rootfs.sh unmerges
-  then remerges webos-theme and pins r52.
+  then remerges webos-theme and pins r53.
 - chroot copy failing with "Directory not empty": a previous cp -a was killed
   mid-copy. Remove the partial build/chroot from inside webos-build and copy
   chroot.backup again; do not try to merge trees.

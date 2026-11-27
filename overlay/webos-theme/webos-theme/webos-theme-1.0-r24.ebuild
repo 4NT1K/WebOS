@@ -3,7 +3,7 @@ EAPI=8
 inherit toolchain-funcs
 
 DESCRIPTION="WebOS rice — the black/transparent Hyprland theme, dotfiles and session glue"
-HOMEPAGE="https://github.com/4NT1K/WebOS/"
+HOMEPAGE="https://github.com/ugss96/WebOS/"
 SRC_URI=""
 
 LICENSE="MIT"

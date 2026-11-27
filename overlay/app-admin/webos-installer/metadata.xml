@@ -2,7 +2,7 @@
 <!DOCTYPE pkgmetadata SYSTEM "https://www.gentoo.org/dtd/metadata.dtd">
 <pkgmetadata>
 	<maintainer type="project">
-		<email>4NT1K@users.noreply.github.com</email>
+		<email>ugss96@users.noreply.github.com</email>
 		<name>WebOS</name>
 	</maintainer>
 	<longdescription lang="en">
@@ -11,6 +11,6 @@
 		Built from source with a vendored, offline cargo build.
 	</longdescription>
 	<upstream>
-		<remote-id type="github">4NT1K/WebOS</remote-id>
+		<remote-id type="github">ugss96/WebOS</remote-id>
 	</upstream>
 </pkgmetadata>

@@ -1,15 +1,16 @@
 # WebOS build status
 
-_Last update: 2026-11-27 — v1.034 (Ashen): fresh ISO with kernel 6.12.119 LTS, corrected boot chain, theme r52 and the newest Discord/Spotify glass fixes._
+_Last update: 2026-11-27 — v1.034 (Ashen) published with theme r52; main now carries post-release r53 with canonical ugss96 URLs, Firefox XDG defaults in webos-update, and expanded release notes._
 
-## Status: v1.034 — new ISO; theme r52 committed
+## Status: v1.034 published; main has post-release r53
 
 - Version 1.034 ISO `webos-1.034-Ashen-amd64.iso`. It supersedes the 1.03 ISO
   and includes the source-only v1.03.1–v1.03.3 kernel/boot fixes.
 - v1.03.1 was superseded: its ebuilds pinned the combined 6.12.119 tarball,
   while `kernel-2.eclass` expects base tarball + incremental patch.
-- Theme r52 is committed on `main`. Run `bash scripts/50-check.sh` before the
-  next rootfs/ISO rebuild.
+- Theme r52 shipped in v1.034. Main now pins r53 so installed systems receive
+  Firefox XDG defaults through `webos-update`; no ISO was rebuilt for it.
+  Run `bash scripts/50-check.sh` before the next rootfs/ISO rebuild.
 - Hyprland 0.57 reads `~/.config/hypr/hyprland.lua`; the rice is Lua
   (`hyprland.lua` + `webos-colors.lua`), and `hyprland.conf` is gone.
 - SDDM is the shipped greeter and offers exactly the session chosen in the
