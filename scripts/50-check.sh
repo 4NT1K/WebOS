@@ -207,6 +207,16 @@ grep -Fq 'class = "^(discord|discord-canary)$"' "$RICE/hypr/hyprland.lua" \
 	&& grep -Fq 'outline-offset: -1px' "$DISCSS" \
 	&& grep -q 'webos-discord-theme' "${WEBOS_ROOT}/overlay/webos-theme/webos-theme/webos-theme-1.0-r51.ebuild" \
 	&& good "Discord glass, white buttons, dim composer, green ring, blue mentions, red pings, keyboard outlines" || bad "Discord glass injection missing"
+grep -Fq '[class*="volume_"] [class*="progressFill_"]' "$DISCSS" \
+	&& grep -Fq '[class*="progressKnob_"]' "$DISCSS" \
+	&& grep -Fq '#create-join-button svg path' "$DISCSS" \
+	&& grep -Fq '[class*="expressionPickerButton_"] svg path' "$DISCSS" \
+	&& grep -Fq '[class*="menuContainer_"]' "$DISCSS" \
+	&& grep -Fq '[class*="animatedHalfPillContainer_"]' "$DISCSS" \
+	&& grep -Fq '[data-list-item-id^="guildsnav"] [class*="badge"]' "$DISCSS" \
+	&& grep -Fq 'rgba(239, 68, 68, .10)' "$DISCSS" \
+	&& good "Discord volume, add/GIF/emoji icons, compact picker, server dots, lighter ping rows" \
+	|| bad "Discord scoped icon/indicator fixes missing"
 KVWEB="${RICE}/kvantum/WebOSDark/WebOSDark.kvconfig"
 grep -q '^theme=WebOSDark$' "${RICE}/kvantum/kvantum.kvconfig" \
 	&& [[ -f "$KVWEB" && -f "${KVWEB%.kvconfig}.svg" ]] \
@@ -271,6 +281,12 @@ grep -q '^  --webos-glass: rgba(20, 20, 26, \.005);$' "$SPOTIFY_CSS" \
 	&& grep -Fq 'border: 1px solid var(--webos-outline)' "$SPOTIFY_CSS" \
 	&& good "Spotify has transparent glass with faint outlines" \
 	|| bad "Spotify transparency or outlines are wrong"
+grep -Fq '[data-testid="volume-bar"] .x-progressBar-progressBarBg' "$SPOTIFY_CSS" \
+	&& grep -Fq '[data-testid="volume-bar"] .x-progressBar-fillColor' "$SPOTIFY_CSS" \
+	&& grep -Fq '.progress-bar__slider' "$SPOTIFY_CSS" \
+	&& grep -Fq 'text-shadow: 0 1px 3px rgba(0, 0, 0, .95)' "$SPOTIFY_CSS" \
+	&& good "Spotify white song text and visible white volume slider" \
+	|| bad "Spotify title or volume slider still hidden"
 grep -q 'PANEL_SIZE = 340' "$MUSIC" && grep -q 'set_default_size(PANEL_SIZE, PANEL_SIZE)' "$MUSIC" \
 	&& good "music player is a compact square" || bad "music player size is wrong"
 grep -q 'Gtk.DrawingArea' "$MUSIC" && grep -q 'class VinylVisualizer' "$MUSIC" \

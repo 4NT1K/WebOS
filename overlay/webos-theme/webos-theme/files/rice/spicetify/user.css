@@ -201,3 +201,38 @@ button svg, [role="button"] svg, button svg *, [role="button"] svg * {
   color: #FFFFFF !important;
   fill: #FFFFFF !important;
 }
+
+/* The global transparent-surface reset kills Spotify's native volume bar.
+   Restore a white track, white fill and a visible white slider knob. */
+*:not(img):not(svg):not(video):not(canvas)[data-testid="volume-bar"] .x-progressBar-progressBarBg {
+  background-color: rgba(255, 255, 255, .28) !important;
+}
+*:not(img):not(svg):not(video):not(canvas)[data-testid="volume-bar"] .x-progressBar-progressFillColor,
+*:not(img):not(svg):not(video):not(canvas)[data-testid="volume-bar"] .x-progressBar-fillColor {
+  background-color: #FFFFFF !important;
+}
+[data-testid="volume-bar"] .progress-bar__slider {
+  display: block !important;
+  width: 10px !important;
+  height: 10px !important;
+  min-width: 10px !important;
+  min-height: 10px !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background-color: #FFFFFF !important;
+  opacity: 1 !important;
+  box-shadow: none !important;
+}
+
+/* Track and artist sit on the wallpaper; a soft dark shadow keeps the white
+   text readable without adding a solid title background. */
+.main-trackInfo-name,
+.main-trackInfo-name *,
+.main-trackInfo-artists,
+.main-trackInfo-artists *,
+[data-testid="now-playing-bar"] [class*="trackInfo"] a {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, .95) !important;
+}
